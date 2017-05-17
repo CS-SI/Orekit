@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -31,6 +31,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -53,7 +56,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class FieldAttitude<T extends RealFieldElement<T>> {
+public class FieldAttitude<T extends RealFieldElement<T>>
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T>, FieldTimeInterpolable<FieldAttitude<T>, T> {
 
 
     /** Reference frame. */
@@ -121,6 +125,19 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
                                                   field.getZero().add(acceleration.getZ()))));
     }
 
+    /** Get a time-shifted attitude.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a linear extrapolation for attitude taking the spin rate into account.
+     * It is <em>not</em> intended as a replacement for proper attitude propagation
+     * but should be sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new attitude, shifted with respect to the instance (which is immutable)
+     */
+    public FieldAttitude<T> shiftedBy(final double dt) {
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
+    }
 
     /** Get a time-shifted attitude.
      * <p>
@@ -133,7 +150,7 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public FieldAttitude<T> shiftedBy(final T dt) {
-        return new FieldAttitude<T>(referenceFrame, orientation.shiftedBy(dt));
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
     }
 
     /** Get a similar attitude with a specific reference frame.
@@ -234,13 +251,11 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate, final Collection<FieldAttitude<T>> sample)
+    public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
+                                        final Stream<FieldAttitude<T>> sample)
         throws OrekitException {
         final List<TimeStampedFieldAngularCoordinates<T>> datedPV =
-                new ArrayList<TimeStampedFieldAngularCoordinates<T>>(sample.size());
-        for (final FieldAttitude<T> attitude : sample) {
-            datedPV.add(attitude.orientation);
-        }
+                sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedFieldAngularCoordinates<T> interpolated =
                 TimeStampedFieldAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
         return new FieldAttitude<T>(referenceFrame, interpolated);

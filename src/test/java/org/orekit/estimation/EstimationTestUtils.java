@@ -225,7 +225,7 @@ public class EstimationTestUtils {
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
-                                                         orbitArray);
+                                                         orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }

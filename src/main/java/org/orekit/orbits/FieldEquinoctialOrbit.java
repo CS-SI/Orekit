@@ -16,10 +16,16 @@
  */
 package org.orekit.orbits;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -70,8 +76,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @since 9.0
  */
 public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+
+    /** Factory for first time derivatives. */
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
+                    new HashMap<>();
 
     /** Semi-major axis (m). */
     private final T a;
@@ -90,6 +101,27 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
     /** True longitude argument (rad). */
     private final T lv;
+
+    /** Semi-major axis derivative (m/s). */
+    private final T aDot;
+
+    /** First component of the eccentricity vector derivative. */
+    private final T exDot;
+
+    /** Second component of the eccentricity vector derivative. */
+    private final T eyDot;
+
+    /** First component of the inclination vector derivative. */
+    private final T hxDot;
+
+    /** Second component of the inclination vector derivative. */
+    private final T hyDot;
+
+    /** True longitude argument derivative (rad/s). */
+    private final T lvDot;
+
+    /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
+    private FieldPVCoordinates<T> partialPV;
 
     /** Field used by this class.*/
     private Field<T> field;
@@ -116,9 +148,42 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldEquinoctialOrbit(final T a, final T ex, final T ey,
-                            final T hx, final T hy,
-                            final T l, final PositionAngle type,
-                            final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                                 final T hx, final T hy, final T l,
+                                 final PositionAngle type,
+                                 final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+        throws IllegalArgumentException {
+        this(a, ex, ey, hx, hy, l,
+             null, null, null, null, null, null,
+             type, frame, date, mu);
+    }
+
+    /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
+     * @param aDot  semi-major axis derivative (m/s)
+     * @param exDot d(e cos(ω + Ω))/dt, first component of eccentricity vector derivative
+     * @param eyDot d(e sin(ω + Ω))/dt, second component of eccentricity vector derivative
+     * @param hxDot d(tan(i/2) cos(Ω))/dt, first component of inclination vector derivative
+     * @param hyDot d(tan(i/2) sin(Ω))/dt, second component of inclination vector derivative
+     * @param lDot  d(M or E or v) + ω + Ω)/dr, mean, eccentric or true longitude argument  derivative (rad/s)
+     * @param type type of longitude argument
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public FieldEquinoctialOrbit(final T a, final T ex, final T ey,
+                                 final T hx, final T hy, final T l,
+                                 final T aDot, final T exDot, final T eyDot,
+                                 final T hxDot, final T hyDot, final T lDot,
+                                 final PositionAngle type,
+                                 final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         field = a.getField();
@@ -128,25 +193,62 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
                                                      getClass().getName());
         }
-        this.a  =  a;
-        this.ex = ex;
-        this.ey = ey;
-        this.hx = hx;
-        this.hy = hy;
 
-        switch (type) {
-            case MEAN :
-                this.lv = eccentricToTrue(meanToEccentric(l));
-                break;
-            case ECCENTRIC :
-                this.lv = eccentricToTrue(l);
-                break;
-            case TRUE :
-                this.lv = l;
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
         }
+
+        this.a     = a;
+        this.aDot  = aDot;
+        this.ex    = ex;
+        this.exDot = exDot;
+        this.ey    = ey;
+        this.eyDot = eyDot;
+        this.hx    = hx;
+        this.hxDot = hxDot;
+        this.hy    = hy;
+        this.hyDot = hyDot;
+
+        if (hasDerivatives()) {
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
+            final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
+            final FieldDerivativeStructure<T> lDS  = factory.build(l,  lDot);
+            final FieldDerivativeStructure<T> lvDS;
+            switch (type) {
+                case MEAN :
+                    lvDS = eccentricToTrue(meanToEccentric(lDS, exDS, eyDS), exDS, eyDS);
+                    break;
+                case ECCENTRIC :
+                    lvDS = eccentricToTrue(lDS, exDS, eyDS);
+                    break;
+                case TRUE :
+                    lvDS = lDS;
+                    break;
+                default : // this should never happen
+                    throw new OrekitInternalError(null);
+            }
+            this.lv    = lvDS.getValue();
+            this.lvDot = lvDS.getPartialDerivative(1);
+        } else {
+            switch (type) {
+                case MEAN :
+                    this.lv = eccentricToTrue(meanToEccentric(l, ex, ey), ex, ey);
+                    break;
+                case ECCENTRIC :
+                    this.lv = eccentricToTrue(l, ex, ey);
+                    break;
+                case TRUE :
+                    this.lv = l;
+                    break;
+                default :
+                    throw new OrekitInternalError(null);
+            }
+            this.lvDot = null;
+        }
+
+        this.partialPV = null;
 
     }
 
@@ -176,7 +278,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         //  compute semi-major axis
         final FieldVector3D<T> pvP = pvCoordinates.getPosition();
         final FieldVector3D<T> pvV = pvCoordinates.getVelocity();
-        final T r = pvP.getNorm();
+        final FieldVector3D<T> pvA = pvCoordinates.getAcceleration();
+        final T r2 = pvP.getNormSq();
+        final T r  = r2.sqrt();
         final T V2 = pvV.getNormSq();
         final T rV2OnMu = r.multiply(V2).divide(mu);
 
@@ -209,10 +313,56 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         ex = a.multiply(f.multiply(cLv).add( g.multiply(sLv))).divide(r);
         ey = a.multiply(f.multiply(sLv).subtract(g.multiply(cLv))).divide(r);
 
+        partialPV = pvCoordinates;
+
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        }
+
+        if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
+            // we have a relevant acceleration, we can compute derivatives
+
+            final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
+            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
+            final T   aX                       = nonKeplerianAcceleration.getX();
+            final T   aY                       = nonKeplerianAcceleration.getY();
+            final T   aZ                       = nonKeplerianAcceleration.getZ();
+            aDot  = jacobian[0][3].multiply(aX).add(jacobian[0][4].multiply(aY)).add(jacobian[0][5].multiply(aZ));
+            exDot = jacobian[1][3].multiply(aX).add(jacobian[1][4].multiply(aY)).add(jacobian[1][5].multiply(aZ));
+            eyDot = jacobian[2][3].multiply(aX).add(jacobian[2][4].multiply(aY)).add(jacobian[2][5].multiply(aZ));
+            hxDot = jacobian[3][3].multiply(aX).add(jacobian[3][4].multiply(aY)).add(jacobian[3][5].multiply(aZ));
+            hyDot = jacobian[4][3].multiply(aX).add(jacobian[4][4].multiply(aY)).add(jacobian[4][5].multiply(aZ));
+
+            // in order to compute true anomaly derivative, we must compute
+            // mean anomaly derivative including Keplerian motion and convert to true anomaly
+            final T lMDot = getKeplerianMeanMotion().
+                            add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
+            final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
+            final FieldDerivativeStructure<T> lMDS = factory.build(getLM(), lMDot);
+            final FieldDerivativeStructure<T> lvDS = eccentricToTrue(meanToEccentric(lMDS, exDS, eyDS), exDS, eyDS);
+            lvDot = lvDS.getPartialDerivative(1);
+
+        } else {
+            // acceleration is either almost zero or NaN,
+            // we assume acceleration was not known
+            // we don't set up derivatives
+            aDot  = null;
+            exDot = null;
+            eyDot = null;
+            hxDot = null;
+            hyDot = null;
+            lvDot = null;
+        }
 
     }
 
-    /** Constructor from cartesian parameters.
+    /** Constructor from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
@@ -238,15 +388,28 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      */
     public FieldEquinoctialOrbit(final FieldOrbit<T> op) {
         super(op.getFrame(), op.getDate(), op.getMu());
-        a  = op.getA();
-        ex = op.getEquinoctialEx();
-        ey = op.getEquinoctialEy();
-        hx = op.getHx();
-        hy = op.getHy();
-        lv = op.getLv();
+
+        a     = op.getA();
+        ex    = op.getEquinoctialEx();
+        ey    = op.getEquinoctialEy();
+        hx    = op.getHx();
+        hy    = op.getHy();
+        lv    = op.getLv();
+
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        }
+
+        aDot  = op.getADot();
+        exDot = op.getEquinoctialExDot();
+        eyDot = op.getEquinoctialEyDot();
+        hxDot = op.getHxDot();
+        hyDot = op.getHyDot();
+        lvDot = op.getLvDot();
+
         field = a.getField();
-        zero = field.getZero();
-        one = field.getOne();
+        zero  = field.getZero();
+        one   = field.getOne();
     }
 
     /** {@inheritDoc} */
@@ -260,8 +423,18 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
+    public T getADot() {
+        return aDot;
+    }
+
+    /** {@inheritDoc} */
     public T getEquinoctialEx() {
         return ex;
+    }
+
+    /** {@inheritDoc} */
+    public T getEquinoctialExDot() {
+        return exDot;
     }
 
     /** {@inheritDoc} */
@@ -270,13 +443,82 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
+    public T getEquinoctialEyDot() {
+        return eyDot;
+    }
+
+    /** {@inheritDoc} */
     public T getHx() {
         return hx;
     }
 
     /** {@inheritDoc} */
+    public T getHxDot() {
+        return hxDot;
+    }
+
+    /** {@inheritDoc} */
     public T getHy() {
         return hy;
+    }
+
+    /** {@inheritDoc} */
+    public T getHyDot() {
+        return hyDot;
+    }
+
+    /** {@inheritDoc} */
+    public T getLv() {
+        return lv;
+    }
+
+    /** {@inheritDoc} */
+    public T getLvDot() {
+        return lvDot;
+    }
+
+    /** {@inheritDoc} */
+    public T getLE() {
+        return trueToEccentric(lv, ex, ey);
+    }
+
+    /** {@inheritDoc} */
+    public T getLEDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> lVDS = factory.build(lv, lvDot);
+        final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
+        final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
+        final FieldDerivativeStructure<T> lEDS = trueToEccentric(lVDS, exDS, eyDS);
+        return lEDS.getPartialDerivative(1);
+
+    }
+
+    /** {@inheritDoc} */
+    public T getLM() {
+        return eccentricToMean(trueToEccentric(lv, ex, ey), ex, ey);
+    }
+
+    /** {@inheritDoc} */
+    public T getLMDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> lVDS = factory.build(lv, lvDot);
+        final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
+        final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
+        final FieldDerivativeStructure<T> lMDS = eccentricToMean(trueToEccentric(lVDS, exDS, eyDS), exDS, eyDS);
+        return lMDS.getPartialDerivative(1);
+
     }
 
     /** Get the longitude argument.
@@ -289,27 +531,31 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                                                                    getLv());
     }
 
-    /** {@inheritDoc} */
-    public T getLv() {
-        return lv;
+    /** Get the longitude argument derivative.
+     * @param type type of the angle
+     * @return longitude argument derivative (rad/s)
+     */
+    public T getLDot(final PositionAngle type) {
+        return (type == PositionAngle.MEAN) ? getLMDot() :
+                                              ((type == PositionAngle.ECCENTRIC) ? getLEDot() :
+                                                                                   getLvDot());
     }
 
     /** {@inheritDoc} */
-    public T getLE() {
-        final T epsilon = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey)).sqrt();
-        final T cosLv   = lv.cos();
-        final T sinLv   = lv.sin();
-        final T num     = ey.multiply(cosLv).subtract(ex.multiply(sinLv));
-        final T den     = epsilon.add(1).add(ex.multiply(cosLv)).add(ey.multiply(sinLv));
-        return lv.add(num.divide(den).atan().multiply(2));
+    @Override
+    public boolean hasDerivatives() {
+        return aDot != null;
     }
 
     /** Computes the true longitude argument from the eccentric longitude argument.
      * @param lE = E + ω + Ω eccentric longitude argument (rad)
+     * @param ex first component of the eccentricity vector
+     * @param ey second component of the eccentricity vector
+     * @param <T> Type of the field elements
      * @return the true longitude argument
      */
-    private T eccentricToTrue(final T lE) {
-        final T epsilon = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey)).sqrt();
+    public static <T extends RealFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
+        final T epsilon = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
         final T cosLE   = lE.cos();
         final T sinLE   = lE.sin();
         final T num     = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
@@ -317,30 +563,42 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         return lE.add(num.divide(den).atan().multiply(2));
     }
 
-    /** {@inheritDoc} */
-    public T getLM() {
-        final T lE = getLE();
-
-        return lE.subtract(ex.multiply(lE.sin())).add(ey.multiply(lE.cos()));
+    /** Computes the eccentric longitude argument from the true longitude argument.
+     * @param lv = v + ω + Ω true longitude argument (rad)
+     * @param ex first component of the eccentricity vector
+     * @param ey second component of the eccentricity vector
+     * @param <T> Type of the field elements
+     * @return the eccentric longitude argument
+     */
+    public static <T extends RealFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
+        final T epsilon = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
+        final T cosLv   = lv.cos();
+        final T sinLv   = lv.sin();
+        final T num     = ey.multiply(cosLv).subtract(ex.multiply(sinLv));
+        final T den     = epsilon.add(1).add(ex.multiply(cosLv)).add(ey.multiply(sinLv));
+        return lv.add(num.divide(den).atan().multiply(2));
     }
 
     /** Computes the eccentric longitude argument from the mean longitude argument.
      * @param lM = M + ω + Ω mean longitude argument (rad)
+     * @param ex first component of the eccentricity vector
+     * @param ey second component of the eccentricity vector
+     * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
-    private T meanToEccentric(final T lM) {
+    public static <T extends RealFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
         // Generalization of Kepler equation to equinoctial parameters
         // with lE = PA + RAAN + E and
         //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
         T lE = lM;
-        T shift = zero;
-        T lEmlM = zero;
+        T shift = lM.getField().getZero();
+        T lEmlM = lM.getField().getZero();
         T cosLE = lE.cos();
         T sinLE = lE.sin();
         int iter = 0;
         do {
             final T f2 = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
-            final T f1 = one.subtract(ex.multiply(cosLE)).subtract(ey.multiply( sinLE));
+            final T f1 = ex.multiply(cosLE).add(ey.multiply(sinLE)).negate().add(1);
             final T f0 = lEmlM.subtract(f2);
 
             final T f12 = f1.multiply(2.0);
@@ -357,9 +615,87 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
     }
 
+    /** Computes the mean longitude argument from the eccentric longitude argument.
+     * @param lE = E + ω + Ω mean longitude argument (rad)
+     * @param ex first component of the eccentricity vector
+     * @param ey second component of the eccentricity vector
+     * @param <T> Type of the field elements
+     * @return the mean longitude argument
+     */
+    public static <T extends RealFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
+        return lE.subtract(ex.multiply(lE.sin())).add(ey.multiply(lE.cos()));
+    }
+
+    /** Compute position from equinoctial parameters.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param lv  v + ω + Ω true longitude argument (rad)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param <T> type of the fiels elements
+     * @return position vector
+     */
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> equinoctialToPosition(final T a, final T ex, final T ey,
+                                                                                         final T hx, final T hy, final T lv,
+                                                                                         final double mu) {
+
+        final T one  = a.getField().getOne();
+
+        // eccentric longitude argument
+        final T lE = trueToEccentric(lv, ex, ey);
+
+        // inclination-related intermediate parameters
+        final T hx2   = hx.multiply(hx);
+        final T hy2   = hy.multiply(hy);
+        final T factH = one.divide(hx2.add(1.0).add(hy2));
+
+        // reference axes defining the orbital plane
+        final T ux = hx2.add(1.0).subtract(hy2).multiply(factH);
+        final T uy = hx.multiply(hy).multiply(factH).multiply(2);
+        final T uz = hy.multiply(-2).multiply(factH);
+
+        final T vx = uy;
+        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
+        final T vz =  hx.multiply(factH).multiply(2);
+
+        // eccentricity-related intermediate parameters
+        final T ex2  = ex.multiply(ex);
+        final T exey = ex.multiply(ey);
+        final T ey2  = ey.multiply(ey);
+        final T e2   = ex2.add(ey2);
+        final T eta  = one.subtract(e2).sqrt().add(1);
+        final T beta = one.divide(eta);
+
+        // eccentric longitude argument
+        final T cLe    = lE.cos();
+        final T sLe    = lE.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final T x      = a.multiply(one.subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
+        final T y      = a.multiply(one.subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
+
+        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
+                                   x.multiply(uy).add(y.multiply(vy)),
+                                   x.multiply(uz).add(y.multiply(vz)));
+
+    }
+
     /** {@inheritDoc} */
     public T getE() {
         return ex.multiply(ex).add(ey.multiply(ey)).sqrt();
+    }
+
+    /** {@inheritDoc} */
+    public T getEDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        return ex.multiply(exDot).add(ey.multiply(eyDot)).divide(ex.multiply(ex).add(ey.multiply(ey)).sqrt());
+
     }
 
     /** {@inheritDoc} */
@@ -368,7 +704,26 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
+    public T getIDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        final T h2 = hx.multiply(hx).add(hy.multiply(hy));
+        final T h  = h2.sqrt();
+        return hx.multiply(hxDot).add(hy.multiply(hyDot)).multiply(2).divide(h.multiply(h2.add(1)));
+
+    }
+
+    /** Compute position and velocity but not acceleration.
+     */
+    private void computePVWithoutA() {
+
+        if (partialPV != null) {
+            // already computed
+            return;
+        }
 
         // get equinoctial parameters
         final T lE = getLE();
@@ -409,25 +764,110 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T ydot   = factor.multiply(cLe.subtract(beta.multiply(ex).multiply(exCeyS)));
 
         final FieldVector3D<T> position =
-            new FieldVector3D<T>(x.multiply(ux).add(y.multiply(vx)),
-                                 x.multiply(uy).add(y.multiply(vy)),
-                                 x.multiply(uz).add(y.multiply(vz)));
-        final T r2 = position.getNormSq();
+                        new FieldVector3D<T>(x.multiply(ux).add(y.multiply(vx)),
+                                        x.multiply(uy).add(y.multiply(vy)),
+                                        x.multiply(uz).add(y.multiply(vz)));
         final FieldVector3D<T> velocity =
-            new FieldVector3D<T>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
+                        new FieldVector3D<T>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
 
-        final FieldVector3D<T> acceleration = new FieldVector3D<T>(zero.add(-getMu()).divide(r2.multiply(r2.sqrt())), position);
+        partialPV = new FieldPVCoordinates<>(position, velocity);
 
-        return new TimeStampedFieldPVCoordinates<T>(getDate(), position, velocity, acceleration);
+    }
+
+    /** Compute non-Keplerian part of the acceleration from first time derivatives.
+     * <p>
+     * This method should be called only when {@link #hasDerivatives()} returns true.
+     * </p>
+     * @return non-Keplerian part of the acceleration
+     */
+    private FieldVector3D<T> nonKeplerianAcceleration() {
+
+        final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
+        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+
+        final T nonKeplerianMeanMotion = getLMDot().subtract(getKeplerianMeanMotion());
+        final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
+                                 add(dCdP[3][1].multiply(exDot)).
+                                 add(dCdP[3][2].multiply(eyDot)).
+                                 add(dCdP[3][3].multiply(hxDot)).
+                                 add(dCdP[3][4].multiply(hyDot)).
+                                 add(dCdP[3][5].multiply(nonKeplerianMeanMotion));
+        final T nonKeplerianAy =     dCdP[4][0].multiply(aDot).
+                                 add(dCdP[4][1].multiply(exDot)).
+                                 add(dCdP[4][2].multiply(eyDot)).
+                                 add(dCdP[4][3].multiply(hxDot)).
+                                 add(dCdP[4][4].multiply(hyDot)).
+                                 add(dCdP[4][5].multiply(nonKeplerianMeanMotion));
+        final T nonKeplerianAz =     dCdP[5][0].multiply(aDot).
+                                 add(dCdP[5][1].multiply(exDot)).
+                                 add(dCdP[5][2].multiply(eyDot)).
+                                 add(dCdP[5][3].multiply(hxDot)).
+                                 add(dCdP[5][4].multiply(hyDot)).
+                                 add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
+
+        return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
 
     }
 
     /** {@inheritDoc} */
+    protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
+
+        // position and velocity
+        computePVWithoutA();
+
+        // acceleration
+        final T r2 = partialPV.getPosition().getNormSq();
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
+                                                                           partialPV.getPosition());
+        final FieldVector3D<T> acceleration = hasDerivatives() ?
+                                              keplerianAcceleration.add(nonKeplerianAcceleration()) :
+                                              keplerianAcceleration;
+
+        return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
+
+    }
+
+    /** {@inheritDoc} */
+    public FieldEquinoctialOrbit<T> shiftedBy(final double dt) {
+        return shiftedBy(getDate().getField().getZero().add(dt));
+    }
+
+    /** {@inheritDoc} */
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
-        return new FieldEquinoctialOrbit<T>(a, ex, ey, hx, hy,
-                                    getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                    PositionAngle.MEAN, getFrame(),
-                                    getDate().shiftedBy(dt), getMu());
+
+        // use Keplerian-only motion
+        final FieldEquinoctialOrbit<T> keplerianShifted = new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                                                                      getLM().add(getKeplerianMeanMotion().multiply(dt)),
+                                                                                      PositionAngle.MEAN, getFrame(),
+                                                                                      getDate().shiftedBy(dt), getMu());
+
+        if (hasDerivatives()) {
+
+            // extract non-Keplerian acceleration from first time derivatives
+            final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+            // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+            keplerianShifted.computePVWithoutA();
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, keplerianShifted.partialPV.getPosition(),
+                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+            final T   fixedR2 = fixedP.getNormSq();
+            final T   fixedR  = fixedR2.sqrt();
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
+                                                                 dt, nonKeplerianAcceleration);
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+                                                                 keplerianShifted.partialPV.getPosition(),
+                                                                 one, nonKeplerianAcceleration);
+
+            // build a new orbit, taking non-Keplerian acceleration into account
+            return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(),
+                                                                                   fixedP, fixedV, fixedA),
+                                               keplerianShifted.getFrame(), keplerianShifted.getMu());
+
+        } else {
+            // Keplerian-only motion is all we can do
+            return keplerianShifted;
+        }
+
     }
 
     /** {@inheritDoc}
@@ -450,15 +890,22 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * in a thread-safe way.
      * </p>
      */
-    public FieldEquinoctialOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Collection<FieldOrbit<T>> sample) {
+    public FieldEquinoctialOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
+
+        // first pass to check if derivatives are available throughout the sample
+        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
+        boolean useDerivatives = true;
+        for (final FieldOrbit<T> orbit : list) {
+            useDerivatives = useDerivatives && orbit.hasDerivatives();
+        }
 
         // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
-        // add sample points
+        // second pass to feed interpolator
         FieldAbsoluteDate<T> previousDate = null;
-        T previousLm = zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : sample) {
+        T                    previousLm   = zero.add(Double.NaN);
+        for (final FieldOrbit<T> orbit : list) {
             final FieldEquinoctialOrbit<T> equi = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
             final T continuousLm;
             if (previousDate == null) {
@@ -470,24 +917,38 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             }
             previousDate = equi.getDate();
             previousLm   = continuousLm;
-            final T[] temp = MathArrays.buildArray(field, 6);
-            temp[0] = (T) equi.getA();
-            temp[1] = (T) equi.getEquinoctialEx();
-            temp[2] = (T) equi.getEquinoctialEy();
-            temp[3] = (T) equi.getHx();
-            temp[4] = (T) equi.getHy();
-            temp[5] = (T) continuousLm;
-            interpolator.addSamplePoint((T) equi.getDate().durationFrom(date),
-                                        temp);
+            final T[] toAdd = MathArrays.buildArray(field, 6);
+            toAdd[0] = (T) equi.getA();
+            toAdd[1] = (T) equi.getEquinoctialEx();
+            toAdd[2] = (T) equi.getEquinoctialEy();
+            toAdd[3] = (T) equi.getHx();
+            toAdd[4] = (T) equi.getHy();
+            toAdd[5] = (T) continuousLm;
+            if (useDerivatives) {
+                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
+                toAddDot[0] = equi.getADot();
+                toAddDot[1] = equi.getEquinoctialExDot();
+                toAddDot[2] = equi.getEquinoctialEyDot();
+                toAddDot[3] = equi.getHxDot();
+                toAddDot[4] = equi.getHyDot();
+                toAddDot[5] = equi.getLMDot();
+                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
+                                            toAdd, toAddDot);
+            } else {
+                interpolator.addSamplePoint((T) equi.getDate().durationFrom(date),
+                                            toAdd);
+            }
         }
 
         // interpolate
-        final T[] interpolated = interpolator.value(zero);
+        final T[][] interpolated = interpolator.derivatives(zero, 1);
 
         // build a new interpolated instance
-        return new FieldEquinoctialOrbit<T>(interpolated[0], interpolated[1], interpolated[2],
-                                    interpolated[3], interpolated[4], interpolated[5],
-                                    PositionAngle.MEAN, getFrame(), date, getMu());
+        return new FieldEquinoctialOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
+                                           interpolated[0][3], interpolated[0][4], interpolated[0][5],
+                                           interpolated[1][0], interpolated[1][1], interpolated[1][2],
+                                           interpolated[1][3], interpolated[1][4], interpolated[1][5],
+                                           PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 
@@ -497,8 +958,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T[][] jacobian = MathArrays.buildArray(field, 6, 6);
 
         // compute various intermediate parameters
-        final FieldVector3D<T> position = getPVCoordinates().getPosition();
-        final FieldVector3D<T> velocity = getPVCoordinates().getVelocity();
+        computePVWithoutA();
+        final FieldVector3D<T> position = partialPV.getPosition();
+        final FieldVector3D<T> velocity = partialPV.getVelocity();
         final T r2         = position.getNormSq();
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);
@@ -682,9 +1144,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      */
     public String toString() {
         return new StringBuffer().append("equinoctial parameters: ").append('{').
-                                  append("a: ").append(a).
-                                  append("; ex: ").append(ex).append("; ey: ").append(ey).
-                                  append("; hx: ").append(hx).append("; hy: ").append(hy).
+                                  append("a: ").append(a.getReal()).
+                                  append("; ex: ").append(ex.getReal()).append("; ey: ").append(ey.getReal()).
+                                  append("; hx: ").append(hx.getReal()).append("; hy: ").append(hy.getReal()).
                                   append("; lv: ").append(FastMath.toDegrees(lv.getReal())).
                                   append(";}").toString();
     }
@@ -707,18 +1169,26 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @since 1.2
      */
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }
 
     @Override
-    public Orbit toOrbit() {
-        return new EquinoctialOrbit(a.getReal(), ex.getReal(),
-                                    ey.getReal(), hx.getReal(),
-                                    hy.getReal(), lv.getReal(),
-                                    PositionAngle.TRUE, getFrame(), getDate().toAbsoluteDate(), getMu());
+    public EquinoctialOrbit toOrbit() {
+        if (hasDerivatives()) {
+            return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
+                                        hx.getReal(), hy.getReal(), lv.getReal(),
+                                        aDot.getReal(), exDot.getReal(), eyDot.getReal(),
+                                        hxDot.getReal(), hyDot.getReal(), lvDot.getReal(),
+                                        PositionAngle.TRUE, getFrame(),
+                                        getDate().toAbsoluteDate(), getMu());
+        } else {
+            return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
+                                        hx.getReal(), hy.getReal(), lv.getReal(),
+                                        PositionAngle.TRUE, getFrame(),
+                                        getDate().toAbsoluteDate(), getMu());
+        }
     }
 
 }

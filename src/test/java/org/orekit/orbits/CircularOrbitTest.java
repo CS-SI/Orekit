@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,7 +25,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
@@ -35,16 +42,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class CircularParametersTest {
+public class CircularOrbitTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -180,10 +191,25 @@ public class CircularParametersTest {
 
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testHyperbolic() {
-        new CircularOrbit(42166.712, 0.9, 0.5, 0.01, -0.02, 5.300,
-                          PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+    @Test
+    public void testHyperbolic1() {
+        try {
+            new CircularOrbit(42166.712, 0.9, 0.5, 0.01, -0.02, 5.300,
+                              PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+        } catch (OrekitIllegalArgumentException oe) {
+            Assert.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testHyperbolic2() {
+        Orbit orbit = new KeplerianOrbit(42166.712, 0.9, 0.5, 0.01, -0.02, 5.300,
+                                         PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+        try {
+            new CircularOrbit(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+        } catch (OrekitIllegalArgumentException oe) {
+            Assert.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
+        }
     }
 
     @Test
@@ -729,7 +755,26 @@ public class CircularParametersTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(true,
+                            397, 2.27e-8,
+                            610, 3.24e-6,
+                            4870, 115);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(false,
+                            397, 0.0372,
+                            610.0, 1.23,
+                            4870, 8869);
+    }
+
+    private void doTestInterpolation(boolean useDerivatives,
+                                     double shiftErrorWithin, double interpolationErrorWithin,
+                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
+                                     double shiftErrorFarPast, double interpolationErrorFarPast)
+        throws OrekitException {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -751,7 +796,15 @@ public class CircularParametersTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<Orbit>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                double[] stateVector = new double[6];
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be much better than Keplerian shift
@@ -765,8 +818,8 @@ public class CircularParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         > 390.0);
-        Assert.assertTrue(maxInterpolationError < 0.04);
+        Assert.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
+        Assert.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError = 0;
@@ -779,11 +832,10 @@ public class CircularParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         <  610.0);
-        Assert.assertTrue(maxInterpolationError <    1.3);
+        Assert.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
+        Assert.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
 
         // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
         maxShiftError = 0;
         maxInterpolationError = 0;
         for (double dt = 300; dt < 1000; dt += 1.0) {
@@ -794,8 +846,8 @@ public class CircularParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         < 5000.0);
-        Assert.assertTrue(maxInterpolationError > 8800.0);
+        Assert.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
+        Assert.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 
@@ -821,12 +873,299 @@ public class CircularParametersTest {
         Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
         Assert.assertEquals(orbit.getCircularEx(), deserialized.getCircularEx(), 1.0e-10);
         Assert.assertEquals(orbit.getCircularEy(), deserialized.getCircularEy(), 1.0e-10);
+        Assert.assertEquals(orbit.getI(), deserialized.getI(), 1.0e-10);
         Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assert.assertEquals(orbit.getAlphaV(), deserialized.getAlphaV(), 1.0e-10);
+        Assert.assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
+        Assert.assertTrue(Double.isNaN(orbit.getCircularExDot()) && Double.isNaN(deserialized.getCircularExDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getCircularEyDot()) && Double.isNaN(deserialized.getCircularEyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()) && Double.isNaN(deserialized.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()) && Double.isNaN(deserialized.getRightAscensionOfAscendingNodeDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getAlphaVDot()) && Double.isNaN(deserialized.getAlphaVDot()));
         Assert.assertEquals(orbit.getDate(), deserialized.getDate());
         Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
         Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
+    }
+
+    @Test
+    public void testSerializationWithDerivatives()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
+        CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 400);
+        Assert.assertTrue(bos.size() < 450);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        CircularOrbit deserialized  = (CircularOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEx(), deserialized.getCircularEx(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEy(), deserialized.getCircularEy(), 1.0e-10);
+        Assert.assertEquals(orbit.getI(), deserialized.getI(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(orbit.getAlphaV(), deserialized.getAlphaV(), 1.0e-10);
+        Assert.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularExDot(), deserialized.getCircularExDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEyDot(), deserialized.getCircularEyDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), deserialized.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getAlphaVDot(), deserialized.getAlphaVDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+
+    }
+
+    @Test
+    public void testSerializationNoPVWithDerivatives()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
+        CircularOrbit original = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+
+        // rebuild the same orbit, preserving derivatives but removing Cartesian coordinates
+        // (to check one specific path in serialization.deserialization)
+        CircularOrbit orbit = new CircularOrbit(original.getA(), original.getCircularEx(), original.getCircularEy(),
+                                                original.getI(), original.getRightAscensionOfAscendingNode(),
+                                                original.getAlphaV(),
+                                                original.getADot(), original.getCircularExDot(), original.getCircularEyDot(),
+                                                original.getIDot(), original.getRightAscensionOfAscendingNodeDot(),
+                                                original.getAlphaVDot(),
+                                                PositionAngle.TRUE, original.getFrame(),
+                                                original.getDate(), original.getMu());
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 330);
+        Assert.assertTrue(bos.size() < 380);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        CircularOrbit deserialized  = (CircularOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEx(), deserialized.getCircularEx(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEy(), deserialized.getCircularEy(), 1.0e-10);
+        Assert.assertEquals(orbit.getI(), deserialized.getI(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(orbit.getAlphaV(), deserialized.getAlphaV(), 1.0e-10);
+        Assert.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularExDot(), deserialized.getCircularExDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEyDot(), deserialized.getCircularEyDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), deserialized.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getAlphaVDot(), deserialized.getAlphaVDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+
+    }
+
+    @Test
+    public void testNonKeplerianDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final CircularOrbit orbit = new CircularOrbit(pv, frame, mu);
+
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+                            orbit.getADot(),
+                            4.3e-8);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+                            orbit.getEquinoctialExDot(),
+                            2.1e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+                            orbit.getEquinoctialEyDot(),
+                            5.4e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+                            orbit.getHxDot(),
+                            1.6e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+                            orbit.getHyDot(),
+                            7.3e-17);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+                            orbit.getLvDot(),
+                            3.4e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+                            orbit.getLEDot(),
+                            3.5e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+                            orbit.getLMDot(),
+                            5.3e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+                            orbit.getEDot(),
+                            6.8e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+                            orbit.getIDot(),
+                            5.7e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEx()),
+                            orbit.getCircularExDot(),
+                            2.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getCircularEy()),
+                            orbit.getCircularEyDot(),
+                            5.3e-17);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaV()),
+                            orbit.getAlphaVDot(),
+                            4.3e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaE()),
+                            orbit.getAlphaEDot(),
+                            1.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaM()),
+                            orbit.getAlphaMDot(),
+                            3.7e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.TRUE)),
+                            orbit.getAlphaDot(PositionAngle.TRUE),
+                            4.3e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.ECCENTRIC)),
+                            orbit.getAlphaDot(PositionAngle.ECCENTRIC),
+                            1.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.MEAN)),
+                            orbit.getAlphaDot(PositionAngle.MEAN),
+                            3.7e-15);
+
+    }
+
+    private <S extends Function<CircularOrbit, Double>>
+    double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
+        final DSFactory factory = new DSFactory(1, 1);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return picker.apply(new CircularOrbit(pv.shiftedBy(dt), frame, mu));
+            }
+        });
+        return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
+     }
+
+    @Test
+    public void testPositionAngleDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final CircularOrbit orbit = new CircularOrbit(pv, frame, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            final CircularOrbit rebuilt = new CircularOrbit(orbit.getA(),
+                                                            orbit.getCircularEx(),
+                                                            orbit.getCircularEy(),
+                                                            orbit.getI(),
+                                                            orbit.getRightAscensionOfAscendingNode(),
+                                                            orbit.getAlpha(type),
+                                                            orbit.getADot(),
+                                                            orbit.getCircularExDot(),
+                                                            orbit.getCircularEyDot(),
+                                                            orbit.getIDot(),
+                                                            orbit.getRightAscensionOfAscendingNodeDot(),
+                                                            orbit.getAlphaDot(type),
+                                                            type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
+            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
+            Assert.assertThat(rebuilt.getCircularEx(),                       relativelyCloseTo(orbit.getCircularEx(),                       1));
+            Assert.assertThat(rebuilt.getCircularEy(),                       relativelyCloseTo(orbit.getCircularEy(),                       1));
+            Assert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
+            Assert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
+            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
+            Assert.assertThat(rebuilt.getCircularExDot(),                    relativelyCloseTo(orbit.getCircularExDot(),                    1));
+            Assert.assertThat(rebuilt.getCircularEyDot(),                    relativelyCloseTo(orbit.getCircularEyDot(),                    1));
+            Assert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
+            Assert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
+            for (PositionAngle type2 : PositionAngle.values()) {
+                Assert.assertThat(rebuilt.getAlpha(type2),    relativelyCloseTo(orbit.getAlpha(type2),    1));
+                Assert.assertThat(rebuilt.getAlphaDot(type2), relativelyCloseTo(orbit.getAlphaDot(type2), 1));
+            }
+        }
+
+    }
+
+    @Test
+    public void testEquatorialRetrograde() {
+        Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
+        Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(10637829.465, orbit.getA(), 1.0e-3);
+        Assert.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
+        Assert.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
+        Assert.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
+        Assert.assertEquals(FastMath.PI, orbit.getI(), 1.0e-15);
+        Assert.assertEquals(-4.615e-5, orbit.getIDot(), 1.0e-8);
+        Assert.assertTrue(Double.isNaN(orbit.getHx()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHy()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
+    }
+
+    @Test
+    public void testDerivativesConversionSymmetry() throws OrekitException {
+        final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
+        Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
+        Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
+        Vector3D acceleration = new Vector3D(-7.460341170581685, -2.0415957334584527, 0.6393322823627762);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
+        CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                                                date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
+        Assert.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
+
+        for (OrbitType type : OrbitType.values()) {
+            Orbit converted = type.convertType(orbit);
+            Assert.assertTrue(converted.hasDerivatives());
+            CircularOrbit rebuilt = (CircularOrbit) OrbitType.CIRCULAR.convertType(converted);
+            Assert.assertTrue(rebuilt.hasDerivatives());
+            Assert.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
+            Assert.assertEquals(orbit.getCircularExDot(),                    rebuilt.getCircularExDot(),                    1.0e-15);
+            Assert.assertEquals(orbit.getCircularEyDot(),                    rebuilt.getCircularEyDot(),                    1.0e-15);
+            Assert.assertEquals(orbit.getIDot(),                             rebuilt.getIDot(),                             1.0e-15);
+            Assert.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), rebuilt.getRightAscensionOfAscendingNodeDot(), 1.0e-15);
+            Assert.assertEquals(orbit.getAlphaVDot(),                        rebuilt.getAlphaVDot(),                        1.0e-15);
+        }
+
+    }
+
+    @Test
+    public void testToString() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals("circular parameters: {a: 4.225517000282565E7, ex: 0.002082917137146049, ey: 5.173980074371024E-4, i: 0.20189257051515358, raan: -87.91788415673473, alphaV: -137.84099636616548;}",
+                            orbit.toString());
     }
 
     @Before

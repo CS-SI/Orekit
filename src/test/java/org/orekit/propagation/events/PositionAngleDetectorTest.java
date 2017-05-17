@@ -145,7 +145,7 @@ public class PositionAngleDetectorTest {
         double[] array = new double[6];
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array);
+            orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
             Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
         }
         Assert.assertEquals(15, logger.getLoggedEvents().size());

@@ -434,6 +434,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         /** Serializable UID. */
         private static final long serialVersionUID = 20160115L;
 
+        /** Factory for derivatives. */
+        private static final DSFactory FACTORY = new DSFactory(1, 2);
+
         /** Mean orbit. */
         private final CircularOrbit mean;
 
@@ -644,10 +647,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
             throws OrekitException {
 
-            final DSFactory factory = new DSFactory(1, 2);
-
             // keplerian evolution
-            final DerivativeStructure dt = factory.variable(0, date.durationFrom(mean.getDate()));
+            final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));
             final DerivativeStructure xnot = dt.multiply(xnotDot);
 
             // secular effects
@@ -666,14 +667,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
 
             // right ascension of ascending node
             final DerivativeStructure omm =
-                    factory.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
                                                            FastMath.PI),
                                   ommD * xnotDot,
                                   0.0);
 
             // latitude argument
             final DerivativeStructure xlm =
-                    factory.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
                                   aMD * xnotDot,
                                   0.0);
 

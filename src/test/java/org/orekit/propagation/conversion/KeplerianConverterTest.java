@@ -51,7 +51,7 @@ public class KeplerianConverterTest {
 
     @Test
     public void testConversionPositionOnly() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.270e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.691e-8);
     }
 
     @Test(expected = OrekitException.class)

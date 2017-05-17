@@ -48,6 +48,7 @@
       <Class name="~.*\.ShiftingTransformProvider$" />
       <Class name="~.*\.MODProvider$" />
       <Class name="~.*\.TIRFProvider$" />
+      <Class name="~.*\.CartesianOrbit$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
@@ -141,7 +142,10 @@
   </Match>
   <Match>
     <Class name="org.orekit.orbits.KeplerianOrbit"/>
-    <Method name ="eMeSinE" params="double" returns="double" />
+    <Or>
+      <Method name ="eMeSinE" params="double,double" returns="double" />
+      <Method name ="eMeSinE" params="org.hipparchus.analysis.differentiation.DerivativeStructure,org.hipparchus.analysis.differentiation.DerivativeStructure" returns="org.hipparchus.analysis.differentiation.DerivativeStructure" />
+    </Or>
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
 

@@ -19,8 +19,11 @@ package org.orekit.orbits;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -70,7 +73,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
+    private static final long serialVersionUID = 20170414L;
+
+    /** Factory for first time derivatives. */
+    private static final DSFactory FACTORY = new DSFactory(1, 1);
+
+    /** Indicator for non-Keplerian derivatives. */
+    private final transient boolean hasNonKeplerianAcceleration;
 
     /** Underlying equinoctial orbit to which high-level methods are delegated. */
     private transient EquinoctialOrbit equinoctial;
@@ -93,6 +102,7 @@ public class CartesianOrbit extends Orbit {
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvaCoordinates, frame, mu);
+        hasNonKeplerianAcceleration = hasNonKeplerianAcceleration(pvaCoordinates, mu);
         equinoctial = null;
     }
 
@@ -122,6 +132,7 @@ public class CartesianOrbit extends Orbit {
      */
     public CartesianOrbit(final Orbit op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
+        hasNonKeplerianAcceleration = op.hasDerivatives();
         if (op instanceof EquinoctialOrbit) {
             equinoctial = (EquinoctialOrbit) op;
         } else if (op instanceof CartesianOrbit) {
@@ -139,16 +150,58 @@ public class CartesianOrbit extends Orbit {
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            equinoctial = new EquinoctialOrbit(getPVCoordinates(), getFrame(), getDate(), getMu());
+            if (hasDerivatives()) {
+                // getPVCoordinates includes accelerations that will be interpreted as derivatives
+                equinoctial = new EquinoctialOrbit(getPVCoordinates(), getFrame(), getDate(), getMu());
+            } else {
+                // get rid of Keplerian acceleration so we don't assume
+                // we have derivatives when in fact we don't have them
+                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPVCoordinates().getPosition(),
+                                                                     getPVCoordinates().getVelocity()),
+                                                   getFrame(), getDate(), getMu());
+            }
         }
+    }
+
+    /** Get position with derivatives.
+     * @return position with derivatives
+     */
+    private FieldVector3D<DerivativeStructure> getPositionDS() {
+        final Vector3D p = getPVCoordinates().getPosition();
+        final Vector3D v = getPVCoordinates().getVelocity();
+        return new FieldVector3D<>(FACTORY.build(p.getX(), v.getX()),
+                                   FACTORY.build(p.getY(), v.getY()),
+                                   FACTORY.build(p.getZ(), v.getZ()));
+    }
+
+    /** Get velocity with derivatives.
+     * @return velocity with derivatives
+     */
+    private FieldVector3D<DerivativeStructure> getVelocityDS() {
+        final Vector3D v = getPVCoordinates().getVelocity();
+        final Vector3D a = getPVCoordinates().getAcceleration();
+        return new FieldVector3D<>(FACTORY.build(v.getX(), a.getX()),
+                                   FACTORY.build(v.getY(), a.getY()),
+                                   FACTORY.build(v.getZ(), a.getZ()));
     }
 
     /** {@inheritDoc} */
     public double getA() {
-        // lazy evaluation of semi-major axis
         final double r  = getPVCoordinates().getPosition().getNorm();
         final double V2 = getPVCoordinates().getVelocity().getNormSq();
         return r / (2 - r * V2 / getMu());
+    }
+
+    /** {@inheritDoc} */
+    public double getADot() {
+        if (hasDerivatives()) {
+            final DerivativeStructure r  = getPositionDS().getNorm();
+            final DerivativeStructure V2 = getVelocityDS().getNormSq();
+            final DerivativeStructure a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
+            return a.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
     }
 
     /** {@inheritDoc} */
@@ -170,8 +223,38 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getEDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> pvP   = getPositionDS();
+            final FieldVector3D<DerivativeStructure> pvV   = getVelocityDS();
+            final DerivativeStructure r       = getPositionDS().getNorm();
+            final DerivativeStructure V2      = getVelocityDS().getNormSq();
+            final DerivativeStructure rV2OnMu = r.multiply(V2).divide(getMu());
+            final DerivativeStructure a       = r.divide(rV2OnMu.negate().add(2));
+            final DerivativeStructure eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
+            final DerivativeStructure eCE     = rV2OnMu.subtract(1);
+            final DerivativeStructure e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
+            return e.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getI() {
         return Vector3D.angle(Vector3D.PLUS_K, getPVCoordinates().getMomentum());
+    }
+
+    /** {@inheritDoc} */
+    public double getIDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> momentum =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS());
+            final DerivativeStructure i = FieldVector3D.angle(Vector3D.PLUS_K, momentum);
+            return i.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
     }
 
     /** {@inheritDoc} */
@@ -181,9 +264,21 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getEquinoctialExDot() {
+        initEquinoctial();
+        return equinoctial.getEquinoctialExDot();
+    }
+
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         initEquinoctial();
         return equinoctial.getEquinoctialEy();
+    }
+
+    /** {@inheritDoc} */
+    public double getEquinoctialEyDot() {
+        initEquinoctial();
+        return equinoctial.getEquinoctialEyDot();
     }
 
     /** {@inheritDoc} */
@@ -197,6 +292,25 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getHxDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> w =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            // Check for equatorial retrograde orbit
+            final double x = w.getX().getValue();
+            final double y = w.getY().getValue();
+            final double z = w.getZ().getValue();
+            if (((x * x + y * y) == 0) && z < 0) {
+                return Double.NaN;
+            }
+            final DerivativeStructure hx = w.getY().negate().divide(w.getZ().add(1));
+            return hx.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getHy() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
@@ -207,9 +321,34 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getHyDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> w =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            // Check for equatorial retrograde orbit
+            final double x = w.getX().getValue();
+            final double y = w.getY().getValue();
+            final double z = w.getZ().getValue();
+            if (((x * x + y * y) == 0) && z < 0) {
+                return Double.NaN;
+            }
+            final DerivativeStructure hy = w.getX().divide(w.getZ().add(1));
+            return hy.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getLv() {
         initEquinoctial();
         return equinoctial.getLv();
+    }
+
+    /** {@inheritDoc} */
+    public double getLvDot() {
+        initEquinoctial();
+        return equinoctial.getLvDot();
     }
 
     /** {@inheritDoc} */
@@ -219,9 +358,26 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getLEDot() {
+        initEquinoctial();
+        return equinoctial.getLEDot();
+    }
+
+    /** {@inheritDoc} */
     public double getLM() {
         initEquinoctial();
         return equinoctial.getLM();
+    }
+
+    /** {@inheritDoc} */
+    public double getLMDot() {
+        initEquinoctial();
+        return equinoctial.getLMDot();
+    }
+
+    /** {@inheritDoc} */
+    public boolean hasDerivatives() {
+        return hasNonKeplerianAcceleration;
     }
 
     /** {@inheritDoc} */
@@ -271,7 +427,8 @@ public class CartesianOrbit extends Orbit {
         // preliminary computation
         final Vector3D pvP   = getPVCoordinates().getPosition();
         final Vector3D pvV   = getPVCoordinates().getVelocity();
-        final double r       = pvP.getNorm();
+        final double r2      = pvP.getNormSq();
+        final double r       = FastMath.sqrt(r2);
         final double rV2OnMu = r * pvV.getNormSq() / getMu();
         final double a       = getA();
         final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(getMu() * a);
@@ -307,10 +464,30 @@ public class CartesianOrbit extends Orbit {
         final double yDot   = factor * ( cTE - beta * ex * exCeyS);
 
         final Vector3D shiftedP = new Vector3D(x, u, y, v);
-        final double   r2       = x * x + y * y;
         final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
-        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
-        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        if (hasNonKeplerianAcceleration) {
+
+            // extract non-Keplerian part of the initial acceleration
+            final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                                   getMu() / (r2 * r), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final Vector3D fixedP   = new Vector3D(1, shiftedP,
+                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+            final double   fixedR2 = fixedP.getNormSq();
+            final double   fixedR  = FastMath.sqrt(fixedR2);
+            final Vector3D fixedV  = new Vector3D(1, shiftedV,
+                                                  dt, nonKeplerianAcceleration);
+            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), shiftedP,
+                                                  1, nonKeplerianAcceleration);
+
+            return new PVCoordinates(fixedP, fixedV, fixedA);
+
+        } else {
+            // don't include acceleration,
+            // so the shifted orbit is not considered to have derivatives
+            return new PVCoordinates(shiftedP, shiftedV);
+        }
 
     }
 
@@ -324,7 +501,8 @@ public class CartesianOrbit extends Orbit {
         final Vector3D pvP   = pv.getPosition();
         final Vector3D pvV   = pv.getVelocity();
         final Vector3D pvM   = pv.getMomentum();
-        final double r       = pvP.getNorm();
+        final double r2      = pvP.getNormSq();
+        final double r       = FastMath.sqrt(r2);
         final double rV2OnMu = r * pvV.getNormSq() / getMu();
         final double a       = getA();
         final double muA     = getMu() * a;
@@ -359,10 +537,30 @@ public class CartesianOrbit extends Orbit {
         final double yDot   =  factor * sE2m1 * cH;
 
         final Vector3D shiftedP = new Vector3D(x, p, y, q);
-        final double   r2       = x * x + y * y;
         final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
-        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
-        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        if (hasNonKeplerianAcceleration) {
+
+            // extract non-Keplerian part of the initial acceleration
+            final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                                   getMu() / (r2 * r), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final Vector3D fixedP   = new Vector3D(1, shiftedP,
+                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+            final double   fixedR2 = fixedP.getNormSq();
+            final double   fixedR  = FastMath.sqrt(fixedR2);
+            final Vector3D fixedV  = new Vector3D(1, shiftedV,
+                                                  dt, nonKeplerianAcceleration);
+            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), shiftedP,
+                                                  1, nonKeplerianAcceleration);
+
+            return new PVCoordinates(fixedP, fixedV, fixedA);
+
+        } else {
+            // don't include acceleration,
+            // so the shifted orbit is not considered to have derivatives
+            return new PVCoordinates(shiftedP, shiftedV);
+        }
 
     }
 
@@ -459,32 +657,31 @@ public class CartesianOrbit extends Orbit {
                                             iter);
     }
 
-    @Override
-    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+    /** Create a 6x6 identity matrix.
+     * @return 6x6 identity matrix
+     */
+    private double[][] create6x6Identity() {
         // this is the fastest way to set the 6x6 identity matrix
+        final double[][] identity = new double[6][6];
         for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                jacobian[i][j] = 0;
-            }
-            jacobian[i][i] = 1;
+            identity[i][i] = 1.0;
         }
+        return identity;
     }
 
     @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
+
     @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
 
     @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
 
     /** {@inheritDoc} */
@@ -532,7 +729,7 @@ public class CartesianOrbit extends Orbit {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
+        private static final long serialVersionUID = 20170414L;
 
         /** Double values. */
         private double[] d;
@@ -551,12 +748,20 @@ public class CartesianOrbit extends Orbit {
             final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
             final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
 
-            this.d = new double[] {
-                epoch, offset, orbit.getMu(),
-                pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-            };
+            if (orbit.hasDerivatives()) {
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
+                    pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ()
+                };
+            } else {
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ()
+                };
+            }
 
             this.frame = orbit.getFrame();
 
@@ -566,11 +771,20 @@ public class CartesianOrbit extends Orbit {
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
-            return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                   new Vector3D(d[3], d[ 4], d[ 5]),
-                                                                   new Vector3D(d[6], d[ 7], d[ 8]),
-                                                                   new Vector3D(d[9], d[10], d[11])),
-                                      frame, d[2]);
+            if (d.length >= 12) {
+                // we have derivatives
+                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                       new Vector3D(d[3], d[ 4], d[ 5]),
+                                                                       new Vector3D(d[6], d[ 7], d[ 8]),
+                                                                       new Vector3D(d[9], d[10], d[11])),
+                                          frame, d[2]);
+            } else {
+                // we don't have derivatives
+                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                       new Vector3D(d[3], d[ 4], d[ 5]),
+                                                                       new Vector3D(d[6], d[ 7], d[ 8])),
+                                          frame, d[2]);
+            }
         }
 
     }

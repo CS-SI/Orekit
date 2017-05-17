@@ -404,9 +404,9 @@ public class RangeTest {
 
         // Finite differences reference values
         refErrorsPMedian = 1.2e-09;
-        refErrorsPMean   = 8.1e-09;
-        refErrorsPMax    = 3.6e-07;
-        refErrorsVMedian = 3.1e-04;
+        refErrorsPMean   = 8.7e-09;
+        refErrorsPMax    = 3.7e-07;
+        refErrorsVMedian = 3.3e-04;
         refErrorsVMean   = 1.7e-03;
         refErrorsVMax    = 8.1e-02;
 
@@ -562,7 +562,7 @@ public class RangeTest {
         double refErrorsMedian, refErrorsMean, refErrorsMax;
 
         // Numeric references
-        refErrorsMedian = 8.7e-11;
+        refErrorsMedian = 9.4e-11;
         refErrorsMean   = 3.4e-10;
         refErrorsMax    = 1.3e-08;
 

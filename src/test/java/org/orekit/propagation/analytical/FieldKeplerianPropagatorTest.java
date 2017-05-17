@@ -42,10 +42,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldPropagator;
@@ -72,6 +74,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class FieldKeplerianPropagatorTest {
@@ -147,6 +150,11 @@ public class FieldKeplerianPropagatorTest {
     @Test
     public void testMu() throws OrekitException, ClassNotFoundException, IOException{
         doTestMu(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testNoDerivatives() throws OrekitException {
+        doTestNoDerivatives(Decimal64Field.getInstance());
     }
 
     @Test(expected = OrekitException.class)
@@ -730,6 +738,86 @@ public class FieldKeplerianPropagatorTest {
         FieldPVCoordinates<T> pvWithMu1 = new FieldKeplerianPropagator<T>(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
         Assert.assertEquals(0.026054, FieldVector3D.distance(pv1.getPosition(), pv2.getPosition()).getReal(),       1.0e-6);
         Assert.assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
+    }
+
+    private <T extends RealFieldElement<T>> void doTestNoDerivatives(Field<T> field) throws OrekitException {
+        T zero = field.getZero();
+        for (OrbitType type : OrbitType.values()) {
+
+            // create an initial orbit with non-Keplerian acceleration
+            final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, 2003, 9, 16, TimeScalesFactory.getUTC());
+            final FieldVector3D<T>     position     = new FieldVector3D<>(zero.add(-6142438.668),
+                                                                          zero.add(3492467.56),
+                                                                          zero.add(-25767.257));
+            final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(505.848),
+                                                                          zero.add(942.781),
+                                                                          zero.add(7435.922));
+            final FieldVector3D<T>     keplerAcceleration = new FieldVector3D<>(position.getNormSq().reciprocal().multiply(-mu),
+                                                                               position.normalize());
+            final FieldVector3D<T>     nonKeplerAcceleration = new FieldVector3D<>(zero.add(0.001),
+                                                                                   zero.add(0.002),
+                                                                                   zero.add(0.003));
+            final FieldVector3D<T>     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
+            final TimeStampedFieldPVCoordinates<T> pva = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
+            final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), mu));
+            Assert.assertEquals(type, initial.getType());
+
+            // the derivatives are available at this stage
+            checkDerivatives(initial, true);
+
+            FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initial);
+            Assert.assertEquals(type, propagator.getInitialState().getOrbit().getType());
+
+            // non-Keplerian derivatives are explicitly removed when building the Keplerian-only propagator
+            checkDerivatives(propagator.getInitialState().getOrbit(), false);
+
+            FieldPVCoordinates<T> initPV = propagator.getInitialState().getOrbit().getPVCoordinates();
+            Assert.assertEquals(nonKeplerAcceleration.getNorm().getReal(),
+                                FieldVector3D.distance(acceleration, initPV.getAcceleration()).getReal(),
+                                2.0e-15);
+            Assert.assertEquals(0.0,
+                                FieldVector3D.distance(keplerAcceleration, initPV.getAcceleration()).getReal(),
+                                5.0e-15);
+
+            T dt = initial.getKeplerianPeriod().multiply(0.2);
+            FieldOrbit<T> orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt));
+            Assert.assertEquals(type, orbit.getType());
+
+            // at the end, we don't have non-Keplerian derivatives
+            checkDerivatives(orbit, false);
+
+            // using shiftedBy on the initial orbit, non-Keplerian derivatives would have been preserved
+            checkDerivatives(initial.shiftedBy(dt), true);
+
+        }
+    }
+
+    private <T extends RealFieldElement<T>> void checkDerivatives(final FieldOrbit<T> orbit,
+                                                                  final boolean expectedDerivatives) {
+        Assert.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        if (expectedDerivatives) {
+            Assert.assertNotNull(orbit.getADot());
+            Assert.assertNotNull(orbit.getEquinoctialExDot());
+            Assert.assertNotNull(orbit.getEquinoctialEyDot());
+            Assert.assertNotNull(orbit.getHxDot());
+            Assert.assertNotNull(orbit.getHyDot());
+            Assert.assertNotNull(orbit.getLEDot());
+            Assert.assertNotNull(orbit.getLvDot());
+            Assert.assertNotNull(orbit.getLMDot());
+            Assert.assertNotNull(orbit.getEDot());
+            Assert.assertNotNull(orbit.getIDot());
+        } else {
+            Assert.assertNull(orbit.getADot());
+            Assert.assertNull(orbit.getEquinoctialExDot());
+            Assert.assertNull(orbit.getEquinoctialEyDot());
+            Assert.assertNull(orbit.getHxDot());
+            Assert.assertNull(orbit.getHyDot());
+            Assert.assertNull(orbit.getLEDot());
+            Assert.assertNull(orbit.getLvDot());
+            Assert.assertNull(orbit.getLMDot());
+            Assert.assertNull(orbit.getEDot());
+            Assert.assertNull(orbit.getIDot());
+        }
     }
 
     private <T extends RealFieldElement<T>> T tangLEmLv(T Lv,T ex,T ey){

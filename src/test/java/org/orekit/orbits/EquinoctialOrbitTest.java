@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,7 +25,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
@@ -41,10 +48,12 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class EquinoctialParametersTest {
+public class EquinoctialOrbitTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -746,7 +755,26 @@ public class EquinoctialParametersTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(true,
+                            397, 1.28e-8,
+                            610, 3.95e-6,
+                            4870, 115);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(false,
+                            397, 0.0372,
+                            610.0, 1.23,
+                            4879, 8871);
+    }
+
+    private void doTestInterpolation(boolean useDerivatives,
+                                     double shiftErrorWithin, double interpolationErrorWithin,
+                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
+                                     double shiftErrorFarPast, double interpolationErrorFarPast)
+        throws OrekitException {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -768,7 +796,15 @@ public class EquinoctialParametersTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<Orbit>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                double[] stateVector = new double[6];
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be much better than Keplerian shift
@@ -782,8 +818,8 @@ public class EquinoctialParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         > 390.0);
-        Assert.assertTrue(maxInterpolationError < 0.04);
+        Assert.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
+        Assert.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError = 0;
@@ -796,8 +832,8 @@ public class EquinoctialParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         <  610.0);
-        Assert.assertTrue(maxInterpolationError < 1.3);
+        Assert.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
+        Assert.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
 
         // far past sample end, interpolation should become really wrong
         // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
@@ -811,8 +847,8 @@ public class EquinoctialParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         < 5000.0);
-        Assert.assertTrue(maxInterpolationError > 8800.0);
+        Assert.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
+        Assert.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 
@@ -829,8 +865,8 @@ public class EquinoctialParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size() > 250);
-        Assert.assertTrue(bos.size() < 350);
+        Assert.assertTrue(bos.size() > 280);
+        Assert.assertTrue(bos.size() < 330);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -841,10 +877,230 @@ public class EquinoctialParametersTest {
         Assert.assertEquals(orbit.getHx(), deserialized.getHx(), 1.0e-10);
         Assert.assertEquals(orbit.getHy(), deserialized.getHy(), 1.0e-10);
         Assert.assertEquals(orbit.getLv(), deserialized.getLv(), 1.0e-10);
+        Assert.assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()) && Double.isNaN(deserialized.getEquinoctialExDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()) && Double.isNaN(deserialized.getEquinoctialEyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()) && Double.isNaN(deserialized.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()) && Double.isNaN(deserialized.getHyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLvDot()) && Double.isNaN(deserialized.getLvDot()));
         Assert.assertEquals(orbit.getDate(), deserialized.getDate());
         Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
         Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
+    }
+
+    @Test
+    public void testSerializationWithDerivatives()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 330);
+        Assert.assertTrue(bos.size() < 380);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        EquinoctialOrbit deserialized  = (EquinoctialOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getEquinoctialEx(), deserialized.getEquinoctialEx(), 1.0e-10);
+        Assert.assertEquals(orbit.getEquinoctialEy(), deserialized.getEquinoctialEy(), 1.0e-10);
+        Assert.assertEquals(orbit.getHx(), deserialized.getHx(), 1.0e-10);
+        Assert.assertEquals(orbit.getHy(), deserialized.getHy(), 1.0e-10);
+        Assert.assertEquals(orbit.getLv(), deserialized.getLv(), 1.0e-10);
+        Assert.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
+        Assert.assertEquals(orbit.getEquinoctialExDot(), deserialized.getEquinoctialExDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getEquinoctialEyDot(), deserialized.getEquinoctialEyDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getHxDot(), deserialized.getHxDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getHyDot(), deserialized.getHyDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getLvDot(), deserialized.getLvDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+
+    }
+
+    @Test
+    public void testNonKeplerianDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
+
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+                            orbit.getADot(),
+                            4.3e-8);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+                            orbit.getEquinoctialExDot(),
+                            2.1e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+                            orbit.getEquinoctialEyDot(),
+                            5.3e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+                            orbit.getHxDot(),
+                            4.4e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+                            orbit.getHyDot(),
+                            1.5e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+                            orbit.getLvDot(),
+                            1.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+                            orbit.getLEDot(),
+                            7.7e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+                            orbit.getLMDot(),
+                            8.8e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+                            orbit.getEDot(),
+                            6.9e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+                            orbit.getIDot(),
+                            3.5e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.TRUE)),
+                            orbit.getLDot(PositionAngle.TRUE),
+                            1.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.ECCENTRIC)),
+                            orbit.getLDot(PositionAngle.ECCENTRIC),
+                            7.7e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngle.MEAN)),
+                            orbit.getLDot(PositionAngle.MEAN),
+                            8.8e-16);
+
+    }
+
+    private <S extends Function<EquinoctialOrbit, Double>>
+    double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
+        final DSFactory factory = new DSFactory(1, 1);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return picker.apply(new EquinoctialOrbit(pv.shiftedBy(dt), frame, mu));
+            }
+        });
+        return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
+     }
+
+    @Test
+    public void testPositionAngleDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            final EquinoctialOrbit rebuilt = new EquinoctialOrbit(orbit.getA(),
+                                                            orbit.getEquinoctialEx(),
+                                                            orbit.getEquinoctialEy(),
+                                                            orbit.getHx(),
+                                                            orbit.getHy(),
+                                                            orbit.getL(type),
+                                                            orbit.getADot(),
+                                                            orbit.getEquinoctialExDot(),
+                                                            orbit.getEquinoctialEyDot(),
+                                                            orbit.getHxDot(),
+                                                            orbit.getHyDot(),
+                                                            orbit.getLDot(type),
+                                                            type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
+            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                1));
+            Assert.assertThat(rebuilt.getEquinoctialEx(),                    relativelyCloseTo(orbit.getEquinoctialEx(),    1));
+            Assert.assertThat(rebuilt.getEquinoctialEy(),                    relativelyCloseTo(orbit.getEquinoctialEy(),    1));
+            Assert.assertThat(rebuilt.getHx(),                               relativelyCloseTo(orbit.getHx(),               1));
+            Assert.assertThat(rebuilt.getHy(),                               relativelyCloseTo(orbit.getHy(),               1));
+            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),             1));
+            Assert.assertThat(rebuilt.getEquinoctialExDot(),                 relativelyCloseTo(orbit.getEquinoctialExDot(), 1));
+            Assert.assertThat(rebuilt.getEquinoctialEyDot(),                 relativelyCloseTo(orbit.getEquinoctialEyDot(), 1));
+            Assert.assertThat(rebuilt.getHxDot(),                            relativelyCloseTo(orbit.getHxDot(),            1));
+            Assert.assertThat(rebuilt.getHyDot(),                            relativelyCloseTo(orbit.getHyDot(),            1));
+            for (PositionAngle type2 : PositionAngle.values()) {
+                Assert.assertThat(rebuilt.getL(type2),    relativelyCloseTo(orbit.getL(type2),    1));
+                Assert.assertThat(rebuilt.getLDot(type2), relativelyCloseTo(orbit.getLDot(type2), 1));
+            }
+        }
+
+    }
+
+    @Test
+    public void testEquatorialRetrograde() {
+        Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
+        Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        // we use an intermediate Keplerian orbit so eccentricity can be computed
+        // when using directly PV, eccentricity ends up in NaN, due to the way computation is organized
+        // this is not really considered a problem as anyway retrograde equatorial cannot be fully supported
+        EquinoctialOrbit orbit = new EquinoctialOrbit(new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu));
+        Assert.assertEquals(10637829.465, orbit.getA(), 1.0e-3);
+        Assert.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
+        Assert.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
+        Assert.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
+        Assert.assertTrue(Double.isNaN(orbit.getI()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHx()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHy()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
+    }
+
+    @Test
+    public void testDerivativesConversionSymmetry() throws OrekitException {
+        final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
+        Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
+        Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
+        Vector3D acceleration = new Vector3D(-7.460341170581685, -2.0415957334584527, 0.6393322823627762);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                                                      date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
+        Assert.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
+
+        for (OrbitType type : OrbitType.values()) {
+            Orbit converted = type.convertType(orbit);
+            Assert.assertTrue(converted.hasDerivatives());
+            EquinoctialOrbit rebuilt = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(converted);
+            Assert.assertTrue(rebuilt.hasDerivatives());
+            Assert.assertEquals(orbit.getADot(),             rebuilt.getADot(),             3.0e-13);
+            Assert.assertEquals(orbit.getEquinoctialExDot(), rebuilt.getEquinoctialExDot(), 1.0e-15);
+            Assert.assertEquals(orbit.getEquinoctialEyDot(), rebuilt.getEquinoctialEyDot(), 1.0e-15);
+            Assert.assertEquals(orbit.getHxDot(),            rebuilt.getHxDot(),            1.0e-15);
+            Assert.assertEquals(orbit.getHyDot(),            rebuilt.getHyDot(),            1.0e-15);
+            Assert.assertEquals(orbit.getLvDot(),            rebuilt.getLvDot(),            1.0e-15);
+        }
+
+    }
+
+    @Test
+    public void testToString() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
+                            orbit.toString());
     }
 
     @Before

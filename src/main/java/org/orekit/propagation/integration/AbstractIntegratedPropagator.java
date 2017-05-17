@@ -460,6 +460,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                             stateMapper.mapArrayToState(stateMapper.mapDoubleToDate(mathFinalState.getTime(),
                                                                                     tEnd),
                                                         mathFinalState.getPrimaryState(),
+                                                        mathFinalState.getPrimaryDerivative(),
                                                         meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -495,7 +496,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         // retrieve initial state
         final double[] primary  = new double[getBasicDimension()];
-        stateMapper.mapStateToArray(initialState, primary);
+        stateMapper.mapStateToArray(initialState, primary, null);
 
         // secondary part of the ODE
         final double[][] secondary = new double[additionalEquations.size()][];
@@ -577,14 +578,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Get a complete state with all additional equations.
      * @param t current value of the independent <I>time</I> variable
      * @param y array containing the current value of the state vector
+     * @param yDot array containing the current value of the state vector derivative
      * @return complete state
      * @exception OrekitException if state cannot be mapped
      */
-    private SpacecraftState getCompleteState(final double t, final double[] y)
+    private SpacecraftState getCompleteState(final double t, final double[] y, final double[] yDot)
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, true);  //not sure of the mean orbit, should be true
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, true);  //not sure of the mean orbit, should be true
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -655,7 +657,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
                 // update space dynamics view
                 // use only ODE elements
-                SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, true);
+                SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
                 main.init(initialState, target);
@@ -674,7 +676,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 // update space dynamics view
                 // use only ODE elements
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, true);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -720,7 +722,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 // update space dynamics view
                 // the state contains only the ODE elements
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, true);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -773,7 +775,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final ODEStateAndDerivative s0, final double t) {
             try {
 
-                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState()),
+                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
                               stateMapper.mapDoubleToDate(t));
                 this.lastT = Double.NaN;
                 this.lastG = Double.NaN;
@@ -788,7 +790,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
                 if (!Precision.equals(lastT, s.getTime(), 0)) {
                     lastT = s.getTime();
-                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState()));
+                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
                 }
                 return lastG;
             } catch (OrekitException oe) {
@@ -801,7 +803,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                             s.getCompleteState()),
+                                                                                             s.getCompleteState(),
+                                                                                             s.getCompleteDerivative()),
                                                                             increasing);
 
                 switch (whatNext) {
@@ -823,12 +826,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public ODEState resetState(final ODEStateAndDerivative s) {
             try {
 
-                final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState());
+                final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
                 final SpacecraftState newState = detector.resetState(oldState);
 
                 // main part
                 final double[] primary    = new double[s.getPrimaryStateDimension()];
-                stateMapper.mapStateToArray(newState, primary);
+                stateMapper.mapStateToArray(newState, primary, null);
 
                 // secondary part
                 final double[][] secondary    = new double[additionalEquations.size()][];
@@ -875,7 +878,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
             try {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState()),
+                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
                              stateMapper.mapDoubleToDate(t));
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -942,6 +945,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             SpacecraftState s =
                             stateMapper.mapArrayToState(os.getTime(),
                                                         os.getPrimaryState(),
+                                                        os.getPrimaryDerivative(),
                                                         meanOrbit);
             s = updateAdditionalStates(s);
             for (int i = 0; i < additionalEquations.size(); ++i) {

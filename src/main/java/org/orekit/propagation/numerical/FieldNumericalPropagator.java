@@ -306,7 +306,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         }
 
         /** {@inheritDoc} */
-        public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final boolean meanOnly)
+        public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
+                                                       final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -314,14 +315,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             if (mass.getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
-            final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, super.getPositionAngleType(), date, getMu(), getFrame());
+            final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
             final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
             return new FieldSpacecraftState<T>(orbit, attitude, mass);
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y) {
-            super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y);
+        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot) {
+            super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
             y[6] = state.getMass();
         }
 
