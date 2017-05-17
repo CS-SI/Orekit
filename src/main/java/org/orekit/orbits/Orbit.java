@@ -462,10 +462,12 @@ public abstract class Orbit
 
     /** Get a time-shifted orbit.
      * <p>
-     * The orbit can be slightly shifted to close dates. This shift is based on
-     * a simple Keplerian model. It is <em>not</em> intended as a replacement
-     * for proper orbit and attitude propagation but should be sufficient for
-     * small time shifts or coarse accuracy.
+     * The orbit can be slightly shifted to close dates. The shifting model is a
+     * Keplerian one if no derivatives are available in the orbit, or Keplerian
+     * plus quadratic effect of the non-Keplerian acceleration if derivatives are
+     * available. Shifting is <em>not</em> intended as a replacement for proper
+     * orbit propagation but should be sufficient for small time shifts or coarse
+     * accuracy.
      * </p>
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)

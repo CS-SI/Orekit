@@ -25,9 +25,12 @@
         Added derivatives to orbits computed from non-Keplerian models, and use
         these derivatives when available. This improves shiftedBy() accuracy,
         and as a consequence also the accuracy of EventShifter. As example, when
-        comparing shiftedBy and Eckstein-Hechler model, previously shifted position
-        errors were 30m after 60s, 100m after 120s and 600m after 300s, now the
-        shifted position errors are 2m after 60s, 12m after 120s and 170m after 300s.
+        comparing shiftedBy and numerical model on a low Earth Sun Synchronous Orbit,
+        with a 20x20 gravity field, Sun and Moon third bodies attractions, drag and
+        solar radiation pressure, shifted position errors without derivatives are 18m
+        after 60s, 72m after 120s, 447m after 300s; 1601m after 600s and 3141m after
+        900s, whereas the shifted position errors with derivatives are 1.1m after 60s,
+        9.1m after 120s, 140m after 300s; 1067m after 600s and 3307m after 900s.
       </action>
       <action dev="luc" type="fix">
         Preserved non-Keplerian acceleration in spacecraft state when computed from numerical propagator.
