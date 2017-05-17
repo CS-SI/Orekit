@@ -1187,6 +1187,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
+    public FieldKeplerianOrbit<T> shiftedBy(final double dt) {
+        return shiftedBy(getDate().getField().getZero().add(dt));
+    }
+
+    /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion

@@ -32,6 +32,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -54,7 +56,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class FieldAttitude<T extends RealFieldElement<T>> implements FieldTimeInterpolable<FieldAttitude<T>, T> {
+public class FieldAttitude<T extends RealFieldElement<T>>
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T>, FieldTimeInterpolable<FieldAttitude<T>, T> {
 
 
     /** Reference frame. */
@@ -122,6 +125,19 @@ public class FieldAttitude<T extends RealFieldElement<T>> implements FieldTimeIn
                                                   field.getZero().add(acceleration.getZ()))));
     }
 
+    /** Get a time-shifted attitude.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a linear extrapolation for attitude taking the spin rate into account.
+     * It is <em>not</em> intended as a replacement for proper attitude propagation
+     * but should be sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new attitude, shifted with respect to the instance (which is immutable)
+     */
+    public FieldAttitude<T> shiftedBy(final double dt) {
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
+    }
 
     /** Get a time-shifted attitude.
      * <p>
@@ -134,7 +150,7 @@ public class FieldAttitude<T extends RealFieldElement<T>> implements FieldTimeIn
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public FieldAttitude<T> shiftedBy(final T dt) {
-        return new FieldAttitude<T>(referenceFrame, orientation.shiftedBy(dt));
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
     }
 
     /** Get a similar attitude with a specific reference frame.

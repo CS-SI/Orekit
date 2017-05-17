@@ -34,6 +34,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -63,7 +65,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
  */
-public abstract class FieldOrbit<T extends RealFieldElement<T>> implements FieldPVCoordinatesProvider<T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
+public abstract class FieldOrbit<T extends RealFieldElement<T>>
+    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;

@@ -1007,6 +1007,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
+    public FieldCircularOrbit<T> shiftedBy(final double dt) {
+        return shiftedBy(getDate().getField().getZero().add(dt));
+    }
+
+    /** {@inheritDoc} */
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
 
         // use Keplerian-only motion

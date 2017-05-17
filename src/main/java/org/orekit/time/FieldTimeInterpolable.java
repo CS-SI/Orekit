@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitException;
 
 /** This interface represents objects that can be interpolated in time.
  * @param <T> Type of the object.
+ * @param <KK> type of the field elements
  * @author Luc Maisonobe
  */
 public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, KK extends RealFieldElement<KK>> {

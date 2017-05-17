@@ -430,6 +430,11 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
+    public FieldCartesianOrbit<T> shiftedBy(final double dt) {
+        return shiftedBy(getDate().getField().getZero().add(dt));
+    }
+
+    /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> shiftedPV = (getA().getReal() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
         return new FieldCartesianOrbit<T>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());

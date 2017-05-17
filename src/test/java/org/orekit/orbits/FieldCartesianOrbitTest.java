@@ -694,7 +694,7 @@ public class FieldCartesianOrbitTest {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
             FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
-                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
+                                                                 initialOrbit.shiftedBy(dt.getReal()).getPVCoordinates());
             FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<T>(propagated,
                                                                  initialOrbit.interpolate(t, sample).getPVCoordinates());
             maxShiftPError                   = FastMath.max(maxShiftPError,

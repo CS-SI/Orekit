@@ -1332,7 +1332,7 @@ public class FieldKeplerianOrbitTest {
         double maxInterpolationEccentricityError = 0;
         for (double dt = 0; dt < 241.0; dt += 1.0) {
             FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getPVCoordinates().getPosition();
+            FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagatedP   = propagator.propagate(t).getPVCoordinates().getPosition();
             T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
