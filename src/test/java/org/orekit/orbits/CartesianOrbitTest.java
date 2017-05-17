@@ -515,7 +515,25 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(true,
+                            394, 2.15e-8, 3.21, 1.39e-9,
+                            2474, 6842, 6.55, 186);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(false,
+                            394, 2.61, 3.21, 0.154,
+                            2474, 2.28e12, 6.55, 6.22e10);
+    }
+
+    private void doTestInterpolation(boolean useDerivatives,
+                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
+                                     double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
+                                     double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
+                                     double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
+        throws OrekitException {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -529,7 +547,7 @@ public class CartesianOrbitTest {
         final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
         final CartesianOrbit initialOrbit = new CartesianOrbit(new PVCoordinates(position, velocity),
-                                                              FramesFactory.getEME2000(), date, ehMu);
+                                                               FramesFactory.getEME2000(), date, ehMu);
 
         EcksteinHechlerPropagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
@@ -537,11 +555,19 @@ public class CartesianOrbitTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<Orbit>();
         for (double dt = 0; dt < 251.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                double[] stateVector = new double[6];
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be much better than Keplerian shift
-        // this is bacause we take the full non-Keplerian acceleration into account in
+        // this is because we take the full non-Keplerian acceleration into account in
         // the Cartesian parameters, which in this case is preserved by the
         // Eckstein-Hechler propagator
         double maxShiftPError = 0;
@@ -564,10 +590,10 @@ public class CartesianOrbitTest {
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
                                                             interpolationError.getVelocity().getNorm());
         }
-        Assert.assertTrue(maxShiftPError         > 390.0);
-        Assert.assertTrue(maxInterpolationPError < 3.0e-8);
-        Assert.assertTrue(maxShiftVError         > 3.0);
-        Assert.assertTrue(maxInterpolationVError < 2.0e-9);
+        Assert.assertEquals(shiftPositionErrorWithin,         maxShiftPError,         0.01 * shiftPositionErrorWithin);
+        Assert.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError, 0.01 * interpolationPositionErrorWithin);
+        Assert.assertEquals(shiftVelocityErrorWithin,         maxShiftVError,         0.01 * shiftVelocityErrorWithin);
+        Assert.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError, 0.01 * interpolationVelocityErrorWithin);
 
         // if we go far past sample end, interpolation becomes worse than Keplerian shift
         maxShiftPError = 0;
@@ -590,10 +616,10 @@ public class CartesianOrbitTest {
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
                                                             interpolationError.getVelocity().getNorm());
         }
-        Assert.assertTrue(maxShiftPError         < 2500.0);
-        Assert.assertTrue(maxInterpolationPError > 6000.0);
-        Assert.assertTrue(maxShiftVError         <    7.0);
-        Assert.assertTrue(maxInterpolationVError >  170.0);
+        Assert.assertEquals(shiftPositionErrorFarPast,         maxShiftPError,         0.01 * shiftPositionErrorFarPast);
+        Assert.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError, 0.01 * interpolationPositionErrorFarPast);
+        Assert.assertEquals(shiftVelocityErrorFarPast,         maxShiftVError,         0.01 * shiftVelocityErrorFarPast);
+        Assert.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError, 0.01 * interpolationVelocityErrorFarPast);
 
     }
 

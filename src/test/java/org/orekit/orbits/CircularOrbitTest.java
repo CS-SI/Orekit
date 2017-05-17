@@ -755,7 +755,26 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(true,
+                            397, 2.27e-8,
+                            610, 3.24e-6,
+                            4870, 115);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(false,
+                            397, 0.0372,
+                            610.0, 1.23,
+                            4870, 8869);
+    }
+
+    private void doTestInterpolation(boolean useDerivatives,
+                                     double shiftErrorWithin, double interpolationErrorWithin,
+                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
+                                     double shiftErrorFarPast, double interpolationErrorFarPast)
+        throws OrekitException {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -777,7 +796,15 @@ public class CircularOrbitTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<Orbit>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                double[] stateVector = new double[6];
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be much better than Keplerian shift
@@ -791,8 +818,8 @@ public class CircularOrbitTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         > 390.0);
-        Assert.assertTrue(maxInterpolationError < 0.04);
+        Assert.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
+        Assert.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError = 0;
@@ -805,11 +832,10 @@ public class CircularOrbitTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         <  610.0);
-        Assert.assertTrue(maxInterpolationError <    1.3);
+        Assert.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
+        Assert.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
 
         // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
         maxShiftError = 0;
         maxInterpolationError = 0;
         for (double dt = 300; dt < 1000; dt += 1.0) {
@@ -820,8 +846,8 @@ public class CircularOrbitTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         < 5000.0);
-        Assert.assertTrue(maxInterpolationError > 8800.0);
+        Assert.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
+        Assert.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 

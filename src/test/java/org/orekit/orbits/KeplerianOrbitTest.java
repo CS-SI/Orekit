@@ -948,7 +948,25 @@ public class KeplerianOrbitTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(true,
+                            397, 4.01, 4.75e-4, 1.28e-7,
+                            2159, 1.05e7, 1.19e-3, 0.773);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(false,
+                            397, 62.0, 4.75e-4, 2.87e-6,
+                            2159, 79365, 1.19e-3, 3.89e-3);
+    }
+
+    private void doTestInterpolation(boolean useDerivatives,
+                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
+                                     double shiftEccentricityErrorWithin, double interpolationEccentricityErrorWithin,
+                                     double shiftPositionErrorSlightlyPast, double interpolationPositionErrorSlightlyPast,
+                                     double shiftEccentricityErrorSlightlyPast, double interpolationEccentricityErrorSlightlyPast)
+        throws OrekitException {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -970,7 +988,15 @@ public class KeplerianOrbitTest {
         // set up a 5 points sample
         List<Orbit> sample = new ArrayList<Orbit>();
         for (double dt = 0; dt < 300.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                double[] stateVector = new double[6];
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be slightly better than Keplerian shift
@@ -993,10 +1019,10 @@ public class KeplerianOrbitTest {
             maxShiftEccentricityError = FastMath.max(maxShiftEccentricityError, FastMath.abs(shiftedE - propagatedE));
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
-        Assert.assertTrue(maxShiftPositionError             > 390.0);
-        Assert.assertTrue(maxInterpolationPositionError     < 62.0);
-        Assert.assertTrue(maxShiftEccentricityError         > 4.5e-4);
-        Assert.assertTrue(maxInterpolationEccentricityError < 2.6e-5);
+        Assert.assertEquals(shiftPositionErrorWithin,             maxShiftPositionError,             0.01 * shiftPositionErrorWithin);
+        Assert.assertEquals(interpolationPositionErrorWithin,     maxInterpolationPositionError,     0.01 * interpolationPositionErrorWithin);
+        Assert.assertEquals(shiftEccentricityErrorWithin,         maxShiftEccentricityError,         0.01 * shiftEccentricityErrorWithin);
+        Assert.assertEquals(interpolationEccentricityErrorWithin, maxInterpolationEccentricityError, 0.01 * interpolationEccentricityErrorWithin);
 
         // slightly past sample end, bad eccentricity interpolation shows up
         // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
@@ -1019,10 +1045,10 @@ public class KeplerianOrbitTest {
             maxShiftEccentricityError = FastMath.max(maxShiftEccentricityError, FastMath.abs(shiftedE - propagatedE));
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
-        Assert.assertTrue(maxShiftPositionError             <  2200.0);
-        Assert.assertTrue(maxInterpolationPositionError     > 72000.0);
-        Assert.assertTrue(maxShiftEccentricityError         <  1.2e-3);
-        Assert.assertTrue(maxInterpolationEccentricityError >  3.8e-3);
+        Assert.assertEquals(shiftPositionErrorSlightlyPast,             maxShiftPositionError,             0.01 * shiftPositionErrorSlightlyPast);
+        Assert.assertEquals(interpolationPositionErrorSlightlyPast,     maxInterpolationPositionError,     0.01 * interpolationPositionErrorSlightlyPast);
+        Assert.assertEquals(shiftEccentricityErrorSlightlyPast,         maxShiftEccentricityError,         0.01 * shiftEccentricityErrorSlightlyPast);
+        Assert.assertEquals(interpolationEccentricityErrorSlightlyPast, maxInterpolationEccentricityError, 0.01 * interpolationEccentricityErrorSlightlyPast);
 
     }
 

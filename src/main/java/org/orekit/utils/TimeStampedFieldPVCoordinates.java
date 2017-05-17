@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -626,11 +627,10 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @return a new position-velocity, interpolated at specified date
      */
     public static <T extends RealFieldElement<T>>
-        TimeStampedFieldPVCoordinates<T> interpolate(final AbsoluteDate date,
+        TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
                                                      final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
-        return interpolate(new FieldAbsoluteDate<>(sample.iterator().next().getPosition().getX().getField(), date),
-                           filter, sample);
+        return interpolate(date, filter, sample.stream());
     }
 
     /** Interpolate position-velocity.
@@ -656,11 +656,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                      final CartesianDerivativesFilter filter,
-                                                     final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
-
-        // get field properties
-        final T prototype = sample.iterator().next().getPosition().getX();
-        final T zero      = prototype.getField().getZero();
+                                                     final Stream<TimeStampedFieldPVCoordinates<T>> sample) {
 
         // set up an interpolator taking derivatives into account
         final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
@@ -669,30 +665,30 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
         switch (filter) {
             case USE_P :
                 // populate sample with position data, ignoring velocity
-                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                    final FieldVector3D<T> position = datedPV.getPosition();
-                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                sample.forEach(pv -> {
+                    final FieldVector3D<T> position = pv.getPosition();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray());
-                }
+                });
                 break;
             case USE_PV :
                 // populate sample with position and velocity data
-                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                    final FieldVector3D<T> position = datedPV.getPosition();
-                    final FieldVector3D<T> velocity = datedPV.getVelocity();
-                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                sample.forEach(pv -> {
+                    final FieldVector3D<T> position = pv.getPosition();
+                    final FieldVector3D<T> velocity = pv.getVelocity();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray(), velocity.toArray());
-                }
+                });
                 break;
             case USE_PVA :
                 // populate sample with position, velocity and acceleration data
-                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                    final FieldVector3D<T> position     = datedPV.getPosition();
-                    final FieldVector3D<T> velocity     = datedPV.getVelocity();
-                    final FieldVector3D<T> acceleration = datedPV.getAcceleration();
-                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                sample.forEach(pv -> {
+                    final FieldVector3D<T> position     = pv.getPosition();
+                    final FieldVector3D<T> velocity     = pv.getVelocity();
+                    final FieldVector3D<T> acceleration = pv.getAcceleration();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
                                                 position.toArray(), velocity.toArray(), acceleration.toArray());
-                }
+                });
                 break;
             default :
                 // this should never happen
@@ -700,7 +696,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
         }
 
         // interpolate
-        final T[][] p = interpolator.derivatives(zero, 2);
+        final T[][] p = interpolator.derivatives(date.getField().getZero(), 2);
 
         // build a new interpolated instance
 

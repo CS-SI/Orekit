@@ -17,9 +17,11 @@
 package org.orekit.orbits;
 
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -1241,17 +1243,24 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * in a thread-safe way.
      * </p>
      */
-    public FieldKeplerianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Collection<FieldOrbit<T>> sample) {
+    public FieldKeplerianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
+
+        // first pass to check if derivatives are available throughout the sample
+        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
+        boolean useDerivatives = true;
+        for (final FieldOrbit<T> orbit : list) {
+            useDerivatives = useDerivatives && orbit.hasDerivatives();
+        }
 
         // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
-        // add sample points
+        // second pass to feed interpolator
         FieldAbsoluteDate<T> previousDate = null;
-        T previousPA   = this.zero.add(Double.NaN);
-        T previousRAAN = this.zero.add(Double.NaN);
-        T previousM    = this.zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : sample) {
+        T                    previousPA   = zero.add(Double.NaN);
+        T                    previousRAAN = zero.add(Double.NaN);
+        T                    previousM    = zero.add(Double.NaN);
+        for (final FieldOrbit<T> orbit : list) {
             final FieldKeplerianOrbit<T> kep = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
             final T continuousPA;
             final T continuousRAAN;
@@ -1271,24 +1280,38 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             previousPA   = continuousPA;
             previousRAAN = continuousRAAN;
             previousM    = continuousM;
-            final T[] useless = MathArrays.buildArray(getA().getField(), 6);
-            useless[0] = kep.getA();
-            useless[1] = kep.getE();
-            useless[2] = kep.getI();
-            useless[3] = continuousPA;
-            useless[4] = continuousRAAN;
-            useless[5] = continuousM;
-            interpolator.addSamplePoint(this.zero.add(kep.getDate().durationFrom(date)),
-                                        useless);
+            final T[] toAdd = MathArrays.buildArray(getA().getField(), 6);
+            toAdd[0] = kep.getA();
+            toAdd[1] = kep.getE();
+            toAdd[2] = kep.getI();
+            toAdd[3] = continuousPA;
+            toAdd[4] = continuousRAAN;
+            toAdd[5] = continuousM;
+            if (useDerivatives) {
+                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
+                toAddDot[0] = kep.getADot();
+                toAddDot[1] = kep.getEDot();
+                toAddDot[2] = kep.getIDot();
+                toAddDot[3] = kep.getPerigeeArgumentDot();
+                toAddDot[4] = kep.getRightAscensionOfAscendingNodeDot();
+                toAddDot[5] = kep.getMeanAnomalyDot();
+                interpolator.addSamplePoint(kep.getDate().durationFrom(date),
+                                            toAdd, toAddDot);
+            } else {
+                interpolator.addSamplePoint(this.zero.add(kep.getDate().durationFrom(date)),
+                                            toAdd);
+            }
         }
 
         // interpolate
-        final T[] interpolated = (T[]) interpolator.value(this.zero);
+        final T[][] interpolated = interpolator.derivatives(zero, 1);
 
         // build a new interpolated instance
-        return new FieldKeplerianOrbit<T>(interpolated[0], interpolated[1], interpolated[2],
-                                  interpolated[3], interpolated[4], interpolated[5],
-                                  PositionAngle.MEAN, getFrame(), date, getMu());
+        return new FieldKeplerianOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
+                                         interpolated[0][3], interpolated[0][4], interpolated[0][5],
+                                         interpolated[1][0], interpolated[1][1], interpolated[1][2],
+                                         interpolated[1][3], interpolated[1][4], interpolated[1][5],
+                                         PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

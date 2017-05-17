@@ -16,9 +16,11 @@
  */
 package org.orekit.orbits;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -883,15 +885,22 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * in a thread-safe way.
      * </p>
      */
-    public FieldEquinoctialOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Collection<FieldOrbit<T>> sample) {
+    public FieldEquinoctialOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
+
+        // first pass to check if derivatives are available throughout the sample
+        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
+        boolean useDerivatives = true;
+        for (final FieldOrbit<T> orbit : list) {
+            useDerivatives = useDerivatives && orbit.hasDerivatives();
+        }
 
         // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
-        // add sample points
+        // second pass to feed interpolator
         FieldAbsoluteDate<T> previousDate = null;
-        T previousLm = zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : sample) {
+        T                    previousLm   = zero.add(Double.NaN);
+        for (final FieldOrbit<T> orbit : list) {
             final FieldEquinoctialOrbit<T> equi = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
             final T continuousLm;
             if (previousDate == null) {
@@ -903,24 +912,38 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             }
             previousDate = equi.getDate();
             previousLm   = continuousLm;
-            final T[] temp = MathArrays.buildArray(field, 6);
-            temp[0] = (T) equi.getA();
-            temp[1] = (T) equi.getEquinoctialEx();
-            temp[2] = (T) equi.getEquinoctialEy();
-            temp[3] = (T) equi.getHx();
-            temp[4] = (T) equi.getHy();
-            temp[5] = (T) continuousLm;
-            interpolator.addSamplePoint((T) equi.getDate().durationFrom(date),
-                                        temp);
+            final T[] toAdd = MathArrays.buildArray(field, 6);
+            toAdd[0] = (T) equi.getA();
+            toAdd[1] = (T) equi.getEquinoctialEx();
+            toAdd[2] = (T) equi.getEquinoctialEy();
+            toAdd[3] = (T) equi.getHx();
+            toAdd[4] = (T) equi.getHy();
+            toAdd[5] = (T) continuousLm;
+            if (useDerivatives) {
+                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
+                toAddDot[0] = equi.getADot();
+                toAddDot[1] = equi.getEquinoctialExDot();
+                toAddDot[2] = equi.getEquinoctialEyDot();
+                toAddDot[3] = equi.getHxDot();
+                toAddDot[4] = equi.getHyDot();
+                toAddDot[5] = equi.getLMDot();
+                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
+                                            toAdd, toAddDot);
+            } else {
+                interpolator.addSamplePoint((T) equi.getDate().durationFrom(date),
+                                            toAdd);
+            }
         }
 
         // interpolate
-        final T[] interpolated = interpolator.value(zero);
+        final T[][] interpolated = interpolator.derivatives(zero, 1);
 
         // build a new interpolated instance
-        return new FieldEquinoctialOrbit<T>(interpolated[0], interpolated[1], interpolated[2],
-                                    interpolated[3], interpolated[4], interpolated[5],
-                                    PositionAngle.MEAN, getFrame(), date, getMu());
+        return new FieldEquinoctialOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
+                                           interpolated[0][3], interpolated[0][4], interpolated[0][5],
+                                           interpolated[1][0], interpolated[1][1], interpolated[1][2],
+                                           interpolated[1][3], interpolated[1][4], interpolated[1][5],
+                                           PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

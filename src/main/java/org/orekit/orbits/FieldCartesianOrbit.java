@@ -17,12 +17,10 @@
 package org.orekit.orbits;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -456,16 +454,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * in a thread-safe way.
      * </p>
      */
-    public FieldCartesianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Collection<FieldOrbit<T>> sample) {
-        final List<TimeStampedFieldPVCoordinates<T>> datedPV = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
-        for (final FieldOrbit<T> o : sample) {
-            datedPV.add(new TimeStampedFieldPVCoordinates<T>(o.getDate(),
-                                                     o.getPVCoordinates().getPosition(),
-                                                     o.getPVCoordinates().getVelocity(),
-                                                     o.getPVCoordinates().getAcceleration()));
-        }
+    public FieldCartesianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
         final TimeStampedFieldPVCoordinates<T> interpolated =
-                TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
+                TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
+                                                          sample.map(orbit -> orbit.getPVCoordinates()));
         return new FieldCartesianOrbit<T>(interpolated, getFrame(), date, getMu());
     }
 

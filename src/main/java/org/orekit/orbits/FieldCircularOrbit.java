@@ -16,9 +16,11 @@
  */
 package org.orekit.orbits;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -1062,16 +1064,23 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * in a thread-safe way.
      * </p>
      */
-    public FieldCircularOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Collection<FieldOrbit<T>> sample) {
+    public FieldCircularOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
+
+        // first pass to check if derivatives are available throughout the sample
+        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
+        boolean useDerivatives = true;
+        for (final FieldOrbit<T> orbit : list) {
+            useDerivatives = useDerivatives && orbit.hasDerivatives();
+        }
 
         // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
-        // add sample points
-        FieldAbsoluteDate<T> previousDate = null;
-        T previousRAAN   = zero.add(Double.NaN);
-        T previousAlphaM = zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : sample) {
+        // second pass to feed interpolator
+        FieldAbsoluteDate<T> previousDate   = null;
+        T                    previousRAAN   = zero.add(Double.NaN);
+        T                    previousAlphaM = zero.add(Double.NaN);
+        for (final FieldOrbit<T> orbit : list) {
             final FieldCircularOrbit<T> circ = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
             final T continuousRAAN;
             final T continuousAlphaM;
@@ -1088,24 +1097,37 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             previousRAAN   = continuousRAAN;
             previousAlphaM = continuousAlphaM;
             final T[] toAdd = MathArrays.buildArray(one.getField(), 6);
-
             toAdd[0] = circ.getA();
             toAdd[1] = circ.getCircularEx();
             toAdd[2] = circ.getCircularEy();
             toAdd[3] = circ.getI();
             toAdd[4] = continuousRAAN;
             toAdd[5] = continuousAlphaM;
-            interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                        toAdd);
+            if (useDerivatives) {
+                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
+                toAddDot[0] = circ.getADot();
+                toAddDot[1] = circ.getCircularExDot();
+                toAddDot[2] = circ.getCircularEyDot();
+                toAddDot[3] = circ.getIDot();
+                toAddDot[4] = circ.getRightAscensionOfAscendingNodeDot();
+                toAddDot[5] = circ.getAlphaMDot();
+                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
+                                            toAdd, toAddDot);
+            } else {
+                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
+                                            toAdd);
+            }
         }
 
         // interpolate
-        final T[] interpolated = interpolator.value(zero);
+        final T[][] interpolated = interpolator.derivatives(zero, 1);
 
         // build a new interpolated instance
-        return new FieldCircularOrbit<T>(interpolated[0], interpolated[1], interpolated[2],
-                                 interpolated[3], interpolated[4], interpolated[5],
-                                 PositionAngle.MEAN, getFrame(), date, getMu());
+        return new FieldCircularOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
+                                        interpolated[0][3], interpolated[0][4], interpolated[0][5],
+                                        interpolated[1][0], interpolated[1][1], interpolated[1][2],
+                                        interpolated[1][3], interpolated[1][4], interpolated[1][5],
+                                        PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -30,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 public class TimeStampedFieldPVCoordinatesTest {
@@ -159,9 +161,12 @@ public class TimeStampedFieldPVCoordinatesTest {
                 sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, acceleration));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PVA, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PVA, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -204,9 +209,12 @@ public class TimeStampedFieldPVCoordinatesTest {
                 sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, createVector(0, 0, 0, 4)));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -251,9 +259,12 @@ public class TimeStampedFieldPVCoordinatesTest {
                                                                                   createVector(0, 0, 0, 4)));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_P, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_P, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -284,9 +295,12 @@ public class TimeStampedFieldPVCoordinatesTest {
             sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, acceleration));
         }
 
+        Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
         for (double dt = 0; dt < 1.0; dt += 0.01) {
-            TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PVA, sample);
+            FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
+                        TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
+                    TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PVA, sample);
             FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
             FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
             FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();

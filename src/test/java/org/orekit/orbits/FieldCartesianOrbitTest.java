@@ -148,8 +148,17 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
-    public void testInteroplation() throws OrekitException{
-        doTestInterpolation(Decimal64Field.getInstance());
+    public void testInterpolationWithDerivatives() throws OrekitException {
+        doTestInterpolation(Decimal64Field.getInstance(), true,
+                            394, 2.15e-8, 3.21, 1.39e-9,
+                            2474, 6842, 6.55, 186);
+    }
+
+    @Test
+    public void testInterpolationWithoutDerivatives() throws OrekitException {
+        doTestInterpolation(Decimal64Field.getInstance(), false,
+                            394, 2.61, 3.21, 0.154,
+                            2474, 2.28e12, 6.55, 6.22e10);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -635,7 +644,12 @@ public class FieldCartesianOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
+                                                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
+                                                                     double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
+                                                                     double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
+                                                                     double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
+        throws OrekitException {
         T zero = field.getZero();
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -657,7 +671,15 @@ public class FieldCartesianOrbitTest {
         // set up a 5 points sample
         List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
         for (T dt = zero; dt.getReal() < 251.0; dt = dt.add(60.0)) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+            FieldOrbit<T> orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
+            if (!useDerivatives) {
+                // remove derivatives
+                T[] stateVector = MathArrays.buildArray(field, 6);
+                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
+            }
+            sample.add(orbit);
         }
 
         // well inside the sample, interpolation should be much better than Keplerian shift
@@ -684,17 +706,17 @@ public class FieldCartesianOrbitTest {
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
                                                             interpolationError.getVelocity().getNorm().getReal());
         }
-        Assert.assertTrue(maxShiftPError         > 390.0);
-        Assert.assertTrue(maxInterpolationPError < 3.0e-8);
-        Assert.assertTrue(maxShiftVError         > 3.0);
-        Assert.assertTrue(maxInterpolationVError < 2.0e-9);
+        Assert.assertEquals(shiftPositionErrorWithin,         maxShiftPError,         0.01 * shiftPositionErrorWithin);
+        Assert.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError, 0.01 * interpolationPositionErrorWithin);
+        Assert.assertEquals(shiftVelocityErrorWithin,         maxShiftVError,         0.01 * shiftVelocityErrorWithin);
+        Assert.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError, 0.01 * interpolationVelocityErrorWithin);
 
         // if we go far past sample end, interpolation becomes worse than Keplerian shift
         maxShiftPError = 0;
         maxInterpolationPError = 0;
         maxShiftVError = 0;
         maxInterpolationVError = 0;
-        for (T dt = zero.add(500.0); dt.getReal() < 725.0; dt = dt.add(1.0)) {
+        for (T dt = zero.add(500.0); dt.getReal() < 650.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
             FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
@@ -710,10 +732,10 @@ public class FieldCartesianOrbitTest {
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
                                                             interpolationError.getVelocity().getNorm().getReal());
         }
-        Assert.assertTrue(maxShiftPError         < 3000.0);
-        Assert.assertTrue(maxInterpolationPError > 6000.0);
-        Assert.assertTrue(maxShiftVError         <    7.0);
-        Assert.assertTrue(maxInterpolationVError >  170.0);
+        Assert.assertEquals(shiftPositionErrorFarPast,         maxShiftPError,         0.01 * shiftPositionErrorFarPast);
+        Assert.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError, 0.01 * interpolationPositionErrorFarPast);
+        Assert.assertEquals(shiftVelocityErrorFarPast,         maxShiftVError,         0.01 * shiftVelocityErrorFarPast);
+        Assert.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError, 0.01 * interpolationVelocityErrorFarPast);
 
     }
 

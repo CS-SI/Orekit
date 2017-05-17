@@ -17,7 +17,8 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -735,24 +736,50 @@ public class EquinoctialOrbit extends Orbit {
      */
     public EquinoctialOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
 
+        // first pass to check if derivatives are available throughout the sample
+        final List<Orbit> list = sample.collect(Collectors.toList());
+        boolean useDerivatives = true;
+        for (final Orbit orbit : list) {
+            useDerivatives = useDerivatives && orbit.hasDerivatives();
+        }
+
         // set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
-        sample.forEach(new Consumer<Orbit>() {
-            private AbsoluteDate previousDate = null;
-            private double previousLm = Double.NaN;
-            public void accept(final Orbit orbit) {
-                final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-                final double continuousLm;
-                if (previousDate == null) {
-                    continuousLm = equi.getLM();
-                } else {
-                    final double dt       = equi.getDate().durationFrom(previousDate);
-                    final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
-                    continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
-                }
-                previousDate = equi.getDate();
-                previousLm   = continuousLm;
+        // second pass to feed interpolator
+        AbsoluteDate previousDate = null;
+        double       previousLm   = Double.NaN;
+        for (final Orbit orbit : list) {
+            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+            final double continuousLm;
+            if (previousDate == null) {
+                continuousLm = equi.getLM();
+            } else {
+                final double dt       = equi.getDate().durationFrom(previousDate);
+                final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
+                continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
+            }
+            previousDate = equi.getDate();
+            previousLm   = continuousLm;
+            if (useDerivatives) {
+                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
+                                            new double[] {
+                                                equi.getA(),
+                                                equi.getEquinoctialEx(),
+                                                equi.getEquinoctialEy(),
+                                                equi.getHx(),
+                                                equi.getHy(),
+                                                continuousLm
+                                            },
+                                            new double[] {
+                                                equi.getADot(),
+                                                equi.getEquinoctialExDot(),
+                                                equi.getEquinoctialEyDot(),
+                                                equi.getHxDot(),
+                                                equi.getHyDot(),
+                                                equi.getLMDot()
+                                            });
+            } else {
                 interpolator.addSamplePoint(equi.getDate().durationFrom(date),
                                             new double[] {
                                                 equi.getA(),
@@ -763,14 +790,16 @@ public class EquinoctialOrbit extends Orbit {
                                                 continuousLm
                                             });
             }
-        });
+        }
 
         // interpolate
-        final double[] interpolated = interpolator.value(0);
+        final double[][] interpolated = interpolator.derivatives(0.0, 1);
 
         // build a new interpolated instance
-        return new EquinoctialOrbit(interpolated[0], interpolated[1], interpolated[2],
-                                    interpolated[3], interpolated[4], interpolated[5],
+        return new EquinoctialOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
+                                    interpolated[0][3], interpolated[0][4], interpolated[0][5],
+                                    interpolated[1][0], interpolated[1][1], interpolated[1][2],
+                                    interpolated[1][3], interpolated[1][4], interpolated[1][5],
                                     PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
