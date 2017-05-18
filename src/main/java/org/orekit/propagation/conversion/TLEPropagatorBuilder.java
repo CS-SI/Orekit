@@ -91,7 +91,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 final double positionScale)
         throws OrekitException {
         super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
-              positionAngle, positionScale);
+              positionAngle, positionScale, false);
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
         this.classification          = templateTLE.getClassification();
         this.launchYear              = templateTLE.getLaunchYear();

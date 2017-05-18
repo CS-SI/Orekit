@@ -47,7 +47,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale)
         throws OrekitException {
-        super(templateOrbit, positionAngle, positionScale);
+        super(templateOrbit, positionAngle, positionScale, true);
     }
 
     /** {@inheritDoc} */

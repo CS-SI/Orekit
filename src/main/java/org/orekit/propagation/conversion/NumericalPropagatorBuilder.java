@@ -70,7 +70,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngle positionAngle,
                                       final double positionScale)
         throws OrekitException {
-        super(referenceOrbit, positionAngle, positionScale);
+        super(referenceOrbit, positionAngle, positionScale, true);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;

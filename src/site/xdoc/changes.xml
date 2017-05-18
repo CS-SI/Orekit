@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Prevent central attraction coefficient from being adjusted in TLEPropagatorBuilder,
+        as it is specified by the TLE theory.
+        Fixes issue #313.
+      </action>
       <action dev="luc" type="fix" due-to="Hao Peng">
         Added a flag to prevent resetting initial state at the end of integrating propagators.
         Fixes issue #251.

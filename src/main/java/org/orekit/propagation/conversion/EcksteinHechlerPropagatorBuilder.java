@@ -59,7 +59,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final PositionAngle positionAngle,
                                             final double positionScale)
         throws OrekitException {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale);
+        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true);
         this.provider = provider;
     }
 
