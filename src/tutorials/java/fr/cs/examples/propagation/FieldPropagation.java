@@ -20,6 +20,8 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -38,8 +40,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for field mode propagation.
  * <p>This tutorial shows the interest of the field propagation in particular focusing
  *  on the utilisation of the DerivativeStructure in Orekit.<p>
@@ -54,16 +54,26 @@ public class FieldPropagation {
      */
     public static void main(String[] args) throws IOException, OrekitException {
 
-        /*the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
-          the inclination and the RAAN. The interest of doing it with Orekit based on the
-          DerivativeStructure is that instead of doing a large number of propagation around the initial
-          point we will do a single propagation of the initial state, and thanks to the Taylor expansion
-          we will see the evolution of the std deviation of the position, which is divided in the
-           CrossTrack, the LongTrack and the Radial error.
-        */
-        // setting orekit
+        // the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
+        // the inclination and the RAAN. The interest of doing it with Orekit based on the
+        // DerivativeStructure is that instead of doing a large number of propagation around the initial
+        // point we will do a single propagation of the initial state, and thanks to the Taylor expansion
+        // we will see the evolution of the std deviation of the position, which is divided in the
+        // CrossTrack, the LongTrack and the Radial error.
 
-        Autoconfiguration.configureOrekit();
+        // configure Orekit
+        File home       = new File(System.getProperty("user.home"));
+        File orekitData = new File(home, "orekit-data");
+        if (!orekitData.exists()) {
+            System.err.format(Locale.US, "Failed to find %s folder%n",
+                              orekitData.getAbsolutePath());
+            System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                              "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                              home.getAbsolutePath());
+            System.exit(1);
+        }
+        DataProvidersManager manager = DataProvidersManager.getInstance();
+        manager.addProvider(new DirectoryCrawler(orekitData));
 
         //setting some the file
         File workingDir = new File(System.getProperty("user.dir"));

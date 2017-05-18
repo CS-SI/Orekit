@@ -22,6 +22,10 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Tutorials now all rely on orekit-data being in user home folder.
+        Fixes issue #245.
+      </action>
+       <action dev="luc" type="fix">
         Apply delay corresponding to h = 0 when station altitude is below 0 in SaastamoinenModel.
         Fixes issue #202.
       </action>

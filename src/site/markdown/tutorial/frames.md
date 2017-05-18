@@ -233,7 +233,7 @@ master propagation mode and has been deprecated as of 6.0, so we won't use it.
 First, an initial orbit for the spacecraft is defined as follows:
 
     Frame eme2000 = FramesFactory.getEME2000();
-    AbsoluteDate initialDate = new AbsoluteDate(1970, 04, 07, 0, 0, 00.000,
+    AbsoluteDate initialDate = new AbsoluteDate(2003, 4, 7, 10, 55, 21.575,
                                                 TimeScalesFactory.getUTC());
     double mu =  3.986004415e+14;
     Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,

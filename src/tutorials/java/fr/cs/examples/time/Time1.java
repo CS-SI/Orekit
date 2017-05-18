@@ -16,12 +16,15 @@
  */
 package fr.cs.examples.time;
 
+import java.io.File;
+import java.util.Locale;
+
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-
-import fr.cs.examples.Autoconfiguration;
 
 /** Orekit tutorial for dates support.
  * <p>This tutorial shows basic date usage.</p>
@@ -36,7 +39,18 @@ public class Time1 {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // get the UTC and TAI time scales
             TimeScale utc = TimeScalesFactory.getUTC();

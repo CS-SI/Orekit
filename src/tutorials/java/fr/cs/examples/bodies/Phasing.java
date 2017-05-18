@@ -42,6 +42,8 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -65,7 +67,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.SecularAndHarmonic;
 
-import fr.cs.examples.Autoconfiguration;
 import fr.cs.examples.KeyValueFileParser;
 
 /** Orekit tutorial for setting up a Sun-synchronous Earth-phased Low Earth Orbit.
@@ -94,7 +95,18 @@ public class Phasing {
             }
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // input/out
             URL url = Phasing.class.getResource("/" + args[0]);
