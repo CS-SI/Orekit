@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Apply delay corresponding to h = 0 when station altitude is below 0 in SaastamoinenModel.
+        Fixes issue #202.
+      </action>
       <action dev="luc" type="add">
         Added derivatives to orbits computed from non-Keplerian models, and use
         these derivatives when available. This improves shiftedBy() accuracy,
