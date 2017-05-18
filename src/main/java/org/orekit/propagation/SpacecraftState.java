@@ -60,7 +60,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple keplerian model for orbit, a linear extrapolation for attitude
+ * a simple Keplerian model for orbit, a linear extrapolation for attitude
  * taking the spin rate into account and no mass change. It is <em>not</em>
  * intended as a replacement for proper orbit and attitude propagation but
  * should be sufficient for either small time shifts or coarse accuracy.
@@ -482,19 +482,19 @@ public class SpacecraftState
         return orbit.getMu();
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds
+     * @return Keplerian period in seconds
      */
     public double getKeplerianPeriod() {
         return orbit.getKeplerianPeriod();
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return Keplerian mean motion in radians per second
      */
     public double getKeplerianMeanMotion() {
         return orbit.getKeplerianMeanMotion();

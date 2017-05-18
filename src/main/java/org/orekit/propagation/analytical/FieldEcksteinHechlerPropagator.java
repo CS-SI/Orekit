@@ -622,7 +622,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();
-            // keplerian evolution
+            // Keplerian evolution
             final FieldDerivativeStructure<T> dt =
                     factory.build(date.durationFrom(mean.getDate()), one, zero);
             final FieldDerivativeStructure<T> xnot = dt.multiply(xnotDot);

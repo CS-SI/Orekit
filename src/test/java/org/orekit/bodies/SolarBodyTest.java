@@ -414,7 +414,7 @@ public class SolarBodyTest {
 
     private static class BodyAttraction extends AbstractForceModel {
 
-        /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+        /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
         /** Drivers for force model parameters. */

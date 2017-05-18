@@ -181,7 +181,7 @@ example of subclassing of a Java object into a jython object.
     pvCoordinates = PVCoordinates(position, velocity)
     initialOrbit = KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu)
 
-    # Propagator : consider a simple keplerian motion (could be more elaborate)
+    # Propagator : consider a simple Keplerian motion (could be more elaborate)
     kepler = KeplerianPropagator(initialOrbit)
 
     #Earth and frame

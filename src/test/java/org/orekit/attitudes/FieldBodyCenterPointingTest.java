@@ -117,7 +117,7 @@ public class FieldBodyCenterPointingTest {
         // Check that target is on Earth surface
         GeodeticPoint gp = earth.transform(target.getPosition().toVector3D(), circ.getFrame(), date.toAbsoluteDate());
 
-        Assert.assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with keplerian instead of circular
+        Assert.assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with Keplerian instead of circular
         Assert.assertEquals(date, target.getDate());
 
     }

@@ -39,7 +39,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Propagator converter using the real jacobian.
+/** Propagator converter using the real Jacobian.
  * @author Pascal Parraud
  * @since 6.0
  */

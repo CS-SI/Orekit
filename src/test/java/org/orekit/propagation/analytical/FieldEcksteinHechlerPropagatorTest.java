@@ -153,7 +153,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
 
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7),zero.add( 2.1),zero.add( 2.9),
@@ -211,8 +211,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldOrbit<T> initialOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, provider.getMu());
 
-        // Initialisation to simulate a keplerian extrapolation
-        // To be noticed: in order to simulate a keplerian extrapolation with the
+        // Initialisation to simulate a Keplerian extrapolation
+        // To be noticed: in order to simulate a Keplerian extrapolation with the
         // analytical
         // extrapolator, one should put the zonal coefficients to 0. But due to
         // numerical pbs
@@ -368,7 +368,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     private <T extends RealFieldElement<T>> void doPropagatedKeplerian(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),

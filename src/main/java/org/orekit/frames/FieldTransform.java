@@ -205,7 +205,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     /** Build a translation transform, with its first time derivative.
      * @param date date of the transform
-     * @param cartesian cartesian part of the transformation to apply (i.e. coordinates of
+     * @param cartesian Cartesian part of the transformation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame, with their derivatives)
      */
@@ -826,11 +826,11 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     }
 
-    /** Get the underlying elementary cartesian part.
+    /** Get the underlying elementary Cartesian part.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
      * returns this unique elementary translation with its derivative.</p>
-     * @return underlying elementary cartesian part
+     * @return underlying elementary Cartesian part
      * @see #getTranslation()
      * @see #getVelocity()
      */

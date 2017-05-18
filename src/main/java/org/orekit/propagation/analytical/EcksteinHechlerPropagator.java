@@ -647,7 +647,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
             throws OrekitException {
 
-            // keplerian evolution
+            // Keplerian evolution
             final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));
             final DerivativeStructure xnot = dt.multiply(xnotDot);
 

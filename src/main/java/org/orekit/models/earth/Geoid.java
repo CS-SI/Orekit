@@ -220,7 +220,7 @@ public class Geoid implements EarthShape {
 
         // position in geodetic coordinates
         final GeodeticPoint gp = new GeodeticPoint(geodeticLatitude, longitude, 0);
-        // position in cartesian coordinates, is converted to geocentric lat and
+        // position in Cartesian coordinates, is converted to geocentric lat and
         // lon in the Holmes and Featherstone class
         final Vector3D position = ellipsoid.transform(gp);
 

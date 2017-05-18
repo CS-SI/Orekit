@@ -36,10 +36,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-/** This class holds cartesian orbital parameters.
+/** This class holds Cartesian orbital parameters.
 
  * <p>
- * The parameters used internally are the cartesian coordinates:
+ * The parameters used internally are the Cartesian coordinates:
  *   <ul>
  *     <li>x</li>
  *     <li>y</li>
@@ -52,10 +52,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
 
  * <p>
- * Note that the implementation of this class delegates all non-cartesian related
+ * Note that the implementation of this class delegates all non-Cartesian related
  * computations ({@link #getA()}, {@link #getEquinoctialEx()}, ...) to an underlying
  * instance of the {@link EquinoctialOrbit} class. This implies that using this class
- * only for analytical computations which are always based on non-cartesian
+ * only for analytical computations which are always based on non-Cartesian
  * parameters is perfectly possible but somewhat sub-optimal.
  * </p>
  * <p>
@@ -382,7 +382,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
-        // nothing to do here, as the canonical elements are already the cartesian ones
+        // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
     }
 
@@ -454,7 +454,7 @@ public class CartesianOrbit extends Orbit {
         final double cTE     = FastMath.cos(thetaE1);
         final double sTE     = FastMath.sin(thetaE1);
 
-        // compute shifted in-plane cartesian coordinates
+        // compute shifted in-plane Cartesian coordinates
         final double exey   = ex * ey;
         final double exCeyS = ex * cTE + ey * sTE;
         final double x      = a * ((1 - beta * ey * ey) * cTE + beta * exey * sTE - ex);
@@ -524,7 +524,7 @@ public class CartesianOrbit extends Orbit {
         final double M1      = M0 + getKeplerianMeanMotion() * dt;
         final double H1      = meanToHyperbolicEccentric(M1, e);
 
-        // compute shifted in-plane cartesian coordinates
+        // compute shifted in-plane Cartesian coordinates
         final double cH     = FastMath.cosh(H1);
         final double sH     = FastMath.sinh(H1);
         final double sE2m1  = FastMath.sqrt((e - 1) * (e + 1));
@@ -613,7 +613,7 @@ public class CartesianOrbit extends Orbit {
      */
     private double meanToHyperbolicEccentric(final double M, final double ecc) {
 
-        // Resolution of hyperbolic Kepler equation for keplerian parameters
+        // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
         // Initial guess
         double H;
@@ -710,7 +710,7 @@ public class CartesianOrbit extends Orbit {
      * @return a string representation of this object
      */
     public String toString() {
-        return "cartesian parameters: " + getPVCoordinates().toString();
+        return "Cartesian parameters: " + getPVCoordinates().toString();
     }
 
     /** Replace the instance with a data transfer object for serialization.

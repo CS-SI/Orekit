@@ -117,7 +117,7 @@ public class IodGibbs {
         final PVCoordinates pv = new PVCoordinates(r2, vlEci);
         final AbsoluteDate date = date2;
 
-        // compute the equivalent keplerian orbit
+        // compute the equivalent Keplerian orbit
         return new KeplerianOrbit(pv, frame, date, mu);
     }
 }

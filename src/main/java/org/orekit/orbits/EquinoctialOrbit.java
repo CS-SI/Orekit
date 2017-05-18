@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * circular and equatorial orbits.
  * <p>
  * The parameters used internally are the equinoctial elements which can be
- * related to keplerian elements as follows:
+ * related to Keplerian elements as follows:
  *   <pre>
  *     a
  *     ex = e cos(ω + Ω)
@@ -54,10 +54,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * Right Ascension of the Ascending Node.
  *
  * <p>
- * The conversion equations from and to keplerian elements given above hold only
+ * The conversion equations from and to Keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
  * nor circular. When orbit is either equatorial or circular, the equinoctial
- * parameters are still unambiguously defined whereas some keplerian elements
+ * parameters are still unambiguously defined whereas some Keplerian elements
  * (more precisely ω and Ω) become ambiguous. For this reason, equinoctial
  * parameters are the recommended way to represent orbits.
  * </p>

@@ -804,7 +804,7 @@ public class OneAxisEllipsoidTest {
 
     }
 
-    /** Transform a cartesian point to a surface-relative point.
+    /** Transform a Cartesian point to a surface-relative point.
      * <p>
      * This method was the implementation used in the main Orekit library
      * as of version 8.0. It has been replaced as of 9.0 with a new version

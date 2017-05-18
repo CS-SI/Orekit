@@ -39,7 +39,7 @@ import org.orekit.utils.Constants;
  * <p>These effect are computed analytically using two Jacobian matrices:
  * <ol>
  *   <li>J₀: Jacobian of Keplerian or equinoctial elements with respect
- *   to cartesian parameters at date t₀ allows to compute
+ *   to Cartesian parameters at date t₀ allows to compute
  *   maneuver effect as a change in orbital elements at maneuver date t₀,</li>
  *   <li>J<sub>1/0</sub>: Jacobian of Keplerian or equinoctial elements
  *   at date t₁ with respect to Keplerian or equinoctial elements
@@ -291,7 +291,7 @@ public class SmallManeuverAnalyticalModel
 
         if (orbit1.getType() != type || positionAngle != PositionAngle.MEAN) {
 
-            // convert to derivatives of cartesian parameters
+            // convert to derivatives of Cartesian parameters
             final double[][] j2         = new double[6][6];
             final double[][] pvJacobian = new double[6][4];
             final Orbit updated         = updateOrbit(orbit1);

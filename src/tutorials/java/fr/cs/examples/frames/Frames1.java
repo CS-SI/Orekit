@@ -63,7 +63,7 @@ public class Frames1 {
             PVCoordinates pvsat = new PVCoordinates(posisat, velosat);
             Orbit initialOrbit = new CartesianOrbit(pvsat, inertialFrame, initialDate, mu);
 
-            // Propagator : consider a simple keplerian motion
+            // Propagator : consider a simple Keplerian motion
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame

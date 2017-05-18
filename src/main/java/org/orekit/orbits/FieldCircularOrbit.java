@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
  * <p>
  * The parameters used internally are the circular elements which can be
- * related to keplerian elements as follows:
+ * related to Keplerian elements as follows:
  *   <ul>
  *     <li>a</li>
  *     <li>e<sub>x</sub> = e cos(ω)</li>
@@ -57,12 +57,12 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * α<sub>v</sub> stands for the true latitude argument
  * </p>
  * <p>
- * The conversion equations from and to keplerian elements given above hold only
+ * The conversion equations from and to Keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
  * nor circular. When orbit is circular (but not equatorial), the circular
- * parameters are still unambiguously defined whereas some keplerian elements
+ * parameters are still unambiguously defined whereas some Keplerian elements
  * (more precisely ω and Ω) become ambiguous. When orbit is equatorial,
- * neither the keplerian nor the circular parameters can be defined unambiguously.
+ * neither the Keplerian nor the circular parameters can be defined unambiguously.
  * {@link EquinoctialOrbit equinoctial orbits} is the recommended way to represent
  * orbits.
  * </p>
@@ -251,7 +251,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     }
 
-    /** Constructor from cartesian parameters.
+    /** Constructor from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods

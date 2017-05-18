@@ -47,7 +47,7 @@ public class IodLambert {
         this.mu = mu;
     }
 
-    /** Estimate a keplerian orbit given two position vectors and a duration.
+    /** Estimate a Keplerian orbit given two position vectors and a duration.
      *
      * @param frame     frame
      * @param posigrade flag indicating the direction of motion
@@ -56,7 +56,7 @@ public class IodLambert {
      * @param T1        date of observation 1
      * @param P2        position vector 2
      * @param T2        date of observation 2
-     * @return  an initial keplerian orbit estimate
+     * @return  an initial Keplerian orbit estimate
      */
     public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
                                    final int nRev,
@@ -106,7 +106,7 @@ public class IodLambert {
             // compile a new middle point with position, velocity
             final PVCoordinates pv = new PVCoordinates(P1, Vel1);
 
-            // compute the equivalent keplerian orbit
+            // compute the equivalent Keplerian orbit
             return new KeplerianOrbit(pv, frame, T1, mu);
         }
 

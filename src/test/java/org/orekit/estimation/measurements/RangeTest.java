@@ -326,7 +326,7 @@ public class RangeTest {
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
-                    // Errors & relative errors on the jacobian
+                    // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
                     double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
                     for (int i = 0; i < jacobian.length; ++i) {

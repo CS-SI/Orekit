@@ -47,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * For user convenience, both the Cartesian and the equinoctial elements
  * are provided by this class, regardless of the canonical representation
- * implemented in the derived class (which may be classical keplerian
+ * implemented in the derived class (which may be classical Keplerian
  * elements for example).
  * </p>
  * <p>
@@ -370,20 +370,20 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
         return mu;
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds, or positive infinity for hyperbolic orbits
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
      */
     public T getKeplerianPeriod() {
         final T a = getA();
         return (a.getReal() < 0) ? getA().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return Keplerian mean motion in radians per second
      */
     public T getKeplerianMeanMotion() {
         final T absA = getA().abs();
@@ -447,7 +447,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     /** Get a time-shifted orbit.
      * <p>
      * The orbit can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model. It is <em>not</em> intended as a replacement
+     * a simple Keplerian model. It is <em>not</em> intended as a replacement
      * for proper orbit and attitude propagation but should be sufficient for
      * small time shifts or coarse accuracy.
      * </p>
@@ -473,21 +473,21 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
             switch (type) {
                 case MEAN :
                     if (jacobianMeanWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
                     cachedJacobian = jacobianMeanWrtCartesian;
                     break;
                 case ECCENTRIC :
                     if (jacobianEccentricWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
                     cachedJacobian = jacobianEccentricWrtCartesian;
                     break;
                 case TRUE :
                     if (jacobianTrueWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
                     cachedJacobian = jacobianTrueWrtCartesian;
@@ -521,21 +521,21 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
             switch (type) {
                 case MEAN :
                     if (jacobianWrtParametersMean == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersMean;
                     break;
                 case ECCENTRIC :
                     if (jacobianWrtParametersEccentric == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersEccentric;
                     break;
                 case TRUE :
                     if (jacobianWrtParametersTrue == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersTrue;

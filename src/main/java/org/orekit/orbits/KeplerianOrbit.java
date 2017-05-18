@@ -58,7 +58,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * axis is negative for such orbits (and of course eccentricity is greater than 1).
  * </p>
  * <p>
- * When orbit is either equatorial or circular, some keplerian elements
+ * When orbit is either equatorial or circular, some Keplerian elements
  * (more precisely ω and Ω) become ambiguous so this class should not
  * be used for such orbits. For this reason, {@link EquinoctialOrbit equinoctial
  * orbits} is the recommended way to represent orbits.
@@ -685,7 +685,7 @@ public class KeplerianOrbit extends Orbit {
      */
     public static double meanToHyperbolicEccentric(final double M, final double ecc) {
 
-        // Resolution of hyperbolic Kepler equation for keplerian parameters
+        // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
         // Initial guess
         double H;
@@ -1107,7 +1107,7 @@ public class KeplerianOrbit extends Orbit {
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * respect to Cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
      * @return 6x6 Jacobian matrix
@@ -1245,7 +1245,7 @@ public class KeplerianOrbit extends Orbit {
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * respect to Cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
      * @return 6x6 Jacobian matrix
@@ -1451,10 +1451,10 @@ public class KeplerianOrbit extends Orbit {
         }
     }
 
-    /** Compute the Jacobian of the orbital parameters with respect to the cartesian parameters.
+    /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * respect to Cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
      * @return 6x6 Jacobian matrix
@@ -1490,10 +1490,10 @@ public class KeplerianOrbit extends Orbit {
 
     }
 
-    /** Compute the Jacobian of the orbital parameters with respect to the cartesian parameters.
+    /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
+     * respect to Cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
      * @return 6x6 Jacobian matrix
@@ -1555,11 +1555,11 @@ public class KeplerianOrbit extends Orbit {
         }
     }
 
-    /**  Returns a string representation of this keplerian parameters object.
+    /**  Returns a string representation of this Keplerian parameters object.
      * @return a string representation of this object
      */
     public String toString() {
-        return new StringBuffer().append("keplerian parameters: ").append('{').
+        return new StringBuffer().append("Keplerian parameters: ").append('{').
                                   append("a: ").append(a).
                                   append("; e: ").append(e).
                                   append("; i: ").append(FastMath.toDegrees(i)).

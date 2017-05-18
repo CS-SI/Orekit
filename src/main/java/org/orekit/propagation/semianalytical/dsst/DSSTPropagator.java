@@ -86,7 +86,7 @@ import org.orekit.time.AbsoluteDate;
  * parameters with {@link PositionAngle#TRUE true} longitude argument.
  * The central attraction coefficient used to define the initial orbit will be used.
  * However, specifying only the initial state would mean the propagator would use
- * only keplerian forces. In this case, the simpler
+ * only Keplerian forces. In this case, the simpler
  * {@link org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator}
  * class would be more effective.
  * </p>
@@ -154,7 +154,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  After creation, there are no perturbing forces at all.
      *  This means that if {@link #addForceModel addForceModel}
      *  is not called after creation, the integrated orbit will
-     *  follow a keplerian evolution only.
+     *  follow a Keplerian evolution only.
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
      *  @param meanOnly output only the mean orbits.
@@ -176,7 +176,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  After creation, there are no perturbing forces at all.
      *  This means that if {@link #addForceModel addForceModel}
      *  is not called after creation, the integrated orbit will
-     *  follow a keplerian evolution only. Only the mean orbits
+     *  follow a Keplerian evolution only. Only the mean orbits
      *  will be generated.
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
@@ -289,7 +289,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Add a force model to the global perturbation model.
      *  <p>
      *  If this method is not called at all,
-     *  the integrated orbit will follow a keplerian evolution only.
+     *  the integrated orbit will follow a Keplerian evolution only.
      *  </p>
      *  @param force perturbing {@link DSSTForceModel force} to add
      *  @see #removeForceModels()
@@ -302,7 +302,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Remove all perturbing force models from the global perturbation model.
      *  <p>
      *  Once all perturbing forces have been removed (and as long as no new force model is added),
-     *  the integrated orbit will follow a keplerian evolution only.
+     *  the integrated orbit will follow a Keplerian evolution only.
      *  </p>
      *  @see #addForceModel(DSSTForceModel)
      */

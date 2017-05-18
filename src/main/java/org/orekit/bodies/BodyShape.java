@@ -84,9 +84,9 @@ public interface BodyShape extends Serializable {
     TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)
         throws OrekitException;
 
-    /** Transform a cartesian point to a surface-relative point.
-     * @param point cartesian point
-     * @param frame frame in which cartesian point is expressed
+    /** Transform a Cartesian point to a surface-relative point.
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
      * @exception OrekitException if point cannot be converted to body frame
@@ -94,10 +94,10 @@ public interface BodyShape extends Serializable {
     GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
         throws OrekitException;
 
-    /** Transform a cartesian point to a surface-relative point.
-     * @param point cartesian point
+    /** Transform a Cartesian point to a surface-relative point.
+     * @param point Cartesian point
      * @param <T> type fo the filed elements
-     * @param frame frame in which cartesian point is expressed
+     * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
      * @exception OrekitException if point cannot be converted to body frame
@@ -107,9 +107,9 @@ public interface BodyShape extends Serializable {
                                                                     FieldAbsoluteDate<T> date)
         throws OrekitException;
 
-    /** Transform a surface-relative point to a cartesian point.
+    /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point
-     * @return point at the same location but as a cartesian point
+     * @return point at the same location but as a Cartesian point
      */
     Vector3D transform(GeodeticPoint point);
 

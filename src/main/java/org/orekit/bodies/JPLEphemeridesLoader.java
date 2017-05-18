@@ -465,7 +465,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // get the ephemerides type
         final int deNum = extractInt(record, HEADER_EPHEMERIS_TYPE_OFFSET);
 
-        // as default, 3 polynomial coefficients for the cartesian coordinates
+        // as default, 3 polynomial coefficients for the Cartesian coordinates
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;

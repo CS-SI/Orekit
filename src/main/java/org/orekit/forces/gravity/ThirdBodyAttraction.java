@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterObserver;
  */
 public class ThirdBodyAttraction extends AbstractForceModel {
 
-    /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+    /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
     public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
     /** Central attraction scaling factor.

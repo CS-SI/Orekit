@@ -66,7 +66,7 @@ public class VisibilityCheck {
             PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
             Orbit initialOrbit = new KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 
-            // Propagator : consider a simple keplerian motion (could be more elaborate)
+            // Propagator : consider a simple Keplerian motion (could be more elaborate)
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame

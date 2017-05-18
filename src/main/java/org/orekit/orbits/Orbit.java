@@ -491,21 +491,21 @@ public abstract class Orbit
             switch (type) {
                 case MEAN :
                     if (jacobianMeanWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
                     cachedJacobian = jacobianMeanWrtCartesian;
                     break;
                 case ECCENTRIC :
                     if (jacobianEccentricWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
                     cachedJacobian = jacobianEccentricWrtCartesian;
                     break;
                 case TRUE :
                     if (jacobianTrueWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
                     cachedJacobian = jacobianTrueWrtCartesian;
@@ -539,21 +539,21 @@ public abstract class Orbit
             switch (type) {
                 case MEAN :
                     if (jacobianWrtParametersMean == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersMean;
                     break;
                 case ECCENTRIC :
                     if (jacobianWrtParametersEccentric == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersEccentric;
                     break;
                 case TRUE :
                     if (jacobianWrtParametersTrue == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersTrue;

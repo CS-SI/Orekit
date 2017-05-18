@@ -44,10 +44,10 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
-/** This class holds cartesian orbital parameters.
+/** This class holds Cartesian orbital parameters.
 
  * <p>
- * The parameters used internally are the cartesian coordinates:
+ * The parameters used internally are the Cartesian coordinates:
  *   <ul>
  *     <li>x</li>
  *     <li>y</li>
@@ -60,10 +60,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </p>
 
  * <p>
- * Note that the implementation of this class delegates all non-cartesian related
+ * Note that the implementation of this class delegates all non-Cartesian related
  * computations ({@link #getA()}, {@link #getEquinoctialEx()}, ...) to an underlying
  * instance of the {@link EquinoctialOrbit} class. This implies that using this class
- * only for analytical computations which are always based on non-cartesian
+ * only for analytical computations which are always based on non-Cartesian
  * parameters is perfectly possible but somewhat sub-optimal.
  * </p>
  * <p>
@@ -425,7 +425,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
-        // nothing to do here, as the canonical elements are already the cartesian ones
+        // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
     }
 
@@ -504,7 +504,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T cTE       = thetaE1.cos();
         final T sTE       = thetaE1.sin();
 
-        // compute shifted in-plane cartesian coordinates
+        // compute shifted in-plane Cartesian coordinates
         final T exey   = ex.multiply(ey);
         final T exCeyS = ex.multiply(cTE).add(ey.multiply(sTE));
         final T x      = a.multiply(beta.multiply(ey).multiply(ey).negate().add(1).multiply(cTE).add(beta.multiply(exey).multiply(sTE)).subtract(ex));
@@ -574,7 +574,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T M1      = M0.add(getKeplerianMeanMotion().multiply(dt));
         final T H1      = meanToHyperbolicEccentric(M1, e);
 
-        // compute shifted in-plane cartesian coordinates
+        // compute shifted in-plane Cartesian coordinates
         final T cH     = H1.cosh();
         final T sH     = H1.sinh();
         final T sE2m1  = e.subtract(1).multiply(e.add(1)).sqrt();
@@ -663,7 +663,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     private T meanToHyperbolicEccentric(final T M, final T ecc) {
 
-        // Resolution of hyperbolic Kepler equation for keplerian parameters
+        // Resolution of hyperbolic Kepler equation for Keplerian parameters
 
         // Initial guess
         T H;
@@ -761,7 +761,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return a string representation of this object
      */
     public String toString() {
-        return "cartesian parameters: " + getPVCoordinates().toString();
+        return "Cartesian parameters: " + getPVCoordinates().toString();
     }
 
     @Override

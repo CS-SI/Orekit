@@ -75,7 +75,7 @@ public class EphemerisMode {
             // Initialize state
             SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
-            // Numerical propagation with no perturbation (only keplerian movement)
+            // Numerical propagation with no perturbation (only Keplerian movement)
             // Using a very simple integrator with a fixed step: classical Runge-Kutta
             double stepSize = 10;  // the step is ten seconds
             AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);

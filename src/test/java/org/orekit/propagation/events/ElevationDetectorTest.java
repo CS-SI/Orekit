@@ -246,7 +246,7 @@ public class ElevationDetectorTest {
                                                 0.0001223149429077902, PositionAngle.MEAN,
                                                 inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
-        // Propagator : consider a simple keplerian motion (could be more elaborate)
+        // Propagator : consider a simple Keplerian motion (could be more elaborate)
         Propagator kepler = new EcksteinHechlerPropagator(initialOrbit,
                                                           Constants.EGM96_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
                                                           Constants.EGM96_EARTH_C20, 0.0, 0.0, 0.0, 0.0);

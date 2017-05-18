@@ -235,7 +235,7 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends RealFieldElement<T>> void doTestSameDateKeplerian(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<T>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
@@ -368,7 +368,7 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends RealFieldElement<T>> void doTestPropagatedKeplerian(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<T>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
