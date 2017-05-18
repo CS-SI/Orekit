@@ -615,8 +615,11 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        propagator.setResetAtEnd(true);
         final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
@@ -634,8 +637,11 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
+        propagator.setResetAtEnd(false);
         final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
         Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);

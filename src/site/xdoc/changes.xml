@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Added a flag to prevent resetting initial state at the end of integrating propagators.
+        Fixes issue #251.
+      </action>
       <action dev="luc" type="fix">
         Tutorials now all rely on orekit-data being in user home folder.
         Fixes issue #245.

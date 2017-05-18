@@ -787,8 +787,11 @@ public class FieldNumericalPropagatorTest {
         propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
+        propagator.setResetAtEnd(true);
         final FieldSpacecraftState<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA().getReal()) / initialState.getA().getReal();
         Assert.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
@@ -833,8 +836,11 @@ public class FieldNumericalPropagatorTest {
         propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
+        propagator.setResetAtEnd(false);
         final FieldSpacecraftState<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA().getReal()) / initialState.getA().getReal();
         Assert.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);

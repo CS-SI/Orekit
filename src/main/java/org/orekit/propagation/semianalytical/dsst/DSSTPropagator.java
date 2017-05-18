@@ -105,12 +105,12 @@ import org.orekit.time.AbsoluteDate;
  * in meters and radians,</li>
  * </ul>
  *
- * <p>
- * The same propagator can be reused for several orbit extrapolations,
- * by resetting the initial state without modifying the other configuration
- * parameters. However, the same instance cannot be used simultaneously by
- * different threads, the class is <em>not</em> thread-safe.
+ * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
+ * thus allowing a new propagation to be started from there without recomputing the part already performed.
+ * This behaviour can be chenged by calling {@link #setResetAtEnd(boolean)}.
  * </p>
+ * <p>Beware the same instance cannot be used simultaneously by different threads, the class is <em>not</em>
+ * thread-safe.</p>
  *
  * @see SpacecraftState
  * @see DSSTForceModel

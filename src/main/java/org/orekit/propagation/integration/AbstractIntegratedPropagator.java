@@ -86,6 +86,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Underlying raw rawInterpolator. */
     private ODEStateInterpolator mathInterpolator;
 
+    /** Flag for resetting the state at end of propagation. */
+    private boolean resetAtEnd;
+
     /** Output only the mean orbit. <br/>
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
@@ -103,6 +106,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
         this.meanOrbit      = meanOrbit;
+        this.resetAtEnd     = true;
+    }
+
+    /** Allow/disallow resetting the initial state at end of propagation.
+     * <p>
+     * By default, at the end of the propagation, the propagator resets the initial state
+     * to the final state, thus allowing a new propagation to be started from there without
+     * recomputing the part already performed. Calling this method with {@code resetAtEnd} set
+     * to false changes prevents such reset.
+     * </p>
+     * @param resetAtEnd if true, at end of each propagation, the {@link
+     * #getInitialState() initial state} will be reset to the final state of
+     * the propagation, otherwise the initial state will be preserved
+     * @since 9.0
+     */
+    public void setResetAtEnd(final boolean resetAtEnd) {
+        this.resetAtEnd = resetAtEnd;
     }
 
     /** Initialize the mapper. */
@@ -468,8 +488,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 finalState = finalState.addAdditionalState(additionalEquations.get(i).getName(),
                                                            secondary);
             }
-            resetInitialState(finalState);
-            setStartDate(finalState.getDate());
+            if (resetAtEnd) {
+                resetInitialState(finalState);
+                setStartDate(finalState.getDate());
+            }
 
             return finalState;
 
