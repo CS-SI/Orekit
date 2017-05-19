@@ -247,9 +247,9 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         final DerivativeStructure somk = omk.sin();
         // returns the Earth-fixed coordinates
         final FieldVector3D<DerivativeStructure> positionwithDerivatives =
-                        new FieldVector3D<DerivativeStructure>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
-                                                               xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
-                                                               yk.multiply(ik.sin()));
+                        new FieldVector3D<>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
+                                            xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
+                                            yk.multiply(ik.sin()));
         return new PVCoordinates(positionwithDerivatives);
     }
 

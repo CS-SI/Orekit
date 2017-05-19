@@ -61,9 +61,9 @@ public class FieldAttitudeTest {
         T zero = field.getZero();
         T one = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
-        FieldAttitude<T> attitude = new FieldAttitude<T>(new FieldAbsoluteDate<T>(field), FramesFactory.getEME2000(),
-                        new FieldRotation<T>(one, zero, zero, zero, false),
-                                         new FieldVector3D<T>(rate, new FieldVector3D<T>(zero, zero, one)), new FieldVector3D<T>(zero, zero, zero));
+        FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
+                        new FieldRotation<>(one, zero, zero, zero, false),
+                                            new FieldVector3D<>(rate, new FieldVector3D<>(zero, zero, one)), new FieldVector3D<>(zero, zero, zero));
         Assert.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
         double dt_R = 10.0;
         T dt = zero.add(dt_R);
@@ -74,9 +74,9 @@ public class FieldAttitudeTest {
         Assert.assertEquals(alpha.getReal(), FieldRotation.distance(attitude.getRotation(), shifted.getRotation()).getReal(), 1.0e-10);
 
         FieldVector3D<T> xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assert.assertEquals(0.0, xSat.subtract(new FieldVector3D<T>(alpha.cos(), alpha.sin(), zero)).getNorm().getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, xSat.subtract(new FieldVector3D<>(alpha.cos(), alpha.sin(), zero)).getNorm().getReal(), 1.0e-10);
         FieldVector3D<T> ySat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
-        Assert.assertEquals(0.0, ySat.subtract(new FieldVector3D<T>(alpha.sin().multiply(-1), alpha.cos(), zero)).getNorm().getReal(), 1.0e-10);
+        Assert.assertEquals(0.0, ySat.subtract(new FieldVector3D<>(alpha.sin().multiply(-1), alpha.cos(), zero)).getNorm().getReal(), 1.0e-10);
         FieldVector3D<T> zSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
         Assert.assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm().getReal(), 1.0e-10);
 
@@ -85,16 +85,14 @@ public class FieldAttitudeTest {
 
     private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        T one = field.getOne();
-        T rate = one.multiply(2 * FastMath.PI / (12 * 60));
-        FieldAttitude<T> attitude = new FieldAttitude<T>(new FieldAbsoluteDate<T>(field), FramesFactory.getEME2000(),
-                                         new FieldRotation<T>(one.multiply(0.48), one.multiply(0.64), one.multiply(0.36), one.multiply(0.48), false),
-                                         new FieldVector3D<T>(rate, new FieldVector3D<T>(zero, zero, one)),new FieldVector3D<T>(zero,zero,zero));
+        T rate = zero.add(2 * FastMath.PI / (12 * 60));
+        FieldAttitude<T> attitude = new FieldAttitude<>(new FieldAbsoluteDate<>(field), FramesFactory.getEME2000(),
+                                                        new FieldRotation<>(zero.add(0.48), zero.add(0.64), zero.add(0.36), zero.add(0.48), false),
+                                                        new FieldVector3D<>(rate, FieldVector3D.getPlusK(field)), FieldVector3D.getZero(field));
         Assert.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
-        T dt = one.multiply(10.0);
+        T dt = zero.add(10.0);
         FieldAttitude<T> shifted = attitude.shiftedBy(dt);
         Assert.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
-        Assert.assertEquals(rate.multiply(dt).getReal(), FieldRotation.distance(attitude.getRotation(), shifted.getRotation()).getReal(), 1.0e-10);
 
         FieldVector3D<T> shiftedX  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         FieldVector3D<T> shiftedY  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
@@ -133,18 +131,18 @@ public class FieldAttitudeTest {
         final T c50  = zero.add( 2.3e-7);
         final T c60  = zero.add( -5.5e-7);
 
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field).shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                                             FramesFactory.getEME2000(), date, ehMu);
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field).shiftedBy(584.);
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
+        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                                            FramesFactory.getEME2000(), date, ehMu);
 
         FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<T>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        propagator.setAttitudeProvider(new FieldBodyCenterPointing<T>(initialOrbit.getFrame(), earth));
+        propagator.setAttitudeProvider(new FieldBodyCenterPointing<>(initialOrbit.getFrame(), earth));
         FieldAttitude<T> initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
 
 

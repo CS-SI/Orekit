@@ -276,22 +276,22 @@ public class DragForceTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
-                        new ClassicalRungeKuttaFieldIntegrator<DerivativeStructure>(field, zero.add(6));
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
         OrbitType type = OrbitType.EQUINOCTIAL;
@@ -367,9 +367,9 @@ public class DragForceTest extends AbstractForceModelTest {
             //position check
 
             FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
 
             //System.out.println(pos_DS.getX().getPartialDerivative(1));
 
@@ -383,9 +383,9 @@ public class DragForceTest extends AbstractForceModelTest {
             //velocity check
 
             FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
@@ -395,9 +395,9 @@ public class DragForceTest extends AbstractForceModelTest {
             //acceleration check
 
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
@@ -427,17 +427,17 @@ public class DragForceTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
@@ -445,7 +445,7 @@ public class DragForceTest extends AbstractForceModelTest {
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);

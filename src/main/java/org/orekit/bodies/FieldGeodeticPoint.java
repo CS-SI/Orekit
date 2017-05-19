@@ -120,9 +120,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
             final T sinLat = latitude.sin();
             final T cosLon = longitude.cos();
             final T sinLon = longitude.sin();
-            zenith = new FieldVector3D<T>(cosLon.multiply(cosLat),
-                                          sinLon.multiply(cosLat),
-                                          sinLat);
+            zenith = new FieldVector3D<>(cosLon.multiply(cosLat),
+                                         sinLon.multiply(cosLat),
+                                         sinLat);
         }
         return zenith;
     }
@@ -151,9 +151,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
             final T sinLat = latitude.sin();
             final T cosLon = longitude.cos();
             final T sinLon = longitude.sin();
-            north = new FieldVector3D<T>(cosLon.multiply(sinLat).negate(),
-                                         sinLon.multiply(sinLat).negate(),
-                                         cosLat);
+            north = new FieldVector3D<>(cosLon.multiply(sinLat).negate(),
+                                        sinLon.multiply(sinLat).negate(),
+                                        cosLat);
         }
         return north;
     }
@@ -178,9 +178,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
      */
     public FieldVector3D<T> getEast() {
         if (east == null) {
-            east = new FieldVector3D<T>(longitude.sin().negate(),
-                                        longitude.cos(),
-                                        longitude.getField().getZero());
+            east = new FieldVector3D<>(longitude.sin().negate(),
+                                       longitude.cos(),
+                                       longitude.getField().getZero());
         }
         return east;
     }

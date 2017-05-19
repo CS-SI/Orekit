@@ -323,10 +323,10 @@ public class IodGooding {
 
     /** Compute the derivatives by finite-differences for the range problem.
      * Specifically, we are trying to solve the problem:
-     *      f(x,y) = 0
-     *      g(x,y) = 0
+     *      f(x, y) = 0
+     *      g(x, y) = 0
      * So, in a Newton-Raphson process, we would need the derivatives:
-     *  fx,fy,gx,gy
+     *  fx, fy, gx, gy
      * Enventually,
      *    dx =-f*gy / D
      *    dy = f*gx / D

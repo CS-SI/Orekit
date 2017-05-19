@@ -545,7 +545,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
            //TODO secondary[i] = ;
         }
 
-        return new FieldODEState<T>(initialState.getA().getField().getZero(), primary, secondary);
+        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary);
 
     }
 
@@ -560,7 +560,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         throws OrekitException {
 
         final FieldExpandableODE<T> ode =
-                new FieldExpandableODE<T>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
+                new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
         for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -882,8 +882,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                         secondary[i][j] = NState[j];
                 }
 
-                return new FieldODEState<T>(newState.getDate().durationFrom(getStartDate()),
-                                    primary, secondary);
+                return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
+                                           primary, secondary);
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -1026,7 +1026,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public void initialize(final boolean activateHandlers,
                                final FieldAbsoluteDate<T> targetDate) {
             this.activate = activateHandlers;
-            this.model    = new FieldDenseOutputModel<T>();
+            this.model    = new FieldDenseOutputModel<>();
             this.endDate  = targetDate;
 
             // ephemeris will be generated when last step is processed
@@ -1084,9 +1084,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                         }
 
                         // create the ephemeris
-                        ephemeris = new FieldIntegratedEphemeris<T>(startDate, minDate, maxDate,
-                                                            stateMapper, meanOrbit, model, unmanaged,
-                                                            getAdditionalStateProviders(), names);
+                        ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
+                                                                   stateMapper, meanOrbit, model, unmanaged,
+                                                                   getAdditionalStateProviders(), names);
 
                     }
                 }

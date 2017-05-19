@@ -169,18 +169,18 @@ public class ElevationDetectorTest {
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
-        double [][] maskValues = {{FastMath.toRadians(0),FastMath.toRadians(5)},
-                              {FastMath.toRadians(30),FastMath.toRadians(4)},
-                              {FastMath.toRadians(60),FastMath.toRadians(3)},
-                              {FastMath.toRadians(90),FastMath.toRadians(2)},
-                              {FastMath.toRadians(120),FastMath.toRadians(3)},
-                              {FastMath.toRadians(150),FastMath.toRadians(4)},
-                              {FastMath.toRadians(180),FastMath.toRadians(5)},
-                              {FastMath.toRadians(210),FastMath.toRadians(6)},
-                              {FastMath.toRadians(240),FastMath.toRadians(5)},
-                              {FastMath.toRadians(270),FastMath.toRadians(4)},
-                              {FastMath.toRadians(300),FastMath.toRadians(3)},
-                              {FastMath.toRadians(330),FastMath.toRadians(4)}};
+        double [][] maskValues = {{ FastMath.toRadians(  0), FastMath.toRadians(5)},
+                                  { FastMath.toRadians( 30), FastMath.toRadians(4)},
+                                  { FastMath.toRadians( 60), FastMath.toRadians(3)},
+                                  { FastMath.toRadians( 90), FastMath.toRadians(2)},
+                                  { FastMath.toRadians(120), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(150), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(180), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(210), FastMath.toRadians(6)},
+                                  { FastMath.toRadians(240), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(270), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(300), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(330), FastMath.toRadians(4)}};
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)

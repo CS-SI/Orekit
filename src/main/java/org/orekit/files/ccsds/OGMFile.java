@@ -117,7 +117,7 @@ public abstract class OGMFile extends ODMFile {
         keplerianElementsComment = Collections.emptyList();
         spacecraftComment        = Collections.emptyList();
         covarianceComment        = Collections.emptyList();
-    };
+    }
 
     /** Get epoch of state vector, Keplerian elements and covariance matrix data.
      * @return epoch the epoch

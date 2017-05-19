@@ -148,7 +148,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public FieldCartesianOrbit(final FieldPVCoordinates<T> pvaCoordinates, final Frame frame,
                                final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedFieldPVCoordinates<T>(date, pvaCoordinates), frame, mu);
+        this(new TimeStampedFieldPVCoordinates<>(date, pvaCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -279,7 +279,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public T getI() {
-        return FieldVector3D.angle(new FieldVector3D<T>(zero, zero, one), getPVCoordinates().getMomentum());
+        return FieldVector3D.angle(new FieldVector3D<>(zero, zero, one), getPVCoordinates().getMomentum());
     }
 
     /** {@inheritDoc} */
@@ -437,7 +437,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> shiftedPV = (getA().getReal() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
-        return new FieldCartesianOrbit<T>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+        return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc}
@@ -463,7 +463,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final TimeStampedFieldPVCoordinates<T> interpolated =
                 TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
                                                           sample.map(orbit -> orbit.getPVCoordinates()));
-        return new FieldCartesianOrbit<T>(interpolated, getFrame(), date, getMu());
+        return new FieldCartesianOrbit<>(interpolated, getFrame(), date, getMu());
     }
 
     /** Compute shifted position and velocity in elliptic case.
@@ -567,7 +567,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // find canonical 2D frame with p pointing to perigee
         final T v0      = sqrt.multiply(H0.divide(2).tanh()).atan().multiply(2);
-        final FieldVector3D<T> p     = new FieldRotation<T>(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
+        final FieldVector3D<T> p     = new FieldRotation<>(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
         final FieldVector3D<T> q     = FieldVector3D.crossProduct(pvM, p).normalize();
 
         // compute shifted eccentric anomaly
@@ -586,8 +586,8 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T xDot   = factor.negate().multiply(sH);
         final T yDot   =  factor.multiply(sE2m1).multiply(cH);
 
-        final FieldVector3D<T> shiftedP = new FieldVector3D<T>(x, p, y, q);
-        final FieldVector3D<T> shiftedV = new FieldVector3D<T>(xDot, p, yDot, q);
+        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, p, y, q);
+        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration

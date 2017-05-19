@@ -111,9 +111,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final double a, final FieldPVCoordinates<T> pv) {
-        super(new FieldVector3D<T>(a, pv.getPosition()),
-              new FieldVector3D<T>(a, pv.getVelocity()),
-              new FieldVector3D<T>(a, pv.getAcceleration()));
+        super(new FieldVector3D<>(a, pv.getPosition()),
+              new FieldVector3D<>(a, pv.getVelocity()),
+              new FieldVector3D<>(a, pv.getAcceleration()));
         this.date = date;
     }
 
@@ -138,9 +138,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a, final FieldPVCoordinates<T> pv) {
-        super(new FieldVector3D<T>(a, pv.getPosition()),
-              new FieldVector3D<T>(a, pv.getVelocity()),
-              new FieldVector3D<T>(a, pv.getAcceleration()));
+        super(new FieldVector3D<>(a, pv.getPosition()),
+              new FieldVector3D<>(a, pv.getVelocity()),
+              new FieldVector3D<>(a, pv.getAcceleration()));
         this.date = date;
     }
 
@@ -165,9 +165,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a, final PVCoordinates pv) {
-        super(new FieldVector3D<T>(a, pv.getPosition()),
-              new FieldVector3D<T>(a, pv.getVelocity()),
-              new FieldVector3D<T>(a, pv.getAcceleration()));
+        super(new FieldVector3D<>(a, pv.getPosition()),
+              new FieldVector3D<>(a, pv.getVelocity()),
+              new FieldVector3D<>(a, pv.getAcceleration()));
         this.date = date;
     }
 
@@ -226,9 +226,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final double a1, final FieldPVCoordinates<T> pv1,
                                          final double a2, final FieldPVCoordinates<T> pv2) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
         this.date = date;
     }
 
@@ -260,9 +260,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a1, final FieldPVCoordinates<T> pv1,
                                          final T a2, final FieldPVCoordinates<T> pv2) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
         this.date = date;
     }
 
@@ -294,9 +294,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration()));
         this.date = date;
     }
 
@@ -334,9 +334,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final double a1, final FieldPVCoordinates<T> pv1,
                                          final double a2, final FieldPVCoordinates<T> pv2,
                                          final double a3, final FieldPVCoordinates<T> pv3) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
         this.date = date;
     }
 
@@ -374,9 +374,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final T a1, final FieldPVCoordinates<T> pv1,
                                          final T a2, final FieldPVCoordinates<T> pv2,
                                          final T a3, final FieldPVCoordinates<T> pv3) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
         this.date = date;
     }
 
@@ -414,9 +414,9 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final T a1, final PVCoordinates pv1,
                                          final T a2, final PVCoordinates pv2,
                                          final T a3, final PVCoordinates pv3) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration()));
         this.date = date;
     }
 
@@ -460,12 +460,12 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final double a2, final FieldPVCoordinates<T> pv2,
                                          final double a3, final FieldPVCoordinates<T> pv3,
                                          final double a4, final FieldPVCoordinates<T> pv4) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
-                                   a3, pv3.getPosition(),     a4, pv4.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
-                                   a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
-                                   a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
+                                  a3, pv3.getPosition(),     a4, pv4.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
+                                  a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
+                                  a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
         this.date = date;
     }
 
@@ -509,12 +509,12 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final T a2, final FieldPVCoordinates<T> pv2,
                                          final T a3, final FieldPVCoordinates<T> pv3,
                                          final T a4, final FieldPVCoordinates<T> pv4) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
-                                   a3, pv3.getPosition(),     a4, pv4.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
-                                   a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
-                                   a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
+                                  a3, pv3.getPosition(),     a4, pv4.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
+                                  a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
+                                  a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
         this.date = date;
     }
 
@@ -558,12 +558,12 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                          final T a2, final PVCoordinates pv2,
                                          final T a3, final PVCoordinates pv3,
                                          final T a4, final PVCoordinates pv4) {
-        super(new FieldVector3D<T>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
-                                   a3, pv3.getPosition(),     a4, pv4.getPosition()),
-              new FieldVector3D<T>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
-                                   a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
-              new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
-                                   a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
+        super(new FieldVector3D<>(a1, pv1.getPosition(),     a2, pv2.getPosition(),
+                                  a3, pv3.getPosition(),     a4, pv4.getPosition()),
+              new FieldVector3D<>(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),
+                                  a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
+              new FieldVector3D<>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
+                                  a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
         this.date = date;
     }
 
@@ -586,8 +586,8 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final double dt) {
         final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<T>(date.shiftedBy(dt),
-                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt),
+                                                   spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 
     /** Get a time-shifted state.
@@ -602,8 +602,8 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldPVCoordinates<T> shiftedBy(final T dt) {
         final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
-        return new TimeStampedFieldPVCoordinates<T>(date.shiftedBy(dt.getReal()),
-                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+        return new TimeStampedFieldPVCoordinates<>(date.shiftedBy(dt.getReal()),
+                                                   spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 
     /** Interpolate position-velocity.
@@ -659,7 +659,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                                      final Stream<TimeStampedFieldPVCoordinates<T>> sample) {
 
         // set up an interpolator taking derivatives into account
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
         // add sample points
         switch (filter) {
@@ -700,10 +700,10 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
 
         // build a new interpolated instance
 
-        return new TimeStampedFieldPVCoordinates<T>(date,
-                                                    new FieldVector3D<T>(p[0]),
-                                                    new FieldVector3D<T>(p[1]),
-                                                    new FieldVector3D<T>(p[2]));
+        return new TimeStampedFieldPVCoordinates<>(date,
+                                                   new FieldVector3D<>(p[0]),
+                                                   new FieldVector3D<>(p[1]),
+                                                   new FieldVector3D<>(p[2]));
 
     }
 

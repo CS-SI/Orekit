@@ -90,7 +90,7 @@ public class ODMMetaData {
     ODMMetaData(final ODMFile odmFile) {
         this.odmFile = odmFile;
         comment = new ArrayList<String>();
-    };
+    }
 
     /** Get the ODM file to which these meta-data belong.
      * @return ODM file to which these meta-data belong

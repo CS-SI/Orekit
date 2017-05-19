@@ -81,7 +81,7 @@ public class OMMFile extends OGMFile {
     /** Create a new OMM file object. */
     OMMFile() {
         metaData = new OMMMetaData(this);
-    };
+    }
 
     /** Get the meta data.
      * @return meta data

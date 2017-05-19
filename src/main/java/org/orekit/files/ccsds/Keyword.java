@@ -108,47 +108,47 @@ public enum Keyword {
     /** Coordinate system for covariance matrix. Its value can either be RSW, RTN (both indicating
     /* "Radial, Transverse, Normal") or TNW. */
     COV_REF_FRAME,
-    /** Covariance matrix [1,1] element. */
+    /** Covariance matrix [1, 1] element. */
     CX_X,
-    /** Covariance matrix [2,1] element. */
+    /** Covariance matrix [2, 1] element. */
     CY_X,
-    /** Covariance matrix [2,2] element. */
+    /** Covariance matrix [2, 2] element. */
     CY_Y,
-    /** Covariance matrix [3,1] element. */
+    /** Covariance matrix [3, 1] element. */
     CZ_X,
-    /** Covariance matrix [3,2] element. */
+    /** Covariance matrix [3, 2] element. */
     CZ_Y,
-    /** Covariance matrix [3,3] element. */
+    /** Covariance matrix [3, 3] element. */
     CZ_Z,
-    /** Covariance matrix [4,1] element. */
+    /** Covariance matrix [4, 1] element. */
     CX_DOT_X,
-    /** Covariance matrix [4,2] element. */
+    /** Covariance matrix [4, 2] element. */
     CX_DOT_Y,
-    /** Covariance matrix [4,3] element. */
+    /** Covariance matrix [4, 3] element. */
     CX_DOT_Z,
-    /** Covariance matrix [4,4] element. */
+    /** Covariance matrix [4, 4] element. */
     CX_DOT_X_DOT,
-    /** Covariance matrix [5,1] element. */
+    /** Covariance matrix [5, 1] element. */
     CY_DOT_X,
-    /** Covariance matrix [5,2] element. */
+    /** Covariance matrix [5, 2] element. */
     CY_DOT_Y,
-    /** Covariance matrix [5,3] element. */
+    /** Covariance matrix [5, 3] element. */
     CY_DOT_Z,
-    /** Covariance matrix [5,4] element. */
+    /** Covariance matrix [5, 4] element. */
     CY_DOT_X_DOT,
-    /** Covariance matrix [5,5] element. */
+    /** Covariance matrix [5, 5] element. */
     CY_DOT_Y_DOT,
-    /** Covariance matrix [6,1] element. */
+    /** Covariance matrix [6, 1] element. */
     CZ_DOT_X,
-    /** Covariance matrix [6,2] element. */
+    /** Covariance matrix [6, 2] element. */
     CZ_DOT_Y,
-    /** Covariance matrix [6,3] element. */
+    /** Covariance matrix [6, 3] element. */
     CZ_DOT_Z,
-    /** Covariance matrix [6,4] element. */
+    /** Covariance matrix [6, 4] element. */
     CZ_DOT_X_DOT,
-    /** Covariance matrix [6,5] element. */
+    /** Covariance matrix [6, 5] element. */
     CZ_DOT_Y_DOT,
-    /** Covariance matrix [6,6] element. */
+    /** Covariance matrix [6, 6] element. */
     CZ_DOT_Z_DOT,
     /** Epoch of ignition. */
     MAN_EPOCH_IGNITION,

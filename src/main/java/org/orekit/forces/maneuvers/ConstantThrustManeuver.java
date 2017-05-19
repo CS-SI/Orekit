@@ -155,7 +155,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
     }
 
@@ -220,8 +220,8 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         if (firing) {
 
             // compute thrust acceleration in inertial frame
-            adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
-                                               s.getAttitude().getRotation().applyInverseTo(direction)),
+            adder.addAcceleration(new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+                                                      s.getAttitude().getRotation().applyInverseTo(direction)),
                                   s.getFrame());
 
             // compute flow rate
@@ -242,8 +242,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
         } else {
             // constant (and null) acceleration when not firing
-            final DerivativeStructure zero = mass.getField().getZero();
-            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+            return FieldVector3D.getZero(mass.getField());
         }
     }
 
@@ -257,12 +256,11 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
             if (THRUST.equals(paramName)) {
                 final DerivativeStructure thrustDS = factory.variable(0, thrust);
-                return new FieldVector3D<DerivativeStructure>(thrustDS.divide(s.getMass()),
-                                                              s.getAttitude().getRotation().applyInverseTo(direction));
+                return new FieldVector3D<>(thrustDS.divide(s.getMass()),
+                                           s.getAttitude().getRotation().applyInverseTo(direction));
             } else if (FLOW_RATE.equals(paramName)) {
                 // acceleration does not depend on flow rate (only mass decrease does)
-                final DerivativeStructure zero = factory.getDerivativeField().getZero();
-                return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+                return FieldVector3D.getZero(factory.getDerivativeField());
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                           THRUST + ", " + FLOW_RATE);
@@ -270,8 +268,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         } else {
             // constant (and null) acceleration when not firing
-            final DerivativeStructure zero = factory.getDerivativeField().getZero();
-            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+            return FieldVector3D.getZero(factory.getDerivativeField());
         }
 
     }
@@ -306,12 +303,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         // at start time and disabled at end time; in backward
         // propagation direction, firing must be enabled
         // at end time and disabled at start time
-        final FieldDateDetector<T> startDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, startDate)).
+        final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = d.isForward();
                 return FieldEventHandler.Action.RESET_DERIVATIVES;
             });
-        final FieldDateDetector<T> endDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, endDate)).
+        final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = !d.isForward();
                 return FieldEventHandler.Action.RESET_DERIVATIVES;

@@ -98,7 +98,7 @@ public class IsotropicDrag implements DragSensitive {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
         this.crossSection = crossSection;
         this.dragCoeff    = dragCoeff;
         this.factory      = new DSFactory(1, 1);
@@ -122,8 +122,8 @@ public class IsotropicDrag implements DragSensitive {
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
                                                                final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
                                                                final DerivativeStructure density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
-        return new FieldVector3D<DerivativeStructure>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
-                              relativeVelocity);
+        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
+                                   relativeVelocity);
     }
 
     /** {@inheritDoc} */

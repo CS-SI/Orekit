@@ -109,7 +109,7 @@ public class RangeAnalytic extends Range {
         final Transform topoToInertAtTransitDate =
                       groundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDate);
         final TimeStampedPVCoordinates stationAtTransitDate = topoToInertAtTransitDate.
-                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDate,PVCoordinates.ZERO));
+                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
         // Uplink time of flight
         final double          tauU             = groundStation.signalTimeOfFlight(stationAtTransitDate,
@@ -120,7 +120,7 @@ public class RangeAnalytic extends Range {
         // Real date and position of station at signal departure
         final AbsoluteDate             uplinkDate    = downlinkDate.shiftedBy(-tau);
         final TimeStampedPVCoordinates stationUplink = topoToInertDownlink.shiftedBy(-tau).
-                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate, PVCoordinates.ZERO));
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
@@ -267,28 +267,28 @@ public class RangeAnalytic extends Range {
         // The components of the position are the 3 first derivative parameters
         final Vector3D stateP = state.getPVCoordinates().getPosition();
         final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<DerivativeStructure>(dsFactory.variable(0, stateP.getX()),
-                                                               dsFactory.variable(1, stateP.getY()),
-                                                               dsFactory.variable(2, stateP.getZ()));
+                        new FieldVector3D<>(dsFactory.variable(0, stateP.getX()),
+                                            dsFactory.variable(1, stateP.getY()),
+                                            dsFactory.variable(2, stateP.getZ()));
 
         // Velocity of the spacecraft expressed as a derivative structure
         // The components of the velocity are the 3 second derivative parameters
         final Vector3D stateV = state.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<DerivativeStructure>(dsFactory.variable(3, stateV.getX()),
-                                                               dsFactory.variable(4, stateV.getY()),
-                                                               dsFactory.variable(5, stateV.getZ()));
+                        new FieldVector3D<>(dsFactory.variable(3, stateV.getX()),
+                                            dsFactory.variable(4, stateV.getY()),
+                                            dsFactory.variable(5, stateV.getZ()));
 
         // Acceleration of the spacecraft
         // The components of the acceleration are not derivative parameters
         final Vector3D stateA = state.getPVCoordinates().getAcceleration();
         final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<DerivativeStructure>(dsFactory.constant(stateA.getX()),
-                                                               dsFactory.constant(stateA.getY()),
-                                                               dsFactory.constant(stateA.getZ()));
+                        new FieldVector3D<>(dsFactory.constant(stateA.getX()),
+                                            dsFactory.constant(stateA.getY()),
+                                            dsFactory.constant(stateA.getZ()));
 
         final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<DerivativeStructure>(state.getDate(), pDS, vDS, aDS);
+                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
         // Station position in body frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
@@ -299,11 +299,10 @@ public class RangeAnalytic extends Range {
         final AbsoluteDate downlinkDate = getDate();
         final Transform bodyToInertDownlink = bodyframe.getTransformTo(state.getFrame(), downlinkDate);
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
-                        bodyToInertDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(
-                                        downlinkDate,
-                                        od.getOrigin(),
-                                        od.getZero(),
-                                        od.getZero()));
+                        bodyToInertDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDate,
+                                                                                                       od.getOrigin(),
+                                                                                                       od.getZero(),
+                                                                                                       od.getZero()));
 
         // Compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
@@ -340,27 +339,27 @@ public class RangeAnalytic extends Range {
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {range.getPartialDerivative(1,0,0, 0,0,0, 0,0,0), // dROndPx
-                                                    range.getPartialDerivative(0,1,0, 0,0,0, 0,0,0), // dROndPy
-                                                    range.getPartialDerivative(0,0,1, 0,0,0, 0,0,0), // dROndPz
-                                                    range.getPartialDerivative(0,0,0, 1,0,0, 0,0,0), // dROndVx
-                                                    range.getPartialDerivative(0,0,0, 0,1,0, 0,0,0), // dROndVy
-                                                    range.getPartialDerivative(0,0,0, 0,0,1, 0,0,0), // dROndVz
+        estimated.setStateDerivatives(new double[] {range.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
+                                                    range.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndPy
+                                                    range.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndPz
+                                                    range.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0), // dROndVx
+                                                    range.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0), // dROndVy
+                                                    range.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0), // dROndVz
         });
 
 
         // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
         if (groundStation.getEastOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(),
-                                              range.getPartialDerivative(0,0,0, 0,0,0, 1,0,0)); // dROndQTx
+                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQTx
         }
         if (groundStation.getNorthOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(),
-                                              range.getPartialDerivative(0,0,0, 0,0,0, 0,1,0)); // dROndQTy
+                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQTy
         }
         if (groundStation.getZenithOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(),
-                                              range.getPartialDerivative(0,0,0, 0,0,0, 0,0,1)); // dROndQTz
+                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQTz
         }
 
 
@@ -380,7 +379,7 @@ public class RangeAnalytic extends Range {
                         transformPVCoordinates(PVCoordinates.ZERO);
 
         // Downlink time of flight from spacecraft to station
-        final double td = groundStation.signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(),downlinkDate);
+        final double td = groundStation.signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate);
         final double dt = delta - td;
 
         // Transit state position
@@ -394,13 +393,13 @@ public class RangeAnalytic extends Range {
 //        final Transform topoToInertUplink =
 //                        station.getOffsetFrame().getTransformTo(state.getFrame(), uplinkDate);
 //        TimeStampedPVCoordinates QUplink = topoToInertUplink.
-//                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate,PVCoordinates.ZERO));
+//                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate, PVCoordinates.ZERO));
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
                       groundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitT);
         TimeStampedPVCoordinates QAtTransitDate = topoToInertAtTransitDate.
-                      transformPVCoordinates(new TimeStampedPVCoordinates(transitT,PVCoordinates.ZERO));
+                      transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
         // Uplink time of flight
         final double tu = groundStation.signalTimeOfFlight(QAtTransitDate, transitP, transitT);
@@ -412,7 +411,7 @@ public class RangeAnalytic extends Range {
         AbsoluteDate uplinkDate    = downlinkDate.shiftedBy(-t);
 
         TimeStampedPVCoordinates QUplink = topoToInertDownlink.shiftedBy(-t).
-                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate, PVCoordinates.ZERO));
 
 
         // Range value
@@ -442,12 +441,12 @@ public class RangeAnalytic extends Range {
         final double dtddVz   = dtddPz*dt;
 
         // From the DS
-        final double dtddPxDS = tauD.getPartialDerivative(1,0,0, 0,0,0, 0,0,0);
-        final double dtddPyDS = tauD.getPartialDerivative(0,1,0, 0,0,0, 0,0,0);
-        final double dtddPzDS = tauD.getPartialDerivative(0,0,1, 0,0,0, 0,0,0);
-        final double dtddVxDS = tauD.getPartialDerivative(0,0,0, 1,0,0, 0,0,0);
-        final double dtddVyDS = tauD.getPartialDerivative(0,0,0, 0,1,0, 0,0,0);
-        final double dtddVzDS = tauD.getPartialDerivative(0,0,0, 0,0,1, 0,0,0);
+        final double dtddPxDS = tauD.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtddPyDS = tauD.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtddPzDS = tauD.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0);
+        final double dtddVxDS = tauD.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0);
+        final double dtddVyDS = tauD.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0);
+        final double dtddVzDS = tauD.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0);
 
         // Difference
         final double d_dtddPx = dtddPxDS-dtddPx;
@@ -496,12 +495,12 @@ public class RangeAnalytic extends Range {
 
 
         // From the DS
-        final double dtudPxDS = tauU.getPartialDerivative(1,0,0, 0,0,0, 0,0,0);
-        final double dtudPyDS = tauU.getPartialDerivative(0,1,0, 0,0,0, 0,0,0);
-        final double dtudPzDS = tauU.getPartialDerivative(0,0,1, 0,0,0, 0,0,0);
-        final double dtudVxDS = tauU.getPartialDerivative(0,0,0, 1,0,0, 0,0,0);
-        final double dtudVyDS = tauU.getPartialDerivative(0,0,0, 0,1,0, 0,0,0);
-        final double dtudVzDS = tauU.getPartialDerivative(0,0,0, 0,0,1, 0,0,0);
+        final double dtudPxDS = tauU.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtudPyDS = tauU.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtudPzDS = tauU.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0);
+        final double dtudVxDS = tauU.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0);
+        final double dtudVyDS = tauU.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0);
+        final double dtudVzDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0);
 
         // Difference
         final double d_dtudPx = dtudPxDS-dtudPx;
@@ -524,12 +523,12 @@ public class RangeAnalytic extends Range {
         double dRdVz = (dtddVz + dtudVz)*cOver2;
 
         // With DS
-        double dRdPxDS = range.getPartialDerivative(1,0,0, 0,0,0, 0,0,0);
-        double dRdPyDS = range.getPartialDerivative(0,1,0, 0,0,0, 0,0,0);
-        double dRdPzDS = range.getPartialDerivative(0,0,1, 0,0,0, 0,0,0);
-        double dRdVxDS = range.getPartialDerivative(0,0,0, 1,0,0, 0,0,0);
-        double dRdVyDS = range.getPartialDerivative(0,0,0, 0,1,0, 0,0,0);
-        double dRdVzDS = range.getPartialDerivative(0,0,0, 0,0,1, 0,0,0);
+        double dRdPxDS = range.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dRdPyDS = range.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0);
+        double dRdPzDS = range.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0);
+        double dRdVxDS = range.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dRdVyDS = range.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dRdVzDS = range.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0);
 
         // Diff
         final double d_dRdPx = dRdPxDS-dRdPx;
@@ -555,9 +554,9 @@ public class RangeAnalytic extends Range {
         final Vector3D dtddQ = rotTopoToInert.applyTo(dtddQI);
 
         // With DS
-        double dtddQxDS = tauD.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
-        double dtddQyDS = tauD.getPartialDerivative(0,0,0, 0,0,0, 0,1,0);
-        double dtddQzDS = tauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,1);
+        double dtddQxDS = tauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtddQyDS = tauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtddQzDS = tauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1);
 
         // Diff
         final double d_dtddQx = dtddQxDS-dtddQ.getX();
@@ -596,9 +595,9 @@ public class RangeAnalytic extends Range {
 ////                                    .dotProduct((Qt_V.subtract(vel)).scalarMultiply(dtddQIz));
 //                                    .dotProduct(Vector3D.MINUS_K.crossProduct(omega).scalarMultiply(t));
 //
-//        double dtu_dQxDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
-//        double dtu_dQyDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,1,0);
-//        double dtu_dQzDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,1);
+//        double dtu_dQxDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0);
+//        double dtu_dQyDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0);
+//        double dtu_dQzDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1);
 //        final Vector3D dtudQDS = new Vector3D(dtu_dQxDS, dtu_dQyDS, dtu_dQzDS);
 //        final Vector3D dtudQIDS = rotTopoToInert.applyInverseTo(dtudQDS);
 //        double dtudQIxDS = dtudQIDS.getX();
@@ -612,9 +611,9 @@ public class RangeAnalytic extends Range {
 
 
         // With DS
-        double dtudQxDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
-        double dtudQyDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,1,0);
-        double dtudQzDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,1);
+        double dtudQxDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtudQyDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtudQzDS = tauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1);
 
         // Diff
         final double d_dtudQx = dtudQxDS-dtudQ.getX();
@@ -630,9 +629,9 @@ public class RangeAnalytic extends Range {
         double dRdQz = (dtddQ.getZ() + dtudQ.getZ())*cOver2;
 
         // With DS
-        double dRdQxDS = range.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
-        double dRdQyDS = range.getPartialDerivative(0,0,0, 0,0,0, 0,1,0);
-        double dRdQzDS = range.getPartialDerivative(0,0,0, 0,0,0, 0,0,1);
+        double dRdQxDS = range.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dRdQyDS = range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dRdQzDS = range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1);
 
         // Diff
         final double d_dRdQx = dRdQxDS-dRdQx;

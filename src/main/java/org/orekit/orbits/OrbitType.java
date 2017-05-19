@@ -141,11 +141,11 @@ public enum OrbitType {
             final FieldVector3D<T> a;
             if (stateVectorDot == null) {
                 // we don't have data about acceleration
-                return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v), frame, date, mu);
+                return new FieldCartesianOrbit<>(new FieldPVCoordinates<>(p, v), frame, date, mu);
             } else {
                 // we do have an acceleration
                 a = new FieldVector3D<>(stateVectorDot[3], stateVectorDot[4], stateVectorDot[5]);
-                return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v, a), frame, date, mu);
+                return new FieldCartesianOrbit<>(new FieldPVCoordinates<>(p, v, a), frame, date, mu);
             }
 
         }
@@ -229,7 +229,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> FieldCircularOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? (FieldCircularOrbit<T>) orbit : new FieldCircularOrbit<T>(orbit);
+            return (orbit.getType() == this) ? (FieldCircularOrbit<T>) orbit : new FieldCircularOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -367,7 +367,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? (FieldEquinoctialOrbit<T>) orbit : new FieldEquinoctialOrbit<T>(orbit);
+            return (orbit.getType() == this) ? (FieldEquinoctialOrbit<T>) orbit : new FieldEquinoctialOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -508,7 +508,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> FieldKeplerianOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? (FieldKeplerianOrbit<T>) orbit : new FieldKeplerianOrbit<T>(orbit);
+            return (orbit.getType() == this) ? (FieldKeplerianOrbit<T>) orbit : new FieldKeplerianOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */

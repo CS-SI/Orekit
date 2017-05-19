@@ -789,7 +789,7 @@ public class NumericalPropagatorTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate initialDate = new AbsoluteDate(2005, 1, 1, 0, 0, 0.0, utc);
         double duration = 100000.;
-        AbsoluteDate endDate = new AbsoluteDate(initialDate,duration);
+        AbsoluteDate endDate = new AbsoluteDate(initialDate, duration);
 
         // Initialization of the frame EME2000
         Frame EME2000 = FramesFactory.getEME2000();
@@ -1350,7 +1350,7 @@ public class NumericalPropagatorTest {
 
     /**
      * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
-     *   If we have [0,1,2,3,4], and input is 2, then we will do 2->3, 2->4.
+     *   If we have [0, 1, 2, 3, 4], and input is 2, then we will do 2->3, 2->4.
      * @param startIndex index of start state
      * @param states all states
      * @return position error for recomputed following points

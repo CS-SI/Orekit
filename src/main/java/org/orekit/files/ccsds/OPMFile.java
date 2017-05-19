@@ -54,7 +54,7 @@ public class OPMFile extends OGMFile {
     OPMFile() {
         metaData  = new ODMMetaData(this);
         maneuvers = new ArrayList<Maneuver>();
-    };
+    }
 
     /** Get the meta data.
      * @return meta data

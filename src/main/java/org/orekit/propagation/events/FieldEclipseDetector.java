@@ -144,8 +144,8 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
     @Override
     protected FieldEclipseDetector<T> create(final T newMaxCheck, final T newThreshold,
                                      final int nawMaxIter, final FieldEventHandler<? super FieldEclipseDetector<T>, T> newHandler) {
-        return new FieldEclipseDetector<T>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
+        return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
+                                          occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
     /**
@@ -158,9 +158,9 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      * @since 6.1
      */
     public FieldEclipseDetector<T> withUmbra() {
-        return new FieldEclipseDetector<T>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, occultingRadius,
-                                   true);
+        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                          occulted, occultedRadius, occulting, occultingRadius,
+                                          true);
     }
 
     /**
@@ -173,9 +173,9 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      * @since 6.1
      */
     public FieldEclipseDetector<T> withPenumbra() {
-        return new FieldEclipseDetector<T>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, occultingRadius,
-                                   false);
+        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                          occulted, occultedRadius, occulting, occultingRadius,
+                                          false);
     }
 
     /** Get the occulting body.

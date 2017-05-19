@@ -53,7 +53,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit)
         throws OrekitException {
-        this(initialFieldOrbit, new FieldInertialProvider<T>(initialFieldOrbit.getA().getField()), initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, new FieldInertialProvider<>(initialFieldOrbit.getA().getField()), initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -64,7 +64,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu)
         throws OrekitException {
-        this(initialFieldOrbit, new FieldInertialProvider<T>(initialFieldOrbit.getA().getField()), mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, new FieldInertialProvider<>(initialFieldOrbit.getA().getField()), mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and attitude provider.

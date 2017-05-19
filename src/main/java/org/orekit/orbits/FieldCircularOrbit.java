@@ -291,10 +291,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // compute inclination
         final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
-        i = FieldVector3D.angle(momentum, new FieldVector3D<T>(zero, zero, one));
+        final FieldVector3D<T> plusK = FieldVector3D.getPlusK(r.getField());
+        i = FieldVector3D.angle(momentum, plusK);
 
         // compute right ascension of ascending node
-        final FieldVector3D<T> node  = FieldVector3D.crossProduct(new FieldVector3D<T>(zero, zero, one), momentum);
+        final FieldVector3D<T> node  = FieldVector3D.crossProduct(plusK, momentum);
         raan = node.getY().atan2(node.getX());
 
         // 2D-coordinates in the canonical frame
@@ -391,7 +392,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     public FieldCircularOrbit(final FieldPVCoordinates<T> PVCoordinates, final Frame frame,
                               final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedFieldPVCoordinates<T>(date, PVCoordinates), frame, mu);
+        this(new TimeStampedFieldPVCoordinates<>(date, PVCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -1183,16 +1184,35 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         fillHalfRow(a2.multiply(2.0 / mu), velocity, jacobian[0], 3);
 
         // differentials of the normalized momentum
-        final FieldVector3D<T> danP = new FieldVector3D<T>(v2, position, pv.negate(), velocity);
-        final FieldVector3D<T> danV = new FieldVector3D<T>(r2, velocity, pv.negate(), position);
-        final T recip  = partialPV.getMomentum().getNorm().reciprocal();
-        final T recip2 = recip.multiply(recip);
-        final FieldVector3D<T> dwXP = new FieldVector3D<T>(recip, new FieldVector3D<T>( zero,               vz, vy.negate()),  recip2.negate().multiply(sinRaan).multiply(sinI), danP);
-        final FieldVector3D<T> dwYP = new FieldVector3D<T>(recip, new FieldVector3D<T>( vz.negate(),  zero,              vx),  recip2.multiply(cosRaan).multiply(sinI), danP);
-        final FieldVector3D<T> dwZP = new FieldVector3D<T>(recip, new FieldVector3D<T>( vy,    vx.negate(),            zero),  recip2.negate().multiply(cosI),           danP);
-        final FieldVector3D<T> dwXV = new FieldVector3D<T>(recip, new FieldVector3D<T>( zero,   z.negate(),               y),  recip2.negate().multiply(sinRaan).multiply(sinI), danV);
-        final FieldVector3D<T> dwYV = new FieldVector3D<T>(recip, new FieldVector3D<T>(    z,         zero,      x.negate()),  recip2.multiply(cosRaan).multiply(sinI), danV);
-        final FieldVector3D<T> dwZV = new FieldVector3D<T>(recip, new FieldVector3D<T>( y.negate(),       x,            zero), recip2.negate().multiply(cosI),           danV);
+        final FieldVector3D<T> danP = new FieldVector3D<>(v2, position, pv.negate(), velocity);
+        final FieldVector3D<T> danV = new FieldVector3D<>(r2, velocity, pv.negate(), position);
+        final T recip   = partialPV.getMomentum().getNorm().reciprocal();
+        final T recip2  = recip.multiply(recip);
+        final T recip2N = recip2.negate();
+        final FieldVector3D<T> dwXP = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(zero, vz, vy.negate()),
+                                                          recip2N.multiply(sinRaan).multiply(sinI),
+                                                          danP);
+        final FieldVector3D<T> dwYP = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(vz.negate(), zero, vx),
+                                                          recip2.multiply(cosRaan).multiply(sinI),
+                                                          danP);
+        final FieldVector3D<T> dwZP = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(vy, vx.negate(), zero),
+                                                          recip2N.multiply(cosI),
+                                                          danP);
+        final FieldVector3D<T> dwXV = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(zero, z.negate(), y),
+                                                          recip2N.multiply(sinRaan).multiply(sinI),
+                                                          danV);
+        final FieldVector3D<T> dwYV = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(z, zero, x.negate()),
+                                                          recip2.multiply(cosRaan).multiply(sinI),
+                                                          danV);
+        final FieldVector3D<T> dwZV = new FieldVector3D<>(recip,
+                                                          new FieldVector3D<>(y.negate(), x, zero),
+                                                          recip2N.multiply(cosI),
+                                                          danV);
 
         // di
         fillHalfRow(sinRaan.multiply(cosI), dwXP, cosRaan.negate().multiply(cosI), dwYP, sinI.negate(), dwZP, jacobian[3], 0);
@@ -1209,36 +1229,36 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T v     = cv.multiply(cosI).add(z.multiply(sinI));
 
         // du
-        final FieldVector3D<T> duP = new FieldVector3D<T>(cv.multiply(cosRaan).divide(sinI), dwXP,
-                                          cv.multiply(sinRaan).divide(sinI), dwYP,
-                                          one, new FieldVector3D<T>(cosRaan, sinRaan, zero));
-        final FieldVector3D<T> duV = new FieldVector3D<T>(cv.multiply(cosRaan).divide(sinI), dwXV,
-                                          cv.multiply(sinRaan).divide(sinI), dwYV);
+        final FieldVector3D<T> duP = new FieldVector3D<>(cv.multiply(cosRaan).divide(sinI), dwXP,
+                                                         cv.multiply(sinRaan).divide(sinI), dwYP,
+                                                         one, new FieldVector3D<>(cosRaan, sinRaan, zero));
+        final FieldVector3D<T> duV = new FieldVector3D<>(cv.multiply(cosRaan).divide(sinI), dwXV,
+                                                         cv.multiply(sinRaan).divide(sinI), dwYV);
 
         // dv
-        final FieldVector3D<T> dvP = new FieldVector3D<T>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXP,
-                                          u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYP,
-                                          cv, dwZP,
-                                          one, new FieldVector3D<T>(sinRaan.negate().multiply(cosI), cosRaan.multiply(cosI), sinI));
-        final FieldVector3D<T> dvV = new FieldVector3D<T>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXV,
-                                          u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYV,
-                                          cv, dwZV);
+        final FieldVector3D<T> dvP = new FieldVector3D<>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXP,
+                                                         u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYP,
+                                                         cv, dwZP,
+                                                         one, new FieldVector3D<>(sinRaan.negate().multiply(cosI), cosRaan.multiply(cosI), sinI));
+        final FieldVector3D<T> dvV = new FieldVector3D<>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXV,
+                                                         u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYV,
+                                                         cv, dwZV);
 
-        final FieldVector3D<T> dc1P = new FieldVector3D<T>(aOr2.multiply(eSinE.multiply(eSinE).multiply(2).add(1).subtract(eCosE)).divide(r2), position,
-                                            aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), velocity);
-        final FieldVector3D<T> dc1V = new FieldVector3D<T>(aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), position,
-                                            zero.add(2).divide(mu), velocity);
-        final FieldVector3D<T> dc2P = new FieldVector3D<T>(aOr2.multiply(eSinE).multiply(eSinE.multiply(eSinE).subtract(e2.negate().add(1))).divide(r2.multiply(epsilon)), position,
-                                            aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), velocity);
-        final FieldVector3D<T> dc2V = new FieldVector3D<T>(aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), position,
-                                            eSinE.divide(epsilon.multiply(mu)), velocity);
+        final FieldVector3D<T> dc1P = new FieldVector3D<>(aOr2.multiply(eSinE.multiply(eSinE).multiply(2).add(1).subtract(eCosE)).divide(r2), position,
+                                                          aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), velocity);
+        final FieldVector3D<T> dc1V = new FieldVector3D<>(aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), position,
+                                                          zero.add(2).divide(mu), velocity);
+        final FieldVector3D<T> dc2P = new FieldVector3D<>(aOr2.multiply(eSinE).multiply(eSinE.multiply(eSinE).subtract(e2.negate().add(1))).divide(r2.multiply(epsilon)), position,
+                                                          aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), velocity);
+        final FieldVector3D<T> dc2V = new FieldVector3D<>(aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), position,
+                                                          eSinE.divide(epsilon.multiply(mu)), velocity);
 
         final T cof1   = aOr2.multiply(eCosE.subtract(e2));
         final T cof2   = aOr2.multiply(epsilon).multiply(eSinE);
-        final FieldVector3D<T> dexP = new FieldVector3D<T>(u, dc1P,  v, dc2P, cof1, duP,  cof2, dvP);
-        final FieldVector3D<T> dexV = new FieldVector3D<T>(u, dc1V,  v, dc2V, cof1, duV,  cof2, dvV);
-        final FieldVector3D<T> deyP = new FieldVector3D<T>(v, dc1P, u.negate(), dc2P, cof1, dvP, cof2.negate(), duP);
-        final FieldVector3D<T> deyV = new FieldVector3D<T>(v, dc1V, u.negate(), dc2V, cof1, dvV, cof2.negate(), duV);
+        final FieldVector3D<T> dexP = new FieldVector3D<>(u, dc1P,  v, dc2P, cof1, duP,  cof2, dvP);
+        final FieldVector3D<T> dexV = new FieldVector3D<>(u, dc1V,  v, dc2V, cof1, duV,  cof2, dvV);
+        final FieldVector3D<T> deyP = new FieldVector3D<>(v, dc1P, u.negate(), dc2P, cof1, dvP, cof2.negate(), duP);
+        final FieldVector3D<T> deyV = new FieldVector3D<>(v, dc1V, u.negate(), dc2V, cof1, dvV, cof2.negate(), duV);
         fillHalfRow(one, dexP, jacobian[1], 0);
         fillHalfRow(one, dexV, jacobian[1], 3);
         fillHalfRow(one, deyP, jacobian[2], 0);

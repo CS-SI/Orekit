@@ -95,7 +95,7 @@ public class Relativity extends AbstractForceModel {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.gm = gm;
     }
@@ -139,12 +139,10 @@ public class Relativity extends AbstractForceModel {
         final DerivativeStructure s2 = velocity.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
-        return new FieldVector3D<DerivativeStructure>(
-                r.reciprocal().multiply(4 * this.gm).subtract(s2),
-                position,
-                position.dotProduct(velocity).multiply(4),
-                velocity)
-                .scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
+        return new FieldVector3D<>(r.reciprocal().multiply(4 * this.gm).subtract(s2),
+                                   position,
+                                   position.dotProduct(velocity).multiply(4),
+                                   velocity).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
 
     }
 
@@ -203,12 +201,10 @@ public class Relativity extends AbstractForceModel {
         final T s2 = v.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
-        final FieldVector3D<T> accel = new FieldVector3D<T>(
-                 r.reciprocal().multiply(4 * this.gm).subtract(s2),
-                p,
-                p.dotProduct(v).multiply(4),
-                v)
-                .scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
+        final FieldVector3D<T> accel = new FieldVector3D<>(r.reciprocal().multiply(4 * this.gm).subtract(s2),
+                                                           p,
+                                                           p.dotProduct(v).multiply(4),
+                                                           v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
         adder.addAcceleration(accel, s.getFrame()); //TODO NOT TESTED
     }
 

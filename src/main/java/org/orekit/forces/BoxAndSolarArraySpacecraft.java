@@ -40,11 +40,8 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
-/** experimental class representing the features of a classical satellite
+/** Class representing the features of a classical satellite
  * with a convex body shape and rotating flat solar arrays.
- * <p>
- * As of 5.0, this class is still considered experimental, so use it with care.
- * </p>
  * <p>
  * The body can be either a simple parallelepipedic box aligned with
  * spacecraft axes or a set of facets defined by their area and normal vector.
@@ -152,7 +149,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Build a spacecraft model with best lighting of solar array.
      * <p>
      * The spacecraft body is described by an array of surface vectors. Each facet of
-     * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
+     * the body is described by a vector normal to the facet (pointing outward of the spacecraft)
      * and whose norm is the surface area in m².
      * </p>
      * <p>
@@ -274,7 +271,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Build a spacecraft model with linear rotation of solar array.
      * <p>
      * The spacecraft body is described by an array of surface vectors. Each facet of
-     * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
+     * the body is described by a vector normal to the facet (pointing outward of the spacecraft)
      * and whose norm is the surface area in m².
      * </p>
      * <p>
@@ -432,7 +429,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final T alpha = date.durationFrom(referenceDate).multiply(rotationRate);
-            return new FieldVector3D<T>(alpha.cos(), saX, alpha.sin(), saY);
+            return new FieldVector3D<>(alpha.cos(), saX, alpha.sin(), saY);
         }
 
         // compute orientation for best lighting
@@ -444,11 +441,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
-            return new FieldVector3D<T>(f.getField(), saZ.orthogonal());
+            return new FieldVector3D<>(f.getField(), saZ.orthogonal());
         }
 
         final T s = f.sqrt().reciprocal();
-        return new FieldVector3D<T>(s, sunSpacecraft).subtract(new FieldVector3D<T>(s.multiply(d), saZ));
+        return new FieldVector3D<>(s, sunSpacecraft).subtract(new FieldVector3D<>(s.multiply(d), saZ));
 
     }
 
@@ -471,7 +468,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final DerivativeStructure alpha = zero.add(rotationRate * date.durationFrom(referenceDate));
-            return new FieldVector3D<DerivativeStructure>(alpha.cos(), saX, alpha.sin(), saY);
+            return new FieldVector3D<>(alpha.cos(), saX, alpha.sin(), saY);
         }
 
         // compute orientation for best lighting
@@ -484,11 +481,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
-            return new FieldVector3D<DerivativeStructure>(position.getX().getField(), saZ.orthogonal());
+            return new FieldVector3D<>(position.getX().getField(), saZ.orthogonal());
         }
 
         final DerivativeStructure s = f.sqrt().reciprocal();
-        return new FieldVector3D<DerivativeStructure>(s, sunSpacecraft).subtract(new FieldVector3D<DerivativeStructure>(s.multiply(d), saZ));
+        return new FieldVector3D<>(s, sunSpacecraft).subtract(new FieldVector3D<>(s.multiply(d), saZ));
 
     }
 
@@ -535,7 +532,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         // solar array contribution
         final FieldVector3D<DerivativeStructure> solarArrayFacet =
-                new FieldVector3D<DerivativeStructure>(solarArrayArea, getNormal(date, frame, position, rotation));
+                new FieldVector3D<>(solarArrayArea, getNormal(date, frame, position, rotation));
         DerivativeStructure sv = FieldVector3D.dotProduct(v, solarArrayFacet).abs();
 
         // body facets contribution
@@ -547,8 +544,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
 
-        return new FieldVector3D<DerivativeStructure>(sv.multiply(density.multiply(dragCoeff / 2.0)).divide(mass),
-                                                      relativeVelocity);
+        return new FieldVector3D<>(sv.multiply(density.multiply(dragCoeff / 2.0)).divide(mass),
+                                   relativeVelocity);
 
     }
 
@@ -639,7 +636,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         if (flux.getNormSq().getValue() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
-            return new FieldVector3D<DerivativeStructure>(0.0, flux);
+            return FieldVector3D.getZero(mass.getField());
         }
 
         // radiation flux in spacecraft frame
@@ -658,7 +655,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         // body facets contribution
         for (final Facet bodyFacet : facets) {
-            normal = new FieldVector3D<DerivativeStructure>(mass.getField(), bodyFacet.getNormal());
+            normal = new FieldVector3D<>(mass.getField(), bodyFacet.getNormal());
             dot = FieldVector3D.dotProduct(normal, fluxSat);
             if (dot.getValue() < 0) {
                 // the facet intercepts the incoming flux
@@ -667,7 +664,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         }
 
         // convert to inertial frame
-        return rotation.applyInverseTo(new FieldVector3D<DerivativeStructure>(mass.reciprocal(), force));
+        return rotation.applyInverseTo(new FieldVector3D<>(mass.reciprocal(), force));
 
     }
 
@@ -681,8 +678,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
-            final DerivativeStructure zero = factory.getDerivativeField().getZero();
-            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+            return FieldVector3D.getZero(factory.getDerivativeField());
         }
 
         final DerivativeStructure absorptionCoeffDS;
@@ -729,7 +725,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         }
 
         // convert to inertial
-        return FieldRotation.applyInverseTo(rotation, new FieldVector3D<DerivativeStructure>(1.0 / mass, force));
+        return FieldRotation.applyInverseTo(rotation, new FieldVector3D<>(1.0 / mass, force));
 
     }
 
@@ -744,7 +740,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         final FieldVector3D<T> v = rotation.applyTo(relativeVelocity);
 
         // solar array contribution
-        final FieldVector3D<T> solarArrayFacet = new FieldVector3D<T>(solarArrayArea, getNormal(date, frame, position, rotation));
+        final FieldVector3D<T> solarArrayFacet = new FieldVector3D<>(solarArrayArea, getNormal(date, frame, position, rotation));
         T sv = FieldVector3D.dotProduct(solarArrayFacet, v).abs();
 
         // body facets contribution
@@ -756,7 +752,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
 
-        return new FieldVector3D<T>(sv.multiply(density).multiply(dragCoeff / 2.0).divide(mass), relativeVelocity);
+        return new FieldVector3D<>(sv.multiply(density).multiply(dragCoeff / 2.0).divide(mass),
+                                   relativeVelocity);
 
     }
 
@@ -875,7 +872,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         // s         = -fluxSat / psr
         final DerivativeStructure cN = dot.multiply(-2 * area).multiply(dot.divide(psr).multiply(specularReflectionCoeff).subtract(diffuseReflectionCoeff / 3));
         final DerivativeStructure cS = dot.divide(psr).multiply(area * (specularReflectionCoeff - 1));
-        return new FieldVector3D<DerivativeStructure>(cN, normal, cS, fluxSat);
+        return new FieldVector3D<>(cN, normal, cS, fluxSat);
 
     }
 
@@ -905,7 +902,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 diffuseReflectionCoeffDS.divide(3).subtract(specularReflectionCoeffDS.multiply(dot / psr)).multiply(2 * area * dot);
         final DerivativeStructure cS = specularReflectionCoeffDS.subtract(1).multiply(area * dot / psr);
 
-        return new FieldVector3D<DerivativeStructure>(cN, normal, cS, fluxSat);
+        return new FieldVector3D<>(cN, normal, cS, fluxSat);
 
     }
 

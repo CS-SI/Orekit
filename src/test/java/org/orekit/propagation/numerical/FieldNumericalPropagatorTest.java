@@ -97,20 +97,20 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
 
         final FieldAbstractIntegratedPropagator<T> notInitialised =
-            new FieldNumericalPropagator<T>(field, new ClassicalRungeKuttaFieldIntegrator<T>(field, field.getZero().add(10.0)));
+            new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add(10.0)));
         notInitialised.propagate(initDate);
     }
 
     @Test(expected=OrekitException.class)
     public void testErr2() throws OrekitException{
         doTestNotInitialised2(Decimal64Field.getInstance());
-    };
+    }
 
     private <T extends RealFieldElement<T>>  void doTestNotInitialised2(Field<T> field) throws OrekitException {
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldAbstractIntegratedPropagator<T> notInitialised =
-            new FieldNumericalPropagator<T>(field, new ClassicalRungeKuttaFieldIntegrator<T>(field, field.getZero().add((10.0))));
+            new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
     }
 
@@ -132,7 +132,7 @@ public class FieldNumericalPropagatorTest {
         propagator.propagate(end);
         FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
         CountingHandler<D, T> handler = new CountingHandler<D, T>();
-        FieldDateDetector<T> detector = new FieldDateDetector<T>(zero.add(10), zero.add(1e-9), end).withHandler(handler);
+        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), end).withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -168,7 +168,7 @@ public class FieldNumericalPropagatorTest {
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         FieldAbsoluteDate<T> eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
-        FieldDateDetector<T> detector = new FieldDateDetector<T>(zero.add(10), zero.add(1e-9), eventDate)
+        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), eventDate)
                 .withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
@@ -219,10 +219,10 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
         // setup
-        FieldDateDetector<T> d1 = new FieldDateDetector<T>(zero.add(10), zero.add(1), initDate.shiftedBy(15))
+        FieldDateDetector<T> d1 = new FieldDateDetector<>(zero.add(10), zero.add(1), initDate.shiftedBy(15))
                 .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
-        FieldDateDetector<T> d2 = new FieldDateDetector<T>(zero.add(10), zero.add(1), initDate.shiftedBy(15.5))
-                .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>,T>());
+        FieldDateDetector<T> d2 = new FieldDateDetector<>(zero.add(10), zero.add(1), initDate.shiftedBy(15.5))
+                .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -246,19 +246,18 @@ public class FieldNumericalPropagatorTest {
 
         //setup
         TimeScale tai = TimeScalesFactory.getTAI();
-        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<T>(field, "2015-07-01", tai);
-        FieldAbsoluteDate<T> startDate = new FieldAbsoluteDate<T>(field, "2015-07-03", tai).shiftedBy(-0.1);
-        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<T>(field, "2015-07-04", tai);
+        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, "2015-07-01", tai);
+        FieldAbsoluteDate<T> startDate = new FieldAbsoluteDate<>(field, "2015-07-03", tai).shiftedBy(-0.1);
+        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<T>(
-                zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                PositionAngle.TRUE, eci, initialDate, mu);
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
+                                                                 PositionAngle.TRUE, eci, initialDate, mu);
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
-        FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<T>(field,
-                new DormandPrince853FieldIntegrator<T>(field, 0.1, 500, tol[0], tol[1]));
+        FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
+                new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.setOrbitType(type);
-        prop.resetInitialState(new FieldSpacecraftState<T>(new FieldCartesianOrbit<T>(orbit)));
+        prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
         prop.setEphemerisMode();
@@ -292,19 +291,18 @@ public class FieldNumericalPropagatorTest {
         T zero = field.getZero();
           //setup
         TimeScale tai = TimeScalesFactory.getTAI();
-        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<T>(field,"2015-07-05", tai);
-        FieldAbsoluteDate<T> startDate = new FieldAbsoluteDate<T>(field,"2015-07-03", tai).shiftedBy(-0.1);
-        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<T>(field,"2015-07-04", tai);
+        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, "2015-07-05", tai);
+        FieldAbsoluteDate<T> startDate = new FieldAbsoluteDate<>(field, "2015-07-03", tai).shiftedBy(-0.1);
+        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<T>(
-                zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                PositionAngle.TRUE, eci, initialDate, mu);
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
+                                                                 PositionAngle.TRUE, eci, initialDate, mu);
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
-        FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<T>(field,
-                new DormandPrince853FieldIntegrator<T>(field, 0.1, 500, tol[0], tol[1]));
+        FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
+                new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.setOrbitType(type);
-        prop.resetInitialState(new FieldSpacecraftState<T>(new FieldCartesianOrbit<T>(orbit)));
+        prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
 
         //action
         prop.setEphemerisMode();
@@ -340,18 +338,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -390,18 +388,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -432,18 +430,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -482,18 +480,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -560,26 +558,26 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
         FieldSpacecraftState<T> state =
-            new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3), zero, zero, zero,
-                                                   PositionAngle.TRUE,
-                                                   FramesFactory.getEME2000(), initDate,
-                                                   mu));
+            new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3), zero, zero, zero,
+                                                                 PositionAngle.TRUE,
+                                                                 FramesFactory.getEME2000(), initDate,
+                                                                 mu));
 
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -623,8 +621,8 @@ public class FieldNumericalPropagatorTest {
         final double maxStep = 1000;
         double[][] tol = NumericalPropagator.tolerances(dP.getReal(), state.getOrbit().toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-                new DormandPrince853FieldIntegrator<T>(zero.getField(), minStep, maxStep, tol[0], tol[1]);
-        FieldNumericalPropagator<T> newPropagator = new FieldNumericalPropagator<T>(zero.getField(), integrator);
+                new DormandPrince853FieldIntegrator<>(zero.getField(), minStep, maxStep, tol[0], tol[1]);
+        FieldNumericalPropagator<T> newPropagator = new FieldNumericalPropagator<>(zero.getField(), integrator);
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
@@ -646,18 +644,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -691,24 +689,24 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
-        propagator.addEventDetector(new FieldDateDetector<T>(stopDate).withHandler(checking));
+        propagator.addEventDetector(new FieldDateDetector<>(stopDate).withHandler(checking));
         Assert.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(3200));
@@ -730,27 +728,27 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
-                return new FieldSpacecraftState<T>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
+                return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
             }
         };
-        propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));
+        propagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
@@ -768,23 +766,23 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.RESET_DERIVATIVES);
-        propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));
+        propagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
         Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
@@ -813,18 +811,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -832,8 +830,8 @@ public class FieldNumericalPropagatorTest {
 
 
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>,T> checking = new CheckingHandler<FieldDateDetector<T>,T>(Action.CONTINUE);
-        propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));
+        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
+        propagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
         Assert.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
@@ -862,18 +860,18 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         FieldSpacecraftState<T>      initialState;
         FieldNumericalPropagator<T>  propagator;
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
-        initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
+        initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
-                new DormandPrince853FieldIntegrator<T>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
-        propagator = new FieldNumericalPropagator<T>(field, integrator);
+        propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
@@ -937,7 +935,7 @@ public class FieldNumericalPropagatorTest {
         Assert.assertTrue(propagator.isAdditionalStateManaged("constant"));
         Assert.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
         Assert.assertEquals(2, propagator.getManagedAdditionalStates().length);
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",zero.add(1.5)));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", zero.add(1.5)));
 
         CheckingHandler<AdditionalStateLinearDetector<T>, T> checking =
                 new CheckingHandler<AdditionalStateLinearDetector<T>, T>(Action.STOP);
@@ -1031,9 +1029,9 @@ public class FieldNumericalPropagatorTest {
 
         T zero = field.getZero();
         TimeScale utc = TimeScalesFactory.getUTC();
-        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<T>(field, 2005, 1, 1, 0, 0, 0.0, utc);
+        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2005, 1, 1, 0, 0, 0.0, utc);
         T duration = zero.add(100000.0);
-        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<T>(initialDate,duration);
+        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(initialDate, duration);
 
         // Initialization of the frame EME2000
         Frame EME2000 = FramesFactory.getEME2000();
@@ -1044,13 +1042,13 @@ public class FieldNumericalPropagatorTest {
         double e = 0.70;
         double rApogee = a*(1+e);
         double vApogee = FastMath.sqrt(mu*(1-e)/(a*(1+e)));
-        FieldOrbit<T> geo = new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(zero.add(rApogee), zero, zero),
-                                                                                 new FieldVector3D<T>(zero, zero.add(vApogee), zero)),
+        FieldOrbit<T> geo = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(rApogee), zero, zero),
+                                                                               new FieldVector3D<>(zero, zero.add(vApogee), zero)),
                                                        EME2000, initialDate, mu);
 
 
         duration = geo.getKeplerianPeriod();
-        endDate = new FieldAbsoluteDate<T>(initialDate, duration);
+        endDate = new FieldAbsoluteDate<>(initialDate, duration);
 
         // Numerical Integration
         final double minStep  = 0.001;
@@ -1063,20 +1061,20 @@ public class FieldNumericalPropagatorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7};
 
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, minStep, maxStep, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(initStep));
 
         // Numerical propagator based on the integrator
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         T mass = field.getZero().add(1000.0);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(geo, mass);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(geo, mass);
         propagator.setInitialState(initialState);
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
 
         // Set the events Detectors
-        FieldApsideDetector<T> event1 = new FieldApsideDetector<T>(geo);
+        FieldApsideDetector<T> event1 = new FieldApsideDetector<>(geo);
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
@@ -1204,16 +1202,16 @@ public class FieldNumericalPropagatorTest {
 
     private <T extends RealFieldElement<T>> void doTestIssue157(final Field<T> field) throws OrekitException {
         try {
-            FieldOrbit<T> orbit = new FieldKeplerianOrbit<T>(field.getZero().add(13378000),
-                                                             field.getZero().add(0.05),
-                                                             field.getZero().add(0),
-                                                             field.getZero().add(0),
-                                                             field.getZero().add(FastMath.PI),
-                                                             field.getZero().add(0),
-                                                             PositionAngle.MEAN,
-                                                             FramesFactory.getTOD(false),
-                                                             new FieldAbsoluteDate<T>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
-                                                             Constants.EIGEN5C_EARTH_MU);
+            FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(field.getZero().add(13378000),
+                                                            field.getZero().add(0.05),
+                                                            field.getZero().add(0),
+                                                            field.getZero().add(0),
+                                                            field.getZero().add(FastMath.PI),
+                                                            field.getZero().add(0),
+                                                            PositionAngle.MEAN,
+                                                            FramesFactory.getTOD(false),
+                                                            new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
+                                                            Constants.EIGEN5C_EARTH_MU);
             FieldNumericalPropagator.tolerances(field.getZero().add(1.0), orbit, OrbitType.KEPLERIAN);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -1802,8 +1800,8 @@ public class FieldNumericalPropagatorTest {
                                                               zero.add(8000.0),
                                                               zero.add(1000.0));
         FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), initDate, mu);
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), initDate, mu);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
         double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), orbit, type);

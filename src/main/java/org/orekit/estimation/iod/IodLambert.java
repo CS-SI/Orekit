@@ -121,7 +121,7 @@ public class IodLambert {
      * @param dth sweep angle
      * @param tau time of flight
      * @param mRev number of revs
-     * @param V1 velocity at departure in (T,N) basis
+     * @param V1 velocity at departure in (T, N) basis
      * @return something
      */
     public boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,

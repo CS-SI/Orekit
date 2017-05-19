@@ -831,7 +831,7 @@ public class EquinoctialOrbit extends Orbit {
         final double hy2        = hy * hy;
         final double hxhy       = hx * hy;
 
-        // precomputing equinoctial frame unit vectors (f,g,w)
+        // precomputing equinoctial frame unit vectors (f, g, w)
         final Vector3D f  = new Vector3D(1 - hy2 + hx2, 2 * hxhy, -2 * hy).normalize();
         final Vector3D g  = new Vector3D(2 * hxhy, 1 + hy2 - hx2, 2 * hx).normalize();
         final Vector3D w  = Vector3D.crossProduct(position, velocity).normalize();

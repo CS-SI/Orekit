@@ -169,7 +169,7 @@ public class KeplerianPropagatorTest {
         Assert.assertEquals(n*delta_t,
                             finalOrbit.getLM() - initialOrbit.getLM(),
                             Utils.epsilonTest * FastMath.abs(n*delta_t));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
@@ -203,12 +203,12 @@ public class KeplerianPropagatorTest {
 
         Assert.assertEquals(n*delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
-                     Utils.epsilonTest * FastMath.max(100.,FastMath.abs(n*delta_t)));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
+                     Utils.epsilonTest * FastMath.max(100., FastMath.abs(n*delta_t)));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(), initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
 
     }
 
@@ -255,7 +255,7 @@ public class KeplerianPropagatorTest {
 
         // test of tan ((LE - Lv)/2) :
         Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
-                     tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
+                     tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
         // test of evolution of M vs E: LM = LE - ex*sin(LE) + ey*cos(LE)
@@ -299,7 +299,7 @@ public class KeplerianPropagatorTest {
                                   (1.- hx2+ hy2)/h2p1,
                                   (2.*hx)/h2p1);
 
-        Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
+        Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
         Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
@@ -346,7 +346,7 @@ public class KeplerianPropagatorTest {
 
         // test of tan ((LE - Lv)/2) :
         Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
-                     tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
+                     tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
         // test of evolution of M vs E: LM = LE - ex*sin(LE) + ey*cos(LE)
@@ -389,7 +389,7 @@ public class KeplerianPropagatorTest {
                                   (1.- hx2+ hy2)/h2p1,
                                   (2.*hx)/h2p1);
 
-        Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
+        Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
         Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
@@ -686,7 +686,7 @@ public class KeplerianPropagatorTest {
 
         // Initial date
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 
         // Central attraction coefficient
         double mu =  3.986004415e+14;
@@ -904,7 +904,7 @@ public class KeplerianPropagatorTest {
 
     }
 
-    private static double tangLEmLv(double Lv,double ex,double ey){
+    private static double tangLEmLv(double Lv, double ex, double ey){
         // tan ((LE - Lv) /2)) =
         return (ey*FastMath.cos(Lv) - ex*FastMath.sin(Lv)) /
         (1 + ex*FastMath.cos(Lv) + ey*FastMath.sin(Lv) + FastMath.sqrt(1 - ex*ex - ey*ey));

@@ -940,7 +940,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
         @Override
         public FieldTransform<T> getInverse() {
             return this;
-        };
+        }
 
         /** {@inheritDoc} */
         @Override

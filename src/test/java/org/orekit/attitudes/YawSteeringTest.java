@@ -114,7 +114,7 @@ public class YawSteeringTest {
         Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
-        // Check sun is in (X,Z) plane
+        // Check sun is in (X, Z) plane
         Assert.assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
 
     }

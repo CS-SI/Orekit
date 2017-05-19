@@ -50,17 +50,16 @@ public class FieldInertialProvider<T extends RealFieldElement<T>> implements Fie
      * @param field field used by default=
      * */
     public FieldInertialProvider(final Field<T> field) {
-        this(new FieldRotation<T>(field.getOne(), field.getZero(), field.getZero(), field.getZero(), false));
-    };
+        this(new FieldRotation<>(field.getOne(), field.getZero(), field.getZero(), field.getZero(), false));
+    }
+
     /** Dummy attitude provider, perfectly aligned with the EME2000 frame.
      * @param field field used by default
      * @return FieldRotation<T> instance of EME2000_ALIGNED
      * */
     public final FieldInertialProvider<T> EME2000_ALIGNED(final Field<T> field) {
-        final FieldRotation<T> FR = new FieldRotation<T>(field.getOne(), field.getZero(), field.getZero(), field.getZero(), false);
-
-        return new FieldInertialProvider<T>(FR);
-    };
+        return new FieldInertialProvider<>(FieldRotation.getIdentity(field));
+    }
 
     /** {@inheritDoc} */
     public FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
@@ -68,6 +67,7 @@ public class FieldInertialProvider<T extends RealFieldElement<T>> implements Fie
         throws OrekitException {
         final Field<T> field = pvProv.getPVCoordinates(date, frame).getPosition().getAlpha().getField();
         final Transform t = frame.getTransformTo(satelliteFrame, date.toAbsoluteDate());
-        return new FieldAttitude<T>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration(), field);
+        return new FieldAttitude<>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration(), field);
     }
+
 }

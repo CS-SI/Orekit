@@ -151,7 +151,7 @@ public class DEFile {
             }
 
             if (allConstants) {
-                for (Map.Entry<String,Double> entry : de.headerConstants.entrySet()) {
+                for (Map.Entry<String, Double> entry : de.headerConstants.entrySet()) {
                     System.out.println(entry.getKey() + "     " + entry.getValue());
                 }
             }

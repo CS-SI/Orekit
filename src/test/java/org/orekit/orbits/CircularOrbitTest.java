@@ -87,7 +87,7 @@ public class CircularOrbitTest {
         Assert.assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(circ.getE()));
         Assert.assertEquals(param.getHx(), circ.getHx(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
         Assert.assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * FastMath.abs(circ.getLv()));
+        Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(), circ.getLv()), circ.getLv(), Utils.epsilonAngle * FastMath.abs(circ.getLv()));
 
     }
 
@@ -115,7 +115,7 @@ public class CircularOrbitTest {
         Assert.assertEquals(paramCir.getEquinoctialEy(), circCir.getEquinoctialEy(), Utils.epsilonEcir * FastMath.abs(circCir.getE()));
         Assert.assertEquals(paramCir.getHx(), circCir.getHx(), Utils.epsilonAngle * FastMath.abs(circCir.getI()));
         Assert.assertEquals(paramCir.getHy(), circCir.getHy(), Utils.epsilonAngle * FastMath.abs(circCir.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(paramCir.getLv(),circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * FastMath.abs(circCir.getLv()));
+        Assert.assertEquals(MathUtils.normalizeAngle(paramCir.getLv(), circCir.getLv()), circCir.getLv(), Utils.epsilonAngle * FastMath.abs(circCir.getLv()));
 
     }
 

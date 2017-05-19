@@ -163,8 +163,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         super(field, integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
-        final FieldInertialProvider<T> default_law = new FieldInertialProvider<T>(
-                        new FieldRotation<T>(field.getOne(), field.getZero(), field.getZero(), field.getZero(), false));
+        final FieldInertialProvider<T> default_law =
+                        new FieldInertialProvider<>(FieldRotation.getIdentity(field));
         setAttitudeProvider(default_law);
         setMu(Double.NaN);
         setSlaveMode();
@@ -319,7 +319,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             }
             final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
             final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-            return new FieldSpacecraftState<T>(orbit, attitude, mass);
+            return new FieldSpacecraftState<>(orbit, attitude, mass);
         }
 
         /** {@inheritDoc} */

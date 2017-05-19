@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
  * in UTC and write it in another file in TAI. This can be done as follows:</p>
  * <pre>
  *   DateTimeComponents utcComponents = readNextDate();
- *   FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(utcComponents, TimeScalesFactory.getUTC());
+ *   FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(utcComponents, TimeScalesFactory.getUTC());
  *   writeNextDate(date.getComponents(TimeScalesFactory.getTAI()));
  * </pre>
  *
@@ -469,7 +469,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         for (int i = timeField.length - 1; i >= coarseTimeLength; --i) {
             subseconds = (subseconds.add(toUnsigned(timeField[i]))).divide(256);
         }
-        return new FieldAbsoluteDate<T>(epochF, seconds).shiftedBy(subseconds);
+        return new FieldAbsoluteDate<>(epochF, seconds).shiftedBy(subseconds);
 
     }
 
@@ -550,7 +550,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
         final DateComponents date = new DateComponents(epochDC, day);
         final TimeComponents time = new TimeComponents(seconds);
-        return new FieldAbsoluteDate<T>(field, date, time, TimeScalesFactory.getUTC()).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
+        return new FieldAbsoluteDate<>(field, date, time, TimeScalesFactory.getUTC()).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
 
     }
 
@@ -610,7 +610,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
             divisor *= 100;
         }
 
-        return new FieldAbsoluteDate<T>(field, date, time, TimeScalesFactory.getUTC()).shiftedBy(subSecond / divisor);
+        return new FieldAbsoluteDate<>(field, date, time, TimeScalesFactory.getUTC()).shiftedBy(subSecond / divisor);
 
     }
 
@@ -641,8 +641,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createJDDate(final int jd, final T secondsSinceNoon,
                                                                                     final TimeScale timeScale) {
-        return new FieldAbsoluteDate<T>(secondsSinceNoon.getField(), new DateComponents(DateComponents.JULIAN_EPOCH, jd),
-                                        TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+        return new FieldAbsoluteDate<>(secondsSinceNoon.getField(), new DateComponents(DateComponents.JULIAN_EPOCH, jd),
+                                       TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
     /** Build an instance corresponding to a Modified Julian Day date.
@@ -654,10 +654,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createMJDDate(final int mjd, final T secondsInDay,
                                                                                      final TimeScale timeScale) {
-        return new FieldAbsoluteDate<T>(secondsInDay.getField(),
-                                        new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                        TimeComponents.H00,
-                                        timeScale).shiftedBy(secondsInDay);
+        return new FieldAbsoluteDate<>(secondsInDay.getField(),
+                                       new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                       TimeComponents.H00,
+                                       timeScale).shiftedBy(secondsInDay);
     }
 
     /** Build an instance corresponding to a GPS date.
@@ -672,8 +672,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createGPSDate(final int weekNumber, final T milliInWeek) {
         final int day = (int) FastMath.floor(milliInWeek.getReal() / (1000.0 * Constants.JULIAN_DAY));
         final T secondsInDay = milliInWeek.divide(1000.0).subtract(day * Constants.JULIAN_DAY);
-        return new FieldAbsoluteDate<T>(milliInWeek.getField(), new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
-                                        TimeComponents.H00, TimeScalesFactory.getGPS()).shiftedBy(secondsInDay);
+        return new FieldAbsoluteDate<>(milliInWeek.getField(), new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
+                                       TimeComponents.H00, TimeScalesFactory.getGPS()).shiftedBy(secondsInDay);
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).
@@ -694,8 +694,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(final T julianEpoch) {
-        return new FieldAbsoluteDate<T>(getJ2000Epoch(julianEpoch.getField()),
-                                        julianEpoch.subtract(2000.0).multiply(Constants.JULIAN_YEAR));
+        return new FieldAbsoluteDate<>(getJ2000Epoch(julianEpoch.getField()),
+                                       julianEpoch.subtract(2000.0).multiply(Constants.JULIAN_YEAR));
     }
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
@@ -715,9 +715,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(final T besselianEpoch) {
-        return new FieldAbsoluteDate<T>(getJ2000Epoch(besselianEpoch.getField()),
-                                        besselianEpoch.subtract(1900).multiply(Constants.BESSELIAN_YEAR).add(
-                                        Constants.JULIAN_DAY * (-36525) + Constants.JULIAN_DAY * 0.31352));
+        return new FieldAbsoluteDate<>(getJ2000Epoch(besselianEpoch.getField()),
+                                       besselianEpoch.subtract(1900).multiply(Constants.BESSELIAN_YEAR).add(
+                                       Constants.JULIAN_DAY * (-36525) + Constants.JULIAN_DAY * 0.31352));
     }
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
@@ -731,7 +731,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJulianEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.JULIAN_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.JULIAN_EPOCH);
     }
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
@@ -740,7 +740,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getModifiedJulianEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.MODIFIED_JULIAN_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.MODIFIED_JULIAN_EPOCH);
     }
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
@@ -749,7 +749,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getFiftiesEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.FIFTIES_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.FIFTIES_EPOCH);
     }
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
@@ -758,7 +758,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getCCSDSEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.CCSDS_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.CCSDS_EPOCH);
     }
 
     /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC.
@@ -767,7 +767,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGalileoEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.GALILEO_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
     }
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
@@ -776,7 +776,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getGPSEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.GPS_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.GPS_EPOCH);
     }
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
@@ -787,7 +787,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJ2000Epoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.J2000_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
     }
 
     /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
@@ -800,7 +800,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJavaEpoch(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.JAVA_EPOCH);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.JAVA_EPOCH);
     }
 
     /** Dummy date at infinity in the past direction.
@@ -809,7 +809,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getPastInfinity(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.PAST_INFINITY);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.PAST_INFINITY);
     }
 
     /** Dummy date at infinity in the future direction.
@@ -818,12 +818,12 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getFutureInfinity(final Field<T> field) {
-        return new FieldAbsoluteDate<T>(field, AbsoluteDate.FUTURE_INFINITY);
+        return new FieldAbsoluteDate<>(field, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Get a time-shifted date.
      * <p>
-     * Calling this method is equivalent to call <code>new FieldAbsoluteDate<T>(this, dt)</code>.
+     * Calling this method is equivalent to call <code>new FieldAbsoluteDate<>(this, dt)</code>.
      * </p>
      * @param dt time shift in seconds
      * @return a new date, shifted with respect to instance (which is immutable)
@@ -833,7 +833,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public FieldAbsoluteDate<T> shiftedBy(final T dt) {
-        return new FieldAbsoluteDate<T>(this, dt);
+        return new FieldAbsoluteDate<>(this, dt);
     }
 
     /** Compute the physically elapsed duration between two instants.
@@ -1150,7 +1150,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     @Override
     public FieldAbsoluteDate<T> shiftedBy(final double dt) {
-        return new FieldAbsoluteDate<T>(this, dt);
+        return new FieldAbsoluteDate<>(this, dt);
     }
 
 

@@ -392,7 +392,7 @@ public class AbsoluteDateTest {
     public void testComponents() throws OrekitException {
         // this is NOT J2000.0,
         // it is either a few seconds before or after depending on time scale
-        DateComponents date = new DateComponents(2000, 01,01);
+        DateComponents date = new DateComponents(2000, 1, 1);
         TimeComponents time = new TimeComponents(11, 59, 10);
         TimeScale[] scales = {
             TimeScalesFactory.getTAI(), TimeScalesFactory.getUTC(),

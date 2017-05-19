@@ -59,7 +59,7 @@ public class NodeDetectorTest {
 
         // Define 2 instances of NodeDetector:
         EventDetector rawDetector =
-                new NodeDetector(1e-6,initialState.getOrbit(), initialState.getFrame()).
+                new NodeDetector(1e-6, initialState.getOrbit(), initialState.getFrame()).
                 withHandler(new ContinueOnEvent<NodeDetector>());
 
         EventsLogger logger1 = new EventsLogger();

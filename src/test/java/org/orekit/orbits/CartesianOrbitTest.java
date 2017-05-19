@@ -97,9 +97,9 @@ public class CartesianOrbitTest {
         Assert.assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
         Assert.assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(p.getE()));
         Assert.assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(p.getE()));
-        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03,2)+FastMath.pow(-0.206274396964359e-02,2)), p.getE(), Utils.epsilonAngle * FastMath.abs(p.getE()));
-        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03,2)+FastMath.pow(-0.352136186881817e-02,2))/4.)),p.getI()), p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01,p.getLM()), p.getLM(), Utils.epsilonAngle * FastMath.abs(p.getLM()));
+        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), p.getE(), Utils.epsilonAngle * FastMath.abs(p.getE()));
+        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), p.getI()), p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, p.getLM()), p.getLM(), Utils.epsilonAngle * FastMath.abs(p.getLM()));
 
         // trigger a specific path in copy constructor
         CartesianOrbit q = new CartesianOrbit(p);
@@ -107,9 +107,9 @@ public class CartesianOrbitTest {
         Assert.assertEquals(42255170.0028257,  q.getA(), Utils.epsilonTest * q.getA());
         Assert.assertEquals(0.592732497856475e-03,  q.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(q.getE()));
         Assert.assertEquals(-0.206274396964359e-02, q.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(q.getE()));
-        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03,2)+FastMath.pow(-0.206274396964359e-02,2)), q.getE(), Utils.epsilonAngle * FastMath.abs(q.getE()));
-        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03,2)+FastMath.pow(-0.352136186881817e-02,2))/4.)),q.getI()), q.getI(), Utils.epsilonAngle * FastMath.abs(q.getI()));
-        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01,q.getLM()), q.getLM(), Utils.epsilonAngle * FastMath.abs(q.getLM()));
+        Assert.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), q.getE(), Utils.epsilonAngle * FastMath.abs(q.getE()));
+        Assert.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), q.getI()), q.getI(), Utils.epsilonAngle * FastMath.abs(q.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, q.getLM()), q.getLM(), Utils.epsilonAngle * FastMath.abs(q.getLM()));
 
         Assert.assertTrue(Double.isNaN(q.getADot()));
         Assert.assertTrue(Double.isNaN(q.getEquinoctialExDot()));
@@ -125,8 +125,8 @@ public class CartesianOrbitTest {
     @Test
     public void testCartesianToKeplerian(){
 
-        Vector3D position = new Vector3D(-26655470.0, 29881667.0,-113657.0);
-        Vector3D velocity = new Vector3D(-1125.0,-1122.0,195.0);
+        Vector3D position = new Vector3D(-26655470.0, 29881667.0, -113657.0);
+        Vector3D velocity = new Vector3D(-1125.0, -1122.0, 195.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
         double mu = 3.9860047e14;
 
@@ -467,8 +467,8 @@ public class CartesianOrbitTest {
     @Test(expected=IllegalArgumentException.class)
     public void testNonInertialFrame() throws IllegalArgumentException {
 
-        Vector3D position = new Vector3D(-26655470.0, 29881667.0,-113657.0);
-        Vector3D velocity = new Vector3D(-1125.0,-1122.0,195.0);
+        Vector3D position = new Vector3D(-26655470.0, 29881667.0, -113657.0);
+        Vector3D velocity = new Vector3D(-1125.0, -1122.0, 195.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
         double mu = 3.9860047e14;
         new CartesianOrbit(pvCoordinates,

@@ -56,7 +56,7 @@ public class Context {
     // Stations for turn-around range
     // Map entry = master station
     // Map value = slave station associated
-    public Map<GroundStation,GroundStation>     TARstations;
+    public Map<GroundStation, GroundStation>     TARstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,

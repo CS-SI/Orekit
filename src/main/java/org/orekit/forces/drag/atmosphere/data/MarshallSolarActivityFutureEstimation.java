@@ -100,7 +100,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
         /** Weak level of activity. */
         WEAK
 
-    };
+    }
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5212198874900835369L;

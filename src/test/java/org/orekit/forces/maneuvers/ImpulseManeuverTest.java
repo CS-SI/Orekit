@@ -98,7 +98,7 @@ public class ImpulseManeuverTest {
 
         final Vector3D deltaV = new Vector3D(deltaX, deltaY, deltaZ);
 
-        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(),LOFType.VNC));
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(), LOFType.VNC));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(driftTimeInSec));
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,

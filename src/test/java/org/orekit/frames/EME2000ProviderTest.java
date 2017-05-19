@@ -86,8 +86,8 @@ public class EME2000ProviderTest {
         checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGCRFiau2000A), 5.8e-5, 6.4e-7);
 
         PVCoordinates pvGCRFiau2000B =
-            new PVCoordinates(new Vector3D(-40588150.3617,-11462167.0397, 27143.2125),
-                              new Vector3D(834.787458,-2958.305691,-1.172999));
+            new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.2125),
+                              new Vector3D(834.787458, -2958.305691, -1.172999));
         PVCoordinates pvEME2000EqB =
             new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
                               new Vector3D(834.787667, -2958.305632, -1.172968));

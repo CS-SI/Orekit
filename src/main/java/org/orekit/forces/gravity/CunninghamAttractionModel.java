@@ -126,7 +126,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.provider     = provider;
         this.mu           = provider.getMu();
@@ -662,7 +662,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
 
         // compute acceleration in inertial frame
         final FieldVector3D<T> acceleration =
-            fromBodyFrame.transformVector(new FieldVector3D<T>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
+            fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
         adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
     }
 

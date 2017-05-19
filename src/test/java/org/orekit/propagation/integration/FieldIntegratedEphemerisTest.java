@@ -58,14 +58,14 @@ public class FieldIntegratedEphemerisTest {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // Keplerian propagator definition
-        FieldKeplerianPropagator<T> keplerEx = new FieldKeplerianPropagator<T>(initialOrbit);
+        FieldKeplerianPropagator<T> keplerEx = new FieldKeplerianPropagator<>(initialOrbit);
 
         // Integrated ephemeris
 
         // Propagation
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
-        numericalPropagator.setInitialState(new FieldSpacecraftState<T>(initialOrbit));
+        numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
@@ -103,7 +103,7 @@ public class FieldIntegratedEphemerisTest {
         // setup
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
-        numericalPropagator.setInitialState(new FieldSpacecraftState<T>(initialOrbit));
+        numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
@@ -128,7 +128,7 @@ public class FieldIntegratedEphemerisTest {
             1.0e-8, 1.0e-8, 1.0e-8, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-7
         };
         OrbitType type = OrbitType.EQUINOCTIAL;
-        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<T>(field, 0.001, 500, absTolerance, relTolerance);
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 500, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(100));
         FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(field, integrator);
         numericalPropagator.setOrbitType(type);
@@ -137,13 +137,13 @@ public class FieldIntegratedEphemerisTest {
 
     private <T extends RealFieldElement<T>> FieldOrbit<T> createOrbit(Field<T> field) {
         T zero = field.getZero();
-        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
 
         double mu = 3.9860047e14;
         FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        return new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                 FramesFactory.getEME2000(), initDate, mu);
+        return new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                           FramesFactory.getEME2000(), initDate, mu);
     }
 
     double mu;

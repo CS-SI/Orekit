@@ -53,8 +53,8 @@ public class GRGSFormatReaderTest {
                    1997, 1, 1, 0, 0, maxUlps);
         checkValue(harmonics.getUnnormalizedSnm(4, 4), date, 4, 4,
                    1997, 1, 1, 0.30882755318300E-06, 0, maxUlps);
-        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
 
     }
 
@@ -77,8 +77,8 @@ public class GRGSFormatReaderTest {
         Assert.assertEquals( 0.17481512311600E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
         Assert.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
         Assert.assertEquals( 0.30882755318300E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
-        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
     }
 
     @Test
@@ -101,8 +101,8 @@ public class GRGSFormatReaderTest {
                    1997, 1, 1, 0, 0, maxUlps);
         checkValue(harmonics.getUnnormalizedSnm(4, 4), date, 4, 4,
                    1997, 1, 1, 0.30882755318300E-06, 0, maxUlps);
-        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
-        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+        Assert.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
 
     }
 

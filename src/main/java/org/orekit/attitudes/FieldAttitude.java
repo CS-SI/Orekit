@@ -83,12 +83,12 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * including rotation rate
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final FieldAngularCoordinates<T> orientation) {
+                         final FieldAngularCoordinates<T> orientation) {
         this(referenceFrame,
-             new TimeStampedFieldAngularCoordinates<T>(date,
-                                               orientation.getRotation(),
-                                               orientation.getRotationRate(),
-                                               orientation.getRotationAcceleration()));
+             new TimeStampedFieldAngularCoordinates<>(date,
+                                                      orientation.getRotation(),
+                                                      orientation.getRotationRate(),
+                                                      orientation.getRotationAcceleration()));
     }
 
     /** Creates a new instance.
@@ -99,8 +99,8 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @param acceleration satellite rotation acceleration (in <strong>satellite</strong> frame)
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final FieldRotation<T> attitude, final FieldVector3D<T> spin, final FieldVector3D<T> acceleration) {
-        this(referenceFrame, new TimeStampedFieldAngularCoordinates<T>(date, attitude, spin, acceleration));
+                         final FieldRotation<T> attitude, final FieldVector3D<T> spin, final FieldVector3D<T> acceleration) {
+        this(referenceFrame, new TimeStampedFieldAngularCoordinates<>(date, attitude, spin, acceleration));
     }
     /** Creates a new instance.
      * @param date date at which attitude is defined
@@ -111,18 +111,11 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @param field field used by default
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final Rotation attitude, final Vector3D spin, final Vector3D acceleration, final Field<T> field) {
-        this(referenceFrame, new TimeStampedFieldAngularCoordinates<T>(date,
-                              new FieldRotation<T>(field.getZero().add(attitude.getQ0()),
-                                                  field.getZero().add(attitude.getQ1()),
-                                                  field.getZero().add(attitude.getQ2()),
-                                                  field.getZero().add(attitude.getQ3()), true),
-                              new FieldVector3D<T>(field.getZero().add(spin.getX()),
-                                                  field.getZero().add(spin.getY()),
-                                                  field.getZero().add(spin.getZ())),
-                              new FieldVector3D<T>(field.getZero().add(acceleration.getX()),
-                                                  field.getZero().add(acceleration.getY()),
-                                                  field.getZero().add(acceleration.getZ()))));
+                         final Rotation attitude, final Vector3D spin, final Vector3D acceleration, final Field<T> field) {
+        this(referenceFrame, new TimeStampedFieldAngularCoordinates<>(date,
+                                                                      new FieldRotation<>(field, attitude),
+                                                                      new FieldVector3D<>(field, spin),
+                                                                      new FieldVector3D<>(field, acceleration)));
     }
 
     /** Get a time-shifted attitude.
@@ -176,10 +169,10 @@ public class FieldAttitude<T extends RealFieldElement<T>>
 
         // we have to take an intermediate rotation into account
         final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate().toAbsoluteDate());
-        return new FieldAttitude<T>(orientation.getDate(), newReferenceFrame,
-                            orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
-                            orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
-                            orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
+        return new FieldAttitude<>(orientation.getDate(), newReferenceFrame,
+                                   orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
+                                   orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
+                                   orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
 
     }
 
@@ -258,7 +251,7 @@ public class FieldAttitude<T extends RealFieldElement<T>>
                 sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedFieldAngularCoordinates<T> interpolated =
                 TimeStampedFieldAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
-        return new FieldAttitude<T>(referenceFrame, interpolated);
+        return new FieldAttitude<>(referenceFrame, interpolated);
     }
     /**
      * Converts to an Attitude instance.

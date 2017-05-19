@@ -93,10 +93,10 @@ public class OEMParserTest {
                                                   (new Vector3D(2789.619 * 1000, -280.045 * 1000, -1746.755 * 1000),
                                                    new Vector3D(4.73372 * 1000, -2.49586 * 1000, -1.04195 * 1000)),
                                                    FramesFactory.getEME2000(),
-                                                   new AbsoluteDate("1996-12-18T12:00:00.331",TimeScalesFactory.getUTC()),
+                                                   new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                                                    CelestialBodyFactory.getEarth().getGM());
-        Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getPosition().toArray(),1e-10);
-        Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getVelocity().toArray(),1e-10);
+        Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
+        Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getVelocity().toArray(), 1e-10);
         Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
         Assert.assertEquals(Vector3D.ZERO, file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);

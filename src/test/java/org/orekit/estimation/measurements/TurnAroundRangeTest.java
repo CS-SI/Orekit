@@ -166,10 +166,10 @@ public class TurnAroundRangeTest {
         // Print the results ? Header
         if (printResults) {
            System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17s  %17s  %13s %13s%n",
-                              "Master Station","Slave Station",
-                              "Measurement Date","State Date",
-                              "TAR observed [m]","TAR estimated [m]",
-                              "|ΔTAR| [m]","rel |ΔTAR|");
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "TAR observed [m]", "TAR estimated [m]",
+                              "|ΔTAR| [m]", "rel |ΔTAR|");
         }
 
         // Loop on the measurements
@@ -265,11 +265,11 @@ public class TurnAroundRangeTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station","Slave Station",
-                            "Measurement Date","State Date",
-                            "ΔdPx","ΔdPy","ΔdPz","ΔdVx","ΔdVy","ΔdVz",
-                            "rel ΔdPx","rel ΔdPy","rel ΔdPz",
-                            "rel ΔdVx","rel ΔdVy","rel ΔdVz");
+                            "Master Station", "Slave Station",
+                            "Measurement Date", "State Date",
+                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Loop on the measurements
@@ -331,10 +331,10 @@ public class TurnAroundRangeTest {
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e%n",
                                 masterStationName, slaveStationName, measurement.getDate(), date,
-                                dJacobian[0][0],dJacobian[0][1],dJacobian[0][2],
-                                dJacobian[0][3],dJacobian[0][4],dJacobian[0][5],
-                                dJacobianRelative[0][0],dJacobianRelative[0][1],dJacobianRelative[0][2],
-                                dJacobianRelative[0][3],dJacobianRelative[0][4],dJacobianRelative[0][5]);
+                                dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
             }
         } // End loop on the measurements
 
@@ -350,9 +350,9 @@ public class TurnAroundRangeTest {
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsPMedian, errorsPMean, errorsPMax);
-            System.out.format(Locale.US,"Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
@@ -419,14 +419,14 @@ public class TurnAroundRangeTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station","Slave Station",
-                            "Measurement Date","State Date",
-                            "ΔdQMx","rel ΔdQMx",
-                            "ΔdQMy","rel ΔdQMy",
-                            "ΔdQMz","rel ΔdQMz",
-                            "ΔdQSx","rel ΔdQSx",
-                            "ΔdQSy","rel ΔdQSy",
-                            "ΔdQSz","rel ΔdQSz");
+                            "Master Station", "Slave Station",
+                            "Measurement Date", "State Date",
+                            "ΔdQMx", "rel ΔdQMx",
+                            "ΔdQMy", "rel ΔdQMy",
+                            "ΔdQMz", "rel ΔdQMz",
+                            "ΔdQSx", "rel ΔdQSx",
+                            "ΔdQSy", "rel ΔdQSy",
+                            "ΔdQSz", "rel ΔdQSz");
          }
 
         // List to store the results for master and slave station
@@ -496,7 +496,7 @@ public class TurnAroundRangeTest {
 
                 // Print results on console ? Gradient difference
                 if (printResults) {
-                    System.out.format(Locale.US,"%10.3e  %10.3e  ",dGradient,dGradientRelative);
+                    System.out.format(Locale.US, "%10.3e  %10.3e  ", dGradient, dGradientRelative);
                 }
 
                 // Add relative error to the list
@@ -505,7 +505,7 @@ public class TurnAroundRangeTest {
 
             } // End for loop on the parameters
             if (printResults) {
-                System.out.format(Locale.US,"%n");
+                System.out.format(Locale.US, "%n");
             }
         } // End for loop on the measurements
 
@@ -526,9 +526,9 @@ public class TurnAroundRangeTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQMMedian, relErrorsQMMean, relErrorsQMMax);
-            System.out.format(Locale.US,"Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQSMedian, relErrorsQSMean, relErrorsQSMax);
         }
 

@@ -369,7 +369,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new FieldSpacecraftState<T>(orbit, attitude, getMass(date));
+            return new FieldSpacecraftState<>(orbit, attitude, getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

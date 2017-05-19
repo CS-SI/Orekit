@@ -97,19 +97,19 @@ public class FieldBodyCenterPointingTest {
         final T m =zero.add(FastMath.toRadians(5.3-270));
 
      // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<T>(field,new DateComponents(2008, 04, 07),
-                        TimeComponents.H00,
-                        TimeScalesFactory.getUTC());;
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+                                                           TimeComponents.H00,
+                                                           TimeScalesFactory.getUTC());
         // Orbit
-        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<T>(a,e, i, pa, raan,
-                        m, PositionAngle.MEAN,
-                        FramesFactory.getEME2000(), date, mu);
+        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                                                m, PositionAngle.MEAN,
+                                                                FramesFactory.getEME2000(), date, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Earth center pointing attitude provider
-        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
+        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<>(circ.getFrame(), earth);
 
         // Call get target method
         TimeStampedFieldPVCoordinates<T> target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
@@ -135,13 +135,13 @@ public class FieldBodyCenterPointingTest {
         final T m =zero.add(FastMath.toRadians(5.300-270.));
 
      // Computation date
-        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<T>(field,new DateComponents(2008, 04, 07),
-                        TimeComponents.H00,
-                        TimeScalesFactory.getUTC());;
+        FieldAbsoluteDate<T> date= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+                                                           TimeComponents.H00,
+                                                           TimeScalesFactory.getUTC());
         // Orbit
-        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<T>(a,e, i, pa, raan,
-                        m, PositionAngle.MEAN,
-                        FramesFactory.getEME2000(), date, mu);
+        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                                                m, PositionAngle.MEAN,
+                                                                FramesFactory.getEME2000(), date, mu);
 
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -151,7 +151,7 @@ public class FieldBodyCenterPointingTest {
         Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
 
         // Earth center pointing attitude provider
-        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
+        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<>(circ.getFrame(), earth);
         // Transform satellite position to position/velocity parameters in EME2000 frame
         FieldPVCoordinates<T> pvSatEME2000 = circ.getPVCoordinates();
 
@@ -194,20 +194,20 @@ public class FieldBodyCenterPointingTest {
         final T m =zero.add(FastMath.toRadians(5.3-270));
 
      // Computation date
-        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<T>(field,new DateComponents(2008, 04, 07),
-                        TimeComponents.H00,
-                        TimeScalesFactory.getUTC());;
+        FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+                                                                TimeComponents.H00,
+                                                                TimeScalesFactory.getUTC());
         // Orbit
-        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<T>(a,e, i, pa, raan,
-                        m, PositionAngle.MEAN,
-                        FramesFactory.getEME2000(), date_comp, mu);
+        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                                                m, PositionAngle.MEAN,
+                                                                FramesFactory.getEME2000(), date_comp, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         // Earth center pointing attitude provider
-        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
+        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<>(circ.getFrame(), earth);
 
 
         Utils.setDataRoot("regular-data");
@@ -226,13 +226,13 @@ public class FieldBodyCenterPointingTest {
         T  c60  = zero.add( c60_D );
 
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
+        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                              FramesFactory.getEME2000(), date, ehMu);
 
         FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<T>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
         List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
@@ -286,20 +286,20 @@ public class FieldBodyCenterPointingTest {
         final T m =zero.add(FastMath.toRadians(5.3-270));
 
      // Computation date
-        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<T>(field,new DateComponents(2008, 04, 07),
-                        TimeComponents.H00,
-                        TimeScalesFactory.getUTC());;
+        FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
+                                                              TimeComponents.H00,
+                                                              TimeScalesFactory.getUTC());
         // Orbit
-        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<T>(a,e, i, pa, raan,
-                        m, PositionAngle.MEAN,
-                        FramesFactory.getEME2000(), date_R, mu);
+        FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                                                m, PositionAngle.MEAN,
+                                                                FramesFactory.getEME2000(), date_R, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
        // Earth center pointing attitude provider
-        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
+        FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<>(circ.getFrame(), earth);
 
 
         Utils.setDataRoot("regular-data");
@@ -316,13 +316,13 @@ public class FieldBodyCenterPointingTest {
         T  c50  = zero.add( c50_D );
         T  c60  = zero.add( c60_D );
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
+        final FieldCircularOrbit<T> initialOrbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                              FramesFactory.getEME2000(), date, ehMu);
 
         FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<T>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
         propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
         double h = 0.01;

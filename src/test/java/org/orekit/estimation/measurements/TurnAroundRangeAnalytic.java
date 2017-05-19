@@ -132,7 +132,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform slaveTopoToInertTransitLeg2 =
                         slaveGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDateLeg2);
         final TimeStampedPVCoordinates QSlaveTransitLeg2PV = slaveTopoToInertTransitLeg2.
-                        transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
         // Uplink time of flight from slave station to transit state leg2
         final double tSu    = slaveGroundStation.signalTimeOfFlight(QSlaveTransitLeg2PV,
@@ -166,7 +166,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform masterTopoToInertTransitLeg1 =
                         masterGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDateLeg1);
         final TimeStampedPVCoordinates QMasterTransitLeg1PV = masterTopoToInertTransitLeg1.
-                        transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
         // Uplink time of flight from master station to transit state leg1
         final double tMu = masterGroundStation.signalTimeOfFlight(QMasterTransitLeg1PV,
@@ -542,30 +542,30 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Position of the spacecraft expressed as a derivative structure
         // The components of the position are the 3 first derivative parameters
         Vector3D stateP = statePV.getPosition();
-        final FieldVector3D<DerivativeStructure> pDS = new FieldVector3D<DerivativeStructure>(
-                        dsFactory.variable(0, stateP.getX()),
-                        dsFactory.variable(1, stateP.getY()),
-                        dsFactory.variable(2, stateP.getZ()));
+        final FieldVector3D<DerivativeStructure> pDS =
+                        new FieldVector3D<>(dsFactory.variable(0, stateP.getX()),
+                                            dsFactory.variable(1, stateP.getY()),
+                                            dsFactory.variable(2, stateP.getZ()));
 
         // Velocity of the spacecraft expressed as a derivative structure
         // The components of the velocity are the 3 second derivative parameters
         Vector3D stateV = statePV.getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS = new FieldVector3D<DerivativeStructure>(
-                        dsFactory.variable(3, stateV.getX()),
-                        dsFactory.variable(4, stateV.getY()),
-                        dsFactory.variable(5, stateV.getZ()));
+        final FieldVector3D<DerivativeStructure> vDS =
+                        new FieldVector3D<>(dsFactory.variable(3, stateV.getX()),
+                                            dsFactory.variable(4, stateV.getY()),
+                                            dsFactory.variable(5, stateV.getZ()));
 
         // Acceleration of the spacecraft
         // The components of the acceleration are not derivative parameters
         final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS = new FieldVector3D<DerivativeStructure>(
-                        dsFactory.constant(stateA.getX()),
-                        dsFactory.constant(stateA.getY()),
-                        dsFactory.constant(stateA.getZ()));
+        final FieldVector3D<DerivativeStructure> aDS =
+                        new FieldVector3D<>(dsFactory.constant(stateA.getX()),
+                                            dsFactory.constant(stateA.getY()),
+                                            dsFactory.constant(stateA.getZ()));
 
         // Place the derivative structures in a time-stamped PV
         final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<DerivativeStructure>(state.getDate(), pDS, vDS, aDS);
+                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
         // Master station topocentric frame (east-north-zenith) in master station parent frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
@@ -715,12 +715,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
 
         // Turn-around range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {turnAroundRange.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0), // dROndPx
-                                                    turnAroundRange.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0), // dROndPy
-                                                    turnAroundRange.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0), // dROndPz
-                                                    turnAroundRange.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0), // dROndVx
-                                                    turnAroundRange.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0), // dROndVy
-                                                    turnAroundRange.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0), // dROndVz
+        estimated.setStateDerivatives(new double[] {turnAroundRange.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
+                                                    turnAroundRange.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPy
+                                                    turnAroundRange.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPz
+                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndVx
+                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndVy
+                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndVz
         });
 
 
@@ -728,29 +728,29 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Master station
         if (masterGroundStation.getEastOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(masterGroundStation.getEastOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0)); // dROndQMTx
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)); // dROndQMTx
         }
         if (masterGroundStation.getNorthOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(masterGroundStation.getNorthOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0)); // dROndQMTy
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)); // dROndQMTy
         }
         if (masterGroundStation.getZenithOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(masterGroundStation.getZenithOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0)); // dROndQMTz
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0)); // dROndQMTz
         }
 
         // Slave station
         if (slaveGroundStation.getEastOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(slaveGroundStation.getEastOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0)); // dROndQSTx
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQSTx
         }
         if (slaveGroundStation.getNorthOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(slaveGroundStation.getNorthOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0)); // dROndQSTy
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQSTy
         }
         if (slaveGroundStation.getZenithOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(slaveGroundStation.getZenithOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1)); // dROndQSTz
+                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQSTz
         }
 
 
@@ -769,13 +769,13 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform masterTopoToInert =
                         masterGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), measurementDate);
         final TimeStampedPVCoordinates QMt = masterTopoToInert.
-                        transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate, PVCoordinates.ZERO));
 
         // Slave station PV at measurement date
         final Transform slaveTopoToInert =
                         slaveGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), measurementDate);
         final TimeStampedPVCoordinates QSt = slaveTopoToInert.
-                        transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,PVCoordinates.ZERO));
+                        transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate, PVCoordinates.ZERO));
 
         // Downlink time of flight from master station at t to spacecraft at t'
         final double tMd    = masterGroundStation.
@@ -789,7 +789,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform slaveTopoToInertTransitLeg2 =
                       slaveGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDateLeg2);
         final TimeStampedPVCoordinates QSdate2PV = slaveTopoToInertTransitLeg2.
-                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2,PVCoordinates.ZERO));
+                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
         // Uplink time of flight from slave station to transit state leg2
         final double tSu    = slaveGroundStation.signalTimeOfFlight(QSdate2PV,
@@ -824,7 +824,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform masterTopoToInertTransitLeg1 =
                       masterGroundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDateLeg1);
         final TimeStampedPVCoordinates QMdate1PV = masterTopoToInertTransitLeg1.
-                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1,PVCoordinates.ZERO));
+                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
         // Uplink time of flight from master station to transit state leg1
         final double tMu = masterGroundStation.signalTimeOfFlight(QMdate1PV,
@@ -866,12 +866,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtMddVz   = dtMddPz*dt;
 
         // From the DS
-        final double dtMddPxDS = masterTauD.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMddPyDS = masterTauD.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMddPzDS = masterTauD.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMddVxDS = masterTauD.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        final double dtMddVyDS = masterTauD.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        final double dtMddVzDS = masterTauD.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        final double dtMddPxDS = masterTauD.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMddPyDS = masterTauD.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMddPzDS = masterTauD.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMddVxDS = masterTauD.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMddVyDS = masterTauD.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMddVzDS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Difference
         final double d_dtMddPx = dtMddPxDS-dtMddPx;
@@ -909,12 +909,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
 
         // From the DS
-        final double dtSudPxDS = slaveTauU.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSudPyDS = slaveTauU.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSudPzDS = slaveTauU.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSudVxDS = slaveTauU.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        final double dtSudVyDS = slaveTauU.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        final double dtSudVzDS = slaveTauU.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        final double dtSudPxDS = slaveTauU.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSudPyDS = slaveTauU.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSudPzDS = slaveTauU.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSudVxDS = slaveTauU.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSudVyDS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSudVzDS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Difference
         final double d_dtSudPx = dtSudPxDS-dtSudPx;
@@ -937,12 +937,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         double dt2dVz = dtSudVz + dtMddVz;
 
         // With DS
-        double dt2dPxDS = tauLeg2.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        double dt2dPyDS = tauLeg2.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        double dt2dPzDS = tauLeg2.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        double dt2dVxDS = tauLeg2.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        double dt2dVyDS = tauLeg2.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        double dt2dVzDS = tauLeg2.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        double dt2dPxDS = tauLeg2.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt2dPyDS = tauLeg2.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt2dPzDS = tauLeg2.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt2dVxDS = tauLeg2.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt2dVyDS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        double dt2dVzDS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Diff
         final double d_dt2dPx = dt2dPxDS-dt2dPx;
@@ -973,12 +973,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtSddVz   = -dt2/ dSDown*P1_QSt2.getZ()+alphaSd*dt2dVz;
 
         // From the DS
-        final double dtSddPxDS = slaveTauD.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSddPyDS = slaveTauD.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSddPzDS = slaveTauD.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        final double dtSddVxDS = slaveTauD.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        final double dtSddVyDS = slaveTauD.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        final double dtSddVzDS = slaveTauD.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        final double dtSddPxDS = slaveTauD.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSddPyDS = slaveTauD.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSddPzDS = slaveTauD.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSddVxDS = slaveTauD.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSddVyDS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtSddVzDS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Difference
         final double d_dtSddPx = dtSddPxDS-dtSddPx;
@@ -1011,12 +1011,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtMudVz = dt2/dMUp*QMt1_P1.getZ() + alphaMu*(dt2dVz+dtSddVz);
 
         // From the DS
-        final double dtMudPxDS = masterTauU.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMudPyDS = masterTauU.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMudPzDS = masterTauU.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        final double dtMudVxDS = masterTauU.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        final double dtMudVyDS = masterTauU.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        final double dtMudVzDS = masterTauU.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        final double dtMudPxDS = masterTauU.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMudPyDS = masterTauU.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMudPzDS = masterTauU.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMudVxDS = masterTauU.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMudVyDS = masterTauU.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        final double dtMudVzDS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Difference
         final double d_dtMudPx = dtMudPxDS-dtMudPx;
@@ -1039,12 +1039,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         double dt1dVz = dtSddVz + dtMudVz;
 
         // With DS
-        double dt1dPxDS = tauLeg1.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        double dt1dPyDS = tauLeg1.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        double dt1dPzDS = tauLeg1.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        double dt1dVxDS = tauLeg1.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        double dt1dVyDS = tauLeg1.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        double dt1dVzDS = tauLeg1.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        double dt1dPxDS = tauLeg1.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt1dPyDS = tauLeg1.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt1dPzDS = tauLeg1.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt1dVxDS = tauLeg1.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dt1dVyDS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        double dt1dVzDS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Diff
         final double d_dt1dPx = dt1dPxDS-dt1dPx;
@@ -1067,12 +1067,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         double dRdVz = (dt1dVz + dt2dVz)*cOver2;
 
         // With DS
-        double dRdPxDS = turnAroundRange.getPartialDerivative(1,0,0, 0,0,0, 0,0,0, 0,0,0);
-        double dRdPyDS = turnAroundRange.getPartialDerivative(0,1,0, 0,0,0, 0,0,0, 0,0,0);
-        double dRdPzDS = turnAroundRange.getPartialDerivative(0,0,1, 0,0,0, 0,0,0, 0,0,0);
-        double dRdVxDS = turnAroundRange.getPartialDerivative(0,0,0, 1,0,0, 0,0,0, 0,0,0);
-        double dRdVyDS = turnAroundRange.getPartialDerivative(0,0,0, 0,1,0, 0,0,0, 0,0,0);
-        double dRdVzDS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,1, 0,0,0, 0,0,0);
+        double dRdPxDS = turnAroundRange.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dRdPyDS = turnAroundRange.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dRdPzDS = turnAroundRange.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dRdVxDS = turnAroundRange.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+        double dRdVyDS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+        double dRdVzDS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
         // Diff
         final double d_dRdPx = dRdPxDS-dRdPx;
@@ -1118,13 +1118,13 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                              dtMddQSz_I));
 
         // With DS
-        double dtMddQMx_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dtMddQMy_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dtMddQMz_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
+        double dtMddQMx_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dtMddQMy_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dtMddQMz_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
 
-        double dtMddQSx_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dtMddQSy_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dtMddQSz_DS = masterTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dtMddQSx_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtMddQSy_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtMddQSz_DS = masterTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff
@@ -1167,13 +1167,13 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                              dtSudQSy_I,
                                              dtSudQSz_I));
         // With DS
-        double dtSudQMx_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dtSudQMy_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dtSudQMz_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
+        double dtSudQMx_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dtSudQMy_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dtSudQMz_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
 
-        double dtSudQSx_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dtSudQSy_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dtSudQSz_DS = slaveTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dtSudQSx_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtSudQSy_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtSudQSz_DS = slaveTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff
@@ -1199,12 +1199,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D dt2dQS = dtSudQS.add(dtMddQS);
 
         // With DS
-        double dt2dQMx_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dt2dQMy_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dt2dQMz_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
-        double dt2dQSx_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dt2dQSy_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dt2dQSz_DS = tauLeg2.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dt2dQMx_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dt2dQMy_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dt2dQMz_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+        double dt2dQSx_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dt2dQSy_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dt2dQSz_DS = tauLeg2.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff
@@ -1246,12 +1246,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                              dtSddQSy_I,
                                              dtSddQSz_I));
         // With DS
-        double dtSddQMx_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dtSddQMy_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dtSddQMz_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
-        double dtSddQSx_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dtSddQSy_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dtSddQSz_DS = slaveTauD.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dtSddQMx_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dtSddQMy_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dtSddQMz_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+        double dtSddQSx_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtSddQSy_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtSddQSz_DS = slaveTauD.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff
@@ -1293,12 +1293,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                              dtMudQSy_I,
                                              dtMudQSz_I));
         // With DS
-        double dtMudQMx_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dtMudQMy_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dtMudQMz_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
-        double dtMudQSx_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dtMudQSy_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dtMudQSz_DS = masterTauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dtMudQMx_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dtMudQMy_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dtMudQMz_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+        double dtMudQSx_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dtMudQSy_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dtMudQSz_DS = masterTauU.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
         // Diff
         final double d_dtMudQMx = dtMudQMx_DS-dtMudQM.getX();
@@ -1316,12 +1316,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D dt1dQS = dtMudQS.add(dtSddQS);
 
         // With DS
-        double dt1dQMx_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dt1dQMy_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dt1dQMz_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
-        double dt1dQSx_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dt1dQSy_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dt1dQSz_DS = tauLeg1.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dt1dQMx_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dt1dQMy_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dt1dQMz_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+        double dt1dQSx_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dt1dQSy_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dt1dQSz_DS = tauLeg1.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff
@@ -1340,12 +1340,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D dRdQS = (dt1dQS.add(dt2dQS)).scalarMultiply(cOver2);
 
         // With DS
-        double dRdQMx_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 1,0,0, 0,0,0);
-        double dRdQMy_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,1,0, 0,0,0);
-        double dRdQMz_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,1, 0,0,0);
-        double dRdQSx_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 1,0,0);
-        double dRdQSy_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,1,0);
-        double dRdQSz_DS = turnAroundRange.getPartialDerivative(0,0,0, 0,0,0, 0,0,0, 0,0,1);
+        double dRdQMx_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+        double dRdQMy_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        double dRdQMz_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
+        double dRdQSx_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        double dRdQSy_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        double dRdQSz_DS = turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 
 
         // Diff

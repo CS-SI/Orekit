@@ -799,9 +799,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
 
         // canonical orbit reference frame
         final FieldVector3D<DerivativeStructure> p =
-                new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                                       x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                                       y.multiply(sinI));
+                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                    y.multiply(sinI));
 
         // dispatch derivatives
         final Vector3D p0 = new Vector3D(p.getX().getValue(),

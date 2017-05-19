@@ -162,9 +162,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         final T zero = field.getZero();
         // initialization
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field, new DateComponents(1970, 07, 01),
-                                             new TimeComponents(13, 59, 27.816),
-                                             TimeScalesFactory.getUTC());
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(1970, 07, 01),
+                                                            new TimeComponents(13, 59, 27.816),
+                                                            TimeScalesFactory.getUTC());
         Transform itrfToEME2000 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date.toAbsoluteDate());
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
@@ -174,8 +174,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         T i     = zero.add(98.7).multiply(FastMath.PI/180.);
         T omega = zero.add(93.0).multiply(FastMath.PI/180.);
         T OMEGA = zero.add(15.0 * 22.5).multiply(FastMath.PI/180.);
-        FieldOrbit<T> orbit = new FieldKeplerianOrbit<T>(zero.add(7201009.7124401), zero.add(1e-3), i , omega, OMEGA,
-                                         zero, PositionAngle.MEAN, poleAligned, date, mu);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7201009.7124401), zero.add(1e-3), i , omega, OMEGA,
+                                                        zero, PositionAngle.MEAN, poleAligned, date, mu);
         double[][] c = new double[3][1];
         c[0][0] = 0.0;
         c[2][0] = c20;
@@ -188,7 +188,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field,0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
         FieldNumericalPropagator<T> FPropagator = new FieldNumericalPropagator<>(field, integrator);
         FPropagator.setOrbitType(OrbitType.EQUINOCTIAL);
@@ -201,8 +201,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         // let the step handler perform the test
 
-        FPropagator.setMasterMode(zero.add(Constants.JULIAN_DAY), new SpotFieldStepHandler<T>(date, mu));
-        FPropagator.setInitialState(new FieldSpacecraftState<T>(orbit));
+        FPropagator.setMasterMode(zero.add(Constants.JULIAN_DAY), new SpotFieldStepHandler<>(date, mu));
+        FPropagator.setInitialState(new FieldSpacecraftState<>(orbit));
         FPropagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
         Assert.assertTrue(propagator.getCalls() < 9200);
 
@@ -321,17 +321,17 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
@@ -339,7 +339,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -424,9 +424,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
             // position check
             FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
@@ -436,9 +436,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
             // velocity check
             FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
@@ -448,9 +448,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
             // acceleration check
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
@@ -481,17 +481,17 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
@@ -499,7 +499,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);

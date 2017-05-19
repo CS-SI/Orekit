@@ -44,7 +44,7 @@ public class KlobucharModelTest {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
-        model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06,0},
+        model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
 
         Utils.setDataRoot("regular-data");

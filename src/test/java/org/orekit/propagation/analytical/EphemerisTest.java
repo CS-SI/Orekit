@@ -100,7 +100,7 @@ public class EphemerisTest {
         propagator = new KeplerianPropagator(propagator.getInitialState().getOrbit());
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.QSW));
 
-        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame,LOFType.QSW));
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.QSW));
         for (int j = 0; j <= numberEphemTestIntervals; j++) {
             AbsoluteDate currentDate = initDate.shiftedBy(j * deltaT);
             SpacecraftState ephemState = ephemPropagator.propagate(currentDate);

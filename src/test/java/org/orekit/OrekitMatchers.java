@@ -55,7 +55,7 @@ public class OrekitMatchers {
         return new TypeSafeDiagnosingMatcher<GeodeticPoint>() {
             @Override
             public void describeTo(Description description) {
-                description.appendList("GeodeticPoint[", ",", "]",
+                description.appendList("GeodeticPoint[", ", ", "]",
                         Arrays.<SelfDescribing>asList(lat, lon, alt));
             }
 
@@ -144,7 +144,7 @@ public class OrekitMatchers {
         return new TypeSafeDiagnosingMatcher<Vector3D>() {
             @Override
             public void describeTo(Description description) {
-                description.appendList("Vector3D[", ",", "]",
+                description.appendList("Vector3D[", ", ", "]",
                         Arrays.<SelfDescribing>asList(x, y, z));
             }
 

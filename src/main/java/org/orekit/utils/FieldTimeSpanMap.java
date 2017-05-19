@@ -56,7 +56,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
     public FieldTimeSpanMap(final T entry, final Field<D> field_n) {
         data = new TreeSet<Transition<T, D>>(new ChronologicalComparator());
         field = field_n;
-        data.add(new Transition<T, D>(new FieldAbsoluteDate<D>(field), entry, entry));
+        data.add(new Transition<>(new FieldAbsoluteDate<>(field), entry, entry));
     }
 
     /** Add an entry valid before a limit date.

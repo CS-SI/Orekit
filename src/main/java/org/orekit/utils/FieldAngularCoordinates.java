@@ -67,9 +67,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
                                    final FieldVector3D<T> rotationRate) {
         this(rotation, rotationRate,
-             new FieldVector3D<T>(rotation.getQ0().getField().getZero(),
-                                  rotation.getQ0().getField().getZero(),
-                                  rotation.getQ0().getField().getZero()));
+             new FieldVector3D<>(rotation.getQ0().getField().getZero(),
+                                 rotation.getQ0().getField().getZero(),
+                                 rotation.getQ0().getField().getZero()));
     }
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
@@ -114,8 +114,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
         try {
             // find the initial fixed rotation
-            rotation = new FieldRotation<T>(u1.getPosition(), u2.getPosition(),
-                                    v1.getPosition(), v2.getPosition());
+            rotation = new FieldRotation<>(u1.getPosition(), u2.getPosition(),
+                                           v1.getPosition(), v2.getPosition());
 
             // find rotation rate Ω such that
             //  Ω ⨯ v₁ = r(dot(u₁)) - dot(v₁)
@@ -135,11 +135,11 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
             final FieldVector3D<T> ru1DotDot = rotation.applyTo(u1.getAcceleration());
             final FieldVector3D<T> oDotv1    = FieldVector3D.crossProduct(rotationRate, v1.getVelocity());
             final FieldVector3D<T> oov1      = FieldVector3D.crossProduct(rotationRate, rotationRate.crossProduct(v1.getPosition()));
-            final FieldVector3D<T> c1        = new FieldVector3D<T>(1, ru1DotDot, -2, oDotv1, -1, oov1, -1, v1.getAcceleration());
+            final FieldVector3D<T> c1        = new FieldVector3D<>(1, ru1DotDot, -2, oDotv1, -1, oov1, -1, v1.getAcceleration());
             final FieldVector3D<T> ru2DotDot = rotation.applyTo(u2.getAcceleration());
             final FieldVector3D<T> oDotv2    = FieldVector3D.crossProduct(rotationRate, v2.getVelocity());
             final FieldVector3D<T> oov2      = FieldVector3D.crossProduct(rotationRate, rotationRate.crossProduct( v2.getPosition()));
-            final FieldVector3D<T> c2        = new FieldVector3D<T>(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
+            final FieldVector3D<T> c2        = new FieldVector3D<>(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
             rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2, tolerance);
 
         } catch (MathIllegalArgumentException miae) {
@@ -230,9 +230,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
             final FieldVector<T> rhs = MatrixUtils.createFieldVector(kk);
 
             // find the best solution we can
-            final FieldDecompositionSolver<T> solver = new FieldQRDecomposition<T>(m).getSolver();
+            final FieldDecompositionSolver<T> solver = new FieldQRDecomposition<>(m).getSolver();
             final FieldVector<T> v = solver.solve(rhs);
-            omega = new FieldVector3D<T>(v.getEntry(0), v.getEntry(1), v.getEntry(2));
+            omega = new FieldVector3D<>(v.getEntry(0), v.getEntry(1), v.getEntry(2));
 
         } catch (MathIllegalArgumentException miae) {
             if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
@@ -244,7 +244,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
                 final T c2n = c22.sqrt();
                 if (c1n.getReal() <= threshold.getReal() && c2n.getReal() <= threshold.getReal()) {
                     // simple special case, velocities are cancelled
-                    return new FieldVector3D<T>(v12.getField().getZero(), v12.getField().getZero(), v12.getField().getZero());
+                    return new FieldVector3D<>(v12.getField().getZero(), v12.getField().getZero(), v12.getField().getZero());
                 } else if (v1n.getReal() <= threshold.getReal() && c1n.getReal() >= threshold.getReal()) {
                     // this is inconsistent, if v₁ is zero, c₁ must be 0 too
                     throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE,
@@ -256,7 +256,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
                 } else if (v1.crossProduct(v1).getNorm().getReal() <= threshold.getReal() && v12.getReal() > threshold.getReal()) {
                     // simple special case, v₂ is redundant with v₁, we just ignore it
                     // use the simplest Ω: orthogonal to both v₁ and c₁
-                    omega = new FieldVector3D<T>(v12.pow(-1), v1.crossProduct(c1));
+                    omega = new FieldVector3D<>(v12.reciprocal(), v1.crossProduct(c1));
                 }
             } else {
                 throw miae;
@@ -307,8 +307,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
                                       final FieldRotation<T> end,
                                       final T dt) {
         final FieldRotation<T> evolution = start.compose(end.revert(), RotationConvention.VECTOR_OPERATOR);
-        return new FieldVector3D<T>(evolution.getAngle().divide(dt),
-                                    evolution.getAxis(RotationConvention.VECTOR_OPERATOR));
+        return new FieldVector3D<>(evolution.getAngle().divide(dt),
+                                   evolution.getAxis(RotationConvention.VECTOR_OPERATOR));
     }
 
     /**
@@ -320,9 +320,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * of the instance
      */
     public FieldAngularCoordinates<T> revert() {
-        return new FieldAngularCoordinates<T>(rotation.revert(),
-                                              rotation.applyInverseTo(rotationRate.negate()),
-                                              rotation.applyInverseTo(rotationAcceleration.negate()));
+        return new FieldAngularCoordinates<>(rotation.revert(),
+                                             rotation.applyInverseTo(rotationRate.negate()),
+                                             rotation.applyInverseTo(rotationAcceleration.negate()));
     }
 
     /** Get a time-shifted state.
@@ -369,15 +369,15 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         final T zero = rate.getField().getZero();
         final T one  = rate.getField().getOne();
         final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
-                                                  new FieldRotation<T>(one, zero, zero, zero, false) :
-                                                  new FieldRotation<T>(rotationRate,
-                                                                       rate.multiply(dt),
-                                                                       RotationConvention.FRAME_TRANSFORM);
+                                                  new FieldRotation<>(one, zero, zero, zero, false) :
+                                                  new FieldRotation<>(rotationRate,
+                                                                      rate.multiply(dt),
+                                                                      RotationConvention.FRAME_TRANSFORM);
 
         // append rotation and rate contribution
         final FieldAngularCoordinates<T> linearPart =
-                new FieldAngularCoordinates<T>(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR),
-                                               rotationRate);
+                new FieldAngularCoordinates<>(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR),
+                                              rotationRate);
 
         final T acc  = rotationAcceleration.getNorm();
         if (acc.getReal() == 0.0) {
@@ -390,11 +390,11 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
         final FieldAngularCoordinates<T> quadraticContribution =
-                new FieldAngularCoordinates<T>(new FieldRotation<T>(rotationAcceleration,
-                                                                    acc.multiply(dt.multiply(0.5).multiply(dt)),
-                                                                    RotationConvention.FRAME_TRANSFORM),
-                                               new FieldVector3D<T>(dt, rotationAcceleration),
-                                               rotationAcceleration);
+                new FieldAngularCoordinates<>(new FieldRotation<>(rotationAcceleration,
+                                                                  acc.multiply(dt.multiply(0.5).multiply(dt)),
+                                                                  RotationConvention.FRAME_TRANSFORM),
+                                              new FieldVector3D<>(dt, rotationAcceleration),
+                                              rotationAcceleration);
 
         // the quadratic contribution is a small rotation:
         // its initial angle and angular rate are both zero.
@@ -446,11 +446,11 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
     public FieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
         final FieldVector3D<T> rOmega    = rotation.applyTo(offset.rotationRate);
         final FieldVector3D<T> rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
-        return new FieldAngularCoordinates<T>(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
-                                              rotationRate.add(rOmega),
-                                              new FieldVector3D<T>( 1.0, rotationAcceleration,
-                                                                    1.0, rOmegaDot,
-                                                                   -1.0, FieldVector3D.crossProduct(rotationRate, rOmega)));
+        return new FieldAngularCoordinates<>(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
+                                             rotationRate.add(rOmega),
+                                             new FieldVector3D<>( 1.0, rotationAcceleration,
+                                                                  1.0, rOmegaDot,
+                                                                 -1.0, FieldVector3D.crossProduct(rotationRate, rOmega)));
     }
 
     /** Subtract an offset from the instance.

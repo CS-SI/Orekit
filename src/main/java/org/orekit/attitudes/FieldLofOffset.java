@@ -102,7 +102,7 @@ public class FieldLofOffset<T extends RealFieldElement<T>> implements FieldAttit
                           final RotationOrder order, final T alpha1,
                           final T alpha2, final T alpha3) throws OrekitException {
         this.type = type;
-        this.offset = new FieldRotation<T>(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
+        this.offset = new FieldRotation<>(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -126,10 +126,10 @@ public class FieldLofOffset<T extends RealFieldElement<T>> implements FieldAttit
         final Transform frameToLof = new Transform(date.toAbsoluteDate(), frameToInertial, inertialToLof);
 
         // compose with offset rotation
-        return new FieldAttitude<T>(date, frame,
-                            offset.compose(frameToLof.getRotation(), RotationConvention.VECTOR_OPERATOR),
-                            offset.applyTo(frameToLof.getRotationRate()),
-                            offset.applyTo(frameToLof.getRotationAcceleration()));
+        return new FieldAttitude<>(date, frame,
+                                   offset.compose(frameToLof.getRotation(), RotationConvention.VECTOR_OPERATOR),
+                                   offset.applyTo(frameToLof.getRotationRate()),
+                                   offset.applyTo(frameToLof.getRotationAcceleration()));
 
     }
 

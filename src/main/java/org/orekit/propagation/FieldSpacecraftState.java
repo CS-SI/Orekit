@@ -104,7 +104,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -129,7 +129,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -154,7 +154,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -181,7 +181,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -236,7 +236,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        return new FieldSpacecraftState<T>(orbit, attitude, mass, newMap);
+        return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -362,7 +362,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         final Map<String, FieldHermiteInterpolator<T>> additionalInterpolators =
                 new HashMap<String, FieldHermiteInterpolator<T>>(additional.size());
         for (final String name : additional.keySet()) {
-            additionalInterpolators.put(name, new FieldHermiteInterpolator<T>());
+            additionalInterpolators.put(name, new FieldHermiteInterpolator<>());
         }
 
         // extract sample data
@@ -402,8 +402,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
 
         // create the complete interpolated state
-        return new FieldSpacecraftState<T>(interpolatedOrbit, interpolatedAttitude,
-                                   interpolatedMass, interpolatedAdditional);
+        return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude,
+                                          interpolatedMass, interpolatedAdditional);
 
     }
 

@@ -101,13 +101,13 @@ public class FieldPropagation {
         double ni_nominal   = 0.0 ;
 
         //mean of the gaussian curve for each of the errors around the nominal values
-        //{a,i,RAAN}
+        //{a, i, RAAN}
         double[] mean = {
             0 , 0, 0
         };
 
         //standard deviation of the gaussian curve for each of the errors around the nominal values
-        //{dA,dI, dRaan}
+        //{dA, dI, dRaan}
         double[] dAdIdRaan = {
             5 , FastMath.toRadians(1e-3), FastMath.toRadians(1e-3)
         };
@@ -131,7 +131,7 @@ public class FieldPropagation {
         DerivativeStructure zero = field.getZero();
 
         //initializing the FieldAbsoluteDate with only the field it will generate the day J2000
-        FieldAbsoluteDate<DerivativeStructure> date_0 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> date_0 = new FieldAbsoluteDate<>(field);
 
         //initialize a basic frame
         Frame frame = FramesFactory.getEME2000();
@@ -139,7 +139,7 @@ public class FieldPropagation {
         //initialize the orbit
         double mu = 3.9860047e14;
 
-        FieldKeplerianOrbit<DerivativeStructure> KO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, pa_0, raan_0, ni_0, PositionAngle.ECCENTRIC, frame, date_0, mu);
+        FieldKeplerianOrbit<DerivativeStructure> KO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, pa_0, raan_0, ni_0, PositionAngle.ECCENTRIC, frame, date_0, mu);
 
         //step of integration (how many times per orbit we take the mesures)
         double int_step = KO.getKeplerianPeriod().getReal() / num_step_orbit;
@@ -155,7 +155,7 @@ public class FieldPropagation {
                 rand_gen[jj] = URVG.nextVector();
         }
         //
-        FieldSpacecraftState<DerivativeStructure> SS_0 = new FieldSpacecraftState<DerivativeStructure>(KO);
+        FieldSpacecraftState<DerivativeStructure> SS_0 = new FieldSpacecraftState<>(KO);
         //adding force models
         ForceModel fModel_Sun  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
         ForceModel fModel_Moon = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
@@ -167,13 +167,13 @@ public class FieldPropagation {
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tolerance = NumericalPropagator.tolerances(0.001, KO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 
         integrator.setInitialStepSize(zero.add(60));
 
         //setting of the field propagator, we used the numerical one in order to add the third body attraction
         //and the holmes featherstone force models
-        FieldNumericalPropagator<DerivativeStructure> numProp = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> numProp = new FieldNumericalPropagator<>(field, integrator);
 
         numProp.setOrbitType(type);
         numProp.setInitialState(SS_0);
@@ -243,11 +243,11 @@ public class FieldPropagation {
                 double di = rand_gen[jj][1];
                 double dRAAN = rand_gen[jj][2];
                 //evaluating thanks to taylor the propagation of the nominal values with error
-                // x_e = f(a-n,i-n, raan-n) + df/da(a-n,i-n, raan-n) * da + df/di(a-n,i-n, raan-n) * di + ... etc.
+                // x_e = f(a-n, i-n, raan-n) + df/da(a-n, i-n, raan-n) * da + df/di(a-n, i-n, raan-n) * di + ... etc.
                 //TAYLOR'S EXPANSION
-                double x_e = x_t.taylor(da,di,dRAAN);
-                double y_e = y_t.taylor(da,di,dRAAN);
-                double z_e = z_t.taylor(da,di,dRAAN);
+                double x_e = x_t.taylor(da, di, dRAAN);
+                double y_e = y_t.taylor(da, di, dRAAN);
+                double z_e = z_t.taylor(da, di, dRAAN);
 
                 Vector3D P_e = new Vector3D(x_e, y_e, z_e);
 

@@ -244,7 +244,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * 1996-12-31 which corresponds to week date 1997-W01-2 (i.e. Tuesday in the
      * first week of 1997 is in fact the last day of year 1996).</p>
      * @param wYear year associated to week numbering
-     * @param week week number in year,from 1 to 52 or 53
+     * @param week week number in year, from 1 to 52 or 53
      * @param dayOfWeek day of week, from 1 (Monday) to 7 (Sunday)
      * @return a builded date
      * @exception IllegalArgumentException if inconsistent arguments

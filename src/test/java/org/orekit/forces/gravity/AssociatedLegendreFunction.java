@@ -35,7 +35,7 @@ import org.hipparchus.dfp.DfpField;
  */
 class AssociatedLegendreFunction {
 
-    static final Map<Integer,List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<Integer, List<Dfp[]>>();
+    static final Map<Integer, List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<Integer, List<Dfp[]>>();
     final int m;
     final Dfp[] polynomial;
     final Dfp normalization;

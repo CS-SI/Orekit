@@ -210,7 +210,7 @@ example of subclassing of a Java object into a jython object.
 
         def eventOccurred(self, s, increasing):
             if (increasing):
-                print "Visibility on", self.topocentricFrame.getName(),"begins at" , s.getDate()
+                print "Visibility on", self.topocentricFrame.getName(), "begins at" , s.getDate()
             else:
                 print "Visibility on",  self.topocentricFrame.getName(), "ends at" , s.getDate()
             return self.CONTINUE

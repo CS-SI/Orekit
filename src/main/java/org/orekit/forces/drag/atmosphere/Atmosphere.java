@@ -76,10 +76,10 @@ public interface Atmosphere extends Serializable {
      */
     default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
         throws OrekitException {
-        final Transform bodyToFrame = getFrame().getTransformTo(frame, date);
-        final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
-        final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
-        final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+        final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
+        final Vector3D      posInBody   = bodyToFrame.getInverse().transformPosition(position);
+        final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
+        final PVCoordinates pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }
 
@@ -93,12 +93,10 @@ public interface Atmosphere extends Serializable {
      */
     default <T extends RealFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
         throws OrekitException {
-        final T zero = position.getX().getField().getZero();
-        final Transform bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
-        final FieldVector3D<T> posInBody    = bodyToFrame.getInverse().transformPosition(position);
-        final FieldVector3D<T> vectorZero = new FieldVector3D<T>(zero, zero, zero);
-        final FieldPVCoordinates<T> pvBody  = new FieldPVCoordinates<T>(posInBody, vectorZero);
-        final FieldPVCoordinates<T> pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
+        final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
+        final FieldVector3D<T>      posInBody   = bodyToFrame.getInverse().transformPosition(position);
+        final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));
+        final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }
 

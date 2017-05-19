@@ -233,7 +233,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         this.zero = a.getField().getZero();
 
         /**Third canonical vector. */
-        this.PLUS_K = new FieldVector3D<T>(zero, zero, one);
+        this.PLUS_K = FieldVector3D.getPlusK(a.getField());
 
         if (hasDerivatives()) {
             @SuppressWarnings("unchecked")
@@ -319,10 +319,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         this.one = pvCoordinates.getPosition().getX().getField().getOne();
 
         // zero element
-        this.zero = this.one.getField().getZero();
+        this.zero = one.getField().getZero();
 
         // third canonical vector
-        this.PLUS_K = new FieldVector3D<T>(zero, zero, one);
+        this.PLUS_K = FieldVector3D.getPlusK(one.getField());
 
         // compute inclination
         final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
@@ -361,7 +361,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         // compute perigee argument
-        final FieldVector3D<T> node = new FieldVector3D<T>(raan, zero);
+        final FieldVector3D<T> node = new FieldVector3D<>(raan, zero);
         final T px = FieldVector3D.dotProduct(pvP, node);
         final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
         pa = py.atan2(px).subtract(v);
@@ -434,7 +434,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public FieldKeplerianOrbit(final FieldPVCoordinates<T> FieldPVCoordinates,
                           final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedFieldPVCoordinates<T>(date, FieldPVCoordinates), frame, mu);
+        this(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -869,8 +869,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T srsp    = sinRaan.multiply(sinPa);
 
         // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
 
         // elliptic eccentric anomaly
         final T uME2   = e.negate().add(1).multiply(e.add(1));
@@ -883,7 +883,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T x      = a.multiply(cosE.subtract(e));
         final T y      = a.multiply(sinE).multiply(s1Me2);
 
-        return new FieldVector3D<T>(x, p, y, q);
+        return new FieldVector3D<>(x, p, y, q);
 
     }
 
@@ -915,8 +915,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T srsp    = sinRaan.multiply(sinPa);
 
         // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
 
 
         // coordinates of position in the orbital plane
@@ -927,7 +927,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T x         = posFactor.multiply(cosV);
         final T y         = posFactor.multiply(sinV);
 
-        return new FieldVector3D<T>(x, p, y, q);
+        return new FieldVector3D<>(x, p, y, q);
 
     }
 
@@ -1089,8 +1089,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T srsp    = sinRaan.multiply(sinPa);
 
         // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+        final FieldVector3D<T> p = new FieldVector3D<>(crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        final FieldVector3D<T> q = new FieldVector3D<>(crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
 
         if (a.getReal() > 0) {
 
@@ -1110,8 +1110,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T xDot   = sinE.negate().multiply(factor);
             final T yDot   = cosE.multiply(s1Me2).multiply(factor);
 
-            final FieldVector3D<T> position = new FieldVector3D<T>(x, p, y, q);
-            final FieldVector3D<T> velocity = new FieldVector3D<T>(xDot, p, yDot, q);
+            final FieldVector3D<T> position = new FieldVector3D<>(x, p, y, q);
+            final FieldVector3D<T> velocity = new FieldVector3D<>(xDot, p, yDot, q);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         } else {
@@ -1125,8 +1125,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T posFactor = f.divide(e.multiply(cosV).add(1));
             final T velFactor = f.reciprocal().multiply(getMu()).sqrt();
 
-            final FieldVector3D<T> position     = new FieldVector3D<T>( posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
-            final FieldVector3D<T> velocity     = new FieldVector3D<T>( velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
+            final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
             partialPV = new FieldPVCoordinates<>(position, velocity);
 
         }
@@ -1382,32 +1382,32 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T sinE       = pv.divide(e.multiply(sqrtMuA));
 
         // da
-        final FieldVector3D<T> vectorAR = new FieldVector3D<T>(a2.multiply(2).divide(r3), position);
+        final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(2).divide(r3), position);
         final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(2 / mu));
         fillHalfRow(this.one, vectorAR,    jacobian[0], 0);
         fillHalfRow(this.one, vectorARDot, jacobian[0], 3);
 
         // de
         final T factorER3 = pv.divide(twoA);
-        final FieldVector3D<T> vectorER   = new FieldVector3D<T>(cosE.multiply(v2).divide(r.multiply(mu)), position,
-                                                 sinE.divide(sqrtMuA), velocity,
-                                                 factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorAR);
-        final FieldVector3D<T> vectorERDot = new FieldVector3D<T>(sinE.divide(sqrtMuA), position,
-                                                  cosE.multiply(2 / mu).multiply(r), velocity,
-                                                  factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorARDot);
+        final FieldVector3D<T> vectorER   = new FieldVector3D<>(cosE.multiply(v2).divide(r.multiply(mu)), position,
+                                                                sinE.divide(sqrtMuA), velocity,
+                                                                factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorAR);
+        final FieldVector3D<T> vectorERDot = new FieldVector3D<>(sinE.divide(sqrtMuA), position,
+                                                                 cosE.multiply(2 / mu).multiply(r), velocity,
+                                                                 factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorARDot);
         fillHalfRow(this.one, vectorER,    jacobian[1], 0);
         fillHalfRow(this.one, vectorERDot, jacobian[1], 3);
 
         // dE / dr (Eccentric anomaly)
         final T coefE = cosE.divide(e.multiply(sqrtMuA));
         final FieldVector3D<T>  vectorEAnR =
-            new FieldVector3D<T>(sinE.negate().multiply(v2).divide(e.multiply(r).multiply(mu)), position, coefE, velocity,
-                         factorER3.negate().multiply(coefE), vectorAR);
+            new FieldVector3D<>(sinE.negate().multiply(v2).divide(e.multiply(r).multiply(mu)), position, coefE, velocity,
+                                factorER3.negate().multiply(coefE), vectorAR);
 
         // dE / drDot
         final FieldVector3D<T>  vectorEAnRDot =
-            new FieldVector3D<T>(sinE.multiply(-2).multiply(r).divide(e.multiply(mu)), velocity, coefE, position,
-                         factorER3.negate().multiply(coefE), vectorARDot);
+            new FieldVector3D<>(sinE.multiply(-2).multiply(r).divide(e.multiply(mu)), velocity, coefE, position,
+                                factorER3.negate().multiply(coefE), vectorARDot);
 
         // precomputing some more factors
         final T s1 = sinE.negate().multiply(pz).divide(r).subtract(cosE.multiply(vz).multiply(sqrtAoMu));
@@ -1417,22 +1417,22 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T t2 = sqrtRec.multiply(sinE.negate().multiply(pz).divide(r3));
         final T t3 = sqrtRec.multiply(cosE.subtract(e)).multiply(vz).divide(sqrtMuA.multiply(2));
         final T t4 = sqrtRec.multiply(e.multiply(sinI).multiply(cosPA).multiply(sqrtRec).subtract(vz.multiply(sqrtAoMu)));
-        final FieldVector3D<T> s = new FieldVector3D<T>(cosE.divide(r), this.PLUS_K,
-                                        s1,       vectorEAnR,
-                                        s2,       position,
-                                        s3,       vectorAR);
-        final FieldVector3D<T> sDot = new FieldVector3D<T>( sinE.negate().multiply(sqrtAoMu), this.PLUS_K,
-                                           s1,               vectorEAnRDot,
-                                           s3,               vectorARDot);
+        final FieldVector3D<T> s = new FieldVector3D<>(cosE.divide(r), this.PLUS_K,
+                                                       s1,       vectorEAnR,
+                                                       s2,       position,
+                                                       s3,       vectorAR);
+        final FieldVector3D<T> sDot = new FieldVector3D<>(sinE.negate().multiply(sqrtAoMu), this.PLUS_K,
+                                                          s1,               vectorEAnRDot,
+                                                          s3,               vectorARDot);
         final FieldVector3D<T> t =
-            new FieldVector3D<T>(sqrtRec.multiply(sinE).divide(r), this.PLUS_K).add(new FieldVector3D<T>(t1, vectorEAnR,
-                                                                               t2, position,
-                                                                               t3, vectorAR,
-                                                                               t4, vectorER));
-        final FieldVector3D<T> tDot = new FieldVector3D<T>(sqrtRec.multiply(cosE.subtract(e)).multiply(sqrtAoMu), this.PLUS_K,
-                                           t1,                              vectorEAnRDot,
-                                           t3,                              vectorARDot,
-                                           t4,                              vectorERDot);
+            new FieldVector3D<>(sqrtRec.multiply(sinE).divide(r), this.PLUS_K).add(new FieldVector3D<>(t1, vectorEAnR,
+                                                                                                       t2, position,
+                                                                                                       t3, vectorAR,
+                                                                                                       t4, vectorER));
+        final FieldVector3D<T> tDot = new FieldVector3D<>(sqrtRec.multiply(cosE.subtract(e)).multiply(sqrtAoMu), this.PLUS_K,
+                                                          t1,                                                    vectorEAnRDot,
+                                                          t3,                                                    vectorARDot,
+                                                          t4,                                                    vectorERDot);
 
         // di
         final T factorI1 = sinI.negate().multiply(sqrtRec).divide(sqrtMuA);
@@ -1441,9 +1441,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T i3 =  factorI1.multiply(mz).multiply(e).divide(oMe2);
         final T i4 = cosI.multiply(sinPA);
         final T i5 = cosI.multiply(cosPA);
-        fillHalfRow(i1, new FieldVector3D<T>(vy, vx.negate(), this.zero), i2, vectorAR, i3, vectorER, i4, s, i5, t,
+        fillHalfRow(i1, new FieldVector3D<>(vy, vx.negate(), this.zero), i2, vectorAR, i3, vectorER, i4, s, i5, t,
                     jacobian[2], 0);
-        fillHalfRow(i1, new FieldVector3D<T>(py.negate(), px, this.zero), i2, vectorARDot, i3, vectorERDot, i4, sDot, i5, tDot,
+        fillHalfRow(i1, new FieldVector3D<>(py.negate(), px, this.zero), i2, vectorARDot, i3, vectorERDot, i4, sDot, i5, tDot,
                     jacobian[2], 3);
 
         // dpa
@@ -1452,11 +1452,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // dRaan
         final T factorRaanR = (a.multiply(mu).multiply(oMe2).multiply(sinI).multiply(sinI)).reciprocal();
-        fillHalfRow( factorRaanR.negate().multiply(my), new FieldVector3D<T>(zero, vz, vy.negate()),
-                     factorRaanR.multiply(mx), new FieldVector3D<T>(vz.negate(), zero,  vx),
+        fillHalfRow( factorRaanR.negate().multiply(my), new FieldVector3D<>(zero, vz, vy.negate()),
+                     factorRaanR.multiply(mx), new FieldVector3D<>(vz.negate(), zero,  vx),
                      jacobian[4], 0);
-        fillHalfRow(factorRaanR.negate().multiply(my), new FieldVector3D<T>(zero, pz.negate(),  py),
-                     factorRaanR.multiply(mx), new FieldVector3D<T>(pz, zero, px.negate()),
+        fillHalfRow(factorRaanR.negate().multiply(my), new FieldVector3D<>(zero, pz.negate(),  py),
+                     factorRaanR.multiply(mx), new FieldVector3D<>(pz, zero, px.negate()),
                      jacobian[4], 3);
 
         // dM
@@ -1510,7 +1510,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T pv         = FieldVector3D.dotProduct(position, velocity);
 
         // da
-        final FieldVector3D<T> vectorAR = new FieldVector3D<T>(a2.multiply(-2).divide(r3), position);
+        final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(-2).divide(r3), position);
         final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(-2 / mu));
         fillHalfRow(this.one.negate(), vectorAR,    jacobian[0], 0);
         fillHalfRow(this.one.negate(), vectorARDot, jacobian[0], 3);
@@ -1518,19 +1518,19 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // differentials of the momentum
         final T m      = momentum.getNorm();
         final T oOm    = m.reciprocal();
-        final FieldVector3D<T> dcXP = new FieldVector3D<T>(this.zero, vz, vy.negate());
-        final FieldVector3D<T> dcYP = new FieldVector3D<T>(vz.negate(),   this.zero,  vx);
-        final FieldVector3D<T> dcZP = new FieldVector3D<T>( vy, vx.negate(),   this.zero);
-        final FieldVector3D<T> dcXV = new FieldVector3D<T>(  this.zero,  z.negate(),   y);
-        final FieldVector3D<T> dcYV = new FieldVector3D<T>(  z,   this.zero,  x.negate());
-        final FieldVector3D<T> dcZV = new FieldVector3D<T>( y.negate(),   x,   this.zero);
-        final FieldVector3D<T> dCP  = new FieldVector3D<T>(mx.multiply(oOm), dcXP, my.multiply(oOm), dcYP, mz.multiply(oOm), dcZP);
-        final FieldVector3D<T> dCV  = new FieldVector3D<T>(mx.multiply(oOm), dcXV, my.multiply(oOm), dcYV, mz.multiply(oOm), dcZV);
+        final FieldVector3D<T> dcXP = new FieldVector3D<>(this.zero, vz, vy.negate());
+        final FieldVector3D<T> dcYP = new FieldVector3D<>(vz.negate(),   this.zero,  vx);
+        final FieldVector3D<T> dcZP = new FieldVector3D<>( vy, vx.negate(),   this.zero);
+        final FieldVector3D<T> dcXV = new FieldVector3D<>(  this.zero,  z.negate(),   y);
+        final FieldVector3D<T> dcYV = new FieldVector3D<>(  z,   this.zero,  x.negate());
+        final FieldVector3D<T> dcZV = new FieldVector3D<>( y.negate(),   x,   this.zero);
+        final FieldVector3D<T> dCP  = new FieldVector3D<>(mx.multiply(oOm), dcXP, my.multiply(oOm), dcYP, mz.multiply(oOm), dcZP);
+        final FieldVector3D<T> dCV  = new FieldVector3D<>(mx.multiply(oOm), dcXV, my.multiply(oOm), dcYV, mz.multiply(oOm), dcZV);
 
         // dp
         final T mOMu   = m.divide(mu);
-        final FieldVector3D<T> dpP  = new FieldVector3D<T>(mOMu.multiply(2), dCP);
-        final FieldVector3D<T> dpV  = new FieldVector3D<T>(mOMu.multiply(2), dCV);
+        final FieldVector3D<T> dpP  = new FieldVector3D<>(mOMu.multiply(2), dCP);
+        final FieldVector3D<T> dpV  = new FieldVector3D<>(mOMu.multiply(2), dCV);
 
         // de
         final T p      = m.multiply(mOMu);
@@ -1554,18 +1554,18 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T cP5     =  r2.multiply(sinI).multiply(sinI).negate().reciprocal();
         final T cP6     = z.multiply(cP5);
         final T cP7     = cP3.multiply(cP5);
-        final FieldVector3D<T> dacP  = new FieldVector3D<T>(cP1, dcXP, cP2, dcYP, cP4, dCP, oOm, new FieldVector3D<T>(my.negate(), mx, this.zero));
-        final FieldVector3D<T> dacV  = new FieldVector3D<T>(cP1, dcXV, cP2, dcYV, cP4, dCV);
-        final FieldVector3D<T> dpoP  = new FieldVector3D<T>(cP6, dacP, cP7, this.PLUS_K);
-        final FieldVector3D<T> dpoV  = new FieldVector3D<T>(cP6, dacV);
+        final FieldVector3D<T> dacP  = new FieldVector3D<>(cP1, dcXP, cP2, dcYP, cP4, dCP, oOm, new FieldVector3D<>(my.negate(), mx, this.zero));
+        final FieldVector3D<T> dacV  = new FieldVector3D<>(cP1, dcXV, cP2, dcYV, cP4, dCV);
+        final FieldVector3D<T> dpoP  = new FieldVector3D<>(cP6, dacP, cP7, this.PLUS_K);
+        final FieldVector3D<T> dpoV  = new FieldVector3D<>(cP6, dacV);
 
         final T re2     = r2.multiply(e).multiply(e);
         final T recOre2 = p.subtract(r).divide(re2);
         final T resOre2 = pv.multiply(mOMu).divide(re2);
-        final FieldVector3D<T> dreP  = new FieldVector3D<T>(mOMu, velocity, pv.divide(mu), dCP);
-        final FieldVector3D<T> dreV  = new FieldVector3D<T>(mOMu, position, pv.divide(mu), dCV);
-        final FieldVector3D<T> davP  = new FieldVector3D<T>(resOre2.negate(), dpP, recOre2, dreP, resOre2.divide(r), position);
-        final FieldVector3D<T> davV  = new FieldVector3D<T>(resOre2.negate(), dpV, recOre2, dreV);
+        final FieldVector3D<T> dreP  = new FieldVector3D<>(mOMu, velocity, pv.divide(mu), dCP);
+        final FieldVector3D<T> dreV  = new FieldVector3D<>(mOMu, position, pv.divide(mu), dCV);
+        final FieldVector3D<T> davP  = new FieldVector3D<>(resOre2.negate(), dpP, recOre2, dreP, resOre2.divide(r), position);
+        final FieldVector3D<T> davV  = new FieldVector3D<>(resOre2.negate(), dpV, recOre2, dreV);
         fillHalfRow(this.one, dpoP, this.one.negate(), davP, jacobian[3], 0);
         fillHalfRow(this.one, dpoV, this.one.negate(), davV, jacobian[3], 3);
 
@@ -1580,12 +1580,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T s2a    = pv.divide(absA.multiply(2));
         final T oObux  = m.multiply(m).add(absA.multiply(mu)).sqrt().reciprocal();
         final T scasbu = pv.multiply(oObux);
-        final FieldVector3D<T> dauP = new FieldVector3D<T>(sqrtMuA.reciprocal(), velocity, s2a.negate().divide(sqrtMuA), vectorAR);
-        final FieldVector3D<T> dauV = new FieldVector3D<T>(sqrtMuA.reciprocal(), position, s2a.negate().divide(sqrtMuA), vectorARDot);
-        final FieldVector3D<T> dbuP = new FieldVector3D<T>(oObux.multiply(mu / 2), vectorAR,    m.multiply(oObux), dCP);
-        final FieldVector3D<T> dbuV = new FieldVector3D<T>(oObux.multiply(mu / 2), vectorARDot, m.multiply(oObux), dCV);
-        final FieldVector3D<T> dcuP = new FieldVector3D<T>(oObux, velocity, scasbu.negate().multiply(oObux), dbuP);
-        final FieldVector3D<T> dcuV = new FieldVector3D<T>(oObux, position, scasbu.negate().multiply(oObux), dbuV);
+        final FieldVector3D<T> dauP = new FieldVector3D<>(sqrtMuA.reciprocal(), velocity, s2a.negate().divide(sqrtMuA), vectorAR);
+        final FieldVector3D<T> dauV = new FieldVector3D<>(sqrtMuA.reciprocal(), position, s2a.negate().divide(sqrtMuA), vectorARDot);
+        final FieldVector3D<T> dbuP = new FieldVector3D<>(oObux.multiply(mu / 2), vectorAR,    m.multiply(oObux), dCP);
+        final FieldVector3D<T> dbuV = new FieldVector3D<>(oObux.multiply(mu / 2), vectorARDot, m.multiply(oObux), dCV);
+        final FieldVector3D<T> dcuP = new FieldVector3D<>(oObux, velocity, scasbu.negate().multiply(oObux), dbuP);
+        final FieldVector3D<T> dcuV = new FieldVector3D<>(oObux, position, scasbu.negate().multiply(oObux), dbuV);
         fillHalfRow(this.one, dauP, e.negate().divide(rOa.add(1)), dcuP, jacobian[5], 0);
         fillHalfRow(this.one, dauV, e.negate().divide(rOa.add(1)), dcuV, jacobian[5], 3);
 

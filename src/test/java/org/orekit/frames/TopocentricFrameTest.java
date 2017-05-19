@@ -438,7 +438,7 @@ public class TopocentricFrameTest {
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
                                                itrf);
-        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0,0.0,0.0), "test");
+        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "test");
         GeodeticPoint gp = staFrame.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS+600000,
                                                                 0.0, FastMath.toRadians(5.0));
         Assert.assertEquals(0.0, gp.getLongitude(), 1.0e-15);

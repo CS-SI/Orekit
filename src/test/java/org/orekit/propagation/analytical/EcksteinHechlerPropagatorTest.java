@@ -691,7 +691,7 @@ public class EcksteinHechlerPropagatorTest {
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
-        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900",farTarget.durationFrom(propagated.getDate()) < 7900.0);
+        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900", farTarget.durationFrom(propagated.getDate()) < 7900.0);
         Assert.assertEquals(0.09, elevation, 1.0e-11);
         Assert.assertTrue(zVelocity < 0);
     }

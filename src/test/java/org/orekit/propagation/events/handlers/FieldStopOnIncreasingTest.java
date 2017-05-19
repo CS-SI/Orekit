@@ -49,40 +49,40 @@ public class FieldStopOnIncreasingTest {
 
     private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
-                                                                        zero.add(0.122138),   zero.add(3.10686),
-                                                                        zero.add(1.00681), zero.add(0.048363),
-                                                                        PositionAngle.MEAN,
-                                                                   FramesFactory.getEME2000(),
-                                                                   date,
-                                                                   Constants.EIGEN5C_EARTH_MU));
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
+                                                                                         zero.add(0.122138),   zero.add(3.10686),
+                                                                                         zero.add(1.00681), zero.add(0.048363),
+                                                                                         PositionAngle.MEAN,
+                                                                                         FramesFactory.getEME2000(),
+                                                                                         date,
+                                                                                         Constants.EIGEN5C_EARTH_MU));
         Assert.assertSame(s, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
     private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
-                                                                    zero.add(0.122138),   zero.add(3.10686),
-                                                                    zero.add(1.00681), zero.add(0.048363),
-                                                                    PositionAngle.MEAN,
-                                                                    FramesFactory.getEME2000(),
-                                                                    date,
-                                                                    Constants.EIGEN5C_EARTH_MU));
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
+                                                                                         zero.add(0.122138),   zero.add(3.10686),
+                                                                                         zero.add(1.00681), zero.add(0.048363),
+                                                                                         PositionAngle.MEAN,
+                                                                                         FramesFactory.getEME2000(),
+                                                                                         date,
+                                                                                         Constants.EIGEN5C_EARTH_MU));
         Assert.assertSame(FieldEventHandler.Action.STOP, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
     private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
-                                                                                           zero.add(0.122138),   zero.add(3.10686),
-                                                                                           zero.add(1.00681), zero.add(0.048363),
-                                                                                           PositionAngle.MEAN,
-                                                                   FramesFactory.getEME2000(),
-                                                                   date,
-                                                                   Constants.EIGEN5C_EARTH_MU));
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
+                                                                                         zero.add(0.122138),   zero.add(3.10686),
+                                                                                         zero.add(1.00681), zero.add(0.048363),
+                                                                                         PositionAngle.MEAN,
+                                                                                         FramesFactory.getEME2000(),
+                                                                                         date,
+                                                                                         Constants.EIGEN5C_EARTH_MU));
         Assert.assertSame(FieldEventHandler.Action.CONTINUE, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
     }
 

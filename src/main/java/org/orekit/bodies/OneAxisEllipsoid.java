@@ -643,9 +643,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final DerivativeStructure dz  = pz.subtract(gpz);
         final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
 
-        return new FieldGeodeticPoint<DerivativeStructure>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
-                                                           DerivativeStructure.atan2(p.getY(), p.getX()),
-                                                           DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+        return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
+                                                                  DerivativeStructure.atan2(p.getY(), p.getX()),
+                                                                  DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
     }
 
     /** Replace the instance with a data transfer object for serialization.

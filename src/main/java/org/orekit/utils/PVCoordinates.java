@@ -234,7 +234,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
-        return new FieldVector3D<DerivativeStructure>(x, y, z);
+        return new FieldVector3D<>(x, y, z);
 
     }
 

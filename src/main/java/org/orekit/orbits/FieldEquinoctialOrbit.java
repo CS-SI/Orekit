@@ -380,7 +380,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     public FieldEquinoctialOrbit(final FieldPVCoordinates<T> pvCoordinates, final Frame frame,
                             final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedFieldPVCoordinates<T>(date, pvCoordinates), frame, mu);
+        this(new TimeStampedFieldPVCoordinates<>(date, pvCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -764,11 +764,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T ydot   = factor.multiply(cLe.subtract(beta.multiply(ex).multiply(exCeyS)));
 
         final FieldVector3D<T> position =
-                        new FieldVector3D<T>(x.multiply(ux).add(y.multiply(vx)),
-                                        x.multiply(uy).add(y.multiply(vy)),
-                                        x.multiply(uz).add(y.multiply(vz)));
+                        new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
+                                            x.multiply(uy).add(y.multiply(vy)),
+                                            x.multiply(uz).add(y.multiply(vz)));
         final FieldVector3D<T> velocity =
-                        new FieldVector3D<T>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
+                        new FieldVector3D<>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
 
         partialPV = new FieldPVCoordinates<>(position, velocity);
 
@@ -979,9 +979,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T hy2        = hy.multiply(hy);
         final T hxhy       = hx.multiply(hy);
 
-        // precomputing equinoctial frame unit vectors (f,g,w)
-        final FieldVector3D<T> f  = new FieldVector3D<T>(hx2.subtract(hy2).add(1), hxhy.multiply(2), hy.multiply(-2)).normalize();
-        final FieldVector3D<T> g  = new FieldVector3D<T>(hxhy.multiply(2), hy2.add(1).subtract(hx2), hx.multiply(2)).normalize();
+        // precomputing equinoctial frame unit vectors (f, g, w)
+        final FieldVector3D<T> f  = new FieldVector3D<>(hx2.subtract(hy2).add(1), hxhy.multiply(2), hy.multiply(-2)).normalize();
+        final FieldVector3D<T> g  = new FieldVector3D<>(hxhy.multiply(2), hy2.add(1).subtract(hx2), hx.multiply(2)).normalize();
         final FieldVector3D<T> w  = FieldVector3D.crossProduct(position, velocity).normalize();
 
         // coordinates of the spacecraft in the equinoctial frame
@@ -991,19 +991,20 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T yDot = FieldVector3D.dotProduct(velocity, g);
 
         // drDot / dEx = dXDot / dEx * f + dYDot / dEx * g
-        final T c1 = a.divide(sqrtMuA.multiply(epsilon));
-        final T c2 = a.multiply(sqrtMuA).multiply(beta).divide(r3);
-        final T c3 = sqrtMuA.divide(r3.multiply(epsilon));
-        final FieldVector3D<T> drDotSdEx = new FieldVector3D<T>( c1.multiply(xDot).multiply(yDot).subtract(c2.multiply(ey).multiply(x)).subtract(c3.multiply(x).multiply(y)), f,
-                                                c1.negate().multiply(xDot).multiply(xDot).subtract(c2.multiply(ey).multiply(y)).add(c3.multiply(x).multiply(x)), g);
+        final T c1  = a.divide(sqrtMuA.multiply(epsilon));
+        final T c1N = c1.negate();
+        final T c2  = a.multiply(sqrtMuA).multiply(beta).divide(r3);
+        final T c3  = sqrtMuA.divide(r3.multiply(epsilon));
+        final FieldVector3D<T> drDotSdEx = new FieldVector3D<>(c1.multiply(xDot).multiply(yDot).subtract(c2.multiply(ey).multiply(x)).subtract(c3.multiply(x).multiply(y)), f,
+                                                               c1N.multiply(xDot).multiply(xDot).subtract(c2.multiply(ey).multiply(y)).add(c3.multiply(x).multiply(x)), g);
 
         // drDot / dEy = dXDot / dEy * f + dYDot / dEy * g
-        final FieldVector3D<T> drDotSdEy = new FieldVector3D<T>( c1.multiply(yDot).multiply(yDot).add(c2.multiply(ex).multiply(x)).subtract(c3.multiply(y).multiply(y)), f,
-                                                c1.negate().multiply(xDot).multiply(yDot).add(c2.multiply(ex).multiply(y)).add(c3.multiply(x).multiply(y)), g);
+        final FieldVector3D<T> drDotSdEy = new FieldVector3D<>(c1.multiply(yDot).multiply(yDot).add(c2.multiply(ex).multiply(x)).subtract(c3.multiply(y).multiply(y)), f,
+                                                               c1N.multiply(xDot).multiply(yDot).add(c2.multiply(ex).multiply(y)).add(c3.multiply(x).multiply(y)), g);
 
         // da
-        final FieldVector3D<T> vectorAR = new FieldVector3D<T>(a2.multiply(2).divide(r3), position);
-        final FieldVector3D<T> vectorARDot = new FieldVector3D<T>(a2.multiply(2).divide(mu), velocity);
+        final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(2).divide(r3), position);
+        final FieldVector3D<T> vectorARDot = new FieldVector3D<>(a2.multiply(2).divide(mu), velocity);
         fillHalfRow(one, vectorAR,    jacobian[0], 0);
         fillHalfRow(one, vectorARDot, jacobian[0], 3);
 
@@ -1012,13 +1013,13 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T d2 = (hy.multiply(xDot).subtract(hx.multiply(yDot))).divide(sqrtMuA.multiply(epsilon));
         final T d3 = hx.multiply(y).subtract(hy.multiply(x)).divide(sqrtMuA);
         final FieldVector3D<T> vectorExRDot =
-            new FieldVector3D<T>(x.multiply(2).multiply(yDot).subtract(xDot.multiply(y)).divide(mu), g, y.negate().multiply(yDot).divide(mu), f, ey.negate().multiply(d3).divide(epsilon), w);
+            new FieldVector3D<>(x.multiply(2).multiply(yDot).subtract(xDot.multiply(y)).divide(mu), g, y.negate().multiply(yDot).divide(mu), f, ey.negate().multiply(d3).divide(epsilon), w);
         fillHalfRow(ex.multiply(d1), position, ey.negate().multiply(d2), w, epsilon.divide(sqrtMuA), drDotSdEy, jacobian[1], 0);
         fillHalfRow(one, vectorExRDot, jacobian[1], 3);
 
         // dEy
         final FieldVector3D<T> vectorEyRDot =
-            new FieldVector3D<T>(xDot.multiply(2).multiply(y).subtract(x.multiply(yDot)).divide(mu), f, x.negate().multiply(xDot).divide(mu), g, ex.multiply(d3).divide(epsilon), w);
+            new FieldVector3D<>(xDot.multiply(2).multiply(y).subtract(x.multiply(yDot)).divide(mu), f, x.negate().multiply(xDot).divide(mu), g, ex.multiply(d3).divide(epsilon), w);
         fillHalfRow(ey.multiply(d1), position, ex.multiply(d2), w, epsilon.negate().divide(sqrtMuA), drDotSdEx, jacobian[2], 0);
         fillHalfRow(one, vectorEyRDot, jacobian[2], 3);
 

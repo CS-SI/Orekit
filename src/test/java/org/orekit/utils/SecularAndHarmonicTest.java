@@ -291,7 +291,7 @@ public class SecularAndHarmonicTest {
         // find the encounter in the bracketed interval
         final BaseUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0.1, 5);
-        final double dt = solver.solve(1000, latitudeFunction,-span, span);
+        final double dt = solver.solve(1000, latitudeFunction, -span, span);
         return propagator.propagate(guessDate.shiftedBy(dt));
 
     }

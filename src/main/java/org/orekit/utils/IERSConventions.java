@@ -2500,7 +2500,7 @@ public enum IERSConventions {
      * Celestial Mechanics, Volume 39, Issue 3, pp 283-307. It has been proposed as a conventional
      * conventional relationship between UT1 and Earth rotation in the paper "Definition of the Celestial
      * Ephemeris origin and of UT1 in the International Celestial Reference Frame", Capitaine, N.,
-     * Guinot, B., and McCarthy, D. D., 2000, “,” Astronomy and Astrophysics, 355(1), pp. 398–405.
+     * Guinot, B., and McCarthy, D. D., 2000, Astronomy and Astrophysics, 355(1), pp. 398–405.
      * </p>
      * <p>
      * It is presented simply as stellar angle in IERS conventions 1996 but as since been adopted as

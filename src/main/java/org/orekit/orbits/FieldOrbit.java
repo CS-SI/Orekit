@@ -146,10 +146,10 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
             // compute it from Newtonian attraction
             final T r2 = FieldPVCoordinates.getPosition().getNormSq();
             final T r3 = r2.multiply(r2.sqrt());
-            this.pvCoordinates = new TimeStampedFieldPVCoordinates<T>(FieldPVCoordinates.getDate(),
-                                                              FieldPVCoordinates.getPosition(),
-                                                              FieldPVCoordinates.getVelocity(),
-                                                              new FieldVector3D<T> (r3.pow(-1).multiply(-mu), FieldPVCoordinates.getPosition()));
+            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(FieldPVCoordinates.getDate(),
+                                                                     FieldPVCoordinates.getPosition(),
+                                                                     FieldPVCoordinates.getVelocity(),
+                                                                     new FieldVector3D<>(r3.reciprocal().multiply(-mu), FieldPVCoordinates.getPosition()));
         } else {
             this.pvCoordinates = FieldPVCoordinates;
         }
@@ -387,7 +387,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      */
     public T getKeplerianMeanMotion() {
         final T absA = getA().abs();
-        return absA.pow(-1).multiply(mu).sqrt().divide(absA);
+        return absA.reciprocal().multiply(mu).sqrt().divide(absA);
     }
 
     /** Get the date of orbital parameters.
@@ -564,7 +564,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
 
         // invert the direct Jacobian
         final FieldMatrix<T> matrix = MatrixUtils.createFieldMatrix(directJacobian);
-        final FieldDecompositionSolver<T> solver = new FieldLUDecomposition<T>(matrix).getSolver();
+        final FieldDecompositionSolver<T> solver = new FieldLUDecomposition<>(matrix).getSolver();
         return solver.getInverse().getData();
 
     }
