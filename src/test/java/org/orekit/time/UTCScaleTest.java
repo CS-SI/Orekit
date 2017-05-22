@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.Decimal64Field;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -338,7 +339,7 @@ public class UTCScaleTest {
     }
 
     @Test
-    public void testEmptyOffsets() throws Exception {
+    public void testEmptyOffsets() {
         Utils.setDataRoot("no-data");
 
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
@@ -354,6 +355,28 @@ public class UTCScaleTest {
             Assert.assertEquals(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    public void testInfinityRegularDate() throws OrekitException {
+        TimeScale scale = TimeScalesFactory.getUTC();
+        Assert.assertEquals(-36.0,
+                            scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY),
+                            1.0e-15);
+    }
+
+    @Test
+    public void testInfinityFieldDate() throws OrekitException {
+        TimeScale scale = TimeScalesFactory.getUTC();
+        Assert.assertEquals(-36.0,
+                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Decimal64Field.getInstance())).getReal(),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Decimal64Field.getInstance())).getReal(),
+                            1.0e-15);
     }
 
     @Test

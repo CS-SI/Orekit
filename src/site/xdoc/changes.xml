@@ -21,6 +21,17 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="James Schatzman">
+        Fixed ArrayOutOfBoundException appearing when converting dates at past or future infinity
+        to string.
+      </action>
+      <action dev="luc" type="fix">
+        Extended range of DateComponents to allow the full integer range as days offset
+        from J2000.
+      </action>
+      <action dev="luc" type="fix">
+        Prevent NaN appearing in UTC-TAI offsets for dates at past or future infinity.
+      </action>
       <action dev="luc" type="fix">
         Prevent central attraction coefficient from being adjusted in TLEPropagatorBuilder,
         as it is specified by the TLE theory.

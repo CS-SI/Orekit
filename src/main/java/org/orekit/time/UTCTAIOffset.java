@@ -138,7 +138,15 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      */
     public double getOffset(final AbsoluteDate date) {
-        return offset + date.durationFrom(reference) * slopeTAI;
+        if (slopeTAI == 0) {
+            // we use an if statement here so the offset computation returns
+            // a finite value when date is AbsoluteDate.FUTURE_INFINITY
+            // without this if statement, the multiplication between an
+            // infinite duration and a zero slope would induce a NaN offset
+            return offset;
+        } else {
+            return offset + date.durationFrom(reference) * slopeTAI;
+        }
     }
 
     /** Get the TAI - UTC offset in seconds.
@@ -148,7 +156,15 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(reference).multiply(slopeTAI).add(offset);
+        if (slopeTAI == 0) {
+            // we use an if statement here so the offset computation returns
+            // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
+            // without this if statement, the multiplication between an
+            // infinite duration and a zero slope would induce a NaN offset
+            return date.getField().getZero().add(offset);
+        } else {
+            return date.durationFrom(reference).multiply(slopeTAI).add(offset);
+        }
     }
 
     /** Get the TAI - UTC offset in seconds.
