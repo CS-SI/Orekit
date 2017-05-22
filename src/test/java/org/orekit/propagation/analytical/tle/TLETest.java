@@ -394,6 +394,18 @@ public class TLETest {
                       "2 34602  96.5991 210.0210 0006808 112.8142 247.3865 16.06008103193411");
     }
 
+    @Test
+    public void testOldTLE() throws OrekitException {
+        String line1 = "1 15427U          85091.94293084 0.00000051  00000+0  32913-4 0   179";
+        String line2 = "2 15427  98.9385  46.0219 0015502 321.4354  38.5705 14.11363211 15580";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+        TLE tle = new TLE(line1, line2);
+        Assert.assertEquals(15427, tle.getSatelliteNumber());
+        Assert.assertEquals(0.00000051,
+                            tle.getMeanMotionFirstDerivative() * Constants.JULIAN_DAY * Constants.JULIAN_DAY / (4 * FastMath.PI),
+                            1.0e-15);
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

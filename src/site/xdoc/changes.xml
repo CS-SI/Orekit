@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Allow some old version of TLE format to be parsed correctly.
+        Fixes issue #330.
+      </action>
       <action dev="luc" type="fix" due-to="James Schatzman">
         Fixed ArrayOutOfBoundException appearing when converting dates at past or future infinity
         to string.
