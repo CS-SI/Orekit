@@ -525,7 +525,7 @@ public class IodGooding {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V1[0] / R1).add(Pt.scalarMultiply(V1[1] / RT));
+            final Vector3D Vel1 = new  Vector3D(V1[0] / R1, P1, V1[1] / RT, Pt);
 
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)

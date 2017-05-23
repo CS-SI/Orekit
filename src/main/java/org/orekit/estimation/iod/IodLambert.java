@@ -48,24 +48,45 @@ public class IodLambert {
     }
 
     /** Estimate a Keplerian orbit given two position vectors and a duration.
-     *
+     * <p>
+     * The logic for setting {@code posigrade} and {@code nRev} is that the
+     * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
+     * 2π {@code nRev} - α if {@code posigrade} is false and 2π {@code nRev} + α
+     * if {@code posigrade} is true, where α is the separation angle between
+     * {@code p1} and {@code p2}, which is always computed between 0 and π
+     * (because in 3D without a normal reference, vector angles cannot go past π).
+     * </p>
+     * <p>
+     * This implies that {@code posigrade} should be set to true if {@code p2} is
+     * located in the half orbit starting at {@code p1} and it should be set to
+     * false if {@code p2} is located in the half orbit ending at {@code p1},
+     * regardless of the number of periods between {@code t1} and {@code t2},
+     * and {@code nRev} should be set accordingly.
+     * </p>
+     * <p>
+     * As an example, if {@code t2} is less than half a period after {@code t1},
+     * then {@code posigrade} should be {@code true} and {@code nRev} should be 0.
+     * If {@code t2} is more than half a period after {@code t1} but less than
+     * one period after {@code t1}, {@code posigrade} should be {@code false} and
+     * {@code nRev} should be 1.
+     * </p>
      * @param frame     frame
      * @param posigrade flag indicating the direction of motion
      * @param nRev      number of revolutions
-     * @param P1        position vector 1
-     * @param T1        date of observation 1
-     * @param P2        position vector 2
-     * @param T2        date of observation 2
+     * @param p1        position vector 1
+     * @param t1        date of observation 1
+     * @param p2        position vector 2
+     * @param t2        date of observation 2
      * @return  an initial Keplerian orbit estimate
      */
     public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
                                    final int nRev,
-                                   final Vector3D P1, final AbsoluteDate T1,
-                                   final Vector3D P2, final AbsoluteDate T2) {
+                                   final Vector3D p1, final AbsoluteDate t1,
+                                   final Vector3D p2, final AbsoluteDate t2) {
 
-        final double r1 = P1.getNorm();
-        final double r2 = P2.getNorm();
-        final double tau = T2.durationFrom(T1); // in seconds
+        final double r1 = p1.getNorm();
+        final double r2 = p2.getNorm();
+        final double tau = t2.durationFrom(t1); // in seconds
 
         // normalizing constants
         final double R = FastMath.max(r1, r2); // in m
@@ -73,7 +94,7 @@ public class IodLambert {
         final double T = R / V; // in seconds
 
         // sweep angle
-        double dth = Vector3D.angle(P1, P2);
+        double dth = Vector3D.angle(p1, p2);
         // compute the number of revolutions
         if (!posigrade) {
             dth = 2 * FastMath.PI - dth;
@@ -89,9 +110,9 @@ public class IodLambert {
         if (exitflag) {
             // basis vectors
             // normal to the orbital arc plane
-            final Vector3D Pn = P1.crossProduct(P2);
+            final Vector3D Pn = p1.crossProduct(p2);
             // perpendicular to the radius vector, in the orbital arc plane
-            final Vector3D Pt = Pn.crossProduct(P1);
+            final Vector3D Pt = Pn.crossProduct(p1);
 
             // tangential velocity norm
             double RT = Pt.getNorm();
@@ -100,13 +121,11 @@ public class IodLambert {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V * Vdep[0] / r1).add(Pt.scalarMultiply(V * Vdep[1] / RT));
-
-            // compile a new middle point with position, velocity
-            final PVCoordinates pv = new PVCoordinates(P1, Vel1);
+            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
+                                               V * Vdep[1] / RT, Pt);
 
             // compute the equivalent Keplerian orbit
-            return new KeplerianOrbit(pv, frame, T1, mu);
+            return new KeplerianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
         }
 
         return null;
@@ -123,8 +142,8 @@ public class IodLambert {
      * @param V1 velocity at departure in (T, N) basis
      * @return something
      */
-    public boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
-                                  final int mRev, final double[] V1) {
+    boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
+                           final int mRev, final double[] V1) {
         // decide whether to use the left or right branch (for multi-revolution
         // problems), and the long- or short way.
         final boolean leftbranch = FastMath.signum(mRev) > 0;
