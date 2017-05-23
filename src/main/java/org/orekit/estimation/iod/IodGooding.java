@@ -344,7 +344,7 @@ public class IodGooding {
      * @param F     value of the f-function
      * @param T13   time of flight 1->3, in seconds
      * @param T12   time of flight 1->2, in seconds
-     * @param withHailley    use Halley iterative method
+     * @param withHalley    use Halley iterative method
      * @param nrev  number of revolutions
      * @param direction direction of motion
      * @param FD    derivatives of f wrt (rho1, rho3) by finite differences
@@ -357,7 +357,7 @@ public class IodGooding {
                                     final Vector3D Ein,
                                     final double F,
                                     final double T13, final double T12,
-                                    final boolean withHailley,
+                                    final boolean withHalley,
                                     final int nrev,
                                     final boolean direction,
                                     final double[] FD, final double[] GD) {
@@ -415,7 +415,7 @@ public class IodGooding {
 
         // Modified Newton-Raphson process, with Halley's method to have cubic convergence.
         // This requires computing second order derivatives.
-        if (withHailley) {
+        if (withHalley) {
             //
             final double hrho1Sq = dx * dx;
             final double hrho3Sq = dy * dy;
