@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Quentin Rhone">
+        Added a way to prefix parameters names when estimating several maneuvers
+        in one orbit determination.
+        Fixes issue #338.
+      </action>
       <action dev="luc" type="fix" due-to="Pascal Parraud">
         Removed unneeded reset at end of sample creation in propagators conversion.
         Fixes issue #335.

@@ -61,6 +61,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 public class ConstantThrustManeuverTest {
 
@@ -79,6 +80,10 @@ public class ConstantThrustManeuverTest {
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
+        ParameterDriver[] drivers = maneuver.getParametersDrivers();
+        Assert.assertEquals(2, drivers.length);
+        Assert.assertEquals("thrust", drivers[0].getName());
+        Assert.assertEquals("flow rate", drivers[1].getName());
         EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
@@ -97,7 +102,12 @@ public class ConstantThrustManeuverTest {
                                              new TimeComponents(23, 30, 00.000),
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
-            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
+            new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
+                                       "1A-");
+        ParameterDriver[] drivers = maneuver.getParametersDrivers();
+        Assert.assertEquals(2, drivers.length);
+        Assert.assertEquals("1A-thrust", drivers[0].getName());
+        Assert.assertEquals("1A-flow rate", drivers[1].getName());
         EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));

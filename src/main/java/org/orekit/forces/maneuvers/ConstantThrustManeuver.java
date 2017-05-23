@@ -107,6 +107,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     private final DSFactory factory;
 
     /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * Calling this constructor is equivalent to call {@link
+     * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
+     * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
+     * hence not using any prefix for the parameters drivers names.
+     * </p>
      * @param date maneuver date
      * @param duration the duration of the thrust (s) (if negative,
      * the date is considered to be the stop date)
@@ -117,6 +123,32 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
                                   final Vector3D direction) {
+        this(date, duration, thrust, isp, direction, "");
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * If the {@code driversNamePrefix} is empty, the names will
+     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
+     * the prefix is prepended to these fixed strings. A typical use case is to
+     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * name of the thruster to use, so separate parameters can be adjusted
+     * for the different thrusters involved during an orbit determination
+     * where maneuvers parameters are estimated.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param direction the acceleration direction in satellite frame
+     * @param driversNamePrefix prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @since 9.0
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final Vector3D direction,
+                                  final String driversNamePrefix) {
 
         if (duration >= 0) {
             this.startDate = date;
@@ -133,7 +165,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         this.parametersDrivers = new ParameterDriver[2];
         try {
-            parametersDrivers[0] = new ParameterDriver(THRUST, thrust, THRUST_SCALE,
+            parametersDrivers[0] = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
                                                        Double.NEGATIVE_INFINITY, 0.0);
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
@@ -142,7 +174,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                     ConstantThrustManeuver.this.thrust = driver.getValue();
                 }
             });
-            parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+            parametersDrivers[1] = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
                                                        Double.NEGATIVE_INFINITY, 0.0 );
             parametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
