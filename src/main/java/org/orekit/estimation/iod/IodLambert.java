@@ -73,13 +73,12 @@ public class IodLambert {
         final double T = R / V; // in seconds
 
         // sweep angle
-        final Vector3D P12 = P1.crossProduct(P2);
-        double dth = FastMath.atan2(P12.getNorm(), P1.dotProduct(P2));
+        double dth = Vector3D.angle(P1, P2);
         // compute the number of revolutions
         if (!posigrade) {
-            dth = FastMath.PI - dth;
+            dth = 2 * FastMath.PI - dth;
         }
-        dth = dth + nRev * FastMath.PI;
+        dth = dth + nRev * 2 * FastMath.PI;
 
         // velocity vectors in the orbital plane, in the R-T frame
         final double[] Vdep = new double[2];

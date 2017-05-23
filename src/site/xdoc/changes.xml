@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Michiel Zittersteijn">
+        Fixed wrong angle wrapping computation in IodLambert.
+      </action>
       <action dev="luc" type="fix" due-to="Lucian Barbulescu">
         Fixed boundaries of thrust parameter driver in ConstantThrustManeuver.
         Fixes issue #327.
