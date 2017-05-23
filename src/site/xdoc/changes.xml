@@ -44,6 +44,7 @@
       <action dev="luc" type="fix" due-to="James Schatzman">
         Fixed ArrayOutOfBoundException appearing when converting dates at past or future infinity
         to string.
+        Fixes issue #340.
       </action>
       <action dev="luc" type="fix">
         Extended range of DateComponents to allow the full integer range as days offset
