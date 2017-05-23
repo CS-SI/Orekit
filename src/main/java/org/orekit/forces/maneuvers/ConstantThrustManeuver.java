@@ -82,8 +82,11 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      */
     private static final double FLOW_RATE_SCALE = FastMath.scalb(1.0, -12);
 
-    /** Drivers for maneuver parameters. */
-    private final ParameterDriver[] parametersDrivers;
+    /** Driver for thrust parameter. */
+    private final ParameterDriver thrustDriver;
+
+    /** Driver for flow rate parameter. */
+    private final ParameterDriver flowRateDriver;
 
     /** State of the engine. */
     private boolean firing;
@@ -163,20 +166,21 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         this.direction = direction.normalize();
         firing = false;
 
-        this.parametersDrivers = new ParameterDriver[2];
+        ParameterDriver tpd = null;
+        ParameterDriver fpd = null;
         try {
-            parametersDrivers[0] = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
-                                                       Double.NEGATIVE_INFINITY, 0.0);
-            parametersDrivers[0].addObserver(new ParameterObserver() {
+            tpd = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
+                                      0.0, Double.POSITIVE_INFINITY);
+            tpd.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     ConstantThrustManeuver.this.thrust = driver.getValue();
                 }
             });
-            parametersDrivers[1] = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
-                                                       Double.NEGATIVE_INFINITY, 0.0 );
-            parametersDrivers[1].addObserver(new ParameterObserver() {
+            fpd = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+                                      Double.NEGATIVE_INFINITY, 0.0 );
+            fpd.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
@@ -188,6 +192,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
+
+        this.thrustDriver   = tpd;
+        this.flowRateDriver = fpd;
 
     }
 
@@ -286,16 +293,18 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         if (firing) {
 
-            if (THRUST.equals(paramName)) {
+            if (thrustDriver.getName().equals(paramName)) {
                 final DerivativeStructure thrustDS = factory.variable(0, thrust);
                 return new FieldVector3D<>(thrustDS.divide(s.getMass()),
                                            s.getAttitude().getRotation().applyInverseTo(direction));
-            } else if (FLOW_RATE.equals(paramName)) {
+            } else if (flowRateDriver.getName().equals(paramName)) {
+                // parameter is flow rate
                 // acceleration does not depend on flow rate (only mass decrease does)
                 return FieldVector3D.getZero(factory.getDerivativeField());
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                          THRUST + ", " + FLOW_RATE);
+                                          thrustDriver.getName() + ", " +
+                                          flowRateDriver.getName());
             }
 
         } else {
@@ -326,7 +335,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
+        return new ParameterDriver[] {
+            thrustDriver, flowRateDriver
+        };
     }
 
     @Override

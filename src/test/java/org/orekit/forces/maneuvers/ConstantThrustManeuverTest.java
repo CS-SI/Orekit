@@ -40,8 +40,10 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -63,7 +65,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class ConstantThrustManeuverTest {
+public class ConstantThrustManeuverTest extends AbstractForceModelTest {
 
     // Body mu
     private double mu;
@@ -391,6 +393,7 @@ public class ConstantThrustManeuverTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
+
     @Test
     public void testForwardAndBackward() throws OrekitException {
         final double isp = 318;
@@ -446,6 +449,28 @@ public class ConstantThrustManeuverTest {
         final Vector3D recoveredPosition = recoveredState.getPVCoordinates().getPosition();
         Assert.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 30.0);
         Assert.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.5e-10);
+    }
+
+    @Test
+    public void testParameterDerivative() throws OrekitException {
+
+        // pos-vel (from a ZOOM ephemeris reference)
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        final ConstantThrustManeuver maneuver =
+                new ConstantThrustManeuver(state.getDate().shiftedBy(-10), 100.0, 20.0, 350.0,
+                                           Vector3D.PLUS_I, "along-X-");
+        maneuver.init(state, state.getDate().shiftedBy(3600.0));
+
+        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 3.0e-14);
+        checkParameterDerivative(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
+
     }
 
     @Before
