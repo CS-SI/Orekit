@@ -17,6 +17,8 @@
 package org.orekit.forces;
 
 
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -31,6 +33,7 @@ import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -38,6 +41,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
@@ -179,7 +183,8 @@ public class BoxAndSolarArraySpacecraftTest {
                                                state.getPVCoordinates().getPosition(),
                                                state.getAttitude().getRotation(),
                                                state.getMass(), 0.001, relativeVelocity);
-            Assert.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-10);
+            Assert.assertTrue(Vector3D.angle(relativeVelocity, drag) > 0.167);
+            Assert.assertTrue(Vector3D.angle(relativeVelocity, drag) < 0.736);
 
             Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
@@ -190,6 +195,97 @@ public class BoxAndSolarArraySpacecraftTest {
             Assert.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
+
+    }
+
+    @Test
+    public void testVsOldImplementation()
+        throws OrekitException, NoSuchFieldException, SecurityException,
+               IllegalArgumentException, IllegalAccessException {
+
+        CelestialBody sun = CelestialBodyFactory.getSun();
+
+        // older implementation did not consider lift, so it really worked
+        // only for symmetrical shapes. For testing purposes, we will use a
+        // basic cubic shape without solar arrays and a relative atmosphere
+        // velocity either *exactly* facing a side or *exactly* along a main diagonal
+        BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[] {
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_I, 3.0),
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_I,  3.0),
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_J, 3.0),
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_J,  3.0),
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_K, 3.0),
+            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_K,  3.0)
+        };
+        BoxAndSolarArraySpacecraft cube =
+                        new BoxAndSolarArraySpacecraft(facets, sun, 0.0, Vector3D.PLUS_J, 1.0, 1.0, 0.0);
+
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame = FramesFactory.getEME2000();
+        Vector3D position = new Vector3D(1234567.8, 9876543.21, 121212.3434);
+        double mass = 1000.0;
+        double density = 0.001;
+        Rotation rotation = Rotation.IDENTITY;
+
+        // head-on, the pre-9.0 implementation was correct
+        Vector3D headOnVelocity = new Vector3D(2000, 0.0, 0.0);
+        Vector3D newHeadOnDrag= cube.dragAcceleration(date, frame, position, rotation, mass, density, headOnVelocity);
+        Vector3D oldHeadOnDrag = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, headOnVelocity);
+        Assert.assertThat(newHeadOnDrag, OrekitMatchers.vectorCloseTo(oldHeadOnDrag, 1));
+
+        // on an angle, the pre-9.0 implementation applied drag to the velocity direction
+        // instead of to the facte normal direction. In the symmetrical case, this implies
+        // it applied a single cos(θ) coefficient (projected surface reduction) instead
+        // of using cos²(θ) (projected surface reduction *and* normal component projection)
+        Vector3D diagonalVelocity = new Vector3D(2000, 2000, 2000);
+        Vector3D newDiagDrag= cube.dragAcceleration(date, frame, position, rotation, mass, density, diagonalVelocity);
+        Vector3D oldDiagDrag = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, diagonalVelocity);
+        double oldMissingCoeff = 1.0 / FastMath.sqrt(3.0);
+        Vector3D fixedOldDrag = new Vector3D(oldMissingCoeff, oldDiagDrag);
+        Assert.assertThat(newDiagDrag, OrekitMatchers.vectorCloseTo(fixedOldDrag, 1));
+
+    }
+
+    // this is a slightly adapted version of the pre-9.0 implementation
+    // (changes are only related to retrieve the fields using reflection)
+    // Beware that this implementation is WRONG
+    private Vector3D oldDragAcceleration(final BoxAndSolarArraySpacecraft bsa,
+                                         final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                         final Rotation rotation, final double mass,
+                                         final double density, final Vector3D relativeVelocity)
+         throws OrekitException, IllegalArgumentException, IllegalAccessException,
+                NoSuchFieldException, SecurityException {
+
+        java.lang.reflect.Field facetsField = BoxAndSolarArraySpacecraft.class.getDeclaredField("facets");
+        facetsField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        final List<BoxAndSolarArraySpacecraft.Facet> facets = (List<BoxAndSolarArraySpacecraft.Facet>) facetsField.get(bsa);
+        
+        java.lang.reflect.Field saAreaField = BoxAndSolarArraySpacecraft.class.getDeclaredField("solarArrayArea");
+        saAreaField.setAccessible(true);
+        final double solarArrayArea = (Double) saAreaField.get(bsa);
+        
+        java.lang.reflect.Field dragCoeffAreaField = BoxAndSolarArraySpacecraft.class.getDeclaredField("dragCoeff");
+        dragCoeffAreaField.setAccessible(true);
+        final double dragCoeff = (Double) dragCoeffAreaField.get(bsa);
+        
+        // relative velocity in spacecraft frame
+        final Vector3D v = rotation.applyTo(relativeVelocity);
+
+        // solar array contribution
+        final Vector3D solarArrayFacet = new Vector3D(solarArrayArea, bsa.getNormal(date, frame, position, rotation));
+        double sv = FastMath.abs(Vector3D.dotProduct(solarArrayFacet, v));
+
+        // body facets contribution
+        for (final BoxAndSolarArraySpacecraft.Facet facet : facets) {
+            final double dot = Vector3D.dotProduct(facet.getNormal(), v);
+            if (dot < 0) {
+                // the facet intercepts the incoming flux
+                sv -= facet.getArea() * dot;
+            }
+        }
+
+        return new Vector3D(sv * density * dragCoeff / (2.0 * mass), relativeVelocity);
 
     }
 
