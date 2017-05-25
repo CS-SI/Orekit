@@ -53,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * numerical integration.
  * <p>Numerical propagation is much more accurate than analytical propagation
  * like for example {@link org.orekit.propagation.analytical.KeplerianPropagator
- * keplerian} or {@link org.orekit.propagation.analytical.EcksteinHechlerPropagator
+ * Keplerian} or {@link org.orekit.propagation.analytical.EcksteinHechlerPropagator
  * Eckstein-Hechler}, but requires a few more steps to set up to be used properly.
  * Whereas analytical propagators are configured only thanks to their various
  * constructors and can be used immediately after construction, numerical propagators
@@ -86,7 +86,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
- * would mean the propagator would use only keplerian forces. In this case, the simpler {@link
+ * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
  * org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
  * perhaps be more effective.</p>
  * <p>The underlying numerical integrator set up in the constructor may also have its own
@@ -121,11 +121,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
  * </pre>
- * <p>The same propagator can be reused for several orbit extrapolations, by resetting
- * the initial state without modifying the other configuration parameters. However, the
- * same instance cannot be used simultaneously by different threads, the class is <em>not</em>
+ * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
+ * thus allowing a new propagation to be started from there without recomputing the part already performed.
+ * This behaviour can be chenged by calling {@link #setResetAtEnd(boolean)}.
+ * </p>
+ * <p>Beware the same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
-
+ *
  * @see SpacecraftState
  * @see ForceModel
  * @see org.orekit.propagation.sampling.OrekitStepHandler
@@ -148,7 +150,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
-     * called after creation, the integrated orbit will follow a keplerian
+     * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
@@ -403,7 +405,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
+                                               final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -412,7 +415,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
+            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
             return new SpacecraftState(orbit, attitude, mass);
@@ -420,8 +423,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final SpacecraftState state, final double[] y) {
-            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
+            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y, yDot);
             y[6] = state.getMass();
         }
 
@@ -501,7 +504,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Current orbit. */
         private Orbit orbit;
 
-        /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
+        /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private double[][] jacobian;
 
         /** Simple constructor.

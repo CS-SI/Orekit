@@ -435,6 +435,11 @@
             <goals>
               <goal>report</goal>
             </goals>
+            <configuration>
+              <excludes>
+               <exclude>fr/cs/examples/**/*.class</exclude>
+              </excludes>
+            </configuration>
           </execution>
           <execution>
             <id>check</id>
@@ -480,6 +485,9 @@
                 </rule>
               </rules>
               <haltOnFailure>false</haltOnFailure>
+              <excludes>
+               <exclude>fr/cs/examples/**/*.class</exclude>
+              </excludes>
             </configuration>
           </execution>
         </executions>

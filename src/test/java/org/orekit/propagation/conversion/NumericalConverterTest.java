@@ -97,39 +97,89 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testIntegrators() throws OrekitException {
-
-        final double stepSize = 100.;
+    public void testIntegrators01() throws OrekitException {
 
         ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(abBuilder);
+    }
+
+    @Test
+    public void testIntegrators02() throws OrekitException {
 
         ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(amBuilder);
+    }
+
+    @Test
+    public void testIntegrators03() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
         checkFit(crkBuilder);
+    }
+
+    @Test
+    public void testIntegrators04() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder lBuilder = new LutherIntegratorBuilder(stepSize);
         checkFit(lBuilder);
+    }
+
+    @Test
+    public void testIntegrators05() throws OrekitException {
 
         ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(dp54Builder);
+    }
+
+    @Test
+    public void testIntegrators06() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder eBuilder = new EulerIntegratorBuilder(stepSize);
         checkFit(eBuilder);
+    }
+
+    @Test
+    public void testIntegrators07() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder gBuilder = new GillIntegratorBuilder(stepSize);
         checkFit(gBuilder);
+    }
+
+    @Test
+    public void testIntegrators08() throws OrekitException {
 
         ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
         checkFit(gbsBuilder);
+    }
+
+    @Test
+    public void testIntegrators09() throws OrekitException {
 
         ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(hh54Builder);
+    }
+
+    @Test
+    public void testIntegrators10() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder mBuilder = new MidpointIntegratorBuilder(stepSize);
         checkFit(mBuilder);
+    }
+
+    @Test
+    public void testIntegrators11() throws OrekitException {
+
+        final double stepSize = 100.;
 
         ODEIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
         checkFit(teBuilder);

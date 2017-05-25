@@ -310,7 +310,7 @@ public class YUMAParser implements DataLoader {
             if (!check) {
                 return false;
             }
-        };
+        }
         return true;
     }
 }

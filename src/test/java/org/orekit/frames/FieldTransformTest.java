@@ -407,7 +407,7 @@ public class FieldTransformTest {
 
         // combine 2 rotation tranform
         FieldPVCoordinates<T> pointP5 = new FieldPVCoordinates<>(createVector(field, -1, 0, 0), createVector(field, -1, 0, 3), createVector(field, 8, 0, 6));
-        FieldRotation<T> R2 = new FieldRotation<>(createVector(field, 0,0,1), field.getZero().add(FastMath.PI), RotationConvention.VECTOR_OPERATOR);
+        FieldRotation<T> R2 = new FieldRotation<>(createVector(field, 0, 0, 1), field.getZero().add(FastMath.PI), RotationConvention.VECTOR_OPERATOR);
         FieldTransform<T> R1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), R2, createVector(field, 0, -3, 0));
         FieldTransform<T> R3toR5 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R3toR1, R1toR5);
         FieldPVCoordinates<T> combResult = R3toR5.transformPVCoordinates(pointP3);
@@ -416,7 +416,7 @@ public class FieldTransformTest {
         checkVector(pointP5.getAcceleration(), combResult.getAcceleration(), 1.0e-15);
 
         // combine translation and rotation
-        FieldTransform<T> R2toR3 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R2toR1,R1toR3);
+        FieldTransform<T> R2toR3 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R2toR1, R1toR3);
         FieldPVCoordinates<T> result = R2toR3.transformPVCoordinates(pointP2);
         checkVector(pointP3.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP3.getVelocity(),     result.getVelocity(),     1.0e-15);
@@ -429,7 +429,7 @@ public class FieldTransformTest {
         checkVector(pointP2.getAcceleration(), result.getAcceleration(), 1.0e-15);
 
         FieldTransform<T> newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), R1toR2, R2toR3);
-        newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), newR1toR5,R3toR5);
+        newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), newR1toR5, R3toR5);
         result = newR1toR5.transformPVCoordinates(pointP1);
         checkVector(pointP5.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP5.getVelocity(),     result.getVelocity(),     1.0e-15);

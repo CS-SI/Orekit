@@ -95,7 +95,7 @@ public class EstimationTestUtils {
         context.initialOrbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
                                                   0.250, 1.375, 0.0625, PositionAngle.TRUE,
                                                   FramesFactory.getEME2000(),
-                                                  new AbsoluteDate(2000, 2, 24, 11, 35,47.0, context.utc),
+                                                  new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                                   context.gravity.getMu());
 
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
@@ -181,7 +181,7 @@ public class EstimationTestUtils {
 
         // Compute the frames transformation from station frame to EME2000
         Transform topoToEME =
-        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(),new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
         // Station position in EME2000 at reference date
         Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
@@ -225,7 +225,7 @@ public class EstimationTestUtils {
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
-                                                         orbitArray);
+                                                         orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }

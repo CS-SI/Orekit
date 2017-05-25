@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterObserver;
  */
 public class ThirdBodyAttraction extends AbstractForceModel {
 
-    /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+    /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
     public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
     /** Central attraction scaling factor.
@@ -91,7 +91,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.body    = body;
         this.gm      = body.getGM();
@@ -135,7 +135,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
 
         // compute relative acceleration
         final FieldVector3D<DerivativeStructure> satAcc =
-                new FieldVector3D<DerivativeStructure>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
+                new FieldVector3D<>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
         final Vector3D centralAcc =
                 new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
         return satAcc.subtract(centralAcc);
@@ -157,8 +157,8 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         final DerivativeStructure gmds = factory.variable(0, gm);
 
         // compute relative acceleration
-        return new FieldVector3D<DerivativeStructure>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,
-                              gmds.divide(-r2Central * FastMath.sqrt(r2Central)), centralToBody);
+        return new FieldVector3D<>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,
+                                   gmds.divide(-r2Central * FastMath.sqrt(r2Central)), centralToBody);
 
     }
 
@@ -183,20 +183,17 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        final T zero = s.getA().getField().getZero();
         // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = new FieldVector3D<T>(zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getX()),
-                                                                    zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getY()),
-                                                                    zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getZ())
-                                                                    );
-        final T r2Central       = centralToBody.getNormSq();
+        final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
+                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
+        final T                r2Central     = centralToBody.getNormSq();
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final T r2Sat           = satToBody.getNormSq();
+        final T                r2Sat         = satToBody.getNormSq();
 
         // compute relative acceleration
         final FieldVector3D<T> gamma =
-            new FieldVector3D<T>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
-                            r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
+            new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
+                                r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
 
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
     }

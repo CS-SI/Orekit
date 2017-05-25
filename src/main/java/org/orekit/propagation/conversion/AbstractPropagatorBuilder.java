@@ -87,17 +87,19 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
+     * be set up for central attraction coefficient
      * @exception OrekitException if parameters drivers cannot be scaled
      * @since 8.0
      */
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                        final double positionScale)
+                                        final double positionScale, final boolean addDriverForCentralAttraction)
         throws OrekitException {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
         this.mu                  = templateOrbit.getMu();
-        this.propagationDrivers = new ParameterDriversList();
+        this.propagationDrivers  = new ParameterDriversList();
         this.orbitType           = templateOrbit.getType();
         this.positionAngle       = positionAngle;
         this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
@@ -105,16 +107,18 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             driver.setSelected(true);
         }
 
-        final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                             mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
-        muDriver.addObserver(new ParameterObserver() {
-            /** {@inheridDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                AbstractPropagatorBuilder.this.mu = driver.getValue();
-            }
-        });
-        propagationDrivers.add(muDriver);
+        if (addDriverForCentralAttraction) {
+            final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                                 mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
+            muDriver.addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                }
+            });
+            propagationDrivers.add(muDriver);
+        }
 
     }
 
@@ -209,7 +213,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         for (int i = 0; i < unNormalized.length; ++i) {
             unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue();
         }
-        return getOrbitType().mapArrayToOrbit(unNormalized, positionAngle, initialOrbitDate, mu, frame);
+        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngle, initialOrbitDate, mu, frame);
     }
 
     /** Set the selected parameters.

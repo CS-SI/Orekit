@@ -99,7 +99,7 @@ public class DSSTPropagatorTest {
         final org.orekit.frames.Frame earthFrame =
                 FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
         final DSSTForceModel force =
-                new DSSTTesseral(earthFrame,Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                  earthDegree, earthOrder, eccPower, earthDegree + eccPower,
                                  earthDegree, earthOrder, eccPower);
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
@@ -436,7 +436,7 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
 
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
-        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 1e-9);
     }
 
     @Test

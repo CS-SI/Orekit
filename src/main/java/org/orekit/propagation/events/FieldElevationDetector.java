@@ -122,8 +122,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
     @Override
     protected FieldElevationDetector<T> create(final T newMaxCheck, final T newThreshold,
                                                final int newMaxIter, final FieldEventHandler<? super FieldElevationDetector<T>, T> newHandler) {
-        return new FieldElevationDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             minElevation, elevationMask, refractionModel, topo);
+        return new FieldElevationDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                            minElevation, elevationMask, refractionModel, topo);
     }
 
     /**
@@ -204,8 +204,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @since 6.1
      */
     public FieldElevationDetector<T> withConstantElevation(final double newMinElevation) {
-        return new FieldElevationDetector<T>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                             newMinElevation, null, refractionModel, topo);
+        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                            newMinElevation, null, refractionModel, topo);
     }
 
     /**
@@ -216,8 +216,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @see #getElevationMask()
      */
     public FieldElevationDetector<T> withElevationMask(final ElevationMask newElevationMask) {
-        return new FieldElevationDetector<T>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                             Double.NaN, newElevationMask, refractionModel, topo);
+        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                            Double.NaN, newElevationMask, refractionModel, topo);
     }
 
     /**
@@ -233,8 +233,8 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * @see #getRefractionModel()
      */
     public FieldElevationDetector<T> withRefraction(final AtmosphericRefractionModel newRefractionModel) {
-        return new FieldElevationDetector<T>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                             minElevation, elevationMask, newRefractionModel, topo);
+        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                            minElevation, elevationMask, newRefractionModel, topo);
     }
 
 }

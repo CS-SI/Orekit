@@ -70,7 +70,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngle positionAngle,
                                       final double positionScale)
         throws OrekitException {
-        super(referenceOrbit, positionAngle, positionScale);
+        super(referenceOrbit, positionAngle, positionScale, true);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
@@ -93,7 +93,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Add a force model to the global perturbation model.
      * <p>If this method is not called at all, the integrated orbit will follow
-     * a keplerian evolution only.</p>
+     * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
      * @exception OrekitException if model parameters cannot be set
      */

@@ -39,7 +39,7 @@ import org.orekit.utils.Constants;
  * <p>These effect are computed analytically using two Jacobian matrices:
  * <ol>
  *   <li>J₀: Jacobian of Keplerian or equinoctial elements with respect
- *   to cartesian parameters at date t₀ allows to compute
+ *   to Cartesian parameters at date t₀ allows to compute
  *   maneuver effect as a change in orbital elements at maneuver date t₀,</li>
  *   <li>J<sub>1/0</sub>: Jacobian of Keplerian or equinoctial elements
  *   at date t₁ with respect to Keplerian or equinoctial elements
@@ -185,7 +185,7 @@ public class SmallManeuverAnalyticalModel
             return orbit1;
         }
 
-        return updateOrbit(orbit1);
+        return orbit1.getType().convertType(updateOrbit(orbit1));
 
     }
 
@@ -204,14 +204,14 @@ public class SmallManeuverAnalyticalModel
             return state1;
         }
 
-        return new SpacecraftState(updateOrbit(state1.getOrbit()),
+        return new SpacecraftState(state1.getOrbit().getType().convertType(updateOrbit(state1.getOrbit())),
                                    state1.getAttitude(), updateMass(state1.getMass()));
 
     }
 
     /** Compute the effect of the maneuver on an orbit.
      * @param orbit1 original orbit at t₁, without maneuver
-     * @return orbit at t₁, always taking the maneuver into account
+     * @return orbit at t₁, always taking the maneuver into account, always in the internal type
      */
     private Orbit updateOrbit(final Orbit orbit1) {
 
@@ -227,19 +227,15 @@ public class SmallManeuverAnalyticalModel
         delta[5] += ksi * delta[0] * dt;
 
         // convert current orbital state to Keplerian or equinoctial elements
-        final double[] parameters = new double[6];
-        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters);
+        final double[] parameters    = new double[6];
+        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters, null);
         for (int i = 0; i < delta.length; ++i) {
             parameters[i] += delta[i];
         }
 
         // build updated orbit as Keplerian or equinoctial elements
-        final Orbit o = type.mapArrayToOrbit(parameters, PositionAngle.MEAN,
-                                             orbit1.getDate(), orbit1.getMu(),
-                                             orbit1.getFrame());
-
-        // convert to required type
-        return orbit1.getType().convertType(o);
+        return type.mapArrayToOrbit(parameters, null, PositionAngle.MEAN,
+                                    orbit1.getDate(), orbit1.getMu(), orbit1.getFrame());
 
     }
 
@@ -295,11 +291,11 @@ public class SmallManeuverAnalyticalModel
 
         if (orbit1.getType() != type || positionAngle != PositionAngle.MEAN) {
 
-            // convert to derivatives of cartesian parameters
+            // convert to derivatives of Cartesian parameters
             final double[][] j2         = new double[6][6];
             final double[][] pvJacobian = new double[6][4];
             final Orbit updated         = updateOrbit(orbit1);
-            type.convertType(updated).getJacobianWrtParameters(PositionAngle.MEAN, j2);
+            updated.getJacobianWrtParameters(PositionAngle.MEAN, j2);
             for (int i = 0; i < 6; ++i) {
                 for (int j = 0; j < 4; ++j) {
                     pvJacobian[i][j] = j2[i][0] * jacobian[0][j] + j2[i][1] * jacobian[1][j] +
@@ -310,7 +306,7 @@ public class SmallManeuverAnalyticalModel
 
             // convert to derivatives of specified parameters
             final double[][] j3 = new double[6][6];
-            updated.getJacobianWrtCartesian(positionAngle, j3);
+            orbit1.getType().convertType(updated).getJacobianWrtCartesian(positionAngle, j3);
             for (int j = 0; j < 4; ++j) {
                 for (int i = 0; i < 6; ++i) {
                     jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
@@ -331,7 +327,7 @@ public class SmallManeuverAnalyticalModel
         if (j0Dot == null) {
 
             j0Dot = new double[6][3];
-            final double dt = 1.0e-5 / state0.getKeplerianMeanMotion();
+            final double dt = 1.0e-5 / state0.getOrbit().getKeplerianMeanMotion();
             final Orbit orbit = type.convertType(state0.getOrbit());
 
             // compute shifted Jacobians

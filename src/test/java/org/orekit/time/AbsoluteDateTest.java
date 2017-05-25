@@ -392,7 +392,7 @@ public class AbsoluteDateTest {
     public void testComponents() throws OrekitException {
         // this is NOT J2000.0,
         // it is either a few seconds before or after depending on time scale
-        DateComponents date = new DateComponents(2000, 01,01);
+        DateComponents date = new DateComponents(2000, 1, 1);
         TimeComponents time = new TimeComponents(11, 59, 10);
         TimeScale[] scales = {
             TimeScalesFactory.getTAI(), TimeScalesFactory.getUTC(),
@@ -631,6 +631,8 @@ public class AbsoluteDateTest {
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assert.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertEquals("5881610-07-11T23:59:59.999",  AbsoluteDate.FUTURE_INFINITY.toString());
+        Assert.assertEquals("-5877490-03-03T00:00:00.000", AbsoluteDate.PAST_INFINITY.toString());
     }
 
     @Test

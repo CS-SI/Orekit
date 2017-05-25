@@ -1974,7 +1974,7 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // Sum all effects
-        double tt = 0;;
+        double tt = 0;
         for (int i = 0; i < 14; i++) {
             tt += FastMath.abs(sw[i + 1]) * t[i];
         }

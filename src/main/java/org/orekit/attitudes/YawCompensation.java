@@ -154,7 +154,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
         // attitude definition :
         //  . Z satellite axis points to sliding target
-        //  . target relative velocity is in (Z,X) plane, in the -X half plane part
+        //  . target relative velocity is in (Z, X) plane, in the -X half plane part
         return new Attitude(frame,
                             new TimeStampedAngularCoordinates(date,
                                                               relativePosition.normalize(),

@@ -136,7 +136,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      * @param station station
      * @param refstate spacecraft state
      * @param delay current tropospheric delay
-     * @return jacobian of the delay wrt state
+     * @return Jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
@@ -216,7 +216,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         newValue[0] = newValue[0] + delay;
         estimated.setEstimatedValue(newValue);
 
-        // update estimated derivatives with jacobian of the measure wrt state
+        // update estimated derivatives with Jacobian of the measure wrt state
         final double[][] djac = rangeRateErrorJacobianState(station,
                                       state,
                                       delay);

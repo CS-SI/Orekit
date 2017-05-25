@@ -82,8 +82,11 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      */
     private static final double FLOW_RATE_SCALE = FastMath.scalb(1.0, -12);
 
-    /** Drivers for maneuver parameters. */
-    private final ParameterDriver[] parametersDrivers;
+    /** Driver for thrust parameter. */
+    private final ParameterDriver thrustDriver;
+
+    /** Driver for flow rate parameter. */
+    private final ParameterDriver flowRateDriver;
 
     /** State of the engine. */
     private boolean firing;
@@ -107,6 +110,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     private final DSFactory factory;
 
     /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * Calling this constructor is equivalent to call {@link
+     * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
+     * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
+     * hence not using any prefix for the parameters drivers names.
+     * </p>
      * @param date maneuver date
      * @param duration the duration of the thrust (s) (if negative,
      * the date is considered to be the stop date)
@@ -117,6 +126,32 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
                                   final Vector3D direction) {
+        this(date, duration, thrust, isp, direction, "");
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * If the {@code driversNamePrefix} is empty, the names will
+     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
+     * the prefix is prepended to these fixed strings. A typical use case is to
+     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * name of the thruster to use, so separate parameters can be adjusted
+     * for the different thrusters involved during an orbit determination
+     * where maneuvers parameters are estimated.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param direction the acceleration direction in satellite frame
+     * @param driversNamePrefix prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @since 9.0
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final Vector3D direction,
+                                  final String driversNamePrefix) {
 
         if (duration >= 0) {
             this.startDate = date;
@@ -131,20 +166,21 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         this.direction = direction.normalize();
         firing = false;
 
-        this.parametersDrivers = new ParameterDriver[2];
+        ParameterDriver tpd = null;
+        ParameterDriver fpd = null;
         try {
-            parametersDrivers[0] = new ParameterDriver(THRUST, thrust, THRUST_SCALE,
-                                                       0.0, Double.POSITIVE_INFINITY);
-            parametersDrivers[0].addObserver(new ParameterObserver() {
+            tpd = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
+                                      0.0, Double.POSITIVE_INFINITY);
+            tpd.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     ConstantThrustManeuver.this.thrust = driver.getValue();
                 }
             });
-            parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE,
-                                                       Double.NEGATIVE_INFINITY, 0.0 );
-            parametersDrivers[1].addObserver(new ParameterObserver() {
+            fpd = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+                                      Double.NEGATIVE_INFINITY, 0.0 );
+            fpd.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
@@ -155,7 +191,10 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
+
+        this.thrustDriver   = tpd;
+        this.flowRateDriver = fpd;
 
     }
 
@@ -220,8 +259,8 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         if (firing) {
 
             // compute thrust acceleration in inertial frame
-            adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
-                                               s.getAttitude().getRotation().applyInverseTo(direction)),
+            adder.addAcceleration(new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+                                                      s.getAttitude().getRotation().applyInverseTo(direction)),
                                   s.getFrame());
 
             // compute flow rate
@@ -242,8 +281,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
         } else {
             // constant (and null) acceleration when not firing
-            final DerivativeStructure zero = mass.getField().getZero();
-            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+            return FieldVector3D.getZero(mass.getField());
         }
     }
 
@@ -255,23 +293,23 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         if (firing) {
 
-            if (THRUST.equals(paramName)) {
+            if (thrustDriver.getName().equals(paramName)) {
                 final DerivativeStructure thrustDS = factory.variable(0, thrust);
-                return new FieldVector3D<DerivativeStructure>(thrustDS.divide(s.getMass()),
-                                                              s.getAttitude().getRotation().applyInverseTo(direction));
-            } else if (FLOW_RATE.equals(paramName)) {
+                return new FieldVector3D<>(thrustDS.divide(s.getMass()),
+                                           s.getAttitude().getRotation().applyInverseTo(direction));
+            } else if (flowRateDriver.getName().equals(paramName)) {
+                // parameter is flow rate
                 // acceleration does not depend on flow rate (only mass decrease does)
-                final DerivativeStructure zero = factory.getDerivativeField().getZero();
-                return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+                return FieldVector3D.getZero(factory.getDerivativeField());
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                          THRUST + ", " + FLOW_RATE);
+                                          thrustDriver.getName() + ", " +
+                                          flowRateDriver.getName());
             }
 
         } else {
             // constant (and null) acceleration when not firing
-            final DerivativeStructure zero = factory.getDerivativeField().getZero();
-            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
+            return FieldVector3D.getZero(factory.getDerivativeField());
         }
 
     }
@@ -297,7 +335,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
+        return new ParameterDriver[] {
+            thrustDriver, flowRateDriver
+        };
     }
 
     @Override
@@ -306,12 +346,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         // at start time and disabled at end time; in backward
         // propagation direction, firing must be enabled
         // at end time and disabled at start time
-        final FieldDateDetector<T> startDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, startDate)).
+        final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = d.isForward();
                 return FieldEventHandler.Action.RESET_DERIVATIVES;
             });
-        final FieldDateDetector<T> endDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, endDate)).
+        final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
             withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
                 firing = !d.isForward();
                 return FieldEventHandler.Action.RESET_DERIVATIVES;

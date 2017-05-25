@@ -118,7 +118,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
         this.crossSection = crossSection;
         this.alpha        = alpha;
         this.tau          = tau;
@@ -142,7 +142,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                                                                             final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
                                                                             final FieldVector3D<DerivativeStructure> flux) {
         final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
-        return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(kP), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
     /** {@inheritDoc} */
@@ -166,7 +166,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
 
         final DerivativeStructure kP =
                 absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
-        return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
+        return new FieldVector3D<>(kP.divide(mass), flux);
 
     }
 
@@ -178,7 +178,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                                       final FieldVector3D<T> flux)
         throws OrekitException {
         final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
-        return new FieldVector3D<T>(mass.reciprocal().multiply(kP), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
 }

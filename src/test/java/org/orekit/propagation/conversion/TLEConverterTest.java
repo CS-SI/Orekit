@@ -29,6 +29,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class TLEConverterTest {
 
@@ -82,6 +83,12 @@ public class TLEConverterTest {
         }
 
         TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0);
+
+        List<DelegatingDriver> drivers = builder.getPropagationParametersDrivers().getDrivers();
+
+        // there should *not* be any drivers for central attraction coefficient (see issue #313)
+        Assert.assertEquals(1, drivers.size());
+        Assert.assertEquals("BSTAR", drivers.get(0).getName());
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

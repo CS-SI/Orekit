@@ -60,7 +60,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple keplerian model for orbit, a linear extrapolation for attitude
+ * a simple Keplerian model for orbit, a linear extrapolation for attitude
  * taking the spin rate into account and no mass change. It is <em>not</em>
  * intended as a replacement for proper orbit and attitude propagation but
  * should be sufficient for either small time shifts or coarse accuracy.
@@ -262,34 +262,35 @@ public class SpacecraftState
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model for orbit, a linear extrapolation for attitude
-     * taking the spin rate into account and neither mass nor additional states
-     * changes. It is <em>not</em> intended as a replacement for proper orbit
+     * simple models. For orbits, the model is a Keplerian one if no derivatives
+     * are available in the orbit, or Keplerian plus quadratic effect of the
+     * non-Keplerian acceleration if derivatives are available. For attitude,
+     * a polynomial model is used. Neither mass nor additional states change.
+     * Shifting is <em>not</em> intended as a replacement for proper orbit
      * and attitude propagation but should be sufficient for small time shifts
      * or coarse accuracy.
      * </p>
      * <p>
      * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
-     * propagator} for an 800km altitude nearly circular polar Earth orbit with
-     * {@link org.orekit.attitudes.BodyCenterPointing body center pointing}. Beware
-     * that these results may be different for other orbits.
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
      * <caption>Extrapolation Error</caption>
      * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
-     * <th>position error (m)</th><th>velocity error (m/s)</th>
-     * <th>attitude error (&deg;)</th></tr>
-     * <tr><td bgcolor="#eeeeff"> 60</td><td>  20</td><td>1</td><td>0.001</td></tr>
-     * <tr><td bgcolor="#eeeeff">120</td><td> 100</td><td>2</td><td>0.002</td></tr>
-     * <tr><td bgcolor="#eeeeff">300</td><td> 600</td><td>4</td><td>0.005</td></tr>
-     * <tr><td bgcolor="#eeeeff">600</td><td>2000</td><td>6</td><td>0.008</td></tr>
-     * <tr><td bgcolor="#eeeeff">900</td><td>4000</td><td>6</td><td>0.010</td></tr>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
      * </table>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
-     * except for the mass which stay unchanged
+     * except for the mass and additional states which stay unchanged
      */
     public SpacecraftState shiftedBy(final double dt) {
         return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
@@ -481,19 +482,19 @@ public class SpacecraftState
         return orbit.getMu();
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds
+     * @return Keplerian period in seconds
      */
     public double getKeplerianPeriod() {
         return orbit.getKeplerianPeriod();
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return Keplerian mean motion in radians per second
      */
     public double getKeplerianMeanMotion() {
         return orbit.getKeplerianMeanMotion();

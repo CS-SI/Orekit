@@ -92,7 +92,7 @@ public class IodGibbsTest {
         final Vector3D posR3= new Vector3D(0.0, 5740323.0, 3189068);
 
         //epoch corresponding to the observation vector
-        AbsoluteDate dateRef = new AbsoluteDate(2000,01, 01, 0,0,0, TimeScalesFactory.getUTC());
+        AbsoluteDate dateRef = new AbsoluteDate(2000, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         AbsoluteDate date2 = dateRef.shiftedBy(76.48);
         AbsoluteDate date3 = dateRef.shiftedBy(153.04);
 
@@ -126,7 +126,7 @@ public class IodGibbsTest {
         final Vector3D posR3 = new Vector3D(2434952.02, 6597386.74, 2521523.11);
 
         //epoch corresponding to the observation vector
-        AbsoluteDate dateRef = new AbsoluteDate(2000,01, 01, 0,0,0, TimeScalesFactory.getUTC());
+        AbsoluteDate dateRef = new AbsoluteDate(2000, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         AbsoluteDate date2 = dateRef.shiftedBy(76.48);
         AbsoluteDate date3 = dateRef.shiftedBy(153.04);
 

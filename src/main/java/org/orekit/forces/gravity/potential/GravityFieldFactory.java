@@ -206,7 +206,7 @@ public class GravityFieldFactory {
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
      * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * clearPotentialCoefficientsReaders} has been called afterwards, the {@link
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
@@ -231,7 +231,7 @@ public class GravityFieldFactory {
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
      * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * clearPotentialCoefficientsReaders} has been called afterwards, the {@link
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
@@ -293,7 +293,7 @@ public class GravityFieldFactory {
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
      * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * clearPotentialCoefficientsReaders} has been called afterwards, the {@link
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
@@ -318,7 +318,7 @@ public class GravityFieldFactory {
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
      * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * clearPotentialCoefficientsReaders} has been called afterwards, the {@link
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
@@ -380,7 +380,7 @@ public class GravityFieldFactory {
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
      * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * clearPotentialCoefficientsReaders} has been called afterwards, the {@link
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
@@ -463,7 +463,7 @@ public class GravityFieldFactory {
      * If no {@link OceanTidesReader} has been added by calling {@link
      * #addOceanTidesReader(OceanTidesReader)
      * addOceanTidesReader} or if {@link #clearOceanTidesReaders()
-     * clearOceanTidesReaders} has been called afterwards,the {@link
+     * clearOceanTidesReaders} has been called afterwards, the {@link
      * #addDefaultOceanTidesReaders() addDefaultOceanTidesReaders}
      * method will be called automatically.
      * </p>

@@ -212,9 +212,9 @@ public class RangeTest {
         // Print results on console ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19s  %19s  %13s  %13s%n",
-                              "Station","Measurement Date","State Date",
-                              "Range observed [m]","Range estimated [m]",
-                              "ΔRange [m]","rel ΔRange");
+                              "Station", "Measurement Date", "State Date",
+                              "Range observed [m]", "Range estimated [m]",
+                              "ΔRange [m]", "rel ΔRange");
         }
 
         // Rewind the propagator to initial date
@@ -326,7 +326,7 @@ public class RangeTest {
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
-                    // Errors & relative errors on the jacobian
+                    // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
                     double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
                     for (int i = 0; i < jacobian.length; ++i) {
@@ -347,10 +347,10 @@ public class RangeTest {
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e%n",
                                         stationName, measurement.getDate(), date,
-                                        dJacobian[0][0],dJacobian[0][1],dJacobian[0][2],
-                                        dJacobian[0][3],dJacobian[0][4],dJacobian[0][5],
-                                        dJacobianRelative[0][0],dJacobianRelative[0][1],dJacobianRelative[0][2],
-                                        dJacobianRelative[0][3],dJacobianRelative[0][4],dJacobianRelative[0][5]);
+                                        dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                        dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                        dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                        dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
                     }
                 } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
@@ -363,10 +363,10 @@ public class RangeTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Station","Measurement Date","State Date",
-                            "ΔdPx","ΔdPy","ΔdPz","ΔdVx","ΔdVy","ΔdVz",
-                            "rel ΔdPx","rel ΔdPy","rel ΔdPz",
-                            "rel ΔdVx","rel ΔdVy","rel ΔdVz");
+                            "Station", "Measurement Date", "State Date",
+                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Rewind the propagator to initial date
@@ -392,9 +392,9 @@ public class RangeTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsPMedian, errorsPMean, errorsPMax);
-            System.out.format(Locale.US,"Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
@@ -404,9 +404,9 @@ public class RangeTest {
 
         // Finite differences reference values
         refErrorsPMedian = 1.2e-09;
-        refErrorsPMean   = 8.1e-09;
-        refErrorsPMax    = 3.6e-07;
-        refErrorsVMedian = 3.1e-04;
+        refErrorsPMean   = 8.7e-09;
+        refErrorsPMax    = 3.7e-07;
+        refErrorsVMedian = 3.3e-04;
         refErrorsVMean   = 1.7e-03;
         refErrorsVMax    = 8.1e-02;
 
@@ -508,7 +508,7 @@ public class RangeTest {
                         final double ref = dMkdP.value(drivers[i]);
 
                         if (printResults) {
-                            System.out.format(Locale.US,"%10.3e  %10.3e  ",gradient[0]-ref,FastMath.abs((gradient[0]-ref)/ref));
+                            System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
                         }
 
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
@@ -516,7 +516,7 @@ public class RangeTest {
 //                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
-                        System.out.format(Locale.US,"%n");
+                        System.out.format(Locale.US, "%n");
                     }
 
                 } // End if measurement date between previous and current interpolator step
@@ -534,10 +534,10 @@ public class RangeTest {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Station","Measurement Date","State Date",
-                            "ΔdQx","rel ΔdQx",
-                            "ΔdQy","rel ΔdQy",
-                            "ΔdQz","rel ΔdQz");
+                            "Station", "Measurement Date", "State Date",
+                            "ΔdQx", "rel ΔdQx",
+                            "ΔdQy", "rel ΔdQy",
+                            "ΔdQz", "rel ΔdQz");
          }
 
         // Propagate to final measurement's date
@@ -554,7 +554,7 @@ public class RangeTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dQ -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
@@ -562,7 +562,7 @@ public class RangeTest {
         double refErrorsMedian, refErrorsMean, refErrorsMax;
 
         // Numeric references
-        refErrorsMedian = 8.7e-11;
+        refErrorsMedian = 9.4e-11;
         refErrorsMean   = 3.4e-10;
         refErrorsMax    = 1.3e-08;
 

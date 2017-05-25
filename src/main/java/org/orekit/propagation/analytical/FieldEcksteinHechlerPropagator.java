@@ -77,7 +77,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<T>(initialOrbit.getA().getField()), initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -131,7 +131,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                      final T c20, final T c30, final T c40,
                                      final T c50, final T c60)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<T>(initialOrbit.getA().getField()), c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, mass and potential provider.
@@ -145,7 +145,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<T>(initialOrbit.getA().getField()), mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit<T>, mass and potential.
@@ -175,7 +175,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                      final T c20, final T c30, final T c40,
                                      final T c50, final T c60)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<T>(initialOrbit.getA().getField()), mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, attitude provider and potential provider.
@@ -290,11 +290,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
             // compute mean parameters
             // transform into circular adapted parameters used by the Eckstein-Hechler model
-            resetInitialState(new FieldSpacecraftState<T>(initialOrbit,
-                                                  attitudeProv.getAttitude(initialOrbit,
-                                                                           initialOrbit.getDate(),
-                                                                           initialOrbit.getFrame()),
-                                                  mass));
+            resetInitialState(new FieldSpacecraftState<>(initialOrbit,
+                                                         attitudeProv.getAttitude(initialOrbit,
+                                                                                  initialOrbit.getDate(),
+                                                                                  initialOrbit.getFrame()),
+                                                         mass));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
@@ -342,7 +342,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         final T one = field.getOne();
         final T zero = field.getZero();
         // rough initialization of the mean parameters
-        FieldEHModel<T> current = new FieldEHModel<T>(factory, osculating, mass, referenceRadius, mu, ck0);
+        FieldEHModel<T> current = new FieldEHModel<>(factory, osculating, mass, referenceRadius, mu, ck0);
         // threshold for each parameter
         final T epsilon         = one .multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
@@ -365,16 +365,16 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                                                 zero);
             final T deltaAlphaM = normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getValue()), zero);
             // update mean parameters
-            current = new FieldEHModel<T>(factory,
-                                          new FieldCircularOrbit<T>(current.mean.getA().add(deltaA),
-                                                    current.mean.getCircularEx().add( deltaEx),
-                                                    current.mean.getCircularEy().add( deltaEy),
-                                                    current.mean.getI()         .add( deltaI ),
-                                                    current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
-                                                    current.mean.getAlphaM().add(deltaAlphaM),
-                                                    PositionAngle.MEAN,
-                                                    current.mean.getFrame(),
-                                                    current.mean.getDate(), mu),
+            current = new FieldEHModel<>(factory,
+                                         new FieldCircularOrbit<>(current.mean.getA().add(deltaA),
+                                                                  current.mean.getCircularEx().add( deltaEx),
+                                                                  current.mean.getCircularEy().add( deltaEy),
+                                                                  current.mean.getI()         .add( deltaI ),
+                                                                  current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
+                                                                  current.mean.getAlphaM().add(deltaAlphaM),
+                                                                  PositionAngle.MEAN,
+                                                                  current.mean.getFrame(),
+                                                                  current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
             // check convergence
             if ((FastMath.abs(deltaA.getReal())      < thresholdA.getReal()) &&
@@ -398,8 +398,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
-        return new FieldCartesianOrbit<T>(toCartesian(date, current.propagateParameters(date)),
-                                          current.mean.getFrame(), mu);
+        return new FieldCartesianOrbit<>(toCartesian(date, current.propagateParameters(date)),
+                                         current.mean.getFrame(), mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
@@ -622,7 +622,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();
-            // keplerian evolution
+            // Keplerian evolution
             final FieldDerivativeStructure<T> dt =
                     factory.build(date.durationFrom(mean.getDate()), one, zero);
             final FieldDerivativeStructure<T> xnot = dt.multiply(xnotDot);
@@ -778,16 +778,16 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                                        y.multiply(sinI));
 
         // dispatch derivatives
-        final FieldVector3D<T> p0 = new FieldVector3D<T>(p.getX().getValue(),
-                                                         p.getY().getValue(),
-                                                         p.getZ().getValue());
-        final FieldVector3D<T> p1 = new FieldVector3D<T>(p.getX().getPartialDerivative(1),
-                                                         p.getY().getPartialDerivative(1),
-                                                         p.getZ().getPartialDerivative(1));
-        final FieldVector3D<T> p2 = new FieldVector3D<T>(p.getX().getPartialDerivative(2),
-                                                         p.getY().getPartialDerivative(2),
-                                                         p.getZ().getPartialDerivative(2));
-        return new TimeStampedFieldPVCoordinates<T>(date, p0, p1, p2);
+        final FieldVector3D<T> p0 = new FieldVector3D<>(p.getX().getValue(),
+                                                        p.getY().getValue(),
+                                                        p.getZ().getValue());
+        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getPartialDerivative(1),
+                                                        p.getY().getPartialDerivative(1),
+                                                        p.getZ().getPartialDerivative(1));
+        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getPartialDerivative(2),
+                                                        p.getY().getPartialDerivative(2),
+                                                        p.getZ().getPartialDerivative(2));
+        return new TimeStampedFieldPVCoordinates<>(date, p0, p1, p2);
 
     }
 

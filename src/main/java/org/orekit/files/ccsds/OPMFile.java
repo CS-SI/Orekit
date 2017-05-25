@@ -54,7 +54,7 @@ public class OPMFile extends OGMFile {
     OPMFile() {
         metaData  = new ODMMetaData(this);
         maneuvers = new ArrayList<Maneuver>();
-    };
+    }
 
     /** Get the meta data.
      * @return meta data
@@ -155,7 +155,7 @@ public class OPMFile extends OGMFile {
         return new CartesianOrbit(getPVCoordinates(), metaData.getFrame(), getEpoch(), getMuUsed());
     }
 
-    /** Generate a {@link KeplerianOrbit} from the OPM keplerian elements if hasKeplerianElements is true,
+    /** Generate a {@link KeplerianOrbit} from the OPM Keplerian elements if hasKeplerianElements is true,
      * or from the state vector data otherwise.
      * If the reference frame is not pseudo-inertial, an exception is raised.
      * @return the {@link KeplerianOrbit} generated from the OPM information

@@ -71,6 +71,24 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Java Reference epoch: 1970-01-01. */
     public static final DateComponents JAVA_EPOCH;
 
+    /** Maximum supported date.
+     * <p>
+     * This is date 5881610-07-11 which corresponds to {@code Integer.MAX_VALUE}
+     * days after {@link #J2000_EPOCH}.
+     * </p>
+     * @since 9.0
+     */
+    public static final DateComponents MAX_EPOCH;
+
+    /** Maximum supported date.
+     * <p>
+     * This is date -5877490-03-03, which corresponds to {@code Integer.MIN_VALUE}
+     * days before {@link #J2000_EPOCH}.
+     * </p>
+     * @since 9.0
+     */
+    public static final DateComponents MIN_EPOCH;
+
     /** Serializable UID. */
     private static final long serialVersionUID = -2462694707837970938L;
 
@@ -118,6 +136,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
         JAVA_EPOCH            = new DateComponents(1970, 1, 1);
+        MAX_EPOCH             = new DateComponents(Integer.MAX_VALUE);
+        MIN_EPOCH             = new DateComponents(Integer.MIN_VALUE);
     }
 
     /** Year number. */
@@ -244,7 +264,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * 1996-12-31 which corresponds to week date 1997-W01-2 (i.e. Tuesday in the
      * first week of 1997 is in fact the last day of year 1996).</p>
      * @param wYear year associated to week numbering
-     * @param week week number in year,from 1 to 52 or 53
+     * @param week week number in year, from 1 to 52 or 53
      * @param dayOfWeek day of week, from 1 (Monday) to 7 (Sunday)
      * @return a builded date
      * @exception IllegalArgumentException if inconsistent arguments
@@ -490,7 +510,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     }
 
-    /** Class providing a years sequence compliant with the proleptic julian calendar. */
+    /** Class providing a years sequence compliant with the proleptic Julian calendar. */
     private static class ProlepticJulianFactory implements YearFactory {
 
         /** {@inheritDoc} */
@@ -500,7 +520,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(final int year) {
-            return (1461 * year + 1) / 4 - 730123;
+            return 365 * year + (year + 1) / 4 - 730123;
         }
 
         /** {@inheritDoc} */
@@ -510,7 +530,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     }
 
-    /** Class providing a years sequence compliant with the julian calendar. */
+    /** Class providing a years sequence compliant with the Julian calendar. */
     private static class JulianFactory implements YearFactory {
 
         /** {@inheritDoc} */
@@ -520,7 +540,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(final int year) {
-            return (1461 * year) / 4 - 730122;
+            return 365 * year + year / 4 - 730122;
         }
 
         /** {@inheritDoc} */
@@ -530,7 +550,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     }
 
-    /** Class providing a years sequence compliant with the gregorian calendar. */
+    /** Class providing a years sequence compliant with the Gregorian calendar. */
     private static class GregorianFactory implements YearFactory {
 
         /** {@inheritDoc} */
@@ -552,7 +572,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getLastJ2000DayOfYear(final int year) {
-            return (1461 * year) / 4 - year / 100 + year / 400 - 730120;
+            return 365 * year + year / 4 - year / 100 + year / 400 - 730120;
         }
 
         /** {@inheritDoc} */

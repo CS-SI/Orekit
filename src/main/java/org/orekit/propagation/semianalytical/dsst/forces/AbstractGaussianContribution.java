@@ -1547,7 +1547,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         /** {@inheritDoc}
          * <p>
-         * For Gaussian forces,there are JMAX cj coefficients,
+         * For Gaussian forces, there are JMAX cj coefficients,
          * JMAX sj coefficients and 3 dj coefficients. As JMAX = 12,
          * this sums up to 27 coefficients. The j index is the integer
          * multiplier for the true longitude argument in the cj and sj

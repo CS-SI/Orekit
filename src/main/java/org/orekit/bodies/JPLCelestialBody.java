@@ -308,7 +308,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
             }, name + BODY_FRAME_SUFFIX, false);
-        };
+        }
 
         /** Replace the instance with a data transfer object for serialization.
          * <p>

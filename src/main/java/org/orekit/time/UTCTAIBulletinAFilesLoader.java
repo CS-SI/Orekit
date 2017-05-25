@@ -342,7 +342,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
                 }
             }
 
-        };
+        }
 
         /** TAI-UTC history. */
         private final SortedMap<Integer, Integer> taiUtc;

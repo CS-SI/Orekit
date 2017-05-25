@@ -60,7 +60,7 @@ public class TurnAroundRangeAnalyticTest {
             System.out.println("\nTest TAR Analytical Values\n");
         }
         // Run test
-        this.genericTestValues(printResults);
+        genericTestValues(printResults);
     }
 
     /**
@@ -78,7 +78,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    1.3e-6, 2.1e-6, 5.3e-5, 1.2e-6, 3.5e-6, 1.3e-4);
     }
 
     /**
@@ -96,7 +97,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
     }
 
     /**
@@ -114,7 +116,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    1.2e-6, 2.1e-6, 3.1e-5, 1.2e-6, 3.5e-6, 1.3e-4);
     }
 
     /**
@@ -132,7 +135,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
     }
 
     /**
@@ -152,7 +156,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
+                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
 
     }
 
@@ -173,7 +178,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
+                                        3.0e-06, 5.9e-06, 1.3e-04, 2.9e-6, 5.0e-6, 3.9e-5);
 
     }
 
@@ -194,7 +200,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
+                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
 
     }
 
@@ -215,7 +222,8 @@ public class TurnAroundRangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
+                                        3.0e-06, 5.9e-06, 1.3e-04, 2.9e-6, 5.0e-6, 3.9e-5);
 
     }
 
@@ -250,10 +258,10 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results ? Header
         if (printResults) {
            System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17s  %17s  %13s %13s%n",
-                              "Master Station","Slave Station",
-                              "Measurement Date","State Date",
-                              "TAR observed [m]","TAR estimated [m]",
-                              "|ΔTAR| [m]","rel |ΔTAR|");
+                              "Master Station", "Slave Station",
+                              "Measurement Date", "State Date",
+                              "TAR observed [m]", "TAR estimated [m]",
+                              "|ΔTAR| [m]", "rel |ΔTAR|");
         }
 
         // Loop on the measurements
@@ -306,10 +314,10 @@ public class TurnAroundRangeAnalyticTest {
 
         // Assert statistical errors
         Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
-        Assert.assertEquals(0.0, absErrorsMin, 8.8e-08);
-        Assert.assertEquals(0.0, absErrorsMax, 9.4e-08);
+        Assert.assertEquals(0.0, absErrorsMin, 9.0e-08);
+        Assert.assertEquals(0.0, absErrorsMax, 1.1e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 1.7e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 5.8e-15);
+        Assert.assertEquals(0.0, relErrorsMax , 6.4e-15);
     }
 
     /**
@@ -319,7 +327,10 @@ public class TurnAroundRangeAnalyticTest {
      * @param printResults Print the results ?
      * @throws OrekitException
      */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
+    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
+                                     final double refErrorsPMedian, final double refErrorsPMean,
+                                     final double refErrorsPMax, final double refErrorsVMedian,
+                                     final double refErrorsVMean, final double refErrorsVMax)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -350,11 +361,11 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station","Slave Station",
-                            "Measurement Date","State Date",
-                            "ΔdPx","ΔdPy","ΔdPz","ΔdVx","ΔdVy","ΔdVz",
-                            "rel ΔdPx","rel ΔdPy","rel ΔdPz",
-                            "rel ΔdVx","rel ΔdVy","rel ΔdVz");
+                            "Master Station", "Slave Station",
+                            "Measurement Date", "State Date",
+                            "ΔdPx", "ΔdPy", "ΔdPz", "ΔdVx", "ΔdVy", "ΔdVz",
+                            "rel ΔdPx", "rel ΔdPy", "rel ΔdPz",
+                            "rel ΔdVx", "rel ΔdVy", "rel ΔdVz");
         }
 
         // Loop on the measurements
@@ -432,10 +443,10 @@ public class TurnAroundRangeAnalyticTest {
                                 "%10.3e  %10.3e  %10.3e  " +
                                 "%10.3e  %10.3e  %10.3e%n",
                                 masterStationName, slaveStationName, measurement.getDate(), date,
-                                dJacobian[0][0],dJacobian[0][1],dJacobian[0][2],
-                                dJacobian[0][3],dJacobian[0][4],dJacobian[0][5],
-                                dJacobianRelative[0][0],dJacobianRelative[0][1],dJacobianRelative[0][2],
-                                dJacobianRelative[0][3],dJacobianRelative[0][4],dJacobianRelative[0][5]);
+                                dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
+                                dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
+                                dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],
+                                dJacobianRelative[0][3], dJacobianRelative[0][4], dJacobianRelative[0][5]);
             }
         } // End loop on the measurements
 
@@ -451,56 +462,13 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsPMedian, errorsPMean, errorsPMax);
-            System.out.format(Locale.US,"Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
         // Assert the results / max values depend on the test
-        double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-
-        // Reference comparison with TurnAroundRange class
-        if (!isFiniteDifferences) {
-
-            // Without modifier
-            if (!isModifier) {
-                refErrorsPMedian = 1.1e-06;
-                refErrorsPMean   = 1.1e-06;
-                refErrorsPMax    = 2.2e-06;
-            }
-            // With modifier
-            else {
-                refErrorsPMedian = 1.1e-06;
-                refErrorsPMean   = 1.7e-06;
-                refErrorsPMax    = 2.0e-05;
-            }
-
-            refErrorsVMedian = 1.1e-06;
-            refErrorsVMean   = 1.1e-06;
-            refErrorsVMax    = 2.3e-06;
-        }
-        // Reference comparison with finite differences
-        else {
-            // Without modifier
-            if (!isModifier) {
-                refErrorsPMedian = 1.1e-09;
-                refErrorsPMean   = 2.6e-09;
-                refErrorsPMax    = 9.0e-08;
-            }
-            // With modifier
-            else {
-                refErrorsPMedian = 1.2e-09;
-                refErrorsPMean   = 3.8e-09;
-                refErrorsPMax    = 1.1e-07;
-            }
-
-            refErrorsVMedian = 1.5e-04;
-            refErrorsVMean   = 4.1e-04;
-            refErrorsVMax    = 5.3e-03;
-        }
-
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
@@ -517,7 +485,9 @@ public class TurnAroundRangeAnalyticTest {
      * @param printResults Print the results ?
      * @throws OrekitException
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
+                                         final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
+                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -552,14 +522,14 @@ public class TurnAroundRangeAnalyticTest {
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s  " +
                             "%10s  %10s  %10s%n",
-                            "Master Station","Slave Station",
-                            "Measurement Date","State Date",
-                            "ΔdQMx","rel ΔdQMx",
-                            "ΔdQMy","rel ΔdQMy",
-                            "ΔdQMz","rel ΔdQMz",
-                            "ΔdQSx","rel ΔdQSx",
-                            "ΔdQSy","rel ΔdQSy",
-                            "ΔdQSz","rel ΔdQSz");
+                            "Master Station", "Slave Station",
+                            "Measurement Date", "State Date",
+                            "ΔdQMx", "rel ΔdQMx",
+                            "ΔdQMy", "rel ΔdQMy",
+                            "ΔdQMz", "rel ΔdQMz",
+                            "ΔdQSx", "rel ΔdQSx",
+                            "ΔdQSy", "rel ΔdQSy",
+                            "ΔdQSz", "rel ΔdQSz");
          }
 
         // List to store the results for master and slave station
@@ -644,7 +614,7 @@ public class TurnAroundRangeAnalyticTest {
 
                 // Print results on console ? Gradient difference
                 if (printResults) {
-                    System.out.format(Locale.US,"%10.3e  %10.3e  ",dGradient,dGradientRelative);
+                    System.out.format(Locale.US, "%10.3e  %10.3e  ", dGradient, dGradientRelative);
                 }
 
                 // Add relative error to the list
@@ -653,7 +623,7 @@ public class TurnAroundRangeAnalyticTest {
 
             } // End for loop on the parameters
             if (printResults) {
-                System.out.format(Locale.US,"%n");
+                System.out.format(Locale.US, "%n");
             }
         } // End for loop on the measurements
 
@@ -674,32 +644,10 @@ public class TurnAroundRangeAnalyticTest {
         // Print the results on console ?
         if (printResults) {
             System.out.println();
-            System.out.format(Locale.US,"Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ master station -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQMMedian, relErrorsQMMean, relErrorsQMMax);
-            System.out.format(Locale.US,"Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
+            System.out.format(Locale.US, "Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQSMedian, relErrorsQSMean, relErrorsQSMax);
-        }
-
-        // Assert the results / max values depend on the test
-        double refErrorQMMedian, refErrorQMMean, refErrorQMMax;
-        double refErrorQSMedian, refErrorQSMean, refErrorQSMax;
-
-        // Master station reference comparison for both methods
-        refErrorQMMedian = 2.8e-06;
-        refErrorQMMean   = 5.9e-06;
-        refErrorQMMax    = 1.3e-04;
-
-        // Slave station reference comparison with TurnAroundRange class
-        if (!isFiniteDifferences) {
-            refErrorQSMedian = 3.1e-06;
-            refErrorQSMean   = 5.3e-06;
-            refErrorQSMax    = 3.5e-05;
-        }
-        // Slave station reference comparison with finite differences calculation
-        else {
-            refErrorQSMedian = 2.9e-06;
-            refErrorQSMean   = 4.9e-06;
-            refErrorQSMax    = 3.6e-05;
         }
 
         // Check values
@@ -709,5 +657,7 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, relErrorsQSMedian, refErrorQSMedian);
         Assert.assertEquals(0.0, relErrorsQSMean, refErrorQSMean);
         Assert.assertEquals(0.0, relErrorsQSMax, refErrorQSMax);
+
     }
+
 }

@@ -120,17 +120,17 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
@@ -138,7 +138,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -179,6 +179,9 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         double R_R = R_0.getReal();
         double O_R = O_0.getReal();
         double n_R = n_0.getReal();
+        double maxP = 0;
+        double maxV = 0;
+        double maxA = 0;
         for (int ii = 0; ii < 1; ii++){
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
@@ -209,46 +212,45 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
             PVCoordinates finPVC_shift = finalState_shift.getPVCoordinates();
 
             //position check
-
             FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-
-            //System.out.println(pos_DS.getX().getPartialDerivative(1));
-
+            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-8);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-8);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-8);
+            maxP = FastMath.max(maxP, FastMath.abs((x_DS - x) / (x - pos_DS.getX().getReal())));
+            maxP = FastMath.max(maxP, FastMath.abs((y_DS - y) / (y - pos_DS.getY().getReal())));
+            maxP = FastMath.max(maxP, FastMath.abs((z_DS - z) / (z - pos_DS.getZ().getReal())));
 
-            //velocity check
-
+            // velocity check
             FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-9);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-9);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-9);
-            //acceleration check
+            maxV = FastMath.max(maxV, FastMath.abs((vx_DS - vx) / vx));
+            maxV = FastMath.max(maxV, FastMath.abs((vy_DS - vy) / vy));
+            maxV = FastMath.max(maxV, FastMath.abs((vz_DS - vz) / vz));
 
+            // acceleration check
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0],rand_next[1],rand_next[2],rand_next[3],rand_next[4],rand_next[5]);
+            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-8);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-8);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-8);
+            maxA = FastMath.max(maxA, FastMath.abs((ax_DS - ax) / ax));
+            maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
+            maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
         }
+        Assert.assertEquals(0, maxP, 1.0e-10);
+        Assert.assertEquals(0, maxV, 2.0e-11);
+        Assert.assertEquals(0, maxA, 8.0e-8);
+
     }
 
     /**Same test as the previous one but not adding the ForceModel to the NumericalPropagator
@@ -268,17 +270,17 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
 
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<>(field);
 
         Frame EME = FramesFactory.getEME2000();
 
-        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                                    PositionAngle.MEAN,
-                                                                                                    EME,
-                                                                                                    J2000,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                 PositionAngle.MEAN,
+                                                                                 EME,
+                                                                                 J2000,
+                                                                                 Constants.EIGEN5C_EARTH_MU);
 
-        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO);
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
@@ -286,7 +288,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(zero.add(60));
         AdaptiveStepsizeIntegrator RIntegrator =
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -323,10 +325,10 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Orbit orbit =
-            new EquinoctialOrbit(42164000,10e-3,10e-3,
-                                      FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
-                                      FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                                      0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+            new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                 FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
+                                 0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator

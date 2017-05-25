@@ -344,7 +344,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
             }
         }
 
-    };
+    }
 
     /** Regular expression for supported files names. */
     private final String supportedNames;

@@ -71,11 +71,24 @@ public class DOPComputation {
     public static void main(String[] args) {
 
         try {
+
             // configure Orekit
-            final File orekitData = new File(DOPComputation.class.getResource("/tutorial-orekit-data").toURI().getPath());
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
+
+            // add gnss data to the global configuration
             final File gnssData = new File(DOPComputation.class.getResource("/tutorial-gnss").toURI().getPath());
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(gnssData));
+            manager.addProvider(new DirectoryCrawler(gnssData));
 
             // The Earth body shape
             final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

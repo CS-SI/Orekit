@@ -189,7 +189,7 @@ public class Transform
 
     /** Build a translation transform, with its first time derivative.
      * @param date date of the transform
-     * @param cartesian cartesian part of the transformation to apply (i.e. coordinates of
+     * @param cartesian Cartesian part of the transformation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame, with their derivatives)
      */
@@ -373,7 +373,7 @@ public class Transform
     /** {@inheritDoc} */
     public Transform shiftedBy(final double dt) {
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
-    };
+    }
 
     /** {@inheritDoc}
      * <p>
@@ -547,9 +547,9 @@ public class Transform
      * @return transformed position-velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
-        return angular.applyTo(new FieldPVCoordinates<T>(pv.getPosition().add(cartesian.getPosition()),
-                                                         pv.getVelocity().add(cartesian.getVelocity()),
-                                                         pv.getAcceleration().add(cartesian.getAcceleration())));
+        return angular.applyTo(new FieldPVCoordinates<>(pv.getPosition().add(cartesian.getPosition()),
+                                                        pv.getVelocity().add(cartesian.getVelocity()),
+                                                        pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
     /** Transform {@link TimeStampedFieldPVCoordinates} including kinematic effects.
@@ -566,10 +566,10 @@ public class Transform
      * @since 7.0
      */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
-        return angular.applyTo(new TimeStampedFieldPVCoordinates<T>(pv.getDate(),
-                                                                    pv.getPosition().add(cartesian.getPosition()),
-                                                                    pv.getVelocity().add(cartesian.getVelocity()),
-                                                                    pv.getAcceleration().add(cartesian.getAcceleration())));
+        return angular.applyTo(new TimeStampedFieldPVCoordinates<>(pv.getDate(),
+                                                                   pv.getPosition().add(cartesian.getPosition()),
+                                                                   pv.getVelocity().add(cartesian.getVelocity()),
+                                                                   pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
@@ -670,11 +670,11 @@ public class Transform
 
     }
 
-    /** Get the underlying elementary cartesian part.
+    /** Get the underlying elementary Cartesian part.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
      * returns this unique elementary translation with its derivative.</p>
-     * @return underlying elementary cartesian part
+     * @return underlying elementary Cartesian part
      * @see #getTranslation()
      * @see #getVelocity()
      */
@@ -783,7 +783,7 @@ public class Transform
         @Override
         public Transform getInverse() {
             return this;
-        };
+        }
 
         /** {@inheritDoc} */
         @Override

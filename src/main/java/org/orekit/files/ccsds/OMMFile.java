@@ -81,7 +81,7 @@ public class OMMFile extends OGMFile {
     /** Create a new OMM file object. */
     OMMFile() {
         metaData = new OMMMetaData(this);
-    };
+    }
 
     /** Get the meta data.
      * @return meta data
@@ -231,7 +231,7 @@ public class OMMFile extends OGMFile {
         dataTleRelatedParametersComment = new ArrayList<String>(comment);
     }
 
-    /** Generate a {@link KeplerianOrbit} based on the OMM mean keplerian elements.
+    /** Generate a {@link KeplerianOrbit} based on the OMM mean Keplerian elements.
      * If the reference frame is not pseudo-inertial, an exception is raised.
      * @return the {@link KeplerianOrbit} generated from the OMM information
      * @exception OrekitException if the reference frame is not pseudo-inertial or if the central body

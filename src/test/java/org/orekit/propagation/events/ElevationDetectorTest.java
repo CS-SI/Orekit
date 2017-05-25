@@ -169,18 +169,18 @@ public class ElevationDetectorTest {
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
-        double [][] maskValues = {{FastMath.toRadians(0),FastMath.toRadians(5)},
-                              {FastMath.toRadians(30),FastMath.toRadians(4)},
-                              {FastMath.toRadians(60),FastMath.toRadians(3)},
-                              {FastMath.toRadians(90),FastMath.toRadians(2)},
-                              {FastMath.toRadians(120),FastMath.toRadians(3)},
-                              {FastMath.toRadians(150),FastMath.toRadians(4)},
-                              {FastMath.toRadians(180),FastMath.toRadians(5)},
-                              {FastMath.toRadians(210),FastMath.toRadians(6)},
-                              {FastMath.toRadians(240),FastMath.toRadians(5)},
-                              {FastMath.toRadians(270),FastMath.toRadians(4)},
-                              {FastMath.toRadians(300),FastMath.toRadians(3)},
-                              {FastMath.toRadians(330),FastMath.toRadians(4)}};
+        double [][] maskValues = {{ FastMath.toRadians(  0), FastMath.toRadians(5)},
+                                  { FastMath.toRadians( 30), FastMath.toRadians(4)},
+                                  { FastMath.toRadians( 60), FastMath.toRadians(3)},
+                                  { FastMath.toRadians( 90), FastMath.toRadians(2)},
+                                  { FastMath.toRadians(120), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(150), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(180), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(210), FastMath.toRadians(6)},
+                                  { FastMath.toRadians(240), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(270), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(300), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(330), FastMath.toRadians(4)}};
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
@@ -246,7 +246,7 @@ public class ElevationDetectorTest {
                                                 0.0001223149429077902, PositionAngle.MEAN,
                                                 inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
-        // Propagator : consider a simple keplerian motion (could be more elaborate)
+        // Propagator : consider a simple Keplerian motion (could be more elaborate)
         Propagator kepler = new EcksteinHechlerPropagator(initialOrbit,
                                                           Constants.EGM96_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
                                                           Constants.EGM96_EARTH_C20, 0.0, 0.0, 0.0, 0.0);

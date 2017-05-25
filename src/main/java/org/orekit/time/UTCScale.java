@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
@@ -136,6 +137,18 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        final int offsetIndex = findOffsetIndex(date.toAbsoluteDate());
+        if (offsetIndex < 0) {
+            // the date is before the first known leap
+            return date.getField().getZero();
+        } else {
+            return offsets[offsetIndex].getOffset(date).negate();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date,
                               final TimeComponents time) {
 
@@ -195,6 +208,12 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+        return insideLeap(date.toAbsoluteDate());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public int minuteDuration(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
@@ -220,6 +239,12 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+        return minuteDuration(date.toAbsoluteDate());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getLeap(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
@@ -228,6 +253,12 @@ public class UTCScale implements TimeScale {
         } else {
             return offsets[offsetIndex].getLeap();
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero().add(getLeap(date.toAbsoluteDate()));
     }
 
     /** Find the index of the offset valid at some date.

@@ -17,7 +17,12 @@
 
 package fr.cs.examples.propagation;
 
+import java.io.File;
+import java.util.Locale;
+
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -29,8 +34,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-
-import fr.cs.examples.Autoconfiguration;
 
 /** Orekit tutorial for slave mode propagation.
  * <p>This tutorial shows a basic usage of the slave mode in which the user drives all propagation steps.<p>
@@ -45,7 +48,18 @@ public class SlaveMode {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // Initial orbit parameters
             double a = 24396159; // semi major axis in meters

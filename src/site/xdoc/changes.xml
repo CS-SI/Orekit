@@ -21,6 +21,78 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Quentin Rhone">
+        Added a way to prefix parameters names when estimating several maneuvers
+        in one orbit determination.
+        Fixes issue #338.
+      </action>
+      <action dev="luc" type="fix" due-to="Pascal Parraud">
+        Removed unneeded reset at end of sample creation in propagators conversion.
+        Fixes issue #335.
+      </action>
+      <action dev="luc" type="fix" due-to="Michiel Zittersteijn">
+        Fixed wrong angle wrapping computation in IodLambert.
+      </action>
+      <action dev="luc" type="fix" due-to="Lucian Barbulescu">
+        Fixed boundaries of thrust parameter driver in ConstantThrustManeuver.
+        Fixes issue #327.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Allow some old version of TLE format to be parsed correctly.
+        Fixes issue #330.
+      </action>
+      <action dev="luc" type="fix" due-to="James Schatzman">
+        Fixed ArrayOutOfBoundException appearing when converting dates at past or future infinity
+        to string.
+        Fixes issue #340.
+      </action>
+      <action dev="luc" type="fix">
+        Extended range of DateComponents to allow the full integer range as days offset
+        from J2000.
+      </action>
+      <action dev="luc" type="fix">
+        Prevent NaN appearing in UTC-TAI offsets for dates at past or future infinity.
+      </action>
+      <action dev="luc" type="fix">
+        Prevent central attraction coefficient from being adjusted in TLEPropagatorBuilder,
+        as it is specified by the TLE theory.
+        Fixes issue #313.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Added a flag to prevent resetting initial state at the end of integrating propagators.
+        Fixes issue #251.
+      </action>
+      <action dev="luc" type="fix">
+        Tutorials now all rely on orekit-data being in user home folder.
+        Fixes issue #245.
+      </action>
+       <action dev="luc" type="fix">
+        Apply delay corresponding to h = 0 when station altitude is below 0 in SaastamoinenModel.
+        Fixes issue #202.
+      </action>
+      <action dev="luc" type="add">
+        Added derivatives to orbits computed from non-Keplerian models, and use
+        these derivatives when available. This improves shiftedBy() accuracy,
+        and as a consequence also the accuracy of EventShifter. As example, when
+        comparing shiftedBy and numerical model on a low Earth Sun Synchronous Orbit,
+        with a 20x20 gravity field, Sun and Moon third bodies attractions, drag and
+        solar radiation pressure, shifted position errors without derivatives are 18m
+        after 60s, 72m after 120s, 447m after 300s; 1601m after 600s and 3141m after
+        900s, whereas the shifted position errors with derivatives are 1.1m after 60s,
+        9.1m after 120s, 140m after 300s; 1067m after 600s and 3307m after 900s.
+      </action>
+      <action dev="luc" type="fix">
+        Preserved non-Keplerian acceleration in spacecraft state when computed from numerical propagator.
+        Fixes issue #183.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed accuracy of FieldAbsoluteDate.
+        Fixes issue #337.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed eccentricity computation for hyperbolic Cartesian orbits.
+        Fixes issue #336.
+      </action>
       <action dev="luc" type="fix">
         Fixed an array out of bounds error in DSST zonal short periodics terms.
       </action>

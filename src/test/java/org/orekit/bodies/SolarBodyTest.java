@@ -408,13 +408,13 @@ public class SolarBodyTest {
             }
         });
 
-        propag.propagate(startingDate,endDate);
+        propag.propagate(startingDate, endDate);
 
     }
 
     private static class BodyAttraction extends AbstractForceModel {
 
-        /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+        /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
         /** Drivers for force model parameters. */
@@ -447,7 +447,7 @@ public class SolarBodyTest {
             } catch (OrekitException oe) {
                 // this should never occur as valueChanged above never throws an exception
                 throw new OrekitInternalError(oe);
-            };
+            }
             this.body = body;
             this.gm   = body.getGM();
         }
@@ -492,7 +492,7 @@ public class SolarBodyTest {
             final DerivativeStructure r2Sat = satToBody.getNormSq();
 
             // compute absolute acceleration
-            return new FieldVector3D<DerivativeStructure>(r2Sat.pow(-1.5).multiply(gm), satToBody);
+            return new FieldVector3D<>(r2Sat.pow(-1.5).multiply(gm), satToBody);
 
         }
 
@@ -510,7 +510,7 @@ public class SolarBodyTest {
             final DerivativeStructure gmds = new DSFactory(1, 1).variable(0, gm);
 
             // compute relative acceleration
-            return new FieldVector3D<DerivativeStructure>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody);
+            return new FieldVector3D<>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody);
 
         }
 
@@ -554,7 +554,7 @@ public class SolarBodyTest {
 
         // set up Keplerian orbit of orbiting body around central body
         Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getInertiallyOrientedFrame()),
-                                         central.getInertiallyOrientedFrame(),start, central.getGM());
+                                         central.getInertiallyOrientedFrame(), start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Assert.assertEquals(a, orbit.getA(), 0.02 * a);
         double duration = FastMath.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());

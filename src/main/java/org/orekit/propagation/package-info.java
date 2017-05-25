@@ -48,7 +48,7 @@
  * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
  * coefficients correctors, and uses mean parameters to compute the new
- * position. As the keplerian propagator, it implements the
+ * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
  *
  * <h2> Numerical propagation </h2>

@@ -19,7 +19,7 @@ The `org.orekit.orbits` package provides classes to represent orbits.
 This package is the basis for all of the other space mechanics tools. 
 It provides an abstract class, Orbit, extended in four different ways 
 corresponding to the different possible representations of orbital parameters.
-Since version 3.0, keplerian, circular, equinoctial and cartesian representations 
+Since version 3.0, Keplerian, circular, equinoctial and Cartesian representations 
 are supported.
 
 ## Design History
@@ -154,7 +154,7 @@ the right result.
 We therefore consider it the responsibility of the user to be aware of the correct
 definition of the different representations and of the singularities relative to each
 one of them. If the user really needs to do some conversion (for example to provide
-an orbit as Two-Line Elements later on, remembering that TLEs do use keplerian-like
+an orbit as Two-Line Elements later on, remembering that TLEs do use Keplerian-like
 parameters), then he can do so.
 
 The way conversion is handled in Orekit is very simple and allows easy and transparent

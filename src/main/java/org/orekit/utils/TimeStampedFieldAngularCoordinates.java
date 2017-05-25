@@ -149,10 +149,10 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * of the instance
      */
     public TimeStampedFieldAngularCoordinates<T> revert() {
-        return new TimeStampedFieldAngularCoordinates<T>(date,
-                                                         getRotation().revert(),
-                                                         getRotation().applyInverseTo(getRotationRate().negate()),
-                                                         getRotation().applyInverseTo(getRotationAcceleration().negate()));
+        return new TimeStampedFieldAngularCoordinates<>(date,
+                                                        getRotation().revert(),
+                                                        getRotation().applyInverseTo(getRotationRate().negate()),
+                                                        getRotation().applyInverseTo(getRotationAcceleration().negate()));
     }
 
     /** Get the date.
@@ -188,8 +188,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      */
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final T dt) {
         final FieldAngularCoordinates<T> sac = super.shiftedBy(dt);
-        return new TimeStampedFieldAngularCoordinates<T>(date.shiftedBy(dt),
-                                                         sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());
+        return new TimeStampedFieldAngularCoordinates<>(date.shiftedBy(dt),
+                                                        sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());
 
     }
 
@@ -214,12 +214,12 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
         final FieldVector3D<T> rOmega    = getRotation().applyTo(offset.getRotationRate());
         final FieldVector3D<T> rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
-        return new TimeStampedFieldAngularCoordinates<T>(date,
-                                                         getRotation().compose(offset.getRotation(), RotationConvention.VECTOR_OPERATOR),
-                                                         getRotationRate().add(rOmega),
-                                                         new FieldVector3D<T>( 1.0, getRotationAcceleration(),
-                                                                               1.0, rOmegaDot,
-                                                                              -1.0, FieldVector3D.crossProduct(getRotationRate(), rOmega)));
+        return new TimeStampedFieldAngularCoordinates<>(date,
+                                                        getRotation().compose(offset.getRotation(), RotationConvention.VECTOR_OPERATOR),
+                                                        getRotationRate().add(rOmega),
+                                                        new FieldVector3D<>( 1.0, getRotationAcceleration(),
+                                                                              1.0, rOmegaDot,
+                                                                             -1.0, FieldVector3D.crossProduct(getRotationRate(), rOmega)));
     }
 
     /** Subtract an offset from the instance.
@@ -335,7 +335,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
                 sum = sum.add(datedAC.getRotationRate());
             }
-            meanRate = new FieldVector3D<T>(1.0 / sample.size(), sum);
+            meanRate = new FieldVector3D<>(1.0 / sample.size(), sum);
         } else {
             if (sample.size() < 2) {
                 throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
@@ -350,11 +350,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                 }
                 previous = datedAC;
             }
-            meanRate = new FieldVector3D<T>(1.0 / (sample.size() - 1), sum);
+            meanRate = new FieldVector3D<>(1.0 / (sample.size() - 1), sum);
         }
         TimeStampedFieldAngularCoordinates<T> offset =
-                new TimeStampedFieldAngularCoordinates<T>(date, FieldRotation.getIdentity(field),
-                                                          meanRate, FieldVector3D.getZero(field));
+                new TimeStampedFieldAngularCoordinates<>(date, FieldRotation.getIdentity(field),
+                                                         meanRate, FieldVector3D.getZero(field));
 
         boolean restart = true;
         for (int i = 0; restart && i < sample.size() + 2; ++i) {
@@ -363,7 +363,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             restart = false;
 
             // set up an interpolator taking derivatives into account
-            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
+            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
 
             // add sample points
             double sign = +1.0;
@@ -414,11 +414,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             if (restart) {
                 // interpolation failed, some intermediate rotation was too close to 2π
                 // we need to offset all rotations to avoid the singularity
-                offset = offset.addOffset(new FieldAngularCoordinates<T>(new FieldRotation<T>(FieldVector3D.getPlusI(field),
-                                                                                              field.getZero().add(epsilon),
-                                                                                              RotationConvention.VECTOR_OPERATOR),
-                                                                         FieldVector3D.getZero(field),
-                                                                         FieldVector3D.getZero(field)));
+                offset = offset.addOffset(new FieldAngularCoordinates<>(new FieldRotation<>(FieldVector3D.getPlusI(field),
+                                                                                            field.getZero().add(epsilon),
+                                                                                            RotationConvention.VECTOR_OPERATOR),
+                                                                        FieldVector3D.getZero(field),
+                                                                        FieldVector3D.getZero(field)));
             } else {
                 // interpolation succeeded with the current offset
                 final T[][] p = interpolator.derivatives(field.getZero(), 2);

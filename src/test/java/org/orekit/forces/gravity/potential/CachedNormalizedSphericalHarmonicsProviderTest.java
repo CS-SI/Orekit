@@ -60,7 +60,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double targetOffset = offsetDate.durationFrom(date);
         double actualOffset = cache.getOffset(offsetDate);
 
-        Assert.assertEquals(targetOffset, actualOffset,epsilon);
+        Assert.assertEquals(targetOffset, actualOffset, epsilon);
     }
 
     @Test
@@ -80,8 +80,8 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assert.assertEquals(expected.getNormalizedCnm(n,m), actual.getNormalizedCnm(n,m), tol);
-                Assert.assertEquals(expected.getNormalizedSnm(n,m), actual.getNormalizedSnm(n,m), tol);
+                Assert.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                Assert.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }
@@ -102,8 +102,8 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assert.assertEquals(expected.getNormalizedCnm(n,m), actual.getNormalizedCnm(n,m), tol);
-                Assert.assertEquals(expected.getNormalizedSnm(n,m), actual.getNormalizedSnm(n,m), tol);
+                Assert.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                Assert.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }

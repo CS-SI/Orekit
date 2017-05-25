@@ -328,7 +328,7 @@ public class TransformTest {
 
         // combine 2 rotation tranform
         PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 3), new Vector3D(8, 0, 6));
-        Rotation R2 = new Rotation( new Vector3D(0,0,1), FastMath.PI, RotationConvention.VECTOR_OPERATOR);
+        Rotation R2 = new Rotation( new Vector3D(0, 0, 1), FastMath.PI, RotationConvention.VECTOR_OPERATOR);
         Transform R1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R2, new Vector3D(0, -3, 0));
         Transform R3toR5 = new Transform (AbsoluteDate.J2000_EPOCH, R3toR1, R1toR5);
         PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
@@ -337,7 +337,7 @@ public class TransformTest {
         checkVector(pointP5.getAcceleration(), combResult.getAcceleration(), 1.0e-15);
 
         // combine translation and rotation
-        Transform R2toR3 = new Transform (AbsoluteDate.J2000_EPOCH, R2toR1,R1toR3);
+        Transform R2toR3 = new Transform (AbsoluteDate.J2000_EPOCH, R2toR1, R1toR3);
         PVCoordinates result = R2toR3.transformPVCoordinates(pointP2);
         checkVector(pointP3.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP3.getVelocity(),     result.getVelocity(),     1.0e-15);
@@ -350,7 +350,7 @@ public class TransformTest {
         checkVector(pointP2.getAcceleration(), result.getAcceleration(), 1.0e-15);
 
         Transform newR1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R1toR2, R2toR3);
-        newR1toR5 = new   Transform(AbsoluteDate.J2000_EPOCH, newR1toR5,R3toR5);
+        newR1toR5 = new   Transform(AbsoluteDate.J2000_EPOCH, newR1toR5, R3toR5);
         result = newR1toR5.transformPVCoordinates(pointP1);
         checkVector(pointP5.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP5.getVelocity(),     result.getVelocity(),     1.0e-15);

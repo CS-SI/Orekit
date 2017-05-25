@@ -153,7 +153,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final AbsoluteDate masterReceptionDate  = T2.shiftedBy(+masterTauD);
                     final TimeStampedPVCoordinates masterStationAtReception =
                                     masterTopo.getTransformTo(inertial, masterReceptionDate).
-                                    transformPVCoordinates(new TimeStampedPVCoordinates(masterReceptionDate,PVCoordinates.ZERO));
+                                    transformPVCoordinates(new TimeStampedPVCoordinates(masterReceptionDate, PVCoordinates.ZERO));
 
 
                     // Master station uplink delay - from master station to P1

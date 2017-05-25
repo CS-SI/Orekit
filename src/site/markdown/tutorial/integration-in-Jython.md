@@ -181,7 +181,7 @@ example of subclassing of a Java object into a jython object.
     pvCoordinates = PVCoordinates(position, velocity)
     initialOrbit = KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu)
 
-    # Propagator : consider a simple keplerian motion (could be more elaborate)
+    # Propagator : consider a simple Keplerian motion (could be more elaborate)
     kepler = KeplerianPropagator(initialOrbit)
 
     #Earth and frame
@@ -210,7 +210,7 @@ example of subclassing of a Java object into a jython object.
 
         def eventOccurred(self, s, increasing):
             if (increasing):
-                print "Visibility on", self.topocentricFrame.getName(),"begins at" , s.getDate()
+                print "Visibility on", self.topocentricFrame.getName(), "begins at" , s.getDate()
             else:
                 print "Visibility on",  self.topocentricFrame.getName(), "ends at" , s.getDate()
             return self.CONTINUE

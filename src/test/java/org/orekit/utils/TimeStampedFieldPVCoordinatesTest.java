@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -30,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 public class TimeStampedFieldPVCoordinatesTest {
@@ -38,73 +40,73 @@ public class TimeStampedFieldPVCoordinatesTest {
     public void testLinearConstructors() {
         DSFactory factory = new DSFactory(6, 1);
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv1 =
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.CCSDS_EPOCH,
-                                                                       createVector( 1,  0.1, 10, 6),
-                                                                       createVector(-1, -0.1, -10, 6),
-                                                                       createVector(10,  1.0, 100, 6));
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.CCSDS_EPOCH,
+                                                    createVector( 1,  0.1, 10, 6),
+                                                    createVector(-1, -0.1, -10, 6),
+                                                    createVector(10,  1.0, 100, 6));
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv2 =
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.FIFTIES_EPOCH,
-                                                                       createVector( 2,  0.2,  20, 6),
-                                                                       createVector(-2, -0.2, -20, 6),
-                                                                       createVector(20,  2.0, 200, 6));
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.FIFTIES_EPOCH,
+                                                    createVector( 2,  0.2,  20, 6),
+                                                    createVector(-2, -0.2, -20, 6),
+                                                    createVector(20,  2.0, 200, 6));
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv3 =
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
-                                                                       createVector( 3,  0.3,  30, 6),
-                                                                       createVector(-3, -0.3, -30, 6),
-                                                                       createVector(30,  3.0, 300, 6));
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.GALILEO_EPOCH,
+                                                    createVector( 3,  0.3,  30, 6),
+                                                    createVector(-3, -0.3, -30, 6),
+                                                    createVector(30,  3.0, 300, 6));
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv4 =
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH,
-                                                                       createVector( 4,  0.4,  40, 6),
-                                                                       createVector(-4, -0.4, -40, 6),
-                                                                       createVector(40,  4.0, 400, 6));
-        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
-        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, factory.constant(4), pv1), 1.0e-15);
-        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, factory.constant(4), pv1.toPVCoordinates()), 1.0e-15);
-        checkPV(pv2, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
-        checkPV(pv3, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.JULIAN_EPOCH,
+                                                    createVector( 4,  0.4,  40, 6),
+                                                    createVector(-4, -0.4, -40, 6),
+                                                    createVector(40,  4.0, 400, 6));
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<>(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<>(AbsoluteDate.JULIAN_EPOCH, factory.constant(4), pv1), 1.0e-15);
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<>(AbsoluteDate.JULIAN_EPOCH, factory.constant(4), pv1.toPVCoordinates()), 1.0e-15);
+        checkPV(pv2, new TimeStampedFieldPVCoordinates<>(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
+        checkPV(pv3, new TimeStampedFieldPVCoordinates<>(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
         checkPV(pv3,
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
-                                                                       factory.constant(1), pv1,
-                                                                       factory.constant(1), pv2),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.GALILEO_EPOCH,
+                                                    factory.constant(1), pv1,
+                                                    factory.constant(1), pv2),
                 1.0e-15);
         checkPV(pv3,
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
-                                                                       factory.constant(1), pv1.toPVCoordinates(),
-                                                                       factory.constant(1), pv2.toPVCoordinates()),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.GALILEO_EPOCH,
+                                                    factory.constant(1), pv1.toPVCoordinates(),
+                                                    factory.constant(1), pv2.toPVCoordinates()),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 2, pv4),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 2, pv4),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                       factory.constant(3), pv1,
-                                                                       factory.constant(1), pv2,
-                                                                       factory.constant(1), pv4),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
+                                                    factory.constant(3), pv1,
+                                                    factory.constant(1), pv2,
+                                                    factory.constant(1), pv4),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                       factory.constant(3), pv1.toPVCoordinates(),
-                                                                       factory.constant(1), pv2.toPVCoordinates(),
-                                                                       factory.constant(1), pv4.toPVCoordinates()),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
+                                                    factory.constant(3), pv1.toPVCoordinates(),
+                                                    factory.constant(1), pv2.toPVCoordinates(),
+                                                    factory.constant(1), pv4.toPVCoordinates()),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4), 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                       factory.constant(4), pv1,
-                                                                       factory.constant(3), pv2,
-                                                                       factory.constant(2), pv3,
-                                                                       factory.constant(1), pv4),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4), 1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
+                                                    factory.constant(4), pv1,
+                                                    factory.constant(3), pv2,
+                                                    factory.constant(2), pv3,
+                                                    factory.constant(1), pv4),
                 1.0e-15);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                       factory.constant(4), pv1.toPVCoordinates(),
-                                                                       factory.constant(3), pv2.toPVCoordinates(),
-                                                                       factory.constant(2), pv3.toPVCoordinates(),
-                                                                       factory.constant(1), pv4.toPVCoordinates()),
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
+                                                    factory.constant(4), pv1.toPVCoordinates(),
+                                                    factory.constant(3), pv2.toPVCoordinates(),
+                                                    factory.constant(2), pv3.toPVCoordinates(),
+                                                    factory.constant(1), pv4.toPVCoordinates()),
                 1.0e-15);
     }
 
@@ -116,10 +118,10 @@ public class TimeStampedFieldPVCoordinatesTest {
         FieldVector3D<DerivativeStructure> p2 = createVector(  7,  0.7,   70, 4);
         FieldVector3D<DerivativeStructure> v2 = createVector(-11, -1.1, -110, 4);
         FieldVector3D<DerivativeStructure> a2 = createVector( 10,  1.0,  100, 4);
-        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
-                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
+                new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
         Assert.assertEquals(0.0,
-                            TimeStampedFieldPVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(createVector(-6, -0.6,-60, 4)).getNorm().getReal(),
+                            TimeStampedFieldPVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(createVector(-6, -0.6, -60, 4)).getNorm().getReal(),
                             1.0e-15);
     }
 
@@ -127,10 +129,10 @@ public class TimeStampedFieldPVCoordinatesTest {
     public void testToString() {
         Utils.setDataRoot("regular-data");
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
-            new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                   createVector( 1,  0.1,  10, 4),
-                                                                   createVector(-1, -0.1, -10, 4),
-                                                                   createVector(10,  1.0, 100, 4));
+            new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
+                                                createVector( 1,  0.1,  10, 4),
+                                                createVector(-1, -0.1, -10, 4),
+                                                createVector(10,  1.0, 100, 4));
         Assert.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
@@ -156,12 +158,15 @@ public class TimeStampedFieldPVCoordinatesTest {
                 FieldVector3D<DerivativeStructure> position     = createVector(px.value(dt), py.value(dt), pz.value(dt), 4);
                 FieldVector3D<DerivativeStructure> velocity     = createVector(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt), 4);
                 FieldVector3D<DerivativeStructure> acceleration = createVector(pxDotDot.value(dt), pyDotDot.value(dt), pzDotDot.value(dt), 4);
-                sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, acceleration));
+                sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt), position, velocity, acceleration));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PVA, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PVA, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -201,12 +206,15 @@ public class TimeStampedFieldPVCoordinatesTest {
             for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
                 FieldVector3D<DerivativeStructure> position = createVector(px.value(dt), py.value(dt), pz.value(dt), 4);
                 FieldVector3D<DerivativeStructure> velocity = createVector(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt), 4);
-                sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, createVector(0, 0, 0, 4)));
+                sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt), position, velocity, createVector(0, 0, 0, 4)));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -245,15 +253,18 @@ public class TimeStampedFieldPVCoordinatesTest {
                     new ArrayList<TimeStampedFieldPVCoordinates<DerivativeStructure>>();
             for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
                 FieldVector3D<DerivativeStructure> position = createVector(px.value(dt), py.value(dt), pz.value(dt), 4);
-                sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt),
-                                                                                  position,
-                                                                                  createVector(0, 0, 0, 4),
-                                                                                  createVector(0, 0, 0, 4)));
+                sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt),
+                                                               position,
+                                                               createVector(0, 0, 0, 4),
+                                                               createVector(0, 0, 0, 4)));
             }
 
+            Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
             for (double dt = 0; dt < 1.0; dt += 0.01) {
+                FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_P, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_P, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
@@ -281,12 +292,15 @@ public class TimeStampedFieldPVCoordinatesTest {
             FieldVector3D<DerivativeStructure> position     = createVector( FastMath.cos(dt),  FastMath.sin(dt), 0.0, 4);
             FieldVector3D<DerivativeStructure> velocity     = createVector(-FastMath.sin(dt),  FastMath.cos(dt), 0.0, 4);
             FieldVector3D<DerivativeStructure> acceleration = createVector(-FastMath.cos(dt), -FastMath.sin(dt), 0.0, 4);
-            sample.add(new TimeStampedFieldPVCoordinates<DerivativeStructure>(t0.shiftedBy(dt), position, velocity, acceleration));
+            sample.add(new TimeStampedFieldPVCoordinates<>(t0.shiftedBy(dt), position, velocity, acceleration));
         }
 
+        Field<DerivativeStructure> field = sample.get(0).getDate().getField();
+
         for (double dt = 0; dt < 1.0; dt += 0.01) {
-            TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PVA, sample);
+            FieldAbsoluteDate<DerivativeStructure> t = new FieldAbsoluteDate<>(field, t0.shiftedBy(dt));
+                        TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
+                    TimeStampedFieldPVCoordinates.interpolate(t, CartesianDerivativesFilter.USE_PVA, sample);
             FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
             FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
             FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();

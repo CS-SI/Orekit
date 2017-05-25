@@ -50,7 +50,7 @@ public class TargetPointing extends GroundPointing {
     /** Target in body frame. */
     private final Vector3D target;
 
-    /** Creates a new instance from body frame and target expressed in cartesian coordinates.
+    /** Creates a new instance from body frame and target expressed in Cartesian coordinates.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame body frame.
      * @param target target position in body frame

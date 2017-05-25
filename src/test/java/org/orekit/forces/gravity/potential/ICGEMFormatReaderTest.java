@@ -225,7 +225,7 @@ public class ICGEMFormatReaderTest {
                 GravityFieldFactory
                         .getUnnormalizedProvider(3, 3)
                         .onDate(AbsoluteDate.J2000_EPOCH)
-                        .getUnnormalizedCnm(2,2),
+                        .getUnnormalizedCnm(2, 2),
                 0.0);
     }
 

@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+
 /** Interface for time scales.
  * <p>This is the interface representing all time scales. Time scales are related
  * to each other by some offsets that may be discontinuous (for example
@@ -35,6 +37,16 @@ public interface TimeScale extends Serializable {
      * @see #offsetToTAI(DateComponents, TimeComponents)
      */
     double offsetFromTAI(AbsoluteDate date);
+
+    /** Get the offset to convert locations from {@link TAIScale} to instance.
+     * @param date conversion date
+     * @param <T> type of the filed elements
+     * @return offset in seconds to add to a location in <em>{@link TAIScale}
+     * time scale</em> to get a location in <em>instance time scale</em>
+     * @see #offsetToTAI(DateComponents, TimeComponents)
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date);
 
     /** Get the offset to convert locations from instance to {@link TAIScale}.
      * @param date date location in the time scale
@@ -65,6 +77,21 @@ public interface TimeScale extends Serializable {
         return false;
     }
 
+    /** Check if date is within a leap second introduction <em>in this time scale</em>.
+     * <p>
+     * This method will return false for all time scales that do <em>not</em>
+     * implement leap seconds, even if the date corresponds to a leap second
+     * in {@link UTCScale UTC scale}.
+     * </p>
+     * @param date date to check
+     * @param <T> type of the filed elements
+     * @return true if time is within a leap second introduction
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+        return false;
+    }
+
     /** Check length of the current minute <em>in this time scale</em>.
      * <p>
      * This method will return 60 for all time scales that do <em>not</em>
@@ -80,6 +107,23 @@ public interface TimeScale extends Serializable {
         return 60;
     }
 
+    /** Check length of the current minute <em>in this time scale</em>.
+     * <p>
+     * This method will return 60 for all time scales that do <em>not</em>
+     * implement leap seconds, even if the date corresponds to a leap second
+     * in {@link UTCScale UTC scale}, and 61 for time scales that do implement
+     * leap second when the current date is within the last minute before the
+     * leap, or during the leap itself.
+     * </p>
+     * @param date date to check
+     * @param <T> type of the filed elements
+     * @return 60 or 61 depending on leap seconds introduction
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+        return 60;
+    }
+
     /** Get the value of the previous leap.
      * <p>
      * This method will return 0.0 for all time scales that do <em>not</em>
@@ -90,6 +134,20 @@ public interface TimeScale extends Serializable {
      */
     default double getLeap(final AbsoluteDate date) {
         return 0;
+    }
+
+    /** Get the value of the previous leap.
+     * <p>
+     * This method will return 0.0 for all time scales that do <em>not</em>
+     * implement leap seconds.
+     * </p>
+     * @param date date to check
+     * @param <T> type of the filed elements
+     * @return value of the previous leap
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero();
     }
 
     /** Get the name time scale.

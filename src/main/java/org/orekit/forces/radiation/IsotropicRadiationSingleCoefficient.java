@@ -100,7 +100,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.crossSection = crossSection;
         this.cr           = cr;
@@ -122,7 +122,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
                                                                             final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
                                                                             final FieldVector3D<DerivativeStructure> flux) {
-        return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(crossSection * cr), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection * cr), flux);
     }
 
     /** {@inheritDoc} */
@@ -139,7 +139,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
         }
 
-        return new FieldVector3D<DerivativeStructure>(crDS.multiply(crossSection / mass), flux);
+        return new FieldVector3D<>(crDS.multiply(crossSection / mass), flux);
 
     }
 
@@ -150,7 +150,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux)
         throws OrekitException {
-        return new FieldVector3D<T>(mass.reciprocal().multiply(crossSection * cr), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection * cr), flux);
 
     }
 

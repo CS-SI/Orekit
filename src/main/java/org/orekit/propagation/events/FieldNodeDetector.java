@@ -106,7 +106,7 @@ public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstr
     @Override
     protected FieldNodeDetector<T> create(final T newMaxCheck, final T newThreshold,
                                   final int newMaxIter, final FieldEventHandler<? super FieldNodeDetector<T>, T> newHandler) {
-        return new FieldNodeDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
+        return new FieldNodeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 
     /** Find time separation between nodes.

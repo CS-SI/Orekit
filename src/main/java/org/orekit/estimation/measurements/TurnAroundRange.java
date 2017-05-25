@@ -135,30 +135,30 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Position of the spacecraft expressed as a derivative structure
         // The components of the position are the 3 first derivative parameters
         final Vector3D stateP = statePV.getPosition();
-        final FieldVector3D<DerivativeStructure> pDS = new FieldVector3D<DerivativeStructure>(
-                        factory.variable(0, stateP.getX()),
-                        factory.variable(1, stateP.getY()),
-                        factory.variable(2, stateP.getZ()));
+        final FieldVector3D<DerivativeStructure> pDS =
+                        new FieldVector3D<>(factory.variable(0, stateP.getX()),
+                                            factory.variable(1, stateP.getY()),
+                                            factory.variable(2, stateP.getZ()));
 
         // Velocity of the spacecraft expressed as a derivative structure
         // The components of the velocity are the 3 second derivative parameters
         final Vector3D stateV = statePV.getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS = new FieldVector3D<DerivativeStructure>(
-                        factory.variable(3, stateV.getX()),
-                        factory.variable(4, stateV.getY()),
-                        factory.variable(5, stateV.getZ()));
+        final FieldVector3D<DerivativeStructure> vDS =
+                        new FieldVector3D<>(factory.variable(3, stateV.getX()),
+                                            factory.variable(4, stateV.getY()),
+                                            factory.variable(5, stateV.getZ()));
 
         // Acceleration of the spacecraft
         // The components of the acceleration are not derivative parameters
         final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS = new FieldVector3D<DerivativeStructure>(
-                        factory.constant(stateA.getX()),
-                        factory.constant(stateA.getY()),
-                        factory.constant(stateA.getZ()));
+        final FieldVector3D<DerivativeStructure> aDS =
+                        new FieldVector3D<>(factory.constant(stateA.getX()),
+                                            factory.constant(stateA.getY()),
+                                            factory.constant(stateA.getZ()));
 
         // Place the derivative structures in a time-stamped PV
         final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<DerivativeStructure>(state.getDate(), pDS, vDS, aDS);
+                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
         // Master station topocentric frame (east-north-zenith) in master station parent frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters

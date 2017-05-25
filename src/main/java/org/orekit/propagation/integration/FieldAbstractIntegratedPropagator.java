@@ -90,6 +90,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Underlying raw rawInterpolator. */
     private FieldODEStateInterpolator<T> mathInterpolator;
 
+    /** Flag for resetting the state at end of propagation. */
+    private boolean resetAtEnd;
+
     /** Output only the mean orbit. <br/>
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
@@ -109,6 +112,23 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         additionalEquations = new ArrayList<FieldAdditionalEquations<T>>();
         this.integrator     = integrator;
         this.meanOrbit      = meanOrbit;
+        this.resetAtEnd     = true;
+    }
+
+    /** Allow/disallow resetting the initial state at end of propagation.
+     * <p>
+     * By default, at the end of the propagation, the propagator resets the initial state
+     * to the final state, thus allowing a new propagation to be started from there without
+     * recomputing the part already performed. Calling this method with {@code resetAtEnd} set
+     * to false changes prevents such reset.
+     * </p>
+     * @param resetAtEnd if true, at end of each propagation, the {@link
+     * #getInitialState() initial state} will be reset to the final state of
+     * the propagation, otherwise the initial state will be preserved
+     * @since 9.0
+     */
+    public void setResetAtEnd(final boolean resetAtEnd) {
+        this.resetAtEnd = resetAtEnd;
     }
 
     /** Initialize the mapper. */
@@ -470,6 +490,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                             stateMapper.mapArrayToState(stateMapper.mapDoubleToDate(mathFinalState.getTime(),
                                                                                     tEnd),
                                                         mathFinalState.getPrimaryState(),
+                                                        mathFinalState.getPrimaryDerivative(),
                                                         meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -477,8 +498,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 finalState = finalState.addAdditionalState(additionalEquations.get(i).getName(),
                                                            secondary);
             }
-            resetInitialState(finalState);
-            setStartDate(finalState.getDate());
+            if (resetAtEnd) {
+                resetInitialState(finalState);
+                setStartDate(finalState.getDate());
+            }
 
             return finalState;
 
@@ -509,7 +532,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         // retrieve initial state
         final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
-        stateMapper.mapStateToArray(initialState, primary);
+        stateMapper.mapStateToArray(initialState, primary, null);
 
         // secondary part of the ODE
         final T[][] secondary = MathArrays.buildArray(initialState.getA().getField(), additionalEquations.size(), -1);
@@ -522,7 +545,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
            //TODO secondary[i] = ;
         }
 
-        return new FieldODEState<T>(initialState.getA().getField().getZero(), primary, secondary);
+        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary);
 
     }
 
@@ -537,7 +560,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         throws OrekitException {
 
         final FieldExpandableODE<T> ode =
-                new FieldExpandableODE<T>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
+                new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
 
         // secondary part of the ODE
         for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -595,14 +618,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Get a complete state with all additional equations.
      * @param t current value of the independent <I>time</I> variable
      * @param ts array containing the current value of the state vector
+     * @param tsDot array containing the current value of the state vector derivative
      * @return complete state
      * @exception OrekitException if state cannot be mapped
      */
-    private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts)
+    private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts, final T[] tsDot)
         throws OrekitException {
 
         // main state
-        FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, true);  //not sure of the mean orbit, should be true
+        FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, true);  //not sure of the mean orbit, should be true
         // pre-integrated additional states
         state = updateAdditionalStates(state);
 
@@ -622,6 +646,22 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Differential equations for the main state (orbit, attitude and mass). */
     public interface MainStateEquations<T extends RealFieldElement<T>> {
+
+        /**
+         * Initialize the equations at the start of propagation. This method will be
+         * called before any calls to {@link #computeDerivatives(FieldSpacecraftState)}.
+         *
+         * <p> The default implementation of this method does nothing.
+         *
+         * @param initialState initial state information at the start of propagation.
+         * @param target       date of propagation. Not equal to {@code
+         *                     initialState.getDate()}.
+         * @throws OrekitException if there is an Orekit related error during
+         *                         initialization.
+         */
+        default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
+            throws OrekitException {
+        }
 
         /** Compute differential equations for main state.
          * @param state current state
@@ -651,6 +691,19 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             return getBasicDimension();
         }
 
+        @Override
+        public void init(final T t0, final T[] y0, final T finalTime) {
+            try {
+                // update space dynamics view
+                // use only ODE elements
+                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, true);
+                initialState = updateAdditionalStates(initialState);
+                final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
+                main.init(initialState, target);
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+        }
         /** {@inheritDoc} */
         public T[] computeDerivatives(final T t, final T[] y)
             throws OrekitExceptionWrapper {
@@ -661,7 +714,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
                 // update space dynamics view
                 // use only ODE elements
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, true);
+                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, true);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -700,14 +753,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public T[] computeDerivatives(final T t, final T[] primary,
-                                           final T[] primaryDot, final T[] secondary)
+                                      final T[] primaryDot, final T[] secondary)
             throws OrekitExceptionWrapper {
 
             try {
 
                 // update space dynamics view
                 // the state contains only the ODE elements
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, true);
+                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -760,7 +813,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
             try {
 
-                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState()),
+                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
                               stateMapper.mapDoubleToDate(t));
                 this.lastT = getField().getZero().add(Double.NaN);
                 this.lastG = getField().getZero().add(Double.NaN);
@@ -775,7 +828,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             try {
                 if (!Precision.equals(lastT.getReal(), s.getTime().getReal(), 0)) {
                     lastT = s.getTime();
-                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState()));
+                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
                 }
                 return lastG;
             } catch (OrekitException oe) {
@@ -788,7 +841,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             try {
 
                 final FieldEventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                             s.getCompleteState()),
+                                                                                                  s.getCompleteState(),
+                                                                                                  s.getCompleteDerivative()),
                                                                             increasing);
 
                 switch (whatNext) {
@@ -810,12 +864,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
             try {
 
-                final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState());
+                final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
                 final FieldSpacecraftState<T> newState = detector.resetState(oldState);
 
                 // main part
                 final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
-                stateMapper.mapStateToArray(newState, primary);
+                stateMapper.mapStateToArray(newState, primary, null);
 
                 // secondary part
                 final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
@@ -828,8 +882,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                         secondary[i][j] = NState[j];
                 }
 
-                return new FieldODEState<T>(newState.getDate().durationFrom(getStartDate()),
-                                    primary, secondary);
+                return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
+                                           primary, secondary);
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -866,7 +920,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
             try {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState()),
+                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
                              stateMapper.mapDoubleToDate(t));
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -922,6 +976,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 FieldSpacecraftState<T> s =
                         stateMapper.mapArrayToState(os.getTime(),
                                                     os.getPrimaryState(),
+                                                    os.getPrimaryDerivative(),
                                                     meanOrbit);
                 s = updateAdditionalStates(s);
                 for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -971,7 +1026,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public void initialize(final boolean activateHandlers,
                                final FieldAbsoluteDate<T> targetDate) {
             this.activate = activateHandlers;
-            this.model    = new FieldDenseOutputModel<T>();
+            this.model    = new FieldDenseOutputModel<>();
             this.endDate  = targetDate;
 
             // ephemeris will be generated when last step is processed
@@ -1029,9 +1084,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                         }
 
                         // create the ephemeris
-                        ephemeris = new FieldIntegratedEphemeris<T>(startDate, minDate, maxDate,
-                                                            stateMapper, meanOrbit, model, unmanaged,
-                                                            getAdditionalStateProviders(), names);
+                        ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
+                                                                   stateMapper, meanOrbit, model, unmanaged,
+                                                                   getAdditionalStateProviders(), names);
 
                     }
                 }

@@ -29,7 +29,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Propagator converter using finite differences to compute the jacobian.
+/** Propagator converter using finite differences to compute the Jacobian.
  * @author Pascal Parraud
  * @since 6.0
  */
