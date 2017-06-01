@@ -109,8 +109,8 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }

@@ -25,6 +25,19 @@
         Take lift component of the drag force into account in BoxAndSolarArraySpacecraft.
         Fixes issue #324.
       </action>
+      <action dev="luc" type="fix" due-to="James Schatzman">
+        Change visibility of getTargetPV in GroundPointing to public so it can be subclassed by
+        users in other packages.
+        Fixes issue #341.
+      </action>
+      <action dev="luc" type="update">
+        Deprecated the TLESeries class. The file format used was considered to be too specific and
+        the API not really well designed. Users are encouraged to use their own parser for series of TLE.
+      </action>
+      <action dev="luc" type="fix" due-to="Gavin Eadie">
+        Removed dead code in deep SDP4 propagation model.
+        Fixes issue #342.
+      </action>
       <action dev="luc" type="fix" due-to="Quentin Rhone">
         Added a way to prefix parameters names when estimating several maneuvers
         in one orbit determination.
