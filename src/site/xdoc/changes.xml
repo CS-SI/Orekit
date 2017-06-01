@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+    <action dev="luc" type="update">
+      Deprecated the TLESeries class. The file format used was considered to be too specific and
+      the API not really well designed. Users are encouraged to use their own parser for series of TLE.
+    </action>
       <action dev="luc" type="fix" due-to="Gavin Eadie">
         Removed dead code in deep SDP4 propagation model.
         Fixes issue #342.
