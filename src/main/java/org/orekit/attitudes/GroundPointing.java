@@ -85,6 +85,11 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** Compute the target point position/velocity in specified frame.
+     * <p>
+     * This method is {@code public} only to allow users to subclass this
+     * abstract class from other packages. It is <em>not</em> intended to
+     * be used directly.
+     * </p>
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
@@ -93,8 +98,8 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
-                                                            AbsoluteDate date, Frame frame)
+    public abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
+                                                         AbsoluteDate date, Frame frame)
         throws OrekitException;
 
     /** {@inheritDoc} */

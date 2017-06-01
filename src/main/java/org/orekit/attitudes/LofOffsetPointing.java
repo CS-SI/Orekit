@@ -83,8 +83,8 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // transform from specified reference frame to spacecraft frame

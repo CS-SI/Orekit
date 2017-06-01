@@ -57,7 +57,7 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                   final FieldAbsoluteDate<T> date, final Frame frame)
+                                                        final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
 
         // spacecraft coordinates in body frame
