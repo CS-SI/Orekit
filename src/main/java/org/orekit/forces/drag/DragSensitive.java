@@ -43,6 +43,18 @@ public interface DragSensitive {
     /** Parameter name for drag coefficient enabling Jacobian processing. */
     String DRAG_COEFFICIENT = "drag coefficient";
 
+    /** Parameter name for lift ration enabling Jacobian processing.
+     * <p>
+     * The lift ratio is the proportion of atmosphere modecules that will
+     * experience specular reflection when hitting spacecraft instead
+     * of experiencing diffuse reflection. The ratio is between 0 and 1,
+     * 0 meaning there are no specular reflection, only diffuse reflection,
+     * and hence no lift effect.
+     * </p>
+     * @since 9.0
+     */
+    String LIFT_RATIO = "lift ratio";
+
     /** Get the drivers for supported parameters.
      * @return parameters drivers
      * @since 8.0

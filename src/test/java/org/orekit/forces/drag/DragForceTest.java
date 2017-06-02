@@ -145,7 +145,7 @@ public class DragForceTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeBox() throws OrekitException {
+    public void testParametersDerivativesBox() throws OrekitException {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -160,10 +160,12 @@ public class DragForceTest extends AbstractForceModelTest {
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8,
+                                                             CelestialBodyFactory.getSun(), 20.0, Vector3D.PLUS_J,
+                                                             1.2, 0.1, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
+        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 5.0e-13);
+        checkParameterDerivative(state, forceModel, DragSensitive.LIFT_RATIO,       1.0e-4, 2.0e-11);
 
     }
 

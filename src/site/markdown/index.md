@@ -77,7 +77,7 @@
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
       * atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
-        and Marshall solar Activity Future Estimation
+        and Marshall solar Activity Future Estimation, optionally with lift component
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide

@@ -22,7 +22,7 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="fix">
-        Take lift component of the drag force into account in BoxAndSolarArraySpacecraft.
+        Optionally take lift component of the drag force into account in BoxAndSolarArraySpacecraft.
         Fixes issue #324.
       </action>
       <action dev="luc" type="fix" due-to="James Schatzman">
