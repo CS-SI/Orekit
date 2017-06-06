@@ -19,6 +19,7 @@ package org.orekit.files.sp3;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -49,7 +50,7 @@ public class SP3ParserTest {
         final String ex = "/sp3/sp3_a_example1.txt";
 
         final SP3Parser parser = new SP3Parser();
-        final String fileName = getClass().getResource(ex).toURI().getPath();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
         final SP3File file = (SP3File) parser.parse(fileName);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
