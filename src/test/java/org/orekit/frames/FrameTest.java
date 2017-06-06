@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,16 +94,16 @@ public class FrameTest {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
 
-        Frame R1 = new Frame(FramesFactory.getEME2000(),t1,"R1");
-        Frame R2 = new Frame(R1,t2,"R2");
-        Frame R3 = new Frame(R2,t3,"R3");
+        Frame R1 = new Frame(FramesFactory.getEME2000(), t1, "R1");
+        Frame R2 = new Frame(R1, t2, "R2");
+        Frame R3 = new Frame(R2, t3, "R3");
         Assert.assertTrue(R1.getDepth() > 0);
         Assert.assertEquals(R1.getDepth() + 1, R2.getDepth());
         Assert.assertEquals(R2.getDepth() + 1, R3.getDepth());
 
         Transform T = R1.getTransformTo(R3, new AbsoluteDate());
 
-        Transform S = new Transform(t2.getDate(), t2,t3);
+        Transform S = new Transform(t2.getDate(), t2, t3);
 
         checkNoTransform(new Transform(T.getDate(), T, S.getInverse()) , random);
 

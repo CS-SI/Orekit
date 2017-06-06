@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,7 +114,7 @@ public class YawSteeringTest {
         Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
-        // Check sun is in (X,Z) plane
+        // Check sun is in (X, Z) plane
         Assert.assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
 
     }
@@ -246,7 +246,7 @@ public class YawSteeringTest {
                                        FastMath.toRadians(5.300), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
-            // Elliptic earth shape */
+            // Elliptic earth shape
             earthShape =
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 

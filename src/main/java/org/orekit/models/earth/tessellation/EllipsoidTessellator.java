@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -650,7 +650,7 @@ public class EllipsoidTessellator {
      * @return a zone defined on the unit 2-sphere
      */
     public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
-                                                       final double[] ... points) {
+                                                       final double[]... points) {
         final S2Point[] vertices = new S2Point[points.length];
         for (int i = 0; i < points.length; ++i) {
             vertices[i] = new S2Point(points[i][1], 0.5 * FastMath.PI - points[i][0]);
@@ -679,7 +679,7 @@ public class EllipsoidTessellator {
      * @return a zone defined on the unit 2-sphere
      */
     public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
-                                                       final GeodeticPoint ... points) {
+                                                       final GeodeticPoint... points) {
         final S2Point[] vertices = new S2Point[points.length];
         for (int i = 0; i < points.length; ++i) {
             vertices[i] = new S2Point(points[i].getLongitude(),

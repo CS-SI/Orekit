@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import org.hipparchus.util.MathArrays;
  * <em>arguments</em>. The polynomial arguments are combinations of luni-solar or
  * planetary {@link BodiesElements elements}.
  * </p>
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeriesParser
  * @see SeriesTerm
@@ -161,7 +160,7 @@ public class PoissonSeries {
      * @since 6.1
      */
     @SafeVarargs
-    public static CompiledSeries compile(final PoissonSeries ... poissonSeries) {
+    public static CompiledSeries compile(final PoissonSeries... poissonSeries) {
 
         // store all polynomials
         final PolynomialNutation[] polynomials = new PolynomialNutation[poissonSeries.length];
@@ -172,7 +171,8 @@ public class PoissonSeries {
         // gather all series terms
         final Map<Long, SeriesTerm> joinedMap = new HashMap<Long, SeriesTerm>();
         for (final PoissonSeries ps : poissonSeries) {
-            for (long key : ps.series.keySet()) {
+            for (Map.Entry<Long, SeriesTerm> entry : ps.series.entrySet()) {
+                final long key = entry.getKey();
                 if (!joinedMap.containsKey(key)) {
 
                     // retrieve all Delaunay and planetary multipliers from the key
@@ -207,7 +207,11 @@ public class PoissonSeries {
         }
 
         // use a single array for faster access
-        final SeriesTerm[] joinedTerms = joinedMap.values().toArray(new SeriesTerm[joinedMap.size()]);
+        final SeriesTerm[] joinedTerms = new SeriesTerm[joinedMap.size()];
+        int index = 0;
+        for (final Map.Entry<Long, SeriesTerm> entry : joinedMap.entrySet()) {
+            joinedTerms[index++] = entry.getValue();
+        }
 
         return new CompiledSeries() {
 

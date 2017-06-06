@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,34 +64,34 @@ import org.orekit.utils.PVCoordinates;
 public class SpacecraftStateTest {
 
     @Test
-    public void testShiftError()
+    public void testShiftVsEcksteinHechlerError()
         throws ParseException, OrekitException {
 
 
         // polynomial models for interpolation error in position, velocity, acceleration and attitude
         // these models grow as follows
         //   interpolation time (s)    position error (m)   velocity error (m/s)   acceleration error (m/s²)  attitude error (°)
-        //           60                       30                    1                     0.014               0.00002
-        //          120                      100                    2                     0.013               0.00009
-        //          300                      600                    4                     0.011               0.0009
-        //          600                     2000                    6                     0.006               0.006
-        //          900                     4000                    6                     0.002               0.02
-        // the expected maximum residuals with respect to these models are about 0.2m, 0.8mm/s, 7.9μm/s² and 2.8e-7°
+        //           60                        2                    0.07                  0.002               0.00002
+        //          120                       12                    0.3                   0.005               0.00009
+        //          300                      170                    1.6                   0.012               0.0009
+        //          600                     1200                    5.7                   0.024               0.006
+        //          900                     3600                   10.6                   0.034               0.02
+        // the expected maximum residuals with respect to these models are about 0.4m, 0.5mm/s, 8μm/s² and 3e-6°
         PolynomialFunction pModel = new PolynomialFunction(new double[] {
-            -0.16513714130703838,    0.008052836586593358,  0.007306374155052651,
-            -1.9942719771217313E-6, -1.8063354449344768E-9, 9.042229494006868E-13,
+            1.5664070631933846e-01,  7.5504722733047560e-03, -8.2460562451009510e-05,
+            6.9546332080305580e-06, -1.7045365367533077e-09, -4.2187860791066264e-13
         });
         PolynomialFunction vModel = new PolynomialFunction(new double[] {
-            -6.205041765231733E-4,   0.014820651821078279,  -7.458097665912488E-6,
-            -1.5914983761563204E-9, -1.7936013181449342E-12, 2.187916095307246E-15,
+           -3.5472364019908720e-04,  1.6568103861124980e-05,  1.9637913327830596e-05,
+           -3.4248792843039766e-09, -5.6565135131014254e-12,  1.4730170946808630e-15
         });
         PolynomialFunction aModel = new PolynomialFunction(new double[] {
-            0.014788789776214587,   -1.418490913753379E-5,  1.947898940800356E-9,
-            2.6179181901457335E-12, -7.603278343088821E-15, 2.968153861123117E-18,
+            3.0731707577766896e-06,  3.9770746399850350e-05,  1.9779039254538660e-09,
+            8.0263328220724900e-12, -1.5600835252366078e-14,  1.1785257001549687e-18
         });
         PolynomialFunction rModel = new PolynomialFunction(new double[] {
-            -2.7689062182403017E-6, 1.7406542555507358E-7,  2.510979532481025E-9,
-             2.039932266627844E-11, 9.912634888010535E-15, -3.5015638902258456E-18,
+           -2.7689062063188115e-06,  1.7406542538258334e-07,  2.5109795349592287e-09,
+            2.0399322661074575e-11,  9.9126348912426750e-15, -3.5015638905729510e-18
         });
 
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
@@ -114,11 +114,14 @@ public class SpacecraftStateTest {
             maxResidualV = FastMath.max(maxResidualV, FastMath.abs(residualV));
             maxResidualA = FastMath.max(maxResidualA, FastMath.abs(residualA));
             maxResidualR = FastMath.max(maxResidualR, FastMath.abs(residualR));
+
         }
-        Assert.assertEquals(0.2,    maxResidualP, 0.1);
-        Assert.assertEquals(0.0008, maxResidualV, 0.0001);
-        Assert.assertEquals(7.9e-6, maxResidualA, 1.0e-7);
+
+        Assert.assertEquals(0.40,   maxResidualP, 0.01);
+        Assert.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
+        Assert.assertEquals(7.7e-6, maxResidualA, 1.0e-7);
         Assert.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
+
     }
 
     @Test

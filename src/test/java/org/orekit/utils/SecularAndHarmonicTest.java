@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -291,7 +291,7 @@ public class SecularAndHarmonicTest {
         // find the encounter in the bracketed interval
         final BaseUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0.1, 5);
-        final double dt = solver.solve(1000, latitudeFunction,-span, span);
+        final double dt = solver.solve(1000, latitudeFunction, -span, span);
         return propagator.propagate(guessDate.shiftedBy(dt));
 
     }

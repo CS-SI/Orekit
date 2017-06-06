@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 
 package fr.cs.examples.frames;
 
+import java.io.File;
 import java.util.Locale;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -24,6 +25,8 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -39,8 +42,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for basic frames support.
  * <p>This tutorial shows a simple usage of frames and transforms.</p>
  * @author Pascal Parraud
@@ -51,7 +52,18 @@ public class Frames1 {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             //  Initial state definition : date, orbit
             TimeScale utc = TimeScalesFactory.getUTC();
@@ -63,7 +75,7 @@ public class Frames1 {
             PVCoordinates pvsat = new PVCoordinates(posisat, velosat);
             Orbit initialOrbit = new CartesianOrbit(pvsat, inertialFrame, initialDate, mu);
 
-            // Propagator : consider a simple keplerian motion
+            // Propagator : consider a simple Keplerian motion
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame

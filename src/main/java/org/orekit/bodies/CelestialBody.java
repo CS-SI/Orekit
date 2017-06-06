@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,12 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Interface for celestial bodies like Sun, Moon or solar system planets.
  * @author Luc Maisonobe
@@ -55,5 +58,20 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
      * @return attraction coefficient of the body (m³/s²)
      */
     double getGM();
+
+    /**
+     * Get the {@link TimeStampedFieldPVCoordinates} of the body in the selected frame.
+     *
+     * @param date  current date
+     * @param frame the frame where to define the position
+     * @param <T>   type fo the field elements
+     * @return time-stamped position/velocity of the body (m and m/s)
+     * @throws OrekitException if position cannot be computed in given frame
+     * @see #getPVCoordinates(org.orekit.time.AbsoluteDate, Frame)
+     */
+    <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(
+            FieldAbsoluteDate<T> date,
+            Frame frame)
+            throws OrekitException;
 
 }

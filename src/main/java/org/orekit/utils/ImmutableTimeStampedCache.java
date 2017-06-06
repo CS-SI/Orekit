@@ -195,7 +195,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         public Stream<T> getNeighbors(final AbsoluteDate central)
             throws TimeStampedCacheException {
             throw new TimeStampedCacheException(OrekitMessages.NO_CACHED_ENTRIES);
-        };
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -207,7 +207,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         @Override
         public T getEarliest() {
             throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
-        };
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -227,7 +227,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
             return "Empty immutable cache";
         }
 
-    };
+    }
 
     /**
      * Get an empty immutable cache, cast to the correct type.

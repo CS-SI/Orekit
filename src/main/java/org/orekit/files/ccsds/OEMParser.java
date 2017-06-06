@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -270,15 +270,21 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                                                                Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000);
                         Vector3D acceleration = Vector3D.NaN;
+                        boolean hasAcceleration = false;
                         if (sc.hasNext()) {
                             acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000);
+                            hasAcceleration = true;
                         }
-                        final TimeStampedPVCoordinates epDataLine =
-                                new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+                        final TimeStampedPVCoordinates epDataLine;
+                        if (hasAcceleration) {
+                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+                        } else {
+                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity);
+                        }
                         pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
-                        pi.lastEphemeridesBlock.updateHasAcceleration(acceleration != Vector3D.NaN);
+                        pi.lastEphemeridesBlock.updateHasAcceleration(hasAcceleration);
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);

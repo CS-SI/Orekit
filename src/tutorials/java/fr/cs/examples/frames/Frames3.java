@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ package fr.cs.examples.frames;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URISyntaxException;
 import java.util.Locale;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -45,8 +44,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -61,18 +58,19 @@ public class Frames3 {
     public static void main(String[] args) {
         try {
 
-            // configure Orekit and printing format
-            String className = "/" + Frames3.class.getName().replaceAll("\\.", "/") + ".class";
-            File f = new File(Frames3.class.getResource(className).toURI().getPath());
-            File resourcesDir = null;
-            while (resourcesDir == null || !resourcesDir.exists()) {
-                f = f.getParentFile();
-                if (f == null) {
-                    System.err.println("cannot find resources directory");
-                }
-                resourcesDir = new File(new File(new File(new File(f, "src"), "test"), "resources"), "regular-data");
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
             }
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(resourcesDir));
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // Initial state definition :
             // ==========================
@@ -80,8 +78,7 @@ public class Frames3 {
             // Date
             // ****
             AbsoluteDate initialDate =
-                new AbsoluteDate(new DateComponents(1970, 04, 07),
-                                 TimeComponents.H00, TimeScalesFactory.getUTC());
+                new AbsoluteDate(2003, 4, 7, 10, 55, 21.575, TimeScalesFactory.getUTC());
 
             // Orbit
             // *****
@@ -179,8 +176,6 @@ public class Frames3 {
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
-        } catch (URISyntaxException e) {
-            System.err.println(e.getMessage());
         }
     }
 

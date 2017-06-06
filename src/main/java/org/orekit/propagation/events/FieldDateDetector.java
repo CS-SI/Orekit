@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * @see #addEventDate(FieldAbsoluteDate)
      */
     @SafeVarargs
-    public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T> ... dates) {
+    public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T>... dates) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<FieldDateDetector<T>, T>(), dates);
     }
 
@@ -95,7 +95,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
     @SafeVarargs
     private FieldDateDetector(final T maxCheck, final T threshold,
                               final int maxIter, final FieldEventHandler<? super FieldDateDetector<T>, T> handler,
-                              final FieldTimeStamped<T> ... dates) {
+                              final FieldTimeStamped<T>... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
@@ -111,7 +111,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
                                           final int newMaxIter, final FieldEventHandler<? super FieldDateDetector<T>, T> newHandler) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
-        return new FieldDateDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, dates);
+        return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, dates);
     }
 
     /** Compute the value of the switching function.
@@ -152,16 +152,16 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
         if (currentIndex < 0) {
             increasing = (gDate == null) ? true : target.durationFrom(gDate).getReal() > 0.0;
             currentIndex = 0;
-            eventDateList.add(new FieldEventDate<T>(target, increasing));
+            eventDateList.add(new FieldEventDate<>(target, increasing));
         } else {
             final int lastIndex = eventDateList.size() - 1;
             if (eventDateList.get(0).getDate().durationFrom(target).getReal() > getMaxCheckInterval().getReal()) {
                 increasing = !eventDateList.get(0).isgIncrease();
-                eventDateList.add(0, new FieldEventDate<T>(target, increasing));
+                eventDateList.add(0, new FieldEventDate<>(target, increasing));
                 currentIndex++;
             } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()).getReal() > getMaxCheckInterval().getReal()) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
-                eventDateList.add(new FieldEventDate<T>(target, increasing));
+                eventDateList.add(new FieldEventDate<>(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
                                                          target,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.frames.EOPHistory;
 
 /** Universal Time 1.
@@ -60,6 +61,14 @@ public class UT1Scale implements TimeScale {
         final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
         final double utcMinusTai = utc.offsetFromTAI(date);
         return utcMinusTai + dtu1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        final T dtu1        = eopHistory == null ? date.getField().getZero() : eopHistory.getUT1MinusUTC(date);
+        final T utcMinusTai = utc.offsetFromTAI(date);
+        return utcMinusTai.add(dtu1);
     }
 
     /** {@inheritDoc} */

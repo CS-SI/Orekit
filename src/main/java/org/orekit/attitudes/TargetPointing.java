@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class TargetPointing extends GroundPointing {
     /** Target in body frame. */
     private final Vector3D target;
 
-    /** Creates a new instance from body frame and target expressed in cartesian coordinates.
+    /** Creates a new instance from body frame and target expressed in Cartesian coordinates.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame body frame.
      * @param target target position in body frame
@@ -79,8 +79,8 @@ public class TargetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         final Transform t = getBodyFrame().getTransformTo(frame, date);
         final TimeStampedPVCoordinates pv =

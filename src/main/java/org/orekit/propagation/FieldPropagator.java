@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,10 +48,6 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
-
-  ///** Default attitude provider. */
-//FieldAttitudeProvider<T> DEFAULT_LAW() = new  FieldInertialProvider(T); //TODO
-
 
     /** Indicator for slave mode. */
     int SLAVE_MODE = 0;

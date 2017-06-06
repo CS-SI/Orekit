@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,42 +42,42 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
 public class FieldApsideDetectorTest {
-    
+
     @Test
     public void testSimple() throws OrekitException{
         doTestSimple(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) throws OrekitException {
         final T zero = field.getZero();
 
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.56), zero.add(-25767.257));
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(506.0), zero.add(943.0), zero.add(7450));
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field, 2003, 9, 16, utc);
-        final FieldOrbit<T> orbit = new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                               FramesFactory.getEME2000(), date,
-                                               Constants.EIGEN5C_EARTH_MU);
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.56), zero.add(-25767.257));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(506.0), zero.add(943.0), zero.add(7450));
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
+        final FieldOrbit<T> orbit = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                              FramesFactory.getEME2000(), date,
+                                                              Constants.EIGEN5C_EARTH_MU);
         FieldEcksteinHechlerPropagator<T> propagator =
-                        new FieldEcksteinHechlerPropagator<T>(orbit,
-                                                      Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                      Constants.EIGEN5C_EARTH_MU,
-                                                      zero.add(Constants.EIGEN5C_EARTH_C20),
-                                                      zero.add(Constants.EIGEN5C_EARTH_C30),
-                                                      zero.add(Constants.EIGEN5C_EARTH_C40),
-                                                      zero.add(Constants.EIGEN5C_EARTH_C50),
-                                                      zero.add(Constants.EIGEN5C_EARTH_C60));
+                        new FieldEcksteinHechlerPropagator<>(orbit,
+                                                             Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                             Constants.EIGEN5C_EARTH_MU,
+                                                             zero.add(Constants.EIGEN5C_EARTH_C20),
+                                                             zero.add(Constants.EIGEN5C_EARTH_C30),
+                                                             zero.add(Constants.EIGEN5C_EARTH_C40),
+                                                             zero.add(Constants.EIGEN5C_EARTH_C50),
+                                                             zero.add(Constants.EIGEN5C_EARTH_C60));
 
-        FieldEventDetector<T> detector = new FieldApsideDetector<T>(propagator.getInitialState().getOrbit()).
+        FieldEventDetector<T> detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(zero.add(600.0)).
                                  withThreshold(zero.add(1.0e-12)).
-                                 withHandler(new FieldContinueOnEvent<FieldApsideDetector<T>,T>());
+                                 withHandler(new FieldContinueOnEvent<FieldApsideDetector<T>, T>());
 
         Assert.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
         Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));

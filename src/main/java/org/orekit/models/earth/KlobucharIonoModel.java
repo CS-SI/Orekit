@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,9 +52,9 @@ public class KlobucharIonoModel implements IonosphericModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 7277525837842061107L;
 
-    /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1,2,3,4. */
+    /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
-    /** The 4 coefficients of a cubic equation representing the period of the model. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1,2,3,4. */
+    /** The 4 coefficients of a cubic equation representing the period of the model. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] beta;
 
     /** ratio of signal frequency with L1 frequency. */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
         Transform t1 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date2);
         Transform evolution = new Transform(date2, t0.getInverse(), t1);
 
-        Vector3D p = new Vector3D(6000,6000,0);
+        Vector3D p = new Vector3D(6000, 6000, 0);
         Assert.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, evolution.transformVector(p).getZ(), 0.003);
         Assert.assertEquals(2 * FastMath.PI * dt / 86164,
@@ -166,7 +166,7 @@ public class ITRFProviderWithoutTidalEffectsTest {
         Vector3D axisP2h = evoP2h.getAxis(RotationConvention.VECTOR_OPERATOR).negate();
         double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
-        Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w ,axis));
+        Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w, axis));
 
         checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.594, 1.78e-4);
 
@@ -178,8 +178,8 @@ public class ITRFProviderWithoutTidalEffectsTest {
                                            TimeScalesFactory.getGPS());
         Transform trans = FramesFactory.getITRF(IERSConventions.IERS_2010, true).getTransformTo(FramesFactory.getGCRF(), t0);
         PVCoordinates pvWGS =
-            new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
-                              new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
+            new PVCoordinates(new Vector3D(19440953.805, 16881609.273, -6777115.092),
+                              new Vector3D(-811.1827456, -257.3799137, -3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
                                   trans.transformPVCoordinates(pvWGS), 0.146, 3.43e-5);

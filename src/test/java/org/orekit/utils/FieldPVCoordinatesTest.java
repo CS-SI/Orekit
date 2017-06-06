@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -179,7 +179,7 @@ public class FieldPVCoordinatesTest {
         FieldVector3D<DerivativeStructure> p1 = createVector(1, 0.1, 10, 6);
         FieldVector3D<DerivativeStructure> p2 = createVector(2, 0.2, 20, 6);
         FieldVector3D<DerivativeStructure> v  = createVector(-1, -0.1, -10, 6);
-        checkPV(new FieldPVCoordinates<DerivativeStructure>(p2, v), new FieldPVCoordinates<>(p1, v).shiftedBy(-1.0), 1.0e-15);
+        checkPV(new FieldPVCoordinates<>(p2, v), new FieldPVCoordinates<>(p1, v).shiftedBy(-1.0), 1.0e-15);
         Assert.assertEquals(0.0,
                             FieldPVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(v).getNorm().getValue(),
                             1.0e-15);

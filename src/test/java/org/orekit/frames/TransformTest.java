@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,16 @@ public class TransformTest {
     public void testIdentityRotation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Rotation(1, 0, 0, 0, false)),
                          new Well19937a(0xfd118eac6b5ec136l));
+    }
+
+    @Test
+    public void testIdentityLine() {
+        RandomGenerator random = new Well19937a(0x98603025df70db7cl);
+        Vector3D p1 = randomVector(100.0, random);
+        Vector3D p2 = randomVector(100.0, random);
+        Line line = new Line(p1, p2, 1.0e-6);
+        Line transformed = Transform.IDENTITY.transformLine(line);
+        Assert.assertSame(line, transformed);
     }
 
     @Test
@@ -141,6 +151,11 @@ public class TransformTest {
         Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
+
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
 
     }
 
@@ -313,7 +328,7 @@ public class TransformTest {
 
         // combine 2 rotation tranform
         PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 3), new Vector3D(8, 0, 6));
-        Rotation R2 = new Rotation( new Vector3D(0,0,1), FastMath.PI, RotationConvention.VECTOR_OPERATOR);
+        Rotation R2 = new Rotation( new Vector3D(0, 0, 1), FastMath.PI, RotationConvention.VECTOR_OPERATOR);
         Transform R1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R2, new Vector3D(0, -3, 0));
         Transform R3toR5 = new Transform (AbsoluteDate.J2000_EPOCH, R3toR1, R1toR5);
         PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
@@ -322,7 +337,7 @@ public class TransformTest {
         checkVector(pointP5.getAcceleration(), combResult.getAcceleration(), 1.0e-15);
 
         // combine translation and rotation
-        Transform R2toR3 = new Transform (AbsoluteDate.J2000_EPOCH, R2toR1,R1toR3);
+        Transform R2toR3 = new Transform (AbsoluteDate.J2000_EPOCH, R2toR1, R1toR3);
         PVCoordinates result = R2toR3.transformPVCoordinates(pointP2);
         checkVector(pointP3.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP3.getVelocity(),     result.getVelocity(),     1.0e-15);
@@ -335,7 +350,7 @@ public class TransformTest {
         checkVector(pointP2.getAcceleration(), result.getAcceleration(), 1.0e-15);
 
         Transform newR1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R1toR2, R2toR3);
-        newR1toR5 = new   Transform(AbsoluteDate.J2000_EPOCH, newR1toR5,R3toR5);
+        newR1toR5 = new   Transform(AbsoluteDate.J2000_EPOCH, newR1toR5, R3toR5);
         result = newR1toR5.transformPVCoordinates(pointP1);
         checkVector(pointP5.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP5.getVelocity(),     result.getVelocity(),     1.0e-15);

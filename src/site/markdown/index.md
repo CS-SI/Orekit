@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2016 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -50,7 +50,8 @@
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters
+    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+      derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
     * automatic binding with frames
@@ -76,7 +77,7 @@
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
       * atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
-        and Marshall solar Activity Future Estimation
+        and Marshall solar Activity Future Estimation, optionally with lift component
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide

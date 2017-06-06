@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -124,7 +124,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Set the estimated value.
      * @param estimatedValue estimated value
      */
-    public void setEstimatedValue(final double ... estimatedValue) {
+    public void setEstimatedValue(final double... estimatedValue) {
         this.estimatedValue = estimatedValue.clone();
     }
 
@@ -142,7 +142,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Set the current weight.
      * @param currentWeight current weight
      */
-    public void setCurrentWeight(final double ... currentWeight) {
+    public void setCurrentWeight(final double... currentWeight) {
         this.currentWeight = currentWeight.clone();
     }
 
@@ -163,7 +163,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * simulated measurement} with respect to state Cartesian coordinates.
      * @param stateDerivatives partial derivatives with respect to state
      */
-    public void setStateDerivatives(final double[] ... stateDerivatives) {
+    public void setStateDerivatives(final double[]... stateDerivatives) {
         this.stateDerivatives = new double[observedMeasurement.getDimension()][];
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
             this.stateDerivatives[i] = stateDerivatives[i].clone();
@@ -199,7 +199,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * @param driver driver for the parameter
      * @param parameterDerivatives partial derivatives with respect to parameter
      */
-    public void setParameterDerivatives(final ParameterDriver driver, final double ... parameterDerivatives) {
+    public void setParameterDerivatives(final ParameterDriver driver, final double... parameterDerivatives) {
         parametersDerivatives.put(driver, parameterDerivatives);
     }
 

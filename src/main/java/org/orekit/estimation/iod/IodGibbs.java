@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -117,7 +117,7 @@ public class IodGibbs {
         final PVCoordinates pv = new PVCoordinates(r2, vlEci);
         final AbsoluteDate date = date2;
 
-        // compute the equivalent keplerian orbit
+        // compute the equivalent Keplerian orbit
         return new KeplerianOrbit(pv, frame, date, mu);
     }
 }

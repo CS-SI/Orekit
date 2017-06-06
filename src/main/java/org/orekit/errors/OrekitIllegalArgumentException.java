@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ public class OrekitIllegalArgumentException extends IllegalArgumentException imp
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public OrekitIllegalArgumentException(final Localizable specifier, final Object ... parts) {
+    public OrekitIllegalArgumentException(final Localizable specifier, final Object... parts) {
         this.specifier = specifier;
         this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }

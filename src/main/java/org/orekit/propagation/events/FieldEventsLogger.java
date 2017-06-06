@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
      * @param <D> class type for the generic version
      */
     public <D extends FieldEventDetector<T>> FieldEventDetector<T> monitorDetector(final D monitoredDetector) {
-        return new FieldLoggingWrapper<D>(monitoredDetector);
+        return new FieldLoggingWrapper<>(monitoredDetector);
     }
 
     /** Clear the logged events.
@@ -167,7 +167,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
          */
         FieldLoggingWrapper(final D detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), new FieldLocalHandler<D>(),
+                 detector.getMaxIterationCount(), new FieldLocalHandler<>(),
                  detector);
         }
 
@@ -195,7 +195,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
         @Override
         protected FieldLoggingWrapper<D> create(final T newMaxCheck, final T newThreshold,
                                            final int newMaxIter, final FieldEventHandler<? super FieldLoggingWrapper<D>, T> newHandler) {
-            return new FieldLoggingWrapper<D>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+            return new FieldLoggingWrapper<>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.
@@ -203,7 +203,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
          * @param increasing indicator if the event switching function was increasing
          */
         public void logEvent(final FieldSpacecraftState<T> state, final boolean increasing) {
-            log.add(new FieldLoggedEvent<T>(detector, state, increasing));
+            log.add(new FieldLoggedEvent<>(detector, state, increasing));
         }
 
         /** {@inheritDoc} */

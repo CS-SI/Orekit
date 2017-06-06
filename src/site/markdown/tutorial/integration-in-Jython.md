@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2016 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,7 +28,7 @@ as your Jython files.
 This example is a translation of the SlaveMode.java example to Jython, showing a stepped
 Keplerian propagation.
 
-    /* Copyright 2002-2016 CS Systèmes d'Information
+    /* Copyright 2002-2017 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -122,7 +122,7 @@ Keplerian propagation.
 This example is based on the VisiblityCheck.java, translated into Jython. It includes an
 example of subclassing of a Java object into a jython object.
 
-    /* Copyright 2002-2016 CS Systèmes d'Information
+    /* Copyright 2002-2017 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -181,7 +181,7 @@ example of subclassing of a Java object into a jython object.
     pvCoordinates = PVCoordinates(position, velocity)
     initialOrbit = KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu)
 
-    # Propagator : consider a simple keplerian motion (could be more elaborate)
+    # Propagator : consider a simple Keplerian motion (could be more elaborate)
     kepler = KeplerianPropagator(initialOrbit)
 
     #Earth and frame
@@ -210,7 +210,7 @@ example of subclassing of a Java object into a jython object.
 
         def eventOccurred(self, s, increasing):
             if (increasing):
-                print "Visibility on", self.topocentricFrame.getName(),"begins at" , s.getDate()
+                print "Visibility on", self.topocentricFrame.getName(), "begins at" , s.getDate()
             else:
                 print "Visibility on",  self.topocentricFrame.getName(), "ends at" , s.getDate()
             return self.CONTINUE

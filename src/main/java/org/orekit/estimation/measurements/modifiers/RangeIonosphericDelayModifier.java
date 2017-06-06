@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
+ * @author Maxime Journot
  * @author Joris Olympio
  * @since 8.0
  */
@@ -88,9 +89,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
             final double delay = ionoModel.pathDelay(state.getDate(),
                                                      station.getBaseFrame().getPoint(),
                                                      elevation, azimuth);
-
-            // Multiply by two because it is a two-way measurment.
-            return 2 * delay;
+            return delay;
         }
 
         return 0;
@@ -101,7 +100,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @param station station
      * @param refstate reference spacecraft state
      *
-     * @return jacobian of the delay wrt state
+     * @return Jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
@@ -182,7 +181,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
         newValue[0] = newValue[0] + delay;
         estimated.setEstimatedValue(newValue);
 
-        // update estimated derivatives with jacobian of the measure wrt state
+        // update estimated derivatives with Jacobian of the measure wrt state
         final double[][] djac = rangeErrorJacobianState(station, state);
         final double[][] stateDerivatives = estimated.getStateDerivatives();
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,31 +157,34 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Map the raw double components to a spacecraft state.
      * @param t date offset
      * @param y state components
+     * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final boolean meanOnly)
+    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final boolean meanOnly)
             throws OrekitException {
-        return mapArrayToState(mapDoubleToDate(t), y, meanOnly);
+        return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
     }
 
     /** Map the raw double components to a spacecraft state.
      * @param date of the state components
      * @param y state components
+     * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, boolean meanOnly)
+    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, boolean meanOnly)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
+     * @param yDot placeholder where to put the components derivatives
      * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y)
+    public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot)
         throws OrekitException;
 
 }

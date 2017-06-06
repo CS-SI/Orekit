@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.analytical;
-
-import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -103,7 +101,7 @@ public class EphemerisTest {
         propagator = new KeplerianPropagator(propagator.getInitialState().getOrbit());
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.QSW));
 
-        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame,LOFType.QSW));
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.QSW));
         for (int j = 0; j <= numberEphemTestIntervals; j++) {
             AbsoluteDate currentDate = initDate.shiftedBy(j * deltaT);
             SpacecraftState ephemState = ephemPropagator.propagate(currentDate);
@@ -255,8 +253,7 @@ public class EphemerisTest {
         
         final int interpolationPoints = 5;
         Ephemeris ephemeris = new Ephemeris(states, interpolationPoints);
-        assertEquals(initDate, ephemeris.getMinDate());
-        assertEquals(finalDate, ephemeris.getMaxDate());
+        Assert.assertEquals(finalDate, ephemeris.getMaxDate());
         
         double tolerance = ephemeris.getExtrapolationThreshold();
         
@@ -267,14 +264,14 @@ public class EphemerisTest {
         
         try {
             ephemeris.propagate(ephemeris.getMinDate().shiftedBy(-2.0 * tolerance));
-            fail();
+            Assert.fail("an exception should have been thrown");
         } catch (TimeStampedCacheException e) {
             //supposed to fail since out of bounds
         }
         
         try {
             ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(2.0 * tolerance));
-            fail();
+            Assert.fail("an exception should have been thrown");
         } catch (TimeStampedCacheException e) {
             //supposed to fail since out of bounds
         }

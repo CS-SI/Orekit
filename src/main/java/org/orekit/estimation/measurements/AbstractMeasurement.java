@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
-                                  final ParameterDriver ... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
@@ -101,7 +101,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
-                                  final ParameterDriver ... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) {
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);

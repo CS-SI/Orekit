@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
     protected FieldApsideDetector<T> create(final T newMaxCheck, final T newThreshold,
                                             final int newMaxIter,
                                             final FieldEventHandler<? super FieldApsideDetector<T>, T> newHandler) {
-        return new FieldApsideDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new FieldApsideDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the switching function.

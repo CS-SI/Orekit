@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -815,6 +815,16 @@ public class AbsoluteDate
      * @return date/time components
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
+
+        if (Double.isInfinite(offset)) {
+            // special handling for past and future infinity
+            if (offset < 0) {
+                return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
+            } else {
+                return new DateTimeComponents(DateComponents.MAX_EPOCH,
+                                              new TimeComponents(23, 59, 59.999));
+            }
+        }
 
         // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
         // using Møller-Knuth TwoSum algorithm without branching

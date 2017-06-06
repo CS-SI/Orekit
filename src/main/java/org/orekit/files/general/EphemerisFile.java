@@ -232,9 +232,10 @@ public interface EphemerisFile {
          * Get the coordinates for this ephemeris segment.
          *
          * @return a list of state vectors in chronological order. The coordinates are not
-         * necessarily evenly spaced in time. Any position, velocity, or acceleration
-         * coordinates that are not specified in the ephemeris file are NaN in the
-         * returned values.
+         * necessarily evenly spaced in time. The value of {@link
+         * #getAvailableDerivatives()} indicates if the velocity or accelerations were
+         * specified in the file. Any position, velocity, or acceleration coordinates that
+         * are not specified in the ephemeris file are zero in the returned values.
          */
         List<? extends TimeStampedPVCoordinates> getCoordinates();
 

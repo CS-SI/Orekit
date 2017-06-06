@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,7 +91,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 final double positionScale)
         throws OrekitException {
         super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
-              positionAngle, positionScale);
+              positionAngle, positionScale, false);
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
         this.classification          = templateTLE.getClassification();
         this.launchYear              = templateTLE.getLaunchYear();

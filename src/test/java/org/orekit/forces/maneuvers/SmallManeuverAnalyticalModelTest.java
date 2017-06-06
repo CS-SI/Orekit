@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -225,20 +225,20 @@ public class SmallManeuverAnalyticalModelTest {
                     SmallManeuverAnalyticalModel[] models = new SmallManeuverAnalyticalModel[] {
                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-4 * h * timeDirs[i])),
                                                          eme2000, new Vector3D(1, dV0, -4 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
                     };
                     double[][] array = new double[models.length][6];
 
@@ -247,7 +247,7 @@ public class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j]);
+                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j], null);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {
@@ -263,7 +263,7 @@ public class SmallManeuverAnalyticalModelTest {
                     model.getJacobian(orbitWithout, positionAngle, jacobian);
 
                     for (int j = 0; j < orbitGradient.length; ++j) {
-                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 7.0e-6 * FastMath.abs(orbitGradient[j]));
+                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 1.6e-4 * FastMath.abs(orbitGradient[j]));
                     }
 
                 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,7 @@ public class SolidTides extends AbstractForceModel {
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,
                       final IERSConventions conventions, final UT1Scale ut1,
-                      final CelestialBody ... bodies)
+                      final CelestialBody... bodies)
         throws OrekitException {
         this(centralBodyFrame, ae, mu, centralTideSystem, true,
              DEFAULT_STEP, DEFAULT_POINTS, conventions, ut1, bodies);
@@ -105,7 +105,7 @@ public class SolidTides extends AbstractForceModel {
                       final TideSystem centralTideSystem, final boolean poleTide,
                       final double step, final int nbPoints,
                       final IERSConventions conventions, final UT1Scale ut1,
-                      final CelestialBody ... bodies)
+                      final CelestialBody... bodies)
         throws OrekitException {
         final SolidTidesField raw =
                 new SolidTidesField(conventions.getLoveNumbers(),
@@ -175,8 +175,8 @@ public class SolidTides extends AbstractForceModel {
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+        // delegate to underlying attraction model
+        attractionModel.addContribution(s, adder);
     }
 
 

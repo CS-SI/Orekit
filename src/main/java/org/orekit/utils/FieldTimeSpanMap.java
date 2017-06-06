@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,7 +56,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
     public FieldTimeSpanMap(final T entry, final Field<D> field_n) {
         data = new TreeSet<Transition<T, D>>(new ChronologicalComparator());
         field = field_n;
-        data.add(new Transition<T, D>(new FieldAbsoluteDate<D>(field), entry, entry));
+        data.add(new Transition<>(new FieldAbsoluteDate<>(field), entry, entry));
     }
 
     /** Add an entry valid before a limit date.

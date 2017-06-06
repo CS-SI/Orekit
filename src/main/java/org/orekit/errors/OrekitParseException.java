@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ public class OrekitParseException extends ParseException implements LocalizedExc
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public OrekitParseException(final Localizable specifier, final Object ... parts) {
+    public OrekitParseException(final Localizable specifier, final Object... parts) {
         super("", 0);
         this.specifier = specifier;
         this.parts     = (parts == null) ? new Object[0] : parts.clone();

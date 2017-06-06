@@ -176,25 +176,25 @@ public class OEMWriterTest {
         StandInEphemerisFile file = new StandInEphemerisFile();
         file.getSatellites().put(id1, new StandInSatelliteEphemeris(id1));
         file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2));
-        
+
         EphemerisFile ephemerisFile = (EphemerisFile) file;
         String tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-1.oem").toString();
-        
+
         OEMWriter writer1 = new OEMWriter();
-        
+
         try {
             writer1.write(tempOEMFilePath, ephemerisFile);
             fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
         } catch (OrekitIllegalArgumentException e) {
             assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
         }
-        
+
         tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-2.oem").toString();
         OEMWriter writer2 = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, null, id1, null);
         writer2.write(tempOEMFilePath, ephemerisFile);
     }
 
-    private void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
+    private static void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
         compareOemEphemerisBlocksMetadata(block1.getMetaData(), block2.getMetaData());
         assertEquals(block1.getStart(), block2.getStart());
         assertEquals(block1.getStop(), block2.getStop());
@@ -213,7 +213,7 @@ public class OEMWriterTest {
 
     }
 
-    private void compareOemEphemerisBlocksMetadata(ODMMetaData meta1, ODMMetaData meta2) {
+    private static void compareOemEphemerisBlocksMetadata(ODMMetaData meta1, ODMMetaData meta2) {
         assertEquals(meta1.getObjectID(), meta2.getObjectID());
         assertEquals(meta1.getObjectName(), meta2.getObjectName());
         assertEquals(meta1.getCenterName(), meta2.getCenterName());
@@ -221,7 +221,7 @@ public class OEMWriterTest {
         assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
     }
 
-    private void compareOemFiles(OEMFile file1, OEMFile file2) {
+    static void compareOemFiles(OEMFile file1, OEMFile file2) {
         assertEquals(file1.getOriginator(), file2.getOriginator());
         assertEquals(file1.getEphemeridesBlocks().size(), file2.getEphemeridesBlocks().size());
         for (int i = 0; i < file1.getEphemeridesBlocks().size(); i++) {

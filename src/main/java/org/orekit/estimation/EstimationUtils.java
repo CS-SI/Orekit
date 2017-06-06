@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -190,10 +190,11 @@ public class EstimationUtils {
         public double[] value(final double x) throws OrekitExceptionWrapper {
             try {
                 final double[] array = new double[6];
-                orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array);
+                final double[] arrayDot = new double[6];
+                orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array, arrayDot);
                 array[index] += x;
                 final SpacecraftState state =
-                        new SpacecraftState(orbitType.mapArrayToOrbit(array,
+                        new SpacecraftState(orbitType.mapArrayToOrbit(array, arrayDot,
                                                                       positionAngle,
                                                                       baseState.getDate(),
                                                                       baseState.getMu(),

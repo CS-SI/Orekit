@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -271,14 +271,14 @@ public class GroundStation {
         final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), (AbsoluteDate) null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
-                        new FieldVector3D<DerivativeStructure>(factory.variable(eastOffsetIndex,   0.0),
-                                                               baseFrame.getEast());
+                        new FieldVector3D<>(factory.variable(eastOffsetIndex,   0.0),
+                                            baseFrame.getEast());
         final FieldVector3D<DerivativeStructure> zeroNorth =
-                        new FieldVector3D<DerivativeStructure>(factory.variable(northOffsetIndex,  0.0),
-                                                               baseFrame.getNorth());
+                        new FieldVector3D<>(factory.variable(northOffsetIndex,  0.0),
+                                            baseFrame.getNorth());
         final FieldVector3D<DerivativeStructure> zeroZenith =
-                        new FieldVector3D<DerivativeStructure>(factory.variable(zenithOffsetIndex, 0.0),
-                                                               baseFrame.getZenith());
+                        new FieldVector3D<>(factory.variable(zenithOffsetIndex, 0.0),
+                                            baseFrame.getZenith());
         final FieldVector3D<DerivativeStructure> offsetOriginDS =
                 zeroEast.add(zeroNorth).add(zeroZenith).add(offsetOrigin);
 
@@ -317,8 +317,7 @@ public class GroundStation {
         final FieldVector3D<DerivativeStructure> transverseN = FieldVector3D.crossProduct(transverseZ, transverseE);
 
         // zero vector
-        final DerivativeStructure zeroDS = offsetOriginDS.getX().getField().getZero();
-        final FieldVector3D<DerivativeStructure> zero = new FieldVector3D<DerivativeStructure>(zeroDS, zeroDS, zeroDS);
+        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(offsetOriginDS.getX().getField());
 
         // compose the value from the offset frame and the derivatives
         // (the derivatives along the two orthogonal directions of principal curvatures are additive)
@@ -391,7 +390,7 @@ public class GroundStation {
      * This allows to compute the partial derivatives of measurements
      * with respect to station position.
      * </p>
-     * @see GroundStation#getOffsetDerivatives(int, int, int, int)
+     * @see GroundStation#getOffsetDerivatives(DSFactory, int, int, int)
      */
     public static class OffsetDerivatives {
 

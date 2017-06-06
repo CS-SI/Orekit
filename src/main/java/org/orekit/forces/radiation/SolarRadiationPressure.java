@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -272,7 +272,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         // compute flux
         final double ratio = getLightingRatio(position.toVector3D(), frame, date);
         final DerivativeStructure rawP = r2.reciprocal().multiply(kRef * ratio);
-        final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<DerivativeStructure>(rawP.divide(r2.sqrt()), sunSatVector);
+        final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
         // compute acceleration with all its partial derivatives
         return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
@@ -490,7 +490,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
         // compute flux
         final T   rawP = getLightingRatio(position, frame, date).divide(r2).multiply(kRef);
-        final FieldVector3D<T> flux = new FieldVector3D<T>(rawP.divide(r2.sqrt()), sunSatVector);
+        final FieldVector3D<T> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
         final FieldVector3D<T> acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                                                s.getMass(), flux);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1437,7 +1437,7 @@ public class NRLMSISE00 implements Atmosphere {
         // Slope
         final double s = g0 / (tinf - tlb);
 
-        // Lower thermosphere temp variations not significant for density above 300 km */
+        // Lower thermosphere temp variations not significant for density above 300 km
         meso_tn1[1]  = PTM[6] * PTL[0][0];
         meso_tn1[2]  = PTM[2] * PTL[1][0];
         meso_tn1[3]  = PTM[7] * PTL[2][0];
@@ -1974,7 +1974,7 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // Sum all effects
-        double tt = 0;;
+        double tt = 0;
         for (int i = 0; i < 14; i++) {
             tt += FastMath.abs(sw[i + 1]) * t[i];
         }

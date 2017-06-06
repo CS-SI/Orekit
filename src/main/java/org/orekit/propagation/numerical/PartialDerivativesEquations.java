@@ -237,7 +237,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * parameters selection is performed at force model level
      */
     @Deprecated
-    public void selectParameters(final String ... parameters) {
+    public void selectParameters(final String... parameters) {
         selectParameters(Arrays.asList(parameters));
     }
 
@@ -394,16 +394,16 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // position corresponds three free parameters
         final Vector3D position = s.getPVCoordinates().getPosition();
         final FieldVector3D<DerivativeStructure> dsP =
-                        new FieldVector3D<DerivativeStructure>(factory.variable(0, position.getX()),
-                                                               factory.variable(1, position.getY()),
-                                                               factory.variable(2, position.getZ()));
+                        new FieldVector3D<>(factory.variable(0, position.getX()),
+                                            factory.variable(1, position.getY()),
+                                            factory.variable(2, position.getZ()));
 
         // velocity corresponds three free parameters
         final Vector3D velocity = s.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> dsV =
-                        new FieldVector3D<DerivativeStructure>(factory.variable(3, velocity.getX()),
-                                                               factory.variable(4, velocity.getY()),
-                                                               factory.variable(5, velocity.getZ()));
+                        new FieldVector3D<>(factory.variable(3, velocity.getX()),
+                                            factory.variable(4, velocity.getY()),
+                                            factory.variable(5, velocity.getZ()));
 
         // mass corresponds either to a constant or to one free parameter
         final DerivativeStructure dsM = (dAccdM == null) ?
@@ -414,11 +414,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // see issue #200
         final Rotation rotation = s.getAttitude().getRotation();
         final FieldRotation<DerivativeStructure> dsR =
-                new FieldRotation<DerivativeStructure>(factory.constant(rotation.getQ0()),
-                                                       factory.constant(rotation.getQ1()),
-                                                       factory.constant(rotation.getQ2()),
-                                                       factory.constant(rotation.getQ3()),
-                                                       false);
+                new FieldRotation<>(factory.constant(rotation.getQ0()),
+                                    factory.constant(rotation.getQ1()),
+                                    factory.constant(rotation.getQ2()),
+                                    factory.constant(rotation.getQ3()),
+                                    false);
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {

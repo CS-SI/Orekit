@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final PositionAngle positionAngle,
                                             final double positionScale)
         throws OrekitException {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale);
+        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true);
         this.provider = provider;
     }
 
@@ -152,9 +152,10 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PositionAngle positionAngle)
         throws OrekitException {
-        final double[] parameters = new double[6];
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, positionAngle,
+        final double[] parameters    = new double[6];
+        final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
+        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
+        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());

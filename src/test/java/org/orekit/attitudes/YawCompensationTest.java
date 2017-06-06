@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -377,7 +377,7 @@ public class YawCompensationTest {
                                        FastMath.toRadians(5.300), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
-            // Elliptic earth shape */
+            // Elliptic earth shape
             earthShape =
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 

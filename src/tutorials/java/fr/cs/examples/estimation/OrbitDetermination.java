@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,10 +40,10 @@ import java.util.TreeSet;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -124,16 +124,23 @@ public class OrbitDetermination {
     public static void main(String[] args) {
         try {
 
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
+
             // input in tutorial resources directory/output (in user's home directory)
             final String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination.in").toURI().getPath();
             final File input  = new File(inputPath);
-
-            // output in user's home directory
-            final File home = new File(System.getProperty("user.home"));
-
-            // configure Orekit data access
-            File orekitData = new File(input.getParent(), "tutorial-orekit-data");
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
 
             long t0 = System.currentTimeMillis();
             new OrbitDetermination().run(input, home);

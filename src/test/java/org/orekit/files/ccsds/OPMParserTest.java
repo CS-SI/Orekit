@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -203,7 +203,7 @@ public class OPMParserTest {
         Assert.assertEquals(new AbsoluteDate(2000, 06, 03, 9, 00, 34.1,
                                              TimeScalesFactory.getGPS()),
                             file.getManeuvers().get(0).getEpochIgnition());
-        Assert.assertEquals(132.6, file.getManeuver(0).getDuration(),1e-10);
+        Assert.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assert.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
         Assert.assertNull(file.getManeuver(0).getRefLofType());
         Assert.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getRefFrame());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -199,7 +199,7 @@ public class OceanTidesTest {
         }
     }
 
-    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)
+    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
         throws OrekitException {
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);

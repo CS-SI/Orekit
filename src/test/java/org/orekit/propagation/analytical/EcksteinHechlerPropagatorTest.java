@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -138,7 +138,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void sameDateKeplerian() throws OrekitException {
 
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -190,8 +190,8 @@ public class EcksteinHechlerPropagatorTest {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), initDate, provider.getMu());
 
-        // Initialisation to simulate a keplerian extrapolation
-        // To be noticed: in order to simulate a keplerian extrapolation with the
+        // Initialisation to simulate a Keplerian extrapolation
+        // To be noticed: in order to simulate a Keplerian extrapolation with the
         // analytical
         // extrapolator, one should put the zonal coefficients to 0. But due to
         // numerical pbs
@@ -333,7 +333,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void propagatedKeplerian() throws OrekitException {
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -691,7 +691,7 @@ public class EcksteinHechlerPropagatorTest {
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
-        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900",farTarget.durationFrom(propagated.getDate()) < 7900.0);
+        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900", farTarget.durationFrom(propagated.getDate()) < 7900.0);
         Assert.assertEquals(0.09, elevation, 1.0e-11);
         Assert.assertTrue(zVelocity < 0);
     }

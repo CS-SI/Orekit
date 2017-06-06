@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.utils.ParameterDriver;
  * <p>
  * The propagator will call at each step the {@link #addContribution(SpacecraftState,
  * TimeDerivativesEquations)} method. The force model instance will extract all the
- * state data it needs (date,position, velocity, frame, attitude, mass) from the first
+ * state data it needs (date, position, velocity, frame, attitude, mass) from the first
  * parameter. From these state data, it will compute the perturbing acceleration. It
  * will then add this acceleration to the second parameter which will take thins
  * contribution into account and will use the Gauss equations to evaluate its impact

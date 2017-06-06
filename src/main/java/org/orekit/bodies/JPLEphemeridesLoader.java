@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -424,7 +424,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return value of the constant of NaN if the constant is not defined
      * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedConstant(final String ... names) throws OrekitException {
+    public double getLoadedConstant(final String... names) throws OrekitException {
 
         // lazy loading of constants
         Map<String, Double> map = constants.get();
@@ -465,7 +465,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // get the ephemerides type
         final int deNum = extractInt(record, HEADER_EPHEMERIS_TYPE_OFFSET);
 
-        // as default, 3 polynomial coefficients for the cartesian coordinates
+        // as default, 3 polynomial coefficients for the Cartesian coordinates
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;

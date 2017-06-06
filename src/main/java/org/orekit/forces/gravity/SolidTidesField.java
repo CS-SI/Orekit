@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,7 +108,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     SolidTidesField(final LoveNumbers love, final TimeVectorFunction deltaCSFunction,
                            final double deltaC20PermanentTide, final TimeVectorFunction poleTideFunction,
                            final Frame centralBodyFrame, final double ae, final double mu,
-                           final TideSystem centralTideSystem, final CelestialBody ... bodies) {
+                           final TideSystem centralTideSystem, final CelestialBody... bodies) {
 
         // store mode parameters
         this.centralBodyFrame  = centralBodyFrame;

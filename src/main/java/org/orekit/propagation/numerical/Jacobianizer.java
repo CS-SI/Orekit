@@ -185,7 +185,7 @@ public class Jacobianizer {
 
         }
 
-        return new FieldVector3D<DerivativeStructure>(accDer);
+        return new FieldVector3D<>(accDer);
 
 
     }

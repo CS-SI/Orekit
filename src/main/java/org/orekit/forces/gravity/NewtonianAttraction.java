@@ -84,7 +84,7 @@ public class NewtonianAttraction extends AbstractForceModel {
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.mu = mu;
         this.factory = new DSFactory(1, 1);
@@ -97,7 +97,7 @@ public class NewtonianAttraction extends AbstractForceModel {
         throws OrekitException {
 
         final DerivativeStructure r2 = position.getNormSq();
-        return new FieldVector3D<DerivativeStructure>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
+        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
 
     }
 
@@ -110,7 +110,7 @@ public class NewtonianAttraction extends AbstractForceModel {
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
         final DerivativeStructure muds     = factory.variable(0, mu);
-        return new FieldVector3D<DerivativeStructure>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
+        return new FieldVector3D<>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
 
     }
 

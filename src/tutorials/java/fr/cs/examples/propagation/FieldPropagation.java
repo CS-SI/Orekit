@@ -1,6 +1,6 @@
 package fr.cs.examples.propagation;
 
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
@@ -20,6 +20,8 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -38,8 +40,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for field mode propagation.
  * <p>This tutorial shows the interest of the field propagation in particular focusing
  *  on the utilisation of the DerivativeStructure in Orekit.<p>
@@ -54,22 +54,32 @@ public class FieldPropagation {
      */
     public static void main(String[] args) throws IOException, OrekitException {
 
-        /*the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
-          the inclination and the RAAN. The interest of doing it with Orekit based on the
-          DerivativeStructure is that instead of doing a large number of propagation around the initial
-          point we will do a single propagation of the initial state, and thanks to the Taylor expansion
-          we will see the evolution of the std deviation of the position, which is divided in the
-           CrossTrack, the LongTrack and the Radial error.
-        */
-        // setting orekit
+        // the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
+        // the inclination and the RAAN. The interest of doing it with Orekit based on the
+        // DerivativeStructure is that instead of doing a large number of propagation around the initial
+        // point we will do a single propagation of the initial state, and thanks to the Taylor expansion
+        // we will see the evolution of the std deviation of the position, which is divided in the
+        // CrossTrack, the LongTrack and the Radial error.
 
-        Autoconfiguration.configureOrekit();
+        // configure Orekit
+        File home       = new File(System.getProperty("user.home"));
+        File orekitData = new File(home, "orekit-data");
+        if (!orekitData.exists()) {
+            System.err.format(Locale.US, "Failed to find %s folder%n",
+                              orekitData.getAbsolutePath());
+            System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                              "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                              home.getAbsolutePath());
+            System.exit(1);
+        }
+        DataProvidersManager manager = DataProvidersManager.getInstance();
+        manager.addProvider(new DirectoryCrawler(orekitData));
 
-        //setting some filewriter and printwriter to have the output
-        String workingDir = System.getProperty("user.dir");
-        System.out.println("Output file is in : " + workingDir + "/error.txt");
-        FileWriter  FW = new FileWriter(workingDir + "/error.txt", false);
-        PrintWriter PW = new PrintWriter(FW);
+        //setting some the file
+        File workingDir = new File(System.getProperty("user.dir"));
+        File errorFile = new File(workingDir, "error.txt");
+        System.out.println("Output file is in : " + errorFile.getAbsolutePath());
+        PrintWriter PW = new PrintWriter(errorFile, "UTF-8");
 
         PW.printf("time \t\tCrossTrackErr \tLongTrackErr  \tRadialErr \tTotalErr%n");
 
@@ -91,13 +101,13 @@ public class FieldPropagation {
         double ni_nominal   = 0.0 ;
 
         //mean of the gaussian curve for each of the errors around the nominal values
-        //{a,i,RAAN}
+        //{a, i, RAAN}
         double[] mean = {
             0 , 0, 0
         };
 
         //standard deviation of the gaussian curve for each of the errors around the nominal values
-        //{dA,dI, dRaan}
+        //{dA, dI, dRaan}
         double[] dAdIdRaan = {
             5 , FastMath.toRadians(1e-3), FastMath.toRadians(1e-3)
         };
@@ -121,7 +131,7 @@ public class FieldPropagation {
         DerivativeStructure zero = field.getZero();
 
         //initializing the FieldAbsoluteDate with only the field it will generate the day J2000
-        FieldAbsoluteDate<DerivativeStructure> date_0 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> date_0 = new FieldAbsoluteDate<>(field);
 
         //initialize a basic frame
         Frame frame = FramesFactory.getEME2000();
@@ -129,7 +139,7 @@ public class FieldPropagation {
         //initialize the orbit
         double mu = 3.9860047e14;
 
-        FieldKeplerianOrbit<DerivativeStructure> KO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, pa_0, raan_0, ni_0, PositionAngle.ECCENTRIC, frame, date_0, mu);
+        FieldKeplerianOrbit<DerivativeStructure> KO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, pa_0, raan_0, ni_0, PositionAngle.ECCENTRIC, frame, date_0, mu);
 
         //step of integration (how many times per orbit we take the mesures)
         double int_step = KO.getKeplerianPeriod().getReal() / num_step_orbit;
@@ -145,7 +155,7 @@ public class FieldPropagation {
                 rand_gen[jj] = URVG.nextVector();
         }
         //
-        FieldSpacecraftState<DerivativeStructure> SS_0 = new FieldSpacecraftState<DerivativeStructure>(KO);
+        FieldSpacecraftState<DerivativeStructure> SS_0 = new FieldSpacecraftState<>(KO);
         //adding force models
         ForceModel fModel_Sun  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
         ForceModel fModel_Moon = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
@@ -154,16 +164,18 @@ public class FieldPropagation {
                                                               GravityFieldFactory.getNormalizedProvider(18, 18));
 
         //setting an hipparchus field integrator
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, KO.toOrbit(), OrbitType.CARTESIAN);
+        OrbitType type = OrbitType.CARTESIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, KO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 
         integrator.setInitialStepSize(zero.add(60));
 
         //setting of the field propagator, we used the numerical one in order to add the third body attraction
         //and the holmes featherstone force models
-        FieldNumericalPropagator<DerivativeStructure> numProp = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> numProp = new FieldNumericalPropagator<>(field, integrator);
 
+        numProp.setOrbitType(type);
         numProp.setInitialState(SS_0);
         numProp.addForceModel(fModel_Sun);
         numProp.addForceModel(fModel_Moon);
@@ -231,11 +243,11 @@ public class FieldPropagation {
                 double di = rand_gen[jj][1];
                 double dRAAN = rand_gen[jj][2];
                 //evaluating thanks to taylor the propagation of the nominal values with error
-                // x_e = f(a-n,i-n, raan-n) + df/da(a-n,i-n, raan-n) * da + df/di(a-n,i-n, raan-n) * di + ... etc.
+                // x_e = f(a-n, i-n, raan-n) + df/da(a-n, i-n, raan-n) * da + df/di(a-n, i-n, raan-n) * di + ... etc.
                 //TAYLOR'S EXPANSION
-                double x_e = x_t.taylor(da,di,dRAAN);
-                double y_e = y_t.taylor(da,di,dRAAN);
-                double z_e = z_t.taylor(da,di,dRAAN);
+                double x_e = x_t.taylor(da, di, dRAAN);
+                double y_e = y_t.taylor(da, di, dRAAN);
+                double z_e = z_t.taylor(da, di, dRAAN);
 
                 Vector3D P_e = new Vector3D(x_e, y_e, z_e);
 
@@ -247,11 +259,11 @@ public class FieldPropagation {
 
             //printing all the standard deviations on the file error.txt
             Locale.setDefault(new Locale("en", "US"));
-            PW.printf("%f \t", currentState.getDate().durationFrom(data_0).getReal()/3600);
-            PW.printf("%f \t", stat_CT.getStandardDeviation());
-            PW.printf("%f \t", stat_LT.getStandardDeviation());
-            PW.printf("%f \t", stat_R.getStandardDeviation());
-            PW.printf("%f \n", stat_dist.getStandardDeviation());
+            PW.printf("%f\t", currentState.getDate().durationFrom(data_0).getReal()/3600);
+            PW.printf("%f\t", stat_CT.getStandardDeviation());
+            PW.printf("%f\t", stat_LT.getStandardDeviation());
+            PW.printf("%f\t", stat_R.getStandardDeviation());
+            PW.printf("%f%n", stat_dist.getStandardDeviation());
 
         }
 

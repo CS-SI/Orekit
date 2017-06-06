@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Propagator converter using finite differences to compute the jacobian.
+/** Propagator converter using finite differences to compute the Jacobian.
  * @author Pascal Parraud
  * @since 6.0
  */

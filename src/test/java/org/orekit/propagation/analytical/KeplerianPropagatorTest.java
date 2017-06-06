@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,10 +51,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
@@ -78,6 +80,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class KeplerianPropagatorTest {
@@ -166,7 +169,7 @@ public class KeplerianPropagatorTest {
         Assert.assertEquals(n*delta_t,
                             finalOrbit.getLM() - initialOrbit.getLM(),
                             Utils.epsilonTest * FastMath.abs(n*delta_t));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
@@ -176,7 +179,7 @@ public class KeplerianPropagatorTest {
 
     @Test
     public void sameDateKeplerian() throws OrekitException {
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -200,12 +203,12 @@ public class KeplerianPropagatorTest {
 
         Assert.assertEquals(n*delta_t,
                      finalOrbit.getLM() - initialOrbit.getLM(),
-                     Utils.epsilonTest * FastMath.max(100.,FastMath.abs(n*delta_t)));
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(),initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
+                     Utils.epsilonTest * FastMath.max(100., FastMath.abs(n*delta_t)));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM(), initialOrbit.getLM()), initialOrbit.getLM(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM()));
 
         Assert.assertEquals(finalOrbit.getA(), initialOrbit.getA(), Utils.epsilonTest * initialOrbit.getA());
         Assert.assertEquals(finalOrbit.getE(), initialOrbit.getE(), Utils.epsilonE * initialOrbit.getE());
-        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(),initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
+        Assert.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI(), initialOrbit.getI()), initialOrbit.getI(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI()));
 
     }
 
@@ -252,7 +255,7 @@ public class KeplerianPropagatorTest {
 
         // test of tan ((LE - Lv)/2) :
         Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
-                     tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
+                     tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
         // test of evolution of M vs E: LM = LE - ex*sin(LE) + ey*cos(LE)
@@ -296,7 +299,7 @@ public class KeplerianPropagatorTest {
                                   (1.- hx2+ hy2)/h2p1,
                                   (2.*hx)/h2p1);
 
-        Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
+        Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
         Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
@@ -305,7 +308,7 @@ public class KeplerianPropagatorTest {
     @Test
     public void propagatedKeplerian() throws OrekitException {
 
-        // Definition of initial conditions with keplerian parameters
+        // Definition of initial conditions with Keplerian parameters
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -343,7 +346,7 @@ public class KeplerianPropagatorTest {
 
         // test of tan ((LE - Lv)/2) :
         Assert.assertEquals(FastMath.tan((finalOrbit.getLE() - finalOrbit.getLv())/2.),
-                     tangLEmLv(finalOrbit.getLv(),finalOrbit.getEquinoctialEx(),finalOrbit.getEquinoctialEy()),
+                     tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()),
                      Utils.epsilonAngle);
 
         // test of evolution of M vs E: LM = LE - ex*sin(LE) + ey*cos(LE)
@@ -386,7 +389,7 @@ public class KeplerianPropagatorTest {
                                   (1.- hx2+ hy2)/h2p1,
                                   (2.*hx)/h2p1);
 
-        Vector3D r = new Vector3D(finalOrbit.getA(),(new Vector3D(x3,U,y3,V)));
+        Vector3D r = new Vector3D(finalOrbit.getA(), new Vector3D(x3, U, y3, V));
 
         Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(), Utils.epsilonTest * r.getNorm());
 
@@ -683,7 +686,7 @@ public class KeplerianPropagatorTest {
 
         // Initial date
         TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, utc);
 
         // Central attraction coefficient
         double mu =  3.986004415e+14;
@@ -792,8 +795,8 @@ public class KeplerianPropagatorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(propagator.getGeneratedEphemeris());
 
-        Assert.assertTrue(bos.size() > 2300);
-        Assert.assertTrue(bos.size() < 2400);
+        Assert.assertTrue(bos.size() > 2400);
+        Assert.assertTrue(bos.size() < 2500);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -813,6 +816,63 @@ public class KeplerianPropagatorTest {
         });
         ephemeris.propagate(ephemeris.getMaxDate());
 
+    }
+
+    @Test
+    public void testNoDerivatives() throws OrekitException {
+        for (OrbitType type : OrbitType.values()) {
+
+            // create an initial orbit with non-Keplerian acceleration
+            final AbsoluteDate date         = new AbsoluteDate(2003, 9, 16, TimeScalesFactory.getUTC());
+            final Vector3D     position     = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+            final Vector3D     velocity     = new Vector3D(505.848, 942.781, 7435.922);
+            final Vector3D     keplerAcceleration = new Vector3D(-mu / position.getNormSq(), position.normalize());
+            final Vector3D     nonKeplerAcceleration = new Vector3D(0.001, 0.002, 0.003);
+            final Vector3D     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
+            final TimeStampedPVCoordinates pva = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+            final Orbit initial = type.convertType(new CartesianOrbit(pva, FramesFactory.getEME2000(), mu));
+            Assert.assertEquals(type, initial.getType());
+
+            // the derivatives are available at this stage
+            checkDerivatives(initial, true);
+
+            KeplerianPropagator propagator = new KeplerianPropagator(initial);
+            Assert.assertEquals(type, propagator.getInitialState().getOrbit().getType());
+
+            // non-Keplerian derivatives are explicitly removed when building the Keplerian-only propagator
+            checkDerivatives(propagator.getInitialState().getOrbit(), false);
+
+            PVCoordinates initPV = propagator.getInitialState().getOrbit().getPVCoordinates();
+            Assert.assertEquals(nonKeplerAcceleration.getNorm(), Vector3D.distance(acceleration, initPV.getAcceleration()), 2.0e-15);
+            Assert.assertEquals(0.0,
+                                Vector3D.distance(keplerAcceleration, initPV.getAcceleration()),
+                                4.0e-15);
+
+            double dt = 0.2 * initial.getKeplerianPeriod();
+            Orbit orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt));
+            Assert.assertEquals(type, orbit.getType());
+
+            // at the end, we don't have non-Keplerian derivatives
+            checkDerivatives(orbit, false);
+
+            // using shiftedBy on the initial orbit, non-Keplerian derivatives would have been preserved
+            checkDerivatives(initial.shiftedBy(dt), true);
+
+        }
+    }
+
+    private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
+        Assert.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialExDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialEyDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHxDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHyDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLEDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLvDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLMDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getIDot()));
     }
 
     @Test
@@ -844,7 +904,7 @@ public class KeplerianPropagatorTest {
 
     }
 
-    private static double tangLEmLv(double Lv,double ex,double ey){
+    private static double tangLEmLv(double Lv, double ex, double ey){
         // tan ((LE - Lv) /2)) =
         return (ey*FastMath.cos(Lv) - ex*FastMath.sin(Lv)) /
         (1 + ex*FastMath.cos(Lv) + ey*FastMath.sin(Lv) + FastMath.sqrt(1 - ex*ex - ey*ey));

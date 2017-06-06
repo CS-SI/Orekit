@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -177,7 +177,7 @@ public class AngularTest {
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, stateini.getFrame()).getPosition();
             final double          meanDelay = stationParameter.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
-            
+
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {

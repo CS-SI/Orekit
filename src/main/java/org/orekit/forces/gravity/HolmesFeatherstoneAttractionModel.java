@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,7 +145,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.provider  = provider;
         this.mu        = provider.getMu();
@@ -1068,7 +1068,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<T>(gradient(date, position)));
+        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
         adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
     }
 
@@ -1124,7 +1124,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         }
 
-        return new FieldVector3D<DerivativeStructure>(accDer);
+        return new FieldVector3D<>(accDer);
 
     }
 
@@ -1143,9 +1143,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // gradient of the non-central part of the gravity field
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
 
-        return new FieldVector3D<DerivativeStructure>(factory.build(gInertial.getX(), gInertial.getX() / mu),
-                                                      factory.build(gInertial.getY(), gInertial.getY() / mu),
-                                                      factory.build(gInertial.getZ(), gInertial.getZ() / mu));
+        return new FieldVector3D<>(factory.build(gInertial.getX(), gInertial.getX() / mu),
+                                   factory.build(gInertial.getY(), gInertial.getY() / mu),
+                                   factory.build(gInertial.getZ(), gInertial.getZ() / mu));
 
     }
 

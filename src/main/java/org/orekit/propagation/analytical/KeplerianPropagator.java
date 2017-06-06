@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -114,27 +115,53 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
 
         super(attitudeProv);
 
-        // ensure the orbit use the specified mu
-        final OrbitType type = initialOrbit.getType();
+        // ensure the orbit use the specified mu and has no non-Keplerian derivatives
+        initialState = fixState(initialOrbit,
+                                getAttitudeProvider().getAttitude(initialOrbit,
+                                                                  initialOrbit.getDate(),
+                                                                  initialOrbit.getFrame()),
+                                mass, mu);
+        states = new TimeSpanMap<SpacecraftState>(initialState);
+        super.resetInitialState(initialState);
+
+    }
+
+    /** Fix state to use a specified mu and remove derivatives.
+     * <p>
+     * This ensures the propagation model (which is based on calling
+     * {@link Orbit#shiftedBy(double)}) is Keplerian only and uses a specified mu.
+     * </p>
+     * @param orbit orbit to fix
+     * @param attitude current attitude
+     * @param mass current mass
+     * @param mu gravity coefficient to use
+     * @return fixed orbit
+     */
+    private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass,
+                                     final double mu) {
+        final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
-        type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector);
-        final Orbit orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
-                                                 initialOrbit.getDate(), mu, initialOrbit.getFrame());
-
-        resetInitialState(new SpacecraftState(orbit,
-                                              getAttitudeProvider().getAttitude(orbit,
-                                                                                orbit.getDate(),
-                                                                                orbit.getFrame()),
-                                              mass));
-
+        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                      orbit.getDate(), mu, orbit.getFrame());
+        return new SpacecraftState(fixedOrbit, attitude, mass);
     }
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
         throws OrekitException {
-        super.resetInitialState(state);
-        initialState = state;
+
+        // ensure the orbit use the specified mu and has no non-Keplerian derivatives
+        final double mu = initialState == null ? state.getMu() : initialState.getMu();
+        final SpacecraftState fixedState = fixState(state.getOrbit(),
+                                                    state.getAttitude(),
+                                                    state.getMass(),
+                                                    mu);
+
+        initialState = fixedState;
         states       = new TimeSpanMap<SpacecraftState>(initialState);
+        super.resetInitialState(fixedState);
+
     }
 
     /** {@inheritDoc} */

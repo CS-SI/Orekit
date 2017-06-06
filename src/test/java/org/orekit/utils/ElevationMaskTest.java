@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,9 +38,9 @@ public class ElevationMaskTest {
 
     @Test
     public void testElevationMask() {
-        double [][] masqueData = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
-                                  {FastMath.toRadians(180),FastMath.toRadians(3)},
-                                  {FastMath.toRadians(-90),FastMath.toRadians(4)}};
+        double [][] masqueData = {{FastMath.toRadians(  0), FastMath.toRadians(5)},
+                                  {FastMath.toRadians(180), FastMath.toRadians(3)},
+                                  {FastMath.toRadians(-90), FastMath.toRadians(4)}};
 
         ElevationMask mask = new ElevationMask(masqueData);
 
@@ -49,17 +49,17 @@ public class ElevationMaskTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testMaskException() throws OrekitException {
-        double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
-                              {FastMath.toRadians( 360),FastMath.toRadians(4)}};
+        double [][] masque = {{FastMath.toRadians(   0), FastMath.toRadians(5)},
+                              {FastMath.toRadians( 360), FastMath.toRadians(4)}};
 
         new ElevationMask(masque);
     }
 
     @Test
     public void testGetElevation() throws OrekitException {
-        double [][] masqueData = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
-                              {FastMath.toRadians(180),FastMath.toRadians(3)},
-                              {FastMath.toRadians(-90),FastMath.toRadians(4)}};
+        double [][] masqueData = {{FastMath.toRadians(  0), FastMath.toRadians(5)},
+                              {FastMath.toRadians(180), FastMath.toRadians(3)},
+                              {FastMath.toRadians(-90), FastMath.toRadians(4)}};
         ElevationMask mask = new ElevationMask(masqueData);
 
         double azimuth = FastMath.toRadians(90);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,7 +107,8 @@
  * org.orekit.propagation.events.EventSlopeFilter EventSlopeFilter} and {@link
  * org.orekit.propagation.events.EventEnablingPredicateFilter EventEnablingPredicateFilter} to trigger
  * only specific types of events, without losing computation time by locating events user is not
- * interested in.
+ * interested in. Also the {@link org.orekit.propagation.events.BooleanDetector} allows
+ * the user to combine other event detectors using Boolean logic.
  * </p>
  *
  * <p>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -200,7 +200,11 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         String[] strings = getStringArray(key);
         double[] array = new double[strings.length];
         for (int i = 0; i < array.length; ++i) {
-            array[i] = Double.parseDouble(strings[i]);
+            if (!strings[i].isEmpty())
+                array[i] = Double.parseDouble(strings[i]);
+            else {
+                array[i] = 0.;
+            }
         }
         return array;
     }

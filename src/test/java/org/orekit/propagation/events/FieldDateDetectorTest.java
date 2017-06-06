@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -68,15 +69,15 @@ public class FieldDateDetectorTest {
     public void testGenericHandler() throws OrekitException{
         doTestGenericHandler(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(iniOrbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                             FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(iniOrbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -84,28 +85,29 @@ public class FieldDateDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
-        FieldDateDetector<T>  dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(2.0*dt));
-    	Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
+
+        FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(2.0*dt));
+        Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
         Assert.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
-    
+
     private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(iniOrbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                             FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(iniOrbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -113,23 +115,24 @@ public class FieldDateDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-    	FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold));
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold));
         Assert.assertNull(dateDetector.getDate());
-    	FieldEventDetector<T> nodeDetector = new FieldNodeDetector<T>(iniOrbit, iniOrbit.getFrame()).
-    	        withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
-    	            public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-    	                throws OrekitException {
-    	                if (increasing) {
-    	                    nodeDate = s.getDate().toAbsoluteDate();
-    	                    dateDetector.addEventDate(s.getDate().shiftedBy(dt));
-    	                }
-    	                return Action.CONTINUE;
-    	            }
-    	        });
+        FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
+                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
+                        throws OrekitException {
+                        if (increasing) {
+                            nodeDate = s.getDate().toAbsoluteDate();
+                            dateDetector.addEventDate(s.getDate().shiftedBy(dt));
+                        }
+                        return Action.CONTINUE;
+                    }
+                });
 
         propagator.addEventDetector(nodeDetector);
         propagator.addEventDetector(dateDetector);
@@ -138,15 +141,15 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
     }
 
-    
+
     private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(iniOrbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                             FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(iniOrbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -154,12 +157,13 @@ public class FieldDateDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(-dt)).
+
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(-dt)).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
                             throws OrekitException {
@@ -177,12 +181,12 @@ public class FieldDateDetectorTest {
 
     private <T extends RealFieldElement<T>> void doTestExceptionTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(iniOrbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                             FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(iniOrbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -190,12 +194,13 @@ public class FieldDateDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt)).
+
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt)).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
                         throws OrekitException {
@@ -215,15 +220,15 @@ public class FieldDateDetectorTest {
      *
      * @throws OrekitException on error.
      */
-    
+
     private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                        FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(iniOrbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add( 3492467.560), zero.add( -25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate  = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        FieldOrbit<T> iniOrbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position, velocity),
+                                                             FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(iniOrbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -231,13 +236,14 @@ public class FieldDateDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
+
         //setup
-        final FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt));
+        final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt));
         // generic event handler that works with all detectors.
         FieldEventHandler<FieldEventDetector<T>, T> handler = new FieldEventHandler<FieldEventDetector<T>, T>() {
             @Override
@@ -257,10 +263,10 @@ public class FieldDateDetectorTest {
         };
 
         //action
-        final FieldDateDetector<T> dateDetector2; 
-        
+        final FieldDateDetector<T> dateDetector2;
+
         dateDetector2 = dateDetector.withHandler(handler);
-        
+
         propagator.addEventDetector(dateDetector2);
         FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100 * dt));
 
@@ -269,7 +275,7 @@ public class FieldDateDetectorTest {
     }
 
     @Before
-    public <T extends RealFieldElement<T>> void setUp() {
+    public void setUp() {
             Utils.setDataRoot("regular-data");
             mu = 3.9860047e14;
             dt = 60.;

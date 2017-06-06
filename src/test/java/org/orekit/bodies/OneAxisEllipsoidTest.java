@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,10 +33,13 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.random.SobolSequenceGenerator;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -52,6 +55,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -378,7 +382,7 @@ public class OneAxisEllipsoidTest {
         direction = new Vector3D(0.0, 1.0, 0.0);
         line = new Line(point, point.add(direction), 1.0e-10);
         gp = model.getIntersectionPoint(line, point, frame, date);
-        Assert.assertEquals(gp.getLatitude(),0, 1.0e-12);
+        Assert.assertEquals(gp.getLatitude(), 0, 1.0e-12);
 
     }
 
@@ -629,8 +633,8 @@ public class OneAxisEllipsoidTest {
         final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
-        FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(),null);
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<>(latDS, lonDS, altDS)));
+        FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(), null);
         Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
         Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
         Assert.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
@@ -664,7 +668,7 @@ public class OneAxisEllipsoidTest {
         final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<>(latDS, lonDS, altDS)));
 
         // finite differences computation
         FiniteDifferencesDifferentiator differentiator =
@@ -732,6 +736,18 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+
+        FieldGeodeticPoint<Decimal64> gp64 = model.transform(new FieldVector3D<Decimal64>(new Decimal64(x),
+                                                                                          new Decimal64(y),
+                                                                                          new Decimal64(z)),
+                                                             frame,
+                                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
+        Assert.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
+        Assert.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
+        FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
+        Assert.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -788,7 +804,7 @@ public class OneAxisEllipsoidTest {
 
     }
 
-    /** Transform a cartesian point to a surface-relative point.
+    /** Transform a Cartesian point to a surface-relative point.
      * <p>
      * This method was the implementation used in the main Orekit library
      * as of version 8.0. It has been replaced as of 9.0 with a new version

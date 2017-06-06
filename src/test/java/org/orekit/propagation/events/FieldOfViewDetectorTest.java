@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -175,7 +175,7 @@ public class FieldOfViewDetectorTest {
                                          Constants.WGS84_EARTH_FLATTENING,
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
-            // Create earth center pointing attitude provider */
+            // Create earth center pointing attitude provider
             earthCenterAttitudeLaw = new BodyCenterPointing(initialOrbit.getFrame(), earth);
 
         } catch (OrekitException oe) {

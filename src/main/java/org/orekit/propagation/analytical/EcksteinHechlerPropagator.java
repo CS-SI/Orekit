@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -434,6 +434,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         /** Serializable UID. */
         private static final long serialVersionUID = 20160115L;
 
+        /** Factory for derivatives. */
+        private static final DSFactory FACTORY = new DSFactory(1, 2);
+
         /** Mean orbit. */
         private final CircularOrbit mean;
 
@@ -644,10 +647,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
             throws OrekitException {
 
-            final DSFactory factory = new DSFactory(1, 2);
-
-            // keplerian evolution
-            final DerivativeStructure dt = factory.variable(0, date.durationFrom(mean.getDate()));
+            // Keplerian evolution
+            final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));
             final DerivativeStructure xnot = dt.multiply(xnotDot);
 
             // secular effects
@@ -666,14 +667,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
 
             // right ascension of ascending node
             final DerivativeStructure omm =
-                    factory.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
                                                            FastMath.PI),
                                   ommD * xnotDot,
                                   0.0);
 
             // latitude argument
             final DerivativeStructure xlm =
-                    factory.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
                                   aMD * xnotDot,
                                   0.0);
 
@@ -798,9 +799,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
 
         // canonical orbit reference frame
         final FieldVector3D<DerivativeStructure> p =
-                new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                                       x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                                       y.multiply(sinI));
+                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                    y.multiply(sinI));
 
         // dispatch derivatives
         final Vector3D p0 = new Vector3D(p.getX().getValue(),

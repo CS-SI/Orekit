@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.time;
+
+import org.hipparchus.RealFieldElement;
 
 /** Galileo system time scale.
  * <p>By convention, TGST = UTC + 13s at Galileo epoch (1999-08-22T00:00:00Z).</p>
@@ -35,6 +37,9 @@ public class GalileoScale implements TimeScale {
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
 
+    /** Offset from TAI. */
+    private static final double OFFSET = -19;
+
     /** Package private constructor for the factory.
      */
     GalileoScale() {
@@ -43,13 +48,19 @@ public class GalileoScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return -19;
+        return OFFSET;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero().add(OFFSET);
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return 19;
+        return -OFFSET;
     }
 
     /** {@inheritDoc} */

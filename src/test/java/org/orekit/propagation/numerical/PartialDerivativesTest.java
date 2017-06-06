@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class PartialDerivativesTest {
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
-                                             OrbitType ... orbitTypes)
+                                             OrbitType... orbitTypes)
         throws OrekitException {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -502,14 +502,14 @@ public class PartialDerivativesTest {
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
         boolean withMass = jacobian.length > 6;
-        double[] aM4h = stateToArray(sM4h, orbitType, angleType, withMass);
-        double[] aM3h = stateToArray(sM3h, orbitType, angleType, withMass);
-        double[] aM2h = stateToArray(sM2h, orbitType, angleType, withMass);
-        double[] aM1h = stateToArray(sM1h, orbitType, angleType, withMass);
-        double[] aP1h = stateToArray(sP1h, orbitType, angleType, withMass);
-        double[] aP2h = stateToArray(sP2h, orbitType, angleType, withMass);
-        double[] aP3h = stateToArray(sP3h, orbitType, angleType, withMass);
-        double[] aP4h = stateToArray(sP4h, orbitType, angleType, withMass);
+        double[] aM4h = stateToArray(sM4h, orbitType, angleType, withMass)[0];
+        double[] aM3h = stateToArray(sM3h, orbitType, angleType, withMass)[0];
+        double[] aM2h = stateToArray(sM2h, orbitType, angleType, withMass)[0];
+        double[] aM1h = stateToArray(sM1h, orbitType, angleType, withMass)[0];
+        double[] aP1h = stateToArray(sP1h, orbitType, angleType, withMass)[0];
+        double[] aP2h = stateToArray(sP2h, orbitType, angleType, withMass)[0];
+        double[] aP3h = stateToArray(sP3h, orbitType, angleType, withMass)[0];
+        double[] aP4h = stateToArray(sP4h, orbitType, angleType, withMass)[0];
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (aP4h[i] - aM4h[i]) +
                                     32 * (aP3h[i] - aM3h[i]) -
@@ -521,36 +521,36 @@ public class PartialDerivativesTest {
     private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
                                        double delta, int column) {
 
-        double[] array = stateToArray(state, orbitType, angleType, true);
-        array[column] += delta;
+        double[][] array = stateToArray(state, orbitType, angleType, true);
+        array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
                             state.getMu(), state.getAttitude());
 
     }
 
-    private double[] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
                                   boolean withMass) {
-        double[] array = new double[withMass ? 7 : 6];
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array);
+        double[][] array = new double[2][withMass ? 7 : 6];
+        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
-            array[6] = state.getMass();
+            array[0][6] = state.getMass();
         }
         return array;
     }
 
-    private SpacecraftState arrayToState(double[] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
-        Orbit orbit = orbitType.mapArrayToOrbit(array, angleType, date, mu, frame);
+        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[6]);
+               new SpacecraftState(orbit, attitude, array[0][6]);
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
                                                 OrbitType orbitType, PositionAngle angleType,
-                                                ForceModel ... models)
+                                                ForceModel... models)
         throws OrekitException {
 
         final double minStep = 0.001;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,13 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateMatrixFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
@@ -33,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -50,6 +53,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -117,9 +121,9 @@ public class GroundStationTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 7.6e-7,
                                      0.0, 1.9e-6,
-                                     0.0, 4.6e-7,
-                                     0.0, 1.9e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   3.1e-7);
+                                     0.0, 9.0e-7,
+                                     0.0, 4.0e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.0e-7);
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
@@ -402,7 +406,13 @@ public class GroundStationTest {
                 return ellipsoid.transform(point);
             }
             public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
-                            throws OrekitException {
+                throws OrekitException {
+                return ellipsoid.transform(point, frame, date);
+            }
+            public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point,
+                                                                                   Frame frame,
+                                                                                   FieldAbsoluteDate<T> date)
+                throws OrekitException {
                 return ellipsoid.transform(point, frame, date);
             }
             public TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)

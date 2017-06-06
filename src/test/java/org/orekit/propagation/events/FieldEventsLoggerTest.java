@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -84,12 +85,12 @@ public class FieldEventsLoggerTest {
         T zero = field.getZero();
 
 
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -97,9 +98,10 @@ public class FieldEventsLoggerTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -107,13 +109,13 @@ public class FieldEventsLoggerTest {
 
 
 
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> monitored = ((FieldAbstractDetector<FieldEventDetector<T>, T>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assert.assertEquals(200, monitored.getMaxIterationCount());
-        
+
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
@@ -123,17 +125,17 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) throws OrekitException {
-        
+
 
         T zero = field.getZero();
 
 
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -141,15 +143,16 @@ public class FieldEventsLoggerTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
 
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
@@ -163,12 +166,12 @@ public class FieldEventsLoggerTest {
         T zero = field.getZero();
 
 
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -176,22 +179,23 @@ public class FieldEventsLoggerTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
 
 
-        
-        
-        
-        
-        
-        
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+
+
+
+
+
+
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
@@ -201,17 +205,17 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) throws OrekitException {
-        
+
 
         T zero = field.getZero();
 
 
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -219,15 +223,16 @@ public class FieldEventsLoggerTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
-        
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
@@ -254,19 +259,19 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) throws OrekitException {
-        
-        
-        
+
+
+
 
         T zero = field.getZero();
 
 
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getEME2000(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getEME2000(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -274,17 +279,18 @@ public class FieldEventsLoggerTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
 
 
-        
-        FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
+
+        FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
@@ -300,7 +306,7 @@ public class FieldEventsLoggerTest {
 
     private <T extends RealFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
                              int expectedUmbraIncreasingCount, int expectedUmbraDecreasingCount,
-                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount, 
+                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount,
                              FieldEventDetector<T> umbraDetector, FieldEventDetector<T> penumbraDetector) {
         int umbraIncreasingCount = 0;
         int umbraDecreasingCount = 0;
@@ -331,8 +337,8 @@ public class FieldEventsLoggerTest {
     private <T extends RealFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) throws OrekitException {
 
         FieldEclipseDetector<T> detector =
-                new FieldEclipseDetector<T>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,
-                                   CelestialBodyFactory.getEarth(), 6400000);
+                new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,
+                                           CelestialBodyFactory.getEarth(), 6400000);
 
         if (totalEclipse) {
             detector = detector.withUmbra();

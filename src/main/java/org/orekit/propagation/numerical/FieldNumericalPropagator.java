@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * numerical integration.
  * <p>Numerical propagation is much more accurate than analytical propagation
  * like for example {@link org.orekit.propagation.analytical.KeplerianPropagator
- * keplerian} or {@link org.orekit.propagation.analytical.EcksteinHechlerPropagator
+ * Keplerian} or {@link org.orekit.propagation.analytical.EcksteinHechlerPropagator
  * Eckstein-Hechler}, but requires a few more steps to set up to be used properly.
  * Whereas analytical propagators are configured only thanks to their various
  * constructors and can be used immediately after construction, numerical propagators
@@ -83,7 +83,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
- * would mean the propagator would use only keplerian forces. In this case, the simpler {@link
+ * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
  * org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
  * perhaps be more effective.</p>
  * <p>The underlying numerical integrator set up in the constructor may also have its own
@@ -119,9 +119,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * integrator.setInitialStepSize(initStep);
  * propagator = new FieldNumericalPropagator<>(field, integrator);
  * </pre>
- * <p>The same propagator can be reused for several orbit extrapolations, by resetting
- * the initial state without modifying the other configuration parameters. However, the
- * same instance cannot be used simultaneously by different threads, the class is <em>not</em>
+ * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
+ * thus allowing a new propagation to be started from there without recomputing the part already performed.
+ * This behaviour can be chenged by calling {@link #setResetAtEnd(boolean)}.
+ * </p>
+ * <p>Beware the same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
 
  * @see FieldSpacecraftState
@@ -142,14 +144,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** Central body attraction. */
     private NewtonianAttraction newtonianAttraction;
 
-    /** Force models used during the extrapolation of the FieldOrbit<T>, without jacobians. */
+    /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
-     * called after creation, the integrated orbit will follow a keplerian
+     * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
@@ -161,8 +163,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         super(field, integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
-        final FieldInertialProvider<T> default_law = new FieldInertialProvider<T>(
-                        new FieldRotation<T>(field.getOne(), field.getZero(), field.getZero(), field.getZero(), false));
+        final FieldInertialProvider<T> default_law =
+                        new FieldInertialProvider<>(FieldRotation.getIdentity(field));
         setAttitudeProvider(default_law);
         setMu(Double.NaN);
         setSlaveMode();
@@ -181,7 +183,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** Add a force model to the global perturbation model.
      * <p>If this method is not called at all, the integrated orbit will follow
-     * a keplerian evolution only.</p>
+     * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
      * @see #removeForceModels()
      * @see #setMu(double)
@@ -192,7 +194,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** Remove all perturbing force models from the global perturbation model.
      * <p>Once all perturbing forces have been removed (and as long as no new force
-     * model is added), the integrated orbit will follow a keplerian evolution
+     * model is added), the integrated orbit will follow a Keplerian evolution
      * only.</p>
      * @see #addForceModel(ForceModel)
      */
@@ -306,7 +308,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         }
 
         /** {@inheritDoc} */
-        public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final boolean meanOnly)
+        public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
+                                                       final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -314,14 +317,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             if (mass.getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
-            final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, super.getPositionAngleType(), date, getMu(), getFrame());
+            final FieldOrbit<T> orbit       = super.getOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
             final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-            return new FieldSpacecraftState<T>(orbit, attitude, mass);
+            return new FieldSpacecraftState<>(orbit, attitude, mass);
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y) {
-            super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y);
+        public void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y, final T[] yDot) {
+            super.getOrbitType().mapOrbitToArray(state.getOrbit(), super.getPositionAngleType(), y, yDot);
             y[6] = state.getMass();
         }
 
@@ -341,7 +344,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** Current orbit. */
         private FieldOrbit<T> orbit;
 
-        /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
+        /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private T[][] jacobian;
 
         /** Simple constructor.
@@ -402,29 +405,6 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             yDot[6] = yDot[6].add(q);
         }
 
-//        /** {@inheritDoc} */
-//        public void addMassDerivative(final double q) {
-//            if (q > 0) {
-//                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
-//            }
-//            yDot[6] = yDot[6].add(q);
-//        }
-
-//        @Override
-//        public void addXYZAcceleration(final double x, final double y, final double z) {
-//            for (int i = 0; i < 6; ++i) {
-//                final T[] jRow = jacobian[i];
-//                yDot[i] = yDot[i].add(jRow[3].linearCombination(x, jRow[3], y, jRow[4], z, jRow[5]));
-//            }
-//        }
-//
-//        @Override
-//        public void addAcceleration(final Vector3D gamma, final Frame frame)
-//            throws OrekitException {
-//            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate().toAbsoluteDate());
-//            final Vector3D gammInRefFrame = t.transformVector(gamma);
-//            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-//        }
     }
 
     /** Estimate tolerance vectors for integrators.

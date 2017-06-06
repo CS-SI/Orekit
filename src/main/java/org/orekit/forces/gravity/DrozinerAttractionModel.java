@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Informatiupj
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,7 +126,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.provider         = provider;
         this.mu               = provider.getMu();
@@ -492,7 +492,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         }
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         final FieldVector3D<T> accInInert =
-            bodyToInertial.transformVector(new FieldVector3D<T>(aX, aY, aZ));
+            bodyToInertial.transformVector(new FieldVector3D<>(aX, aY, aZ));
         adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
     }
 

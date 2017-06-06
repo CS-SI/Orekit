@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,10 +72,10 @@ public class BatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 1, 4,
-                                     0.0, 1.2e-8,
-                                     0.0, 5.5e-8,
-                                     0.0, 8.4e-9,
-                                     0.0, 3.2e-12);
+                                     0.0, 2.2e-8,
+                                     0.0, 1.1e-7,
+                                     0.0, 1.4e-8,
+                                     0.0, 6.3e-12);
 
     }
 
@@ -150,10 +150,10 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 3.1e-7,
-                                     0.0, 6.4e-7,
-                                     0.0, 1.3e-7,
-                                     0.0, 5.2e-11);
+                                     0.0, 9.5e-7,
+                                     0.0, 2.8e-6,
+                                     0.0, 3.5e-7,
+                                     0.0, 2.2e-10);
 
     }
 

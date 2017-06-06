@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,11 +38,9 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/**
- * This class is designed to accept and handle tabulated orbital entries.
+/** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
- * continuous output, with accuracy and computation methods configured by the
- * user.
+ * continuous output, with accuracy and computation methods configured by the user.
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
@@ -56,7 +54,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** Serializable UID. */
     private static final long serialVersionUID = 20151022L;
 
-    /** First date in range. */
+     /** First date in range. */
     private final AbsoluteDate minDate;
 
     /** Last date in range. */
@@ -77,46 +75,36 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** Thread-safe cache. */
     private final transient ImmutableTimeStampedCache<SpacecraftState> cache;
 
-    /**
-     * Constructor with tabulated states.
-     * @param states
-     *            tabulates states
-     * @param interpolationPoints
-     *            number of points to use in interpolation
-     * @exception OrekitException
-     *                if some states have incompatible additional states
-     * @exception MathIllegalArgumentException
-     *                if the number of states is smaller than the number of
-     *                points to use in interpolation
+    /** Constructor with tabulated states.
+     * @param states tabulates states
+     * @param interpolationPoints number of points to use in interpolation
+     * @exception OrekitException if some states have incompatible additional states
+     * @exception MathIllegalArgumentException if the number of states is smaller than
+     * the number of points to use in interpolation
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
             throws OrekitException, MathIllegalArgumentException {
         this(states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
     }
 
-    /**
-     * Constructor with tabulated states.
-     * @param states
-     *            tabulates states
-     * @param interpolationPoints
-     *            number of points to use in interpolation
-     * @param extrapolationThreshold
-     *            the largest time difference in seconds between the start or
-     *            stop boundary of the ephmeris bounds to be doing extrapolation
-     * @exception OrekitException
-     *                if some states have incompatible additional states
-     * @exception MathIllegalArgumentException
-     *                if the number of states is smaller than the number of
-     *                points to use in interpolation
+    /** Constructor with tabulated states.
+     * @param states tabulates states
+     * @param interpolationPoints number of points to use in interpolation
+     * @param extrapolationThreshold the largest time difference in seconds between
+     * the start or stop boundary of the ephemeris bounds to be doing extrapolation
+     * @exception OrekitException if some states have incompatible additional states
+     * @exception MathIllegalArgumentException if the number of states is smaller than
+     * the number of points to use in interpolation
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
-            final double extrapolationThreshold) throws OrekitException, MathIllegalArgumentException {
+                     final double extrapolationThreshold)
+        throws OrekitException, MathIllegalArgumentException {
 
         super(DEFAULT_LAW);
 
         if (states.size() < interpolationPoints) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DIMENSION, states.size(),
-                    interpolationPoints);
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DIMENSION,
+                                                   states.size(), interpolationPoints);
         }
 
         final SpacecraftState s0 = states.get(0);
@@ -134,9 +122,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
         pvProvider = new LocalPVProvider();
 
-        // User needs to explicitly set attitude provider if they want to use
-        // one
-        this.setAttitudeProvider(null);
+        //User needs to explicitly set attitude provider if they want to use one
+        setAttitudeProvider(null);
 
         // set up cache
         cache = new ImmutableTimeStampedCache<SpacecraftState>(interpolationPoints, states);
@@ -144,24 +131,21 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         this.extrapolationThreshold = extrapolationThreshold;
     }
 
-    /**
-     * Get the first date of the range.
+    /** Get the first date of the range.
      * @return the first date of the range
      */
     public AbsoluteDate getMinDate() {
         return minDate;
     }
 
-    /**
-     * Get the last date of the range.
+    /** Get the last date of the range.
      * @return the last date of the range
      */
     public AbsoluteDate getMaxDate() {
         return maxDate;
     }
 
-    /**
-     * Get the maxmimum timespan outside of the stored epheemris that is allowed
+    /** Get the maximum timespan outside of the stored ephemeris that is allowed
      * for extrapolation.
      * @return the extrapolation threshold in seconds
      */
@@ -171,7 +155,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     @Override
     public Frame getFrame() {
-        return this.frame;
+        return frame;
     }
 
     @Override
@@ -179,25 +163,25 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
         final SpacecraftState evaluatedState;
 
-        if (date.compareTo(this.minDate) < 0 && Math.abs(date.durationFrom(this.minDate)) <= extrapolationThreshold) {
-            final double dt = date.durationFrom(this.getMinDate());
+        if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)) <= extrapolationThreshold) {
+            final double dt = date.durationFrom(getMinDate());
             evaluatedState = cache.getEarliest().shiftedBy(dt);
-        } else if (date.compareTo(this.maxDate) > 0 && Math.abs(date.durationFrom(this.maxDate)) <= extrapolationThreshold) {
-            final double dt = date.durationFrom(this.getMaxDate());
+        } else if (date.compareTo(maxDate) > 0 && FastMath.abs(date.durationFrom(maxDate)) <= extrapolationThreshold) {
+            final double dt = date.durationFrom(getMaxDate());
             evaluatedState = cache.getLatest().shiftedBy(dt);
         } else {
             final List<SpacecraftState> neighbors = cache.getNeighbors(date).collect(Collectors.toList());
             evaluatedState = neighbors.get(0).interpolate(date, neighbors);
         }
 
-        final AttitudeProvider attitudeProvider = this.getAttitudeProvider();
+        final AttitudeProvider attitudeProvider = getAttitudeProvider();
 
         if (attitudeProvider == null) {
             return evaluatedState;
         } else {
             pvProvider.setCurrentState(evaluatedState);
             final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date,
-                    evaluatedState.getFrame());
+                                                                             evaluatedState.getFrame());
             return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass());
         }
     }
@@ -213,26 +197,26 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
+        throws OrekitException {
         return propagate(date).getPVCoordinates(f);
     }
 
-    /**
-     * Try (and fail) to reset the initial state.
+    /** Try (and fail) to reset the initial state.
      * <p>
      * This method always throws an exception, as ephemerides cannot be reset.
      * </p>
-     * @param state
-     *            new initial state to consider
-     * @exception OrekitException
-     *                always thrown as ephemerides cannot be reset
+     * @param state new initial state to consider
+     * @exception OrekitException always thrown as ephemerides cannot be reset
      */
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state)
+        throws OrekitException {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) throws OrekitException {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws OrekitException {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -245,8 +229,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     @Override
     public boolean isAdditionalStateManaged(final String name) {
 
-        // the additional state may be managed by a specific provider in the
-        // base class
+        // the additional state may be managed by a specific provider in the base class
         if (super.isAdditionalStateManaged(name)) {
             return true;
         }
@@ -272,8 +255,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         return managed;
     }
 
-    /**
-     * Replace the instance with a data transfer object for serialization.
+    /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes only the data needed for generation,
      * but does <em>not</em> serializes the cache itself (in fact the cache is
@@ -297,20 +279,16 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         /** Number of points to use in interpolation. */
         private final int interpolationPoints;
 
-        /**
-         * Simple constructor.
-         * @param states
-         *            tabulates states
-         * @param interpolationPoints
-         *            number of points to use in interpolation
+        /** Simple constructor.
+         * @param states tabulates states
+         * @param interpolationPoints number of points to use in interpolation
          */
         private DataTransferObject(final List<SpacecraftState> states, final int interpolationPoints) {
-            this.states = states;
+            this.states              = states;
             this.interpolationPoints = interpolationPoints;
         }
 
-        /**
-         * Replace the deserialized data transfer object with a
+        /** Replace the deserialized data transfer object with a
          * {@link Ephemeris}.
          * @return replacement {@link Ephemeris}
          */
@@ -335,18 +313,15 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         /** Current state. */
         private SpacecraftState currentState;
 
-        /**
-         * Get the current state.
+        /** Get the current state.
          * @return current state
          */
         public SpacecraftState getCurrentState() {
             return currentState;
         }
 
-        /**
-         * Set the current state.
-         * @param state
-         *            state to set
+        /** Set the current state.
+         * @param state state to set
          */
         public void setCurrentState(final SpacecraftState state) {
             this.currentState = state;
@@ -354,16 +329,16 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
         /** {@inheritDoc} */
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
-                throws OrekitException {
-            final double dt = this.getCurrentState().getDate().durationFrom(date);
+            throws OrekitException {
+            final double dt = getCurrentState().getDate().durationFrom(date);
             final double closeEnoughTimeInSec = 1e-9;
 
             if (FastMath.abs(dt) > closeEnoughTimeInSec) {
                 throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, FastMath.abs(dt), 0.0,
-                        closeEnoughTimeInSec);
+                                          closeEnoughTimeInSec);
             }
 
-            return this.getCurrentState().getPVCoordinates(f);
+            return getCurrentState().getPVCoordinates(f);
 
         }
 

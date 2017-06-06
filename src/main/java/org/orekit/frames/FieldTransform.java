@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * It is used both to define the relationship between each frame and its
  * parent frame and to gather all individual transforms into one
  * operation when converting between frames far away from each other.</p>
- * <p> The convention used in OREKIT is vectorial transformation. It means
+ * <p>The convention used in OREKIT is vectorial transformation. It means
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the
  * same vector expressed in the new frame.
@@ -62,7 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
  *
- * <p> We want to transform the {@link FieldPVCoordinates<T>} PV<sub>A</sub> to
+ * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with :
  * <p> PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0}); <br>
  *     PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
@@ -80,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </code></pre>
  *
  * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
- * <p> We want to transform the {@link FieldPVCoordinates<T>} PV<sub>A</sub> to
+ * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with
  *
  * <p> PV<sub>A</sub> = ({1, 0, 0}, { 1, 0, 0}); <br>
@@ -205,7 +205,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     /** Build a translation transform, with its first time derivative.
      * @param date date of the transform
-     * @param cartesian cartesian part of the transformation to apply (i.e. coordinates of
+     * @param cartesian Cartesian part of the transformation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame, with their derivatives)
      */
@@ -726,12 +726,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
                                                                    pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
-    /** Compute the Jacobian of the {@link #transformPVCoordinates<T>(FieldPVCoordinates<T>)}
+    /** Compute the Jacobian of the {@link #transformPVCoordinates(FieldPVCoordinates)}
      * method of the transform.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
-     * of the transformed {@link FieldPVCoordinates<T>} with respect to Cartesian coordinate j
-     * of the input {@link FieldPVCoordinates<T>} in method {@link #transformPVCoordinates<T>(FieldPVCoordinates<T>)}.
+     * of the transformed {@link FieldPVCoordinates} with respect to Cartesian coordinate j
+     * of the input {@link FieldPVCoordinates} in method {@link #transformPVCoordinates(FieldPVCoordinates)}.
      * </p>
      * <p>
      * This definition implies that if we define position-velocity coordinates
@@ -826,11 +826,11 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     }
 
-    /** Get the underlying elementary cartesian part.
+    /** Get the underlying elementary Cartesian part.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
      * returns this unique elementary translation with its derivative.</p>
-     * @return underlying elementary cartesian part
+     * @return underlying elementary Cartesian part
      * @see #getTranslation()
      * @see #getVelocity()
      */
@@ -940,7 +940,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
         @Override
         public FieldTransform<T> getInverse() {
             return this;
-        };
+        }
 
         /** {@inheritDoc} */
         @Override

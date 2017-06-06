@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.estimation;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -93,7 +95,7 @@ public class EstimationTestUtils {
         context.initialOrbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
                                                   0.250, 1.375, 0.0625, PositionAngle.TRUE,
                                                   FramesFactory.getEME2000(),
-                                                  new AbsoluteDate(2000, 2, 24, 11, 35,47.0, context.utc),
+                                                  new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                                   context.gravity.getMu());
 
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
@@ -101,6 +103,17 @@ public class EstimationTestUtils {
                                          context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
                                          //context.createStation( -4.01583,  103.12833, 3173.0, "Gunung Dempo")
                         );
+
+        // Turn-around range stations
+        // Map entry = master station
+        // Map value = slave station associated
+        context.TARstations = new HashMap<GroundStation, GroundStation>();
+
+        context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
+                                context.createStation(-54.815833,  -68.317778, 6.0, "Ushuaïa"));
+
+        context.TARstations.put(context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur"),
+                                context.createStation( 61.405833,   -6.705278,  470.0, "Sumba"));
 
         return context;
 
@@ -168,7 +181,7 @@ public class EstimationTestUtils {
 
         // Compute the frames transformation from station frame to EME2000
         Transform topoToEME =
-        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(),new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
         // Station position in EME2000 at reference date
         Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
@@ -188,6 +201,18 @@ public class EstimationTestUtils {
                                                   context.gravity.getMu());
 
         context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
+
+        // Turn-around range stations
+        // Map entry = master station
+        // Map value = slave station associated
+        context.TARstations = new HashMap<GroundStation, GroundStation>();
+
+        context.TARstations.put(context.createStation(  41.977, 13.600,  671.354, "Fucino"),
+                                context.createStation(  43.604,  1.444,  263.0  , "Toulouse"));
+
+        context.TARstations.put(context.createStation(  49.867,  8.65 ,  144.0  , "Darmstadt"),
+                                context.createStation( -25.885, 27.707, 1566.633, "Pretoria"));
+
         return context;
 
     }
@@ -200,7 +225,7 @@ public class EstimationTestUtils {
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
-                                                         orbitArray);
+                                                         orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }

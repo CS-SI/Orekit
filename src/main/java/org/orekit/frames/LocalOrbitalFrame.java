@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,50 +16,37 @@
  */
 package org.orekit.frames;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class for frames moving with an orbiting satellite.
- * <p>
- * After construction, <em>no</em> provider is set up for field-based PV coordinates,
- * hence {@link #getTransformTo(Frame, FieldAbsoluteDate) getTransformTo()} will
- * <em>not</em> work out of the box. The {@link #addFieldProvider(Field, FieldPVCoordinatesProvider)}
- * method must be called beforehand.
- * </p>
+ *
  * <p>There are several local orbital frames available. They are specified
  * by the {@link LOFType} enumerate.</p>
+ *
+ * <p> Do not use the {@link #getTransformTo(Frame, FieldAbsoluteDate)} method as it is
+ * not implemented.
+ *
  * @author Luc Maisonobe
- * @deprecated as of 9.0, this class is considered ill-designed. Instead of using this
- * class and its {@link #getTransformTo(Frame, AbsoluteDate) getTransformTo} method,
- * which will cause an orbit propagation to be pefformed under the hood, a better
- * alternative is to use {@link org.orekit.propagation.SpacecraftState#toTransform()}
- * from within the orbit propagator, at each time step.
+ * @see org.orekit.propagation.SpacecraftState#toTransform()
  */
-@Deprecated
 public class LocalOrbitalFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -4469440345574964950L;
 
     /** Build a new instance.
-     * <p>
-     * After construction, <em>no</em> provider is set up for field-based PV coordinates,
-     * hence {@link #getTransformTo(Frame, FieldAbsoluteDate) getTransformTo()} will
-     * <em>not</em> work out of the box. The {@link #addFieldProvider(Field, FieldPVCoordinatesProvider)}
-     * method must be called beforehand.
-     * </p>
+     *
+     * <p> It is highly recommended that {@code provider} use an analytic formulation and
+     * not numerical integration as large integration errors may result from many short
+     * propagations.
+     *
      * @param parent parent frame (must be non-null)
      * @param type frame type
-     * @param provider provider used to compute frame motion
+     * @param provider provider used to compute frame motion.
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
@@ -70,31 +57,17 @@ public class LocalOrbitalFrame extends Frame {
         super(parent, new LocalProvider(type, provider, parent, name), name, false);
     }
 
-    /** Add a provider for a field.
-     * @param field field to which the elements belong
-     * @param fieldProvider provider for field-based PV coordinates
-     * @param <T> type of the field elements
-     * @since 9.0
-     */
-    public <T extends RealFieldElement<T>> void addFieldProvider(final Field<T> field,
-                                                                 final FieldPVCoordinatesProvider<T> fieldProvider) {
-        ((LocalProvider) getTransformProvider()).addFieldProvider(field, fieldProvider);
-    }
-
     /** Local provider for transforms. */
     private static class LocalProvider implements TransformProvider {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20170110L;
+        private static final long serialVersionUID = 20170421L;
 
         /** Frame type. */
         private final LOFType type;
 
         /** Provider used to compute frame motion. */
         private final PVCoordinatesProvider provider;
-
-        /** Cached field-based transforms. */
-        private final transient Map<Field<? extends RealFieldElement<?>>, FieldPVCoordinatesProvider<? extends RealFieldElement<?>>> fieldProviders;
 
         /** Reference frame. */
         private final Frame reference;
@@ -112,19 +85,8 @@ public class LocalOrbitalFrame extends Frame {
                       final Frame reference, final String name) {
             this.type           = type;
             this.provider       = provider;
-            this.fieldProviders = new HashMap<>();
             this.reference      = reference;
             this.name           = name;
-        }
-
-        /** Add a provider for a field.
-         * @param field field to which the elements belong
-         * @param fieldProvider provider for field-based PV coordinates
-         * @param <T> type of the field elements
-         */
-        public <T extends RealFieldElement<T>> void addFieldProvider(final Field<T> field,
-                                                                     final FieldPVCoordinatesProvider<T> fieldProvider) {
-            fieldProviders.put(field, fieldProvider);
         }
 
         /** {@inheritDoc} */
@@ -132,19 +94,19 @@ public class LocalOrbitalFrame extends Frame {
             return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 
-        /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
-
-            @SuppressWarnings("unchecked")
-            final FieldPVCoordinatesProvider<T> fp = (FieldPVCoordinatesProvider<T>) fieldProviders.get(date.getField());
-            if (fp == null) {
-                throw new OrekitException(OrekitMessages.LOF_FRAME_NO_PROVIDER_FOR_FIELD,
-                                          date.getField().getClass().toString(), name);
-            }
-
-            return type.transformFromInertial(date, fp.getPVCoordinates(date, reference));
-
+        /**
+         * This method is not implemented.
+         *
+         * <p> {@inheritDoc}
+         *
+         * @throws UnsupportedOperationException always.
+         */
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
+                final FieldAbsoluteDate<T> date) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException(
+                    "FieldTransforms are not supported for a LocalOrbitalFrame: " + name +
+                            ". Please contact orekit-developers@orekit.org if you " +
+                            "would like to add this feature.");
         }
 
     }

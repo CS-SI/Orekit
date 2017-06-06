@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -186,8 +186,7 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"),
     VALUE_NOT_FOUND("value {0} not found in {1}"),
-    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
-    LOF_FRAME_NO_PROVIDER_FOR_FIELD("no FieldPVCoordinatesProvider for field {0} in LOF frame {1}");
+    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects");
 
 
     // CHECKSTYLE: resume JavadocVariable check

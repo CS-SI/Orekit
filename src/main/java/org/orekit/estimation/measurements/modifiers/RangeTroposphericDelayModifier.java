@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
  *
+ * @author Maxime Journot
  * @author Joris Olympio
  * @since 8.0
  */
@@ -94,8 +95,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
             // delay in meters
             final double delay = tropoModel.pathDelay(elevation, height);
 
-            // Multiply by two because it is a two-way measurment.
-            return 2 * delay;
+            return delay;
         }
 
         return 0;
@@ -106,7 +106,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
      * @param station station
      * @param refstate reference spacecraft state
      *
-     * @return jacobian of the delay wrt state
+     * @return Jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate)
@@ -185,7 +185,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
         newValue[0] = newValue[0] + delay;
         estimated.setEstimatedValue(newValue);
 
-        // update estimated derivatives with jacobian of the measure wrt state
+        // update estimated derivatives with Jacobian of the measure wrt state
         final double[][] djac = rangeErrorJacobianState(station,
                                       state);
         final double[][] stateDerivatives = estimated.getStateDerivatives();

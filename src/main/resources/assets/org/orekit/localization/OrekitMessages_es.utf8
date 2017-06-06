@@ -417,7 +417,3 @@ VALUE_NOT_FOUND = <MISSING TRANSLATION>
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
-
-# no FieldPVCoordinatesProvider for field {0} in LOF frame {1}
- LOF_FRAME_NO_PROVIDER_FOR_FIELD = <MISSING TRANSLATION>
-

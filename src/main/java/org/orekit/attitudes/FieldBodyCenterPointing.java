@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,7 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                   final FieldAbsoluteDate<T> date, final Frame frame)
+                                                        final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
 
         // spacecraft coordinates in body frame
@@ -69,8 +69,8 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
         final T w     = scInBodyFrame.getPosition().getZ().divide(ellipsoid.getC());
         final T d2    = u.pow(2).add(v.pow(2)).add(w.pow(2));
         final T d     = d2.sqrt();
-        final T ratio = d.pow(-1);
-        final FieldVector3D<T> projectedP = new FieldVector3D<T>(ratio, scInBodyFrame.getPosition());
+        final T ratio = d.reciprocal();
+        final FieldVector3D<T> projectedP = new FieldVector3D<>(ratio, scInBodyFrame.getPosition());
 
         // velocity
         final T uDot     = scInBodyFrame.getVelocity().getX().divide(ellipsoid.getA());
@@ -79,8 +79,8 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
         //we aren't using the linearCombination in the library
         final T dDot     = (u.multiply(uDot).add(v.multiply(vDot)).add(w.multiply(wDot))).divide(d);
         final T ratioDot = dDot.multiply(-1).divide(d2);
-        final FieldVector3D<T> projectedV = new FieldVector3D<T>(ratio,    scInBodyFrame.getVelocity(),
-                                                          ratioDot, scInBodyFrame.getPosition());
+        final FieldVector3D<T> projectedV = new FieldVector3D<>(ratio,    scInBodyFrame.getVelocity(),
+                                                                ratioDot, scInBodyFrame.getPosition());
 
         // acceleration
         final T uDotDot      = scInBodyFrame.getAcceleration().getX().divide(ellipsoid.getA());
@@ -90,11 +90,11 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
                                          .add(uDot.pow(2).add(vDot.pow(2)).add(wDot.pow(2)).subtract(dDot.pow(2))))
                                          .divide(d);
         final T ratioDotDot  = (dDot.pow(2).multiply(2).subtract(d.multiply(dDotDot))).divide(d.multiply(d2));
-        final FieldVector3D<T> projectedA = new FieldVector3D<T>(ratio,        scInBodyFrame.getAcceleration(),
-                                                 ratioDot.multiply(2), scInBodyFrame.getVelocity(),
-                                                 ratioDotDot,  scInBodyFrame.getPosition());
+        final FieldVector3D<T> projectedA = new FieldVector3D<>(ratio,                scInBodyFrame.getAcceleration(),
+                                                                ratioDot.multiply(2), scInBodyFrame.getVelocity(),
+                                                                ratioDotDot,          scInBodyFrame.getPosition());
         final TimeStampedFieldPVCoordinates<T> projected =
-                new TimeStampedFieldPVCoordinates<T>(date, projectedP, projectedV, projectedA);
+                new TimeStampedFieldPVCoordinates<>(date, projectedP, projectedV, projectedA);
         return getBodyFrame().getTransformTo(frame, date.toAbsoluteDate()).transformPVCoordinates(projected);
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -170,8 +170,8 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         try {
             final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
             FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                           os.getPrimaryState(),
-                                                           meanFieldOrbit);
+                                                                   os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                                   meanFieldOrbit);
             for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
             }

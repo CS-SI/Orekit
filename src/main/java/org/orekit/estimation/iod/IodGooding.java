@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -323,10 +323,10 @@ public class IodGooding {
 
     /** Compute the derivatives by finite-differences for the range problem.
      * Specifically, we are trying to solve the problem:
-     *      f(x,y) = 0
-     *      g(x,y) = 0
+     *      f(x, y) = 0
+     *      g(x, y) = 0
      * So, in a Newton-Raphson process, we would need the derivatives:
-     *  fx,fy,gx,gy
+     *  fx, fy, gx, gy
      * Enventually,
      *    dx =-f*gy / D
      *    dy = f*gx / D
@@ -344,7 +344,7 @@ public class IodGooding {
      * @param F     value of the f-function
      * @param T13   time of flight 1->3, in seconds
      * @param T12   time of flight 1->2, in seconds
-     * @param withHailley    use Halley iterative method
+     * @param withHalley    use Halley iterative method
      * @param nrev  number of revolutions
      * @param direction direction of motion
      * @param FD    derivatives of f wrt (rho1, rho3) by finite differences
@@ -357,7 +357,7 @@ public class IodGooding {
                                     final Vector3D Ein,
                                     final double F,
                                     final double T13, final double T12,
-                                    final boolean withHailley,
+                                    final boolean withHalley,
                                     final int nrev,
                                     final boolean direction,
                                     final double[] FD, final double[] GD) {
@@ -415,7 +415,7 @@ public class IodGooding {
 
         // Modified Newton-Raphson process, with Halley's method to have cubic convergence.
         // This requires computing second order derivatives.
-        if (withHailley) {
+        if (withHalley) {
             //
             final double hrho1Sq = dx * dx;
             final double hrho3Sq = dy * dy;
@@ -525,7 +525,7 @@ public class IodGooding {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V1[0] / R1).add(Pt.scalarMultiply(V1[1] / RT));
+            final Vector3D Vel1 = new  Vector3D(V1[0] / R1, P1, V1[1] / RT, Pt);
 
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,10 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldCircularOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
@@ -64,6 +68,10 @@ public class Utils {
         clearFactoryMaps(FramesFactory.class);
         clearFactoryMaps(TimeScalesFactory.class);
         clearFactory(TimeScalesFactory.class, TimeScale.class);
+        clearFactoryMaps(FieldCartesianOrbit.class);
+        clearFactoryMaps(FieldKeplerianOrbit.class);
+        clearFactoryMaps(FieldCircularOrbit.class);
+        clearFactoryMaps(FieldEquinoctialOrbit.class);
         clearFactoryMaps(JacobiPolynomials.class);
         clearFactoryMaps(NewcombOperators.class);
         for (final Class<?> c : NewcombOperators.class.getDeclaredClasses()) {

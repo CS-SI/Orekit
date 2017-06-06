@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
@@ -81,11 +82,11 @@ public class FieldEclipseDetectorTest {
     public void testWithMethods() throws OrekitException{
         doTestWithMethods(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testInsideOcculting() throws OrekitException{
         doTestInsideOcculting(Decimal64Field.getInstance());
-    }    
+    }
     @Test
     public void testInsideOcculted() throws OrekitException{
         doTestInsideOcculted(Decimal64Field.getInstance());
@@ -94,23 +95,23 @@ public class FieldEclipseDetectorTest {
     public void testTooSmallMaxIterationCount() throws OrekitException{
         testTooSmallMaxIterationCount(Decimal64Field.getInstance());
     }
- 
-    
-    
+
+
+
     private <T extends RealFieldElement<T>> void doTestEclipse(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
-        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getGCRF(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
+        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.resetInitialState(initialState);
 
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(field.getZero().add(60.),field.getZero().add(1e-3),
-                                                sun, sunRadius,
-                                                earth, earthRadius).
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1e-3),
+                                                               sun, sunRadius,
+                                                               earth, earthRadius).
                             withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
                             withUmbra();
         Assert.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
@@ -128,12 +129,12 @@ public class FieldEclipseDetectorTest {
 
     private <T extends RealFieldElement<T>> void doTestPenumbra(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getGCRF(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -141,32 +142,33 @@ public class FieldEclipseDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60.));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         sun = CelestialBodyFactory.getSun();
         earth = CelestialBodyFactory.getEarth();
         sunRadius = 696000000.;
         earthRadius = 6400000.;
 
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(zero.add(60.), zero.add(1.e-3), sun, sunRadius,
-                                                earth, earthRadius).
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(zero.add(60.), zero.add(1.e-3), sun, sunRadius,
+                                                               earth, earthRadius).
                             withPenumbra();
         Assert.assertFalse(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
     }
-   
+
     private <T extends RealFieldElement<T>> void doTestWithMethods(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getGCRF(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -174,18 +176,19 @@ public class FieldEclipseDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         sun = CelestialBodyFactory.getSun();
         earth = CelestialBodyFactory.getEarth();
         sunRadius = 696000000.;
         earthRadius = 6400000.;
 
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(field.getZero().add(60.),field.getZero().add(1e-3),
-                                                sun, sunRadius,
-                                                earth, earthRadius).
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1e-3),
+                                                               sun, sunRadius,
+                                                               earth, earthRadius).
                              withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
                              withMaxCheck(field.getZero().add(120.0)).
                              withThreshold(field.getZero().add(1.0e-4)).
@@ -201,12 +204,12 @@ public class FieldEclipseDetectorTest {
 
     private <T extends RealFieldElement<T>> void doTestInsideOcculting(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
                                                  FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -214,35 +217,39 @@ public class FieldEclipseDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         sun = CelestialBodyFactory.getSun();
         earth = CelestialBodyFactory.getEarth();
         sunRadius = 696000000.;
         earthRadius = 6400000.;
 
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(field.getZero().add(60.), field.getZero().add(1.e-3),
-                                                                sun, sunRadius,
-                                                                earth, earthRadius);
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldCartesianOrbit<T>(new TimeStampedFieldPVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field),
-                                                                                           new FieldPVCoordinates<T>(
-                                                                                           new FieldVector3D<T>(field.getZero().add(1e6), field.getZero().add(2e6), field.getZero().add(3e6)),
-                                                                                           new FieldVector3D<T>(field.getZero().add(1000), field.getZero().add(0), field.getZero().add(0)))),
-                                                                   FramesFactory.getGCRF(),
-                                                                   mu));
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3),
+                                                               sun, sunRadius,
+                                                               earth, earthRadius);
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field),
+                                                                                                                             new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero().add(1e6),
+                                                                                                                                                                          field.getZero().add(2e6),
+                                                                                                                                                                          field.getZero().add(3e6)),
+                                                                                                                                                      new FieldVector3D<>(field.getZero().add(1000),
+                                                                                                                                                                          field.getZero().add(0),
+                                                                                                                                                                          field.getZero().add(0)))),
+                                                                                         FramesFactory.getGCRF(),
+                                                                                         mu));
         Assert.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void doTestInsideOcculted(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getGCRF(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -250,37 +257,41 @@ public class FieldEclipseDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         sun = CelestialBodyFactory.getSun();
         earth = CelestialBodyFactory.getEarth();
         sunRadius = 696000000.;
         earthRadius = 6400000.;
 
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(field.getZero().add(60.), field.getZero().add(1.e-3),
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3),
                         sun, sunRadius,
                         earth, earthRadius);
         Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                           FramesFactory.getGCRF()).getPosition();
-        FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldCartesianOrbit<T>(new TimeStampedFieldPVCoordinates<T>(FieldAbsoluteDate.getJ2000Epoch(field),
-                                                                                                new FieldPVCoordinates<T>(
-                                                                                                new FieldVector3D<T>(field.getOne(), field.getZero(), field.getZero()).add(p),
-                                                                                                new FieldVector3D<T>(field.getZero(), field.getZero(), field.getOne()))),
-                                                                   FramesFactory.getGCRF(),
-                                                                   mu));
+        FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field),
+                                                                                                                             new FieldPVCoordinates<>(new FieldVector3D<>(field.getOne(),
+                                                                                                                                                                          field.getZero(),
+                                                                                                                                                                          field.getZero()).add(p),
+                                                                                                                                                      new FieldVector3D<>(field.getZero(),
+                                                                                                                                                                          field.getZero(),
+                                                                                                                                                                          field.getOne()))),
+                                                                                         FramesFactory.getGCRF(),
+                                                                                         mu));
         Assert.assertEquals(FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void testTooSmallMaxIterationCount(Field<T> field) throws OrekitException {
         T zero = field.getZero();
-        final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
-        final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
-        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<T>(field,1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
-        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(orbit);
+        final FieldVector3D<T> position  = new FieldVector3D<>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
+        final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
+        FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                FramesFactory.getGCRF(), iniDate, mu);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
         };
@@ -288,9 +299,10 @@ public class FieldEclipseDetectorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
+            new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         sun = CelestialBodyFactory.getSun();
         earth = CelestialBodyFactory.getEarth();
@@ -298,9 +310,9 @@ public class FieldEclipseDetectorTest {
         earthRadius = 6400000.;
 
         int n = 5;
-        FieldEclipseDetector<T> e = new FieldEclipseDetector<T>(field.getZero().add(60.), field.getZero().add(1.e-3),
-                        sun, sunRadius,
-                        earth, earthRadius).
+        FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3),
+                                                               sun, sunRadius,
+                                                               earth, earthRadius).
                              withHandler(new FieldStopOnDecreasing<FieldEclipseDetector<T>, T>()).
                              withMaxCheck(field.getZero().add(120.0)).
                              withThreshold(field.getZero().add(1.0e-4)).

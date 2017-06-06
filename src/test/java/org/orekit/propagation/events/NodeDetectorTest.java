@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class NodeDetectorTest {
 
         // Define 2 instances of NodeDetector:
         EventDetector rawDetector =
-                new NodeDetector(1e-6,initialState.getOrbit(), initialState.getFrame()).
+                new NodeDetector(1e-6, initialState.getOrbit(), initialState.getFrame()).
                 withHandler(new ContinueOnEvent<NodeDetector>());
 
         EventsLogger logger1 = new EventsLogger();

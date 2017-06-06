@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,11 @@ package org.orekit.propagation;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -30,15 +30,20 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FieldLofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -54,7 +59,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple keplerian model for orbit, a linear extrapolation for attitude
+ * a simple Keplerian model for orbit, a linear extrapolation for attitude
  * taking the spin rate into account and no mass change. It is <em>not</em>
  * intended as a replacement for proper orbit and attitude propagation but
  * should be sufficient for either small time shifts or coarse accuracy.
@@ -67,7 +72,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class FieldSpacecraftState <T extends RealFieldElement<T>> {
+public class FieldSpacecraftState <T extends RealFieldElement<T>>
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T>, FieldTimeInterpolable<FieldSpacecraftState<T>, T> {
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -98,7 +104,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     public FieldSpacecraftState(final FieldOrbit<T> orbit)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -123,7 +129,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -148,7 +154,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -175,7 +181,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<T>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -226,11 +232,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @see #getAdditionalStates()
      */
     @SafeVarargs
-    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T ... value) {
+    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        return new FieldSpacecraftState<T>(orbit, attitude, mass, newMap);
+        return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -258,37 +264,73 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model for orbit, a linear extrapolation for attitude
+     * a simple Keplerian model for orbit, a linear extrapolation for attitude
      * taking the spin rate into account and neither mass nor additional states
      * changes. It is <em>not</em> intended as a replacement for proper orbit
      * and attitude propagation but should be sufficient for small time shifts
      * or coarse accuracy.
      * </p>
      * <p>
-     * As a rough order of magnitude, the following table shows the interpolation
+     * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
-     * propagator} for an 800km altitude nearly circular polar Earth orbit with
-     * {@link org.orekit.attitudes.BodyCenterPointing body center pointing}. Beware
-     * that these results may be different for other orbits.
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
+     * <caption>Extrapolation Error</caption>
      * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
-     * <th>position error (m)</th><th>velocity error (m/s)</th>
-     * <th>attitude error (&deg;)</th></tr>
-     * <tr><td bgcolor="#eeeeff"> 60</td><td>  20</td><td>1</td><td>0.001</td></tr>
-     * <tr><td bgcolor="#eeeeff">120</td><td> 100</td><td>2</td><td>0.002</td></tr>
-     * <tr><td bgcolor="#eeeeff">300</td><td> 600</td><td>4</td><td>0.005</td></tr>
-     * <tr><td bgcolor="#eeeeff">600</td><td>2000</td><td>6</td><td>0.008</td></tr>
-     * <tr><td bgcolor="#eeeeff">900</td><td>4000</td><td>6</td><td>0.010</td></tr>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
      * </table>
-     * @param kk time shift in seconds
+     * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      * except for the mass which stay unchanged
      */
-    public FieldSpacecraftState<T> shiftedBy(final T kk) {
-        return new FieldSpacecraftState<T>(orbit.shiftedBy(kk), attitude.shiftedBy(kk),
-                                   mass, additional);
+    public FieldSpacecraftState<T> shiftedBy(final double dt) {
+        return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                                          mass, additional);
+    }
+
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Keplerian model for orbit, a linear extrapolation for attitude
+     * taking the spin rate into account and neither mass nor additional states
+     * changes. It is <em>not</em> intended as a replacement for proper orbit
+     * and attitude propagation but should be sufficient for small time shifts
+     * or coarse accuracy.
+     * </p>
+     * <p>
+     * As a rough order of magnitude, the following table shows the extrapolation
+     * errors obtained between this simple shift method and an {@link
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
+     * </p>
+     * <table border="1" cellpadding="5">
+     * <caption>Extrapolation Error</caption>
+     * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
+     * </table>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * except for the mass which stay unchanged
+     */
+    public FieldSpacecraftState<T> shiftedBy(final T dt) {
+        return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                                          mass, additional);
     }
 
     /** Get an interpolated instance.
@@ -310,31 +352,39 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @exception OrekitException if the number of point is too small for interpolating
      */
     public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
-                                               final Collection<FieldSpacecraftState<T>> sample)
+                                               final Stream<FieldSpacecraftState<T>> sample)
         throws OrekitException {
 
         // prepare interpolators
-        final List<FieldOrbit<T>> orbits = new ArrayList<FieldOrbit<T>>(sample.size());
-        final List<FieldAttitude<T>> attitudes = new ArrayList<FieldAttitude<T>>(sample.size());
-        final FieldHermiteInterpolator<T> massInterpolator = new FieldHermiteInterpolator<T>();
+        final List<FieldOrbit<T>> orbits = new ArrayList<>();
+        final List<FieldAttitude<T>> attitudes = new ArrayList<>();
+        final FieldHermiteInterpolator<T> massInterpolator = new FieldHermiteInterpolator<>();
         final Map<String, FieldHermiteInterpolator<T>> additionalInterpolators =
                 new HashMap<String, FieldHermiteInterpolator<T>>(additional.size());
         for (final String name : additional.keySet()) {
-            additionalInterpolators.put(name, new FieldHermiteInterpolator<T>());
+            additionalInterpolators.put(name, new FieldHermiteInterpolator<>());
         }
 
         // extract sample data
-        for (final FieldSpacecraftState<T> state : sample) {
-            final T deltaT = state.getDate().durationFrom(date);
-            orbits.add(state.getOrbit());
-            attitudes.add(state.getAttitude());
-            final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
-            mm[0] = state.getMass();
-            massInterpolator.addSamplePoint(deltaT,
-                                            mm);
-            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
+        try {
+            sample.forEach(state -> {
+                try {
+                    final T deltaT = state.getDate().durationFrom(date);
+                    orbits.add(state.getOrbit());
+                    attitudes.add(state.getAttitude());
+                    final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
+                    mm[0] = state.getMass();
+                    massInterpolator.addSamplePoint(deltaT,
+                                                    mm);
+                    for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
+                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+                    }
+                } catch (OrekitException oe) {
+                    throw new OrekitExceptionWrapper(oe);
+                }
+            });
+        } catch (OrekitExceptionWrapper oew) {
+            throw oew.getException();
         }
 
         // perform interpolations
@@ -352,8 +402,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
         }
 
         // create the complete interpolated state
-        return new FieldSpacecraftState<T>(interpolatedOrbit, interpolatedAttitude,
-                                   interpolatedMass, interpolatedAdditional);
+        return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude,
+                                          interpolatedMass, interpolatedAdditional);
 
     }
 
@@ -453,18 +503,17 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
         return Collections.unmodifiableMap(additional);
     }
 
-//  TODO: field implementation
-//    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
-//     * <p>The spacecraft frame origin is at the point defined by the orbit,
-//     * and its orientation is defined by the attitude.</p>
-//     * @return transform from specified frame to current spacecraft frame
-//     */
-////    public Transform toTransform() {
-//        final FieldAbsoluteDate<T> date = orbit.getDate();
-//        return new Transform(date.toAbsoluteDate(),
-//        TODO                     new Transform(date.toAbsoluteDate(), orbit.getFieldPVCoordinates().negate()),
-//                             new Transform(date.toAbsoluteDate(), attitude.getOrientation()));
-//    }
+    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
+     * <p>The spacecraft frame origin is at the point defined by the orbit,
+     * and its orientation is defined by the attitude.</p>
+     * @return transform from specified frame to current spacecraft frame
+     */
+    public FieldTransform<T> toTransform() {
+        final FieldAbsoluteDate<T> date = orbit.getDate();
+        return new FieldTransform<>(date,
+                                    new FieldTransform<>(date, orbit.getPVCoordinates().negate()),
+                                    new FieldTransform<>(date, attitude.getOrientation()));
+    }
 
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2)
@@ -473,19 +522,19 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
         return orbit.getMu();
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds
+     * @return Keplerian period in seconds
      */
     public T getKeplerianPeriod() {
         return orbit.getKeplerianPeriod();
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return Keplerian mean motion in radians per second
      */
     public T getKeplerianMeanMotion() {
         return orbit.getKeplerianMeanMotion();

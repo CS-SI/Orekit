@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -31,6 +31,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -53,7 +56,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class FieldAttitude<T extends RealFieldElement<T>> {
+public class FieldAttitude<T extends RealFieldElement<T>>
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T>, FieldTimeInterpolable<FieldAttitude<T>, T> {
 
 
     /** Reference frame. */
@@ -79,12 +83,12 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * including rotation rate
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final FieldAngularCoordinates<T> orientation) {
+                         final FieldAngularCoordinates<T> orientation) {
         this(referenceFrame,
-             new TimeStampedFieldAngularCoordinates<T>(date,
-                                               orientation.getRotation(),
-                                               orientation.getRotationRate(),
-                                               orientation.getRotationAcceleration()));
+             new TimeStampedFieldAngularCoordinates<>(date,
+                                                      orientation.getRotation(),
+                                                      orientation.getRotationRate(),
+                                                      orientation.getRotationAcceleration()));
     }
 
     /** Creates a new instance.
@@ -95,8 +99,8 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @param acceleration satellite rotation acceleration (in <strong>satellite</strong> frame)
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final FieldRotation<T> attitude, final FieldVector3D<T> spin, final FieldVector3D<T> acceleration) {
-        this(referenceFrame, new TimeStampedFieldAngularCoordinates<T>(date, attitude, spin, acceleration));
+                         final FieldRotation<T> attitude, final FieldVector3D<T> spin, final FieldVector3D<T> acceleration) {
+        this(referenceFrame, new TimeStampedFieldAngularCoordinates<>(date, attitude, spin, acceleration));
     }
     /** Creates a new instance.
      * @param date date at which attitude is defined
@@ -107,20 +111,26 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @param field field used by default
      */
     public FieldAttitude(final FieldAbsoluteDate<T> date, final Frame referenceFrame,
-                    final Rotation attitude, final Vector3D spin, final Vector3D acceleration, final Field<T> field) {
-        this(referenceFrame, new TimeStampedFieldAngularCoordinates<T>(date,
-                              new FieldRotation<T>(field.getZero().add(attitude.getQ0()),
-                                                  field.getZero().add(attitude.getQ1()),
-                                                  field.getZero().add(attitude.getQ2()),
-                                                  field.getZero().add(attitude.getQ3()), true),
-                              new FieldVector3D<T>(field.getZero().add(spin.getX()),
-                                                  field.getZero().add(spin.getY()),
-                                                  field.getZero().add(spin.getZ())),
-                              new FieldVector3D<T>(field.getZero().add(acceleration.getX()),
-                                                  field.getZero().add(acceleration.getY()),
-                                                  field.getZero().add(acceleration.getZ()))));
+                         final Rotation attitude, final Vector3D spin, final Vector3D acceleration, final Field<T> field) {
+        this(referenceFrame, new TimeStampedFieldAngularCoordinates<>(date,
+                                                                      new FieldRotation<>(field, attitude),
+                                                                      new FieldVector3D<>(field, spin),
+                                                                      new FieldVector3D<>(field, acceleration)));
     }
 
+    /** Get a time-shifted attitude.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a linear extrapolation for attitude taking the spin rate into account.
+     * It is <em>not</em> intended as a replacement for proper attitude propagation
+     * but should be sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new attitude, shifted with respect to the instance (which is immutable)
+     */
+    public FieldAttitude<T> shiftedBy(final double dt) {
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
+    }
 
     /** Get a time-shifted attitude.
      * <p>
@@ -133,7 +143,7 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public FieldAttitude<T> shiftedBy(final T dt) {
-        return new FieldAttitude<T>(referenceFrame, orientation.shiftedBy(dt));
+        return new FieldAttitude<>(referenceFrame, orientation.shiftedBy(dt));
     }
 
     /** Get a similar attitude with a specific reference frame.
@@ -159,10 +169,10 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
 
         // we have to take an intermediate rotation into account
         final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate().toAbsoluteDate());
-        return new FieldAttitude<T>(orientation.getDate(), newReferenceFrame,
-                            orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
-                            orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
-                            orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
+        return new FieldAttitude<>(orientation.getDate(), newReferenceFrame,
+                                   orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
+                                   orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
+                                   orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
 
     }
 
@@ -234,16 +244,14 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate, final Collection<FieldAttitude<T>> sample)
+    public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
+                                        final Stream<FieldAttitude<T>> sample)
         throws OrekitException {
         final List<TimeStampedFieldAngularCoordinates<T>> datedPV =
-                new ArrayList<TimeStampedFieldAngularCoordinates<T>>(sample.size());
-        for (final FieldAttitude<T> attitude : sample) {
-            datedPV.add(attitude.orientation);
-        }
+                sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedFieldAngularCoordinates<T> interpolated =
                 TimeStampedFieldAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
-        return new FieldAttitude<T>(referenceFrame, interpolated);
+        return new FieldAttitude<>(referenceFrame, interpolated);
     }
     /**
      * Converts to an Attitude instance.

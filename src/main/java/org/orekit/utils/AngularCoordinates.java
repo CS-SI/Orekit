@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -175,8 +175,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * {@link DerivativeStructure} with proper order
      */
     public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) throws OrekitException {
-        this(new FieldRotation<DerivativeStructure>(u.toDerivativeStructureVector(2),
-                                                    v.toDerivativeStructureVector(2)));
+        this(new FieldRotation<>(u.toDerivativeStructureVector(2),
+                                 v.toDerivativeStructureVector(2)));
     }
 
     /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
@@ -407,7 +407,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
-        return new FieldRotation<DerivativeStructure>(q0DS, q1DS, q2DS, q3DS, false);
+        return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
 
     }
 

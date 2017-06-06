@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,13 +32,14 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import fr.cs.examples.Autoconfiguration;
 import fr.cs.examples.KeyValueFileParser;
 
 /** Orekit tutorial for computing visibility circles.
@@ -53,7 +54,18 @@ public class VisibilityCircle {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // input/out
             File input  = new File(VisibilityCircle.class.getResource("/visibility-circle.in").toURI().getPath());

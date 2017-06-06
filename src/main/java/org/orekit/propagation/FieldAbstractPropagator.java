@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -141,7 +141,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     /** {@inheritDoc} */
     public void setMasterMode(final T h,
                               final FieldOrekitFixedStepHandler<T> handler) {
-        setMasterMode(new FieldOrekitStepNormalizer<T>(h, handler));
+        setMasterMode(new FieldOrekitStepNormalizer<>(h, handler));
         fixedStepSize = h;
     }
 

@@ -146,17 +146,27 @@ public class SaastamoinenModel implements TroposphericModel {
         return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
+     * reasons, we use the value for h = 0 when altitude is negative.
+     * </p>
+     */
     public double pathDelay(final double elevation, final double height) {
+
+        // there are no data in the model for negative altitudes
+        // we use the data for the lowest available altitude: 0.0
+        final double fixedHeight = FastMath.max(0.0, height);
+
         // the corrected temperature using a temperature gradient of -6.5 K/km
-        final double T = t0 - 6.5e-3 * height;
+        final double T = t0 - 6.5e-3 * fixedHeight;
         // the corrected pressure
-        final double P = p0 * FastMath.pow(1.0 - 2.26e-5 * height, 5.225);
+        final double P = p0 * FastMath.pow(1.0 - 2.26e-5 * fixedHeight, 5.225);
         // the corrected humidity
-        final double R = r0 * FastMath.exp(-6.396e-4 * height);
+        final double R = r0 * FastMath.exp(-6.396e-4 * fixedHeight);
 
         // interpolate the b correction term
-        final double B = bFunction.value(height / 1e3);
+        final double B = bFunction.value(fixedHeight / 1e3);
         // calculate e
         final double e = R * FastMath.exp(eFunction.value(T));
 
@@ -164,7 +174,7 @@ public class SaastamoinenModel implements TroposphericModel {
         final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
 
         // get correction factor
-        final double deltaR = getDeltaR(height, z);
+        final double deltaR = getDeltaR(fixedHeight, z);
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);

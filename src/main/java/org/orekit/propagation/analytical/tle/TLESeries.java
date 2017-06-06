@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,11 @@ import org.orekit.utils.PVCoordinates;
  * @see DataProvidersManager
  * @author Fabien Maussion
  * @author Luc Maisonobe
+ * @deprecated as of 9.0, this class is deprecated without replacement. The file format
+ * used was considered to be too specific and the API not really well designed. Users are
+ * encouraged to use their own parser for series of TLE
  */
+@Deprecated
 public class TLESeries implements DataLoader {
 
     /** Default supported files name pattern. */

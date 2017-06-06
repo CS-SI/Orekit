@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -289,9 +288,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                 sample.forEach(pv -> {
                     final Vector3D position = pv.getPosition();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                new double[] {
-                                                              position.getX(), position.getY(), position.getZ()
-                                                });
+                                                position.toArray());
                 });
                 break;
             case USE_PV :
@@ -300,11 +297,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                     final Vector3D position = pv.getPosition();
                     final Vector3D velocity = pv.getVelocity();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                new double[] {
-                                                    position.getX(), position.getY(), position.getZ()
-                                                }, new double[] {
-                                                    velocity.getX(), velocity.getY(), velocity.getZ()
-                                                });
+                                                position.toArray(), velocity.toArray());
                 });
                 break;
             case USE_PVA :
@@ -314,13 +307,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                     final Vector3D velocity     = pv.getVelocity();
                     final Vector3D acceleration = pv.getAcceleration();
                     interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                                new double[] {
-                                                    position.getX(),     position.getY(),     position.getZ()
-                                                }, new double[] {
-                                                    velocity.getX(),     velocity.getY(),     velocity.getZ()
-                                                }, new double[] {
-                                                    acceleration.getX(), acceleration.getY(), acceleration.getZ()
-                                                });
+                                                position.toArray(), velocity.toArray(), acceleration.toArray());
                 });
                 break;
             default :
@@ -329,20 +316,10 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         }
 
         // interpolate
-        final DerivativeStructure zero = new DSFactory(1, 2).variable(0, 0.0);
-        final DerivativeStructure[] p  = interpolator.value(zero);
+        final double[][] p = interpolator.derivatives(0.0, 2);
 
         // build a new interpolated instance
-        return new TimeStampedPVCoordinates(date,
-                                            new Vector3D(p[0].getValue(),
-                                                         p[1].getValue(),
-                                                         p[2].getValue()),
-                                            new Vector3D(p[0].getPartialDerivative(1),
-                                                         p[1].getPartialDerivative(1),
-                                                         p[2].getPartialDerivative(1)),
-                                            new Vector3D(p[0].getPartialDerivative(2),
-                                                         p[1].getPartialDerivative(2),
-                                                         p[2].getPartialDerivative(2)));
+        return new TimeStampedPVCoordinates(date, new Vector3D(p[0]), new Vector3D(p[1]), new Vector3D(p[2]));
 
     }
 

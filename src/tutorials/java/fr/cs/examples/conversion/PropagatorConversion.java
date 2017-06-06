@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -50,8 +53,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for propagator conversion.
  * @author Pascal Parraud
  */
@@ -64,7 +65,18 @@ public class PropagatorConversion {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // gravity field
             NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);

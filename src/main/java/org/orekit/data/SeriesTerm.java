@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,16 +152,18 @@ abstract class SeriesTerm {
             double c    = 0;
             double sDot = 0;
             double cDot = 0;
-            for (int j = sinCoeff[i].length - 1; j > 0; --j) {
-                s    = s    * tc +     sinCoeff[i][j];
-                c    = c    * tc +     cosCoeff[i][j];
-                sDot = sDot * tc + j * sinCoeff[i][j];
-                cDot = cDot * tc + j * cosCoeff[i][j];
+            if (sinCoeff[i].length > 0) {
+                for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                    s    = s    * tc +     sinCoeff[i][j];
+                    c    = c    * tc +     cosCoeff[i][j];
+                    sDot = sDot * tc + j * sinCoeff[i][j];
+                    cDot = cDot * tc + j * cosCoeff[i][j];
+                }
+                s     = s * tc + sinCoeff[i][0];
+                c     = c * tc + cosCoeff[i][0];
+                sDot /= Constants.JULIAN_CENTURY;
+                cDot /= Constants.JULIAN_CENTURY;
             }
-            s     = s * tc + sinCoeff[i][0];
-            c     = c * tc + cosCoeff[i][0];
-            sDot /= Constants.JULIAN_CENTURY;
-            cDot /= Constants.JULIAN_CENTURY;
             derivatives[i] = (sDot - c * aDot) * sin + (cDot + s * aDot) * cos;
         }
 
@@ -231,16 +233,18 @@ abstract class SeriesTerm {
             T c    = tc.getField().getZero();
             T sDot = tc.getField().getZero();
             T cDot = tc.getField().getZero();
-            for (int j = sinCoeff[i].length - 1; j > 0; --j) {
-                s    = s.multiply(tc).add(sinCoeff[i][j]);
-                c    = c.multiply(tc).add(cosCoeff[i][j]);
-                sDot = sDot.multiply(tc).add(j * sinCoeff[i][j]);
-                cDot = cDot.multiply(tc).add(j * cosCoeff[i][j]);
+            if (sinCoeff[i].length > 0) {
+                for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                    s    = s.multiply(tc).add(sinCoeff[i][j]);
+                    c    = c.multiply(tc).add(cosCoeff[i][j]);
+                    sDot = sDot.multiply(tc).add(j * sinCoeff[i][j]);
+                    cDot = cDot.multiply(tc).add(j * cosCoeff[i][j]);
+                }
+                s    = s.multiply(tc).add(sinCoeff[i][0]);
+                c    = c.multiply(tc).add(cosCoeff[i][0]);
+                sDot = sDot.divide(Constants.JULIAN_CENTURY);
+                cDot = cDot.divide(Constants.JULIAN_CENTURY);
             }
-            s    = s.multiply(tc).add(sinCoeff[i][0]);
-            c    = c.multiply(tc).add(cosCoeff[i][0]);
-            sDot = sDot.divide(Constants.JULIAN_CENTURY);
-            cDot = cDot.divide(Constants.JULIAN_CENTURY);
             derivatives[i] = sDot.subtract(c.multiply(aDot)).multiply(sin).
                              add(cDot.add(s.multiply(aDot)).multiply(cos));
         }
@@ -312,7 +316,7 @@ abstract class SeriesTerm {
 
     }
 
-    /** Extend an array to old at least index and degree.
+    /** Extend an array to hold at least index and degree.
      * @param index index of the function
      * @param degree degree of the coefficients
      * @param array to extend
@@ -339,7 +343,7 @@ abstract class SeriesTerm {
 
     }
 
-    /** Extend an array to old at least index and degree.
+    /** Extend an array to hold at least degree.
      * @param degree degree of the coefficients
      * @param array to extend
      * @return extended array

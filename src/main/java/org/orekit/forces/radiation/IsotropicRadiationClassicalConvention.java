@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
-        };
+        }
         this.crossSection = crossSection;
         this.ca           = ca;
         this.cs           = cs;
@@ -129,7 +129,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                                                                             final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
                                                                             final FieldVector3D<DerivativeStructure> flux) {
         final double kP = crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
-        return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(kP), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
     /** {@inheritDoc} */
@@ -153,7 +153,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
 
         final DerivativeStructure kP =
                 caDS.add(csDS).subtract(1).multiply(-4.0 / 9.0).add(1).multiply(crossSection);
-        return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
+        return new FieldVector3D<>(kP.divide(mass), flux);
 
     }
 
@@ -165,7 +165,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                                       final FieldVector3D<T> flux)
         throws OrekitException {
         final double kP = crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
-        return new FieldVector3D<T>(mass.reciprocal().multiply(kP), flux);
+        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
 }

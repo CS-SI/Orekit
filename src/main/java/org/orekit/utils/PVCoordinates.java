@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -234,7 +234,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
-        return new FieldVector3D<DerivativeStructure>(x, y, z);
+        return new FieldVector3D<>(x, y, z);
 
     }
 

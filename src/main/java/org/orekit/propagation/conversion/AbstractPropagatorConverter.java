@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -113,7 +114,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     }
 
     /** Convert a propagator to another.
-     * @param source initial propagator
+     * @param source initial propagator (the propagator will be used for sample
+     * generation, if it is a numerical propagator, its initial state will
+     * be reset unless {@link AbstractIntegratedPropagator#setResetAtEnd(boolean)}
+     * has been called beforehand)
      * @param timeSpan time span for fitting
      * @param nbPoints number of fitting points over time span
      * @param freeParameters names of the free parameters
@@ -132,7 +136,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     }
 
     /** Convert a propagator to another.
-     * @param source initial propagator
+     * @param source initial propagator (the propagator will be used for sample
+     * generation, if it is a numerical propagator, its initial state will
+     * be reset unless {@link AbstractIntegratedPropagator#setResetAtEnd(boolean)}
+     * has been called beforehand)
      * @param timeSpan time span for fitting
      * @param nbPoints number of fitting points over time span
      * @param freeParameters names of the free parameters
@@ -143,7 +150,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
-                              final String ... freeParameters)
+                              final String... freeParameters)
         throws OrekitException, IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
@@ -176,7 +183,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
-                              final String ... freeParameters)
+                              final String... freeParameters)
         throws OrekitException, IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         return adapt(states, positionOnly);
@@ -252,8 +259,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                                final double timeSpan,
                                                final int nbPoints) throws OrekitException {
 
-        final SpacecraftState initialState = source.getInitialState();
-
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
 
         final double stepSize = timeSpan / (nbPoints - 1);
@@ -261,8 +266,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         for (double dt = 0; dt < timeSpan; dt += stepSize) {
             states.add(source.propagate(iniDate.shiftedBy(dt)));
         }
-
-        source.resetInitialState(initialState);
 
         return states;
     }

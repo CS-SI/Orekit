@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ public class TopocentricFrameTest {
 
         // Check that frame directions are aligned
         final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
-        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_I.negate());
+        final double yDiff = Vector3D.dotProduct(topoFrame.getSouth(), Vector3D.PLUS_I);
         final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_K);
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
@@ -161,6 +161,10 @@ public class TopocentricFrameTest {
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
         Assert.assertEquals(-1., zDiff, Utils.epsilonTest);
+
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getNadir(), topoFrame2.getZenith()), Utils.epsilonTest);
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getNadir()), Utils.epsilonTest);
+
     }
 
     @Test
@@ -434,7 +438,7 @@ public class TopocentricFrameTest {
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
                                                itrf);
-        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0,0.0,0.0), "test");
+        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "test");
         GeodeticPoint gp = staFrame.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS+600000,
                                                                 0.0, FastMath.toRadians(5.0));
         Assert.assertEquals(0.0, gp.getLongitude(), 1.0e-15);

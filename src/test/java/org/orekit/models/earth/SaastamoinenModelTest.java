@@ -149,6 +149,16 @@ public class SaastamoinenModelTest {
     }
 
     @Test
+    public void testNegativeHeight() throws OrekitException {
+        Utils.setDataRoot("atmosphere");
+        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        final double height = -500.0;
+        for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
+            Assert.assertEquals(model.pathDelay(elevation, 0.0), model.pathDelay(elevation, height), 1.e-10);
+        }
+    }
+
+    @Test
     public void compareExpectedValues() throws OrekitException {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();

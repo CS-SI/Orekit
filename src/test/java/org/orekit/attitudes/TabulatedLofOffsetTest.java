@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -142,7 +142,7 @@ public class TabulatedLofOffsetTest {
         originalPropagator.setSlaveMode();
 
         // use the sample and compare it to original
-        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(),type, sample,
+        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
                                                                   6, AngularDerivativesFilter.USE_RR);
         final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
         rebuildingPropagator.setAttitudeProvider(tabulated);
@@ -185,7 +185,7 @@ public class TabulatedLofOffsetTest {
         originalPropagator.setSlaveMode();
 
         // use the sample and generate an ephemeris
-        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(),type, sample,
+        final AttitudeProvider tabulated = new TabulatedLofOffset(orbit.getFrame(), type, sample,
                                                                   6, AngularDerivativesFilter.USE_RR);
         final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
         rebuildingPropagator.setAttitudeProvider(tabulated);

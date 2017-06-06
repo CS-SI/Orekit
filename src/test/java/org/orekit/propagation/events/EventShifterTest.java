@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -166,14 +166,14 @@ public class EventShifterTest {
         for (EventEntry entry : log) {
             double error = entry.getTimeError();
             if (entry.name.contains("10s")) {
-                Assert.assertTrue(error > 0.00001);
-                Assert.assertTrue(error < 0.0003);
+                Assert.assertTrue(error > 1.0e-6);
+                Assert.assertTrue(error < 3.0e-6);
             } else if (entry.name.contains("100s")) {
-                Assert.assertTrue(error > 0.002);
-                Assert.assertTrue(error < 0.03);
+                Assert.assertTrue(error > 0.001);
+                Assert.assertTrue(error < 0.003);
             } else if (entry.name.contains("1000s")) {
                 Assert.assertTrue(error > 0.7);
-                Assert.assertTrue(error < 3.3);
+                Assert.assertTrue(error < 1.1);
             }
         }
     }

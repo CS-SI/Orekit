@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package fr.cs.examples.bodies;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -33,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -43,8 +46,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import fr.cs.examples.Autoconfiguration;
 
 public class DEFile {
 
@@ -86,7 +87,21 @@ public class DEFile {
      */
     public static void main(String[] args) {
         try {
-            Autoconfiguration.configureOrekit();
+
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
+
             String inName  = null;
             String outName = null;
             List<String> constants = new ArrayList<String>();
@@ -136,7 +151,7 @@ public class DEFile {
             }
 
             if (allConstants) {
-                for (Map.Entry<String,Double> entry : de.headerConstants.entrySet()) {
+                for (Map.Entry<String, Double> entry : de.headerConstants.entrySet()) {
                     System.out.println(entry.getKey() + "     " + entry.getValue());
                 }
             }

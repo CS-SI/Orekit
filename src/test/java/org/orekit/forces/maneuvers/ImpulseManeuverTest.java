@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,7 +98,7 @@ public class ImpulseManeuverTest {
 
         final Vector3D deltaV = new Vector3D(deltaX, deltaY, deltaZ);
 
-        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(),LOFType.VNC));
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(), LOFType.VNC));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(driftTimeInSec));
         InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,

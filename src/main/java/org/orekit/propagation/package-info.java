@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,7 +48,7 @@
  * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
  * coefficients correctors, and uses mean parameters to compute the new
- * position. As the keplerian propagator, it implements the
+ * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
  *
  * <h2> Numerical propagation </h2>

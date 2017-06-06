@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,12 +49,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.699e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.745e-8);
     }
 
     @Test
     public void testConversionPositionOnly() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 6.405e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 1.839e-7);
     }
 
     protected void checkFit(final Orbit orbit,

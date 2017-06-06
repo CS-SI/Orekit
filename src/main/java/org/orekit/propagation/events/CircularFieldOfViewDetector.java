@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -130,7 +130,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      */
     public double g(final SpacecraftState s) throws OrekitException {
 
-        // Compute target position/velocity at date in spacecraft frame */
+        // Compute target position/velocity at date in spacecraft frame
         final Vector3D targetPosInert = new Vector3D(1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                            -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);

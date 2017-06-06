@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,9 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.random.RandomGenerator;
@@ -52,8 +54,7 @@ public class FieldTransformTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIdentityTranslation(Field<T> field) {
-        checkNoTransform(new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field),
-                                              createVector(field, 0, 0, 0)),
+        checkNoTransform(FieldTransform.getIdentity(field).shiftedBy(12345.0),
                          new Well19937a(0xfd118eac6b5ec136l));
     }
 
@@ -63,9 +64,22 @@ public class FieldTransformTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIdentityRotation(Field<T> field) {
-        checkNoTransform(new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field),
-                                              createRotation(field, 1, 0, 0, 0, false)),
+        checkNoTransform(FieldTransform.getIdentity(field),
                          new Well19937a(0xfd118eac6b5ec136l));
+    }
+
+    @Test
+    public void testIdentityLine() {
+        doTestIdentityLine(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIdentityLine(Field<T> field) {
+        RandomGenerator random = new Well19937a(0x98603025df70db7cl);
+        FieldVector3D<T> p1 = randomVector(field, 100.0, random);
+        FieldVector3D<T> p2 = randomVector(field, 100.0, random);
+        FieldLine<T> line = new FieldLine<>(p1, p2, 1.0e-6);
+        FieldLine<T> transformed = FieldTransform.getIdentity(field).transformLine(line);
+        Assert.assertSame(line, transformed);
     }
 
     @Test
@@ -168,6 +182,10 @@ public class FieldTransformTest {
         Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
         Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm().getReal() > 0.01);
 
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm().getReal(), 1.0e-15);
     }
 
     @Test
@@ -242,7 +260,7 @@ public class FieldTransformTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIdentityJacobianP(Field<T> field) {
-        doTestIdentityJacobian(3, CartesianDerivativesFilter.USE_P);
+        doTestIdentityJacobian(field, 3, CartesianDerivativesFilter.USE_P);
     }
 
     @Test
@@ -251,7 +269,7 @@ public class FieldTransformTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIdentityJacobianPV(Field<T> field) {
-        doTestIdentityJacobian(6, CartesianDerivativesFilter.USE_PV);
+        doTestIdentityJacobian(field, 6, CartesianDerivativesFilter.USE_PV);
     }
 
     @Test
@@ -260,15 +278,15 @@ public class FieldTransformTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestIdentityJacobianPVA(Field<T> field) {
-        doTestIdentityJacobian(9, CartesianDerivativesFilter.USE_PVA);
+        doTestIdentityJacobian(field, 9, CartesianDerivativesFilter.USE_PVA);
     }
 
-    private void doTestIdentityJacobian(int n, CartesianDerivativesFilter filter) {
-        double[][] jacobian = new double[n][n];
-        Transform.IDENTITY.getJacobian(filter, jacobian);
+    private <T extends RealFieldElement<T>> void doTestIdentityJacobian(Field<T> field, int n, CartesianDerivativesFilter filter) {
+        T[][] jacobian = MathArrays.buildArray(field, n, n);
+        FieldTransform.getIdentity(field).getJacobian(filter, jacobian);
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < n; ++j) {
-                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
+                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j].getReal(), 1.0e-15);
             }
         }
     }
@@ -306,6 +324,28 @@ public class FieldTransformTest {
             FieldTransform<T> transform = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), delta);
             for (int j = 0; j < 10; ++j) {
                 FieldVector3D<T> a = createVector(field, rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble());
+                FieldVector3D<T> b = transform.transformVector(a);
+                Assert.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
+                FieldVector3D<T> c = transform.transformPosition(a);
+                Assert.assertEquals(0,
+                                    c.subtract(a).subtract(delta).getNorm().getReal(),
+                                    1.0e-14);
+            }
+        }
+    }
+
+    @Test
+    public void testTranslationDouble() {
+        doTestTranslationDouble(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestTranslationDouble(Field<T> field) {
+        RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787l);
+        for (int i = 0; i < 10; ++i) {
+            FieldVector3D<T> delta = randomVector(field, 1.0e3, rnd);
+            FieldTransform<T> transform = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), delta);
+            for (int j = 0; j < 10; ++j) {
+                Vector3D a = createVector(field, rnd.nextDouble(), rnd.nextDouble(), rnd.nextDouble()).toVector3D();
                 FieldVector3D<T> b = transform.transformVector(a);
                 Assert.assertEquals(0, b.subtract(a).getNorm().getReal(), 1.0e-15);
                 FieldVector3D<T> c = transform.transformPosition(a);
@@ -367,7 +407,7 @@ public class FieldTransformTest {
 
         // combine 2 rotation tranform
         FieldPVCoordinates<T> pointP5 = new FieldPVCoordinates<>(createVector(field, -1, 0, 0), createVector(field, -1, 0, 3), createVector(field, 8, 0, 6));
-        FieldRotation<T> R2 = new FieldRotation<>(createVector(field, 0,0,1), field.getZero().add(FastMath.PI), RotationConvention.VECTOR_OPERATOR);
+        FieldRotation<T> R2 = new FieldRotation<>(createVector(field, 0, 0, 1), field.getZero().add(FastMath.PI), RotationConvention.VECTOR_OPERATOR);
         FieldTransform<T> R1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), R2, createVector(field, 0, -3, 0));
         FieldTransform<T> R3toR5 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R3toR1, R1toR5);
         FieldPVCoordinates<T> combResult = R3toR5.transformPVCoordinates(pointP3);
@@ -376,7 +416,7 @@ public class FieldTransformTest {
         checkVector(pointP5.getAcceleration(), combResult.getAcceleration(), 1.0e-15);
 
         // combine translation and rotation
-        FieldTransform<T> R2toR3 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R2toR1,R1toR3);
+        FieldTransform<T> R2toR3 = new FieldTransform<> (FieldAbsoluteDate.getJ2000Epoch(field), R2toR1, R1toR3);
         FieldPVCoordinates<T> result = R2toR3.transformPVCoordinates(pointP2);
         checkVector(pointP3.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP3.getVelocity(),     result.getVelocity(),     1.0e-15);
@@ -389,7 +429,7 @@ public class FieldTransformTest {
         checkVector(pointP2.getAcceleration(), result.getAcceleration(), 1.0e-15);
 
         FieldTransform<T> newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), R1toR2, R2toR3);
-        newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), newR1toR5,R3toR5);
+        newR1toR5 = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), newR1toR5, R3toR5);
         result = newR1toR5.transformPVCoordinates(pointP1);
         checkVector(pointP5.getPosition(),     result.getPosition(),     1.0e-15);
         checkVector(pointP5.getVelocity(),     result.getVelocity(),     1.0e-15);
@@ -494,6 +534,50 @@ public class FieldTransformTest {
             FieldVector3D<T> resultvel = tr.getInverse().
             transformPVCoordinates(pvTwo).getVelocity();
             checkVector(resultvel, vel, 1.0e-15);
+
+        }
+
+    }
+
+    @Test
+    public void testTransPVDouble() {
+        doTestTransPVDouble(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestTransPVDouble(Field<T> field) {
+
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
+
+        // translation velocity only :
+
+        for (int i = 0; i < 10; ++i) {
+
+            // random position, velocity and acceleration
+            Vector3D pos = randomVector(field, 1.0e3,  rnd).toVector3D();
+            Vector3D vel = randomVector(field, 1.0,    rnd).toVector3D();
+            Vector3D acc = randomVector(field, 1.0e-3, rnd).toVector3D();
+            PVCoordinates pvOne = new PVCoordinates(pos, vel, acc);
+
+            // random transform
+            FieldVector3D<T> transPos = randomVector(field, 1.0e3,  rnd);
+            FieldVector3D<T> transVel = randomVector(field, 1.0,    rnd);
+            FieldVector3D<T> transAcc = randomVector(field, 1.0e-3, rnd);
+            FieldTransform<T> tr = new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), transPos, transVel, transAcc);
+
+            T dt = field.getZero().add(1);
+
+            // we should obtain
+            FieldVector3D<T> good = tr.transformPosition(new FieldVector3D<>(dt, vel).add(pos)).add(new FieldVector3D<>(dt, transVel));
+
+            // we have
+            FieldPVCoordinates<T> pvTwo = tr.transformPVCoordinates(pvOne);
+            FieldVector3D<T> result  = pvTwo.getPosition().add(new FieldVector3D<>(dt, pvTwo.getVelocity()));
+            checkVector(good, result, 1.0e-15);
+
+            // test inverse
+            FieldVector3D<T> resultvel = tr.getInverse().
+            transformPVCoordinates(pvTwo).getVelocity();
+            checkVector(resultvel, new FieldVector3D<>(field, vel), 1.0e-15);
 
         }
 
@@ -796,6 +880,28 @@ public class FieldTransformTest {
     }
 
     @Test
+    public void testLineDouble() {
+        doTestLineDouble(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestLineDouble(Field<T> field) {
+        RandomGenerator random = new Well19937a(0x4a5ff67426c5731fl);
+        for (int i = 0; i < 100; ++i) {
+            FieldTransform<T> transform = randomTransform(field, random);
+            for (int j = 0; j < 20; ++j) {
+                Vector3D p0 = randomVector(field, 1.0e3, random).toVector3D();
+                Vector3D p1 = randomVector(field, 1.0e3, random).toVector3D();
+                Line l = new Line(p0, p1, 1.0e-10);
+                FieldLine<T> transformed = transform.transformLine(l);
+                for (int k = 0; k < 10; ++k) {
+                    Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
+                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)).getReal(), 1.0e-9);
+                }
+            }
+        }
+    }
+
+    @Test
     public void testLinear() {
         doTestLinear(Decimal64Field.getInstance());
     }
@@ -887,7 +993,7 @@ public class FieldTransformTest {
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
         FieldTransform<T> t   = new FieldTransform<>(date,
-                                      new FieldTransform<>(date, FieldVector3D.getMinusI(field), FieldVector3D.getMinusJ(field), FieldVector3D.getZero(field)),
+                                      new FieldTransform<>(date, FieldVector3D.getMinusI(field), FieldVector3D.getMinusJ(field)),
                                       new FieldTransform<>(date,
                                                            new FieldRotation<>(FieldVector3D.getPlusK(field),
                                                                                field.getZero().add(alpha0),

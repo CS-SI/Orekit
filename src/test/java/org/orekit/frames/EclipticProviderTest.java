@@ -150,7 +150,7 @@ public class EclipticProviderTest {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));;
+                                                       deserialized.getTransform(date));
             Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
             Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }

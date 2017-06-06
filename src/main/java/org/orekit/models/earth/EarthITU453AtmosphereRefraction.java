@@ -110,7 +110,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
                                        GoalType.MINIMIZE,
                                        new SearchInterval(-FastMath.PI / 30., FastMath.PI / 4)).getPoint();
         refrac_star = getBaseRefraction(elev_star);
-    };
+    }
 
     /** Compute the refractive index correction in the case of a typical atmosphere.
      * ITU-R P.834-7, formula number 8, page 3

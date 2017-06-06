@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -101,7 +101,7 @@ public class ModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.4e-7);
+                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
             }
         }
         Assert.assertEquals(index, value.getFirst().getDimension());

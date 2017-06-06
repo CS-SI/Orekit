@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -289,12 +289,24 @@ public class OEMFile extends ODMFile implements EphemerisFile {
 
         @Override
         public AbsoluteDate getStart() {
-            return this.getUseableStartTime();
+            // usable start time overrides start time if it is set
+            final AbsoluteDate start = this.getUseableStartTime();
+            if (start != null) {
+                return start;
+            } else {
+                return this.getStartTime();
+            }
         }
 
         @Override
         public AbsoluteDate getStop() {
-            return this.getUseableStopTime();
+            // useable stop time overrides stop time if it is set
+            final AbsoluteDate stop = this.getUseableStopTime();
+            if (stop != null) {
+                return stop;
+            } else {
+                return this.getStopTime();
+            }
         }
 
         /** Get the interpolation method to be used.

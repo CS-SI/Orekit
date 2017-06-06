@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -117,7 +117,7 @@ public class JacobianPropagatorConverterTest {
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
-    private void doTestDerivatives(double tolP, double tolV, String ... names) throws OrekitException  {
+    private void doTestDerivatives(double tolP, double tolV, String... names) throws OrekitException  {
 
         // we use a fixed step integrator on purpose
         // as the test is based on external differentiation using finite differences,

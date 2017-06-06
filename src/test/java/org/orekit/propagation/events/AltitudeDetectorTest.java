@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class AltitudeDetectorTest {
     public void testBackAndForth() throws OrekitException {
 
         final Frame EME2000 = FramesFactory.getEME2000();
-        final AbsoluteDate initialDate = new AbsoluteDate(2009,1,1,TimeScalesFactory.getUTC());
+        final AbsoluteDate initialDate = new AbsoluteDate(2009, 1, 1, TimeScalesFactory.getUTC());
         final double a = 8000000;
         final double e = 0.1;
         final double earthRadius = 6378137.0;
@@ -52,8 +52,8 @@ public class AltitudeDetectorTest {
 
 
         // initial state is at apogee
-        final Orbit initialOrbit = new KeplerianOrbit(a,e,0,0,0,FastMath.PI,PositionAngle.MEAN,EME2000,
-                                                      initialDate,CelestialBodyFactory.getEarth().getGM());
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, 0, 0, 0, FastMath.PI, PositionAngle.MEAN, EME2000,
+                                                      initialDate, CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(earthRadius, earthF, EME2000);
@@ -67,13 +67,13 @@ public class AltitudeDetectorTest {
 
         // propagation to the future
         SpacecraftState finalState = kepPropagator.propagate(initialDate.shiftedBy(1000));
-        Assert.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius,alt,1e-5);
+        Assert.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assert.assertEquals(44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
         // propagation to the past
         kepPropagator.resetInitialState(initialState);
         finalState = kepPropagator.propagate(initialDate.shiftedBy(-1000));
-        Assert.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius,alt,1e-5);
+        Assert.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assert.assertEquals(-44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }

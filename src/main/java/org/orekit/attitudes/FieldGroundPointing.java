@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,9 +75,9 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
      * @return J axis in FieldPVCoordinates
      * */
     private FieldPVCoordinates<T> PLUS_J(final Field<T> field) {
-        return new FieldPVCoordinates<T>(new FieldVector3D<T>(field.getZero(), field.getOne(), field.getZero()),
-                                      new FieldVector3D<T>(field.getZero(), field.getZero(), field.getZero()),
-                                      new FieldVector3D<T>(field.getZero(), field.getZero(), field.getZero()));
+        return new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getOne(), field.getZero()),
+                                        new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()),
+                                        new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()));
     }
 
     /** K axis.
@@ -85,9 +85,9 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
      * @return K axis in FieldPVCoordinates
      * */
     private FieldPVCoordinates<T> PLUS_K (final Field<T> field) {
-        return new FieldPVCoordinates<T>(new FieldVector3D<T>(field.getZero(), field.getZero(), field.getOne()),
-                            new FieldVector3D<T>(field.getZero(), field.getZero(), field.getZero()),
-                            new FieldVector3D<T>(field.getZero(), field.getZero(), field.getZero()));
+        return new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getZero(), field.getOne()),
+                                        new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()),
+                                        new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()));
     }
 
     /** Get the body frame.
@@ -106,8 +106,8 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
-                                                                    FieldAbsoluteDate<T> date, Frame frame)
+    public abstract TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
+                                                                 FieldAbsoluteDate<T> date, Frame frame)
         throws OrekitException;
 
     /** {@inheritDoc} */
@@ -118,7 +118,7 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
         // satellite-target relative vector
         final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);
         final TimeStampedFieldPVCoordinates<T> delta =
-                new TimeStampedFieldPVCoordinates<T> (date, pva, getTargetPV(pvProv, date, inertialFrame));
+                new TimeStampedFieldPVCoordinates<>(date, pva, getTargetPV(pvProv, date, inertialFrame));
 
         // spacecraft and target should be away from each other to define a pointing direction
         if (delta.getPosition().getNorm().getReal() == 0.0) {
@@ -133,15 +133,15 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
         final FieldVector3D<T> a  = pva.getAcceleration();
         final T   r2 = p.getNormSq();
         final T   r  = r2.sqrt();
-        final FieldVector3D<T> keplerianJerk = new FieldVector3D<T>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a, a.getNorm().divide(r).multiply(-1), v);
-        final FieldPVCoordinates<T> velocity = new FieldPVCoordinates<T>(v, a, keplerianJerk);
+        final FieldVector3D<T> keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a, a.getNorm().divide(r).multiply(-1), v);
+        final FieldPVCoordinates<T> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);
 
 
         final FieldPVCoordinates<T> los    = delta.normalize();
 
         final FieldPVCoordinates<T> normal = (delta.crossProduct(velocity)).normalize();
 
-        final FieldAngularCoordinates<T> ac = new FieldAngularCoordinates<T>(los, normal, PLUS_K(r.getField()), PLUS_J(r.getField()), 1.0e-6);
+        final FieldAngularCoordinates<T> ac = new FieldAngularCoordinates<>(los, normal, PLUS_K(r.getField()), PLUS_J(r.getField()), 1.0e-6);
 
         if (frame != inertialFrame) {
             // prepend transform from specified frame to inertial frame
@@ -149,7 +149,7 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
         }
 
         // build the attitude
-        return new FieldAttitude<T>(date, frame, ac);
+        return new FieldAttitude<>(date, frame, ac);
 
     }
 

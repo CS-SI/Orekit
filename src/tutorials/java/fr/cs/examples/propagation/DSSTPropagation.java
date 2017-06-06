@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,18 +105,19 @@ public class DSSTPropagation {
     public static void main(String[] args) {
         try {
 
-            // configure Orekit data access
-            String className = "/" + DSSTPropagation.class.getName().replaceAll("\\.", "/") + ".class";
-            File f = new File(DSSTPropagation.class.getResource(className).toURI().getPath());
-            File resourcesDir = null;
-            while (resourcesDir == null || !resourcesDir.exists()) {
-                f = f.getParentFile();
-                if (f == null) {
-                    System.err.println("cannot find resources directory");
-                }
-                resourcesDir = new File(new File(new File(new File(f, "src"), "tutorials"), "resources"), "tutorial-orekit-data");
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
             }
-            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(resourcesDir));
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // input/output (in user's home directory)
             File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
@@ -136,9 +136,6 @@ public class DSSTPropagation {
             System.exit(1);
         } catch (ParseException pe) {
             System.err.println(pe.getLocalizedMessage());
-            System.exit(1);
-        } catch (URISyntaxException e) {
-            System.err.println(e.getLocalizedMessage());
             System.exit(1);
         }
     }

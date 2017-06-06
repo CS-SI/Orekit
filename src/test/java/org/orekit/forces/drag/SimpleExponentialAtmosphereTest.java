@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ public class SimpleExponentialAtmosphereTest {
 
     @Test
     public void testExpAtmosphere() throws OrekitException {
-        Vector3D posInEME2000 = new Vector3D(10000,Vector3D.PLUS_I);
+        Vector3D posInEME2000 = new Vector3D(10000, Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         SimpleExponentialAtmosphere atm =
@@ -45,7 +45,7 @@ public class SimpleExponentialAtmosphereTest {
         Vector3D vel = atm.getVelocity(date, posInEME2000, FramesFactory.getEME2000());
 
         Transform toBody = FramesFactory.getEME2000().getTransformTo(itrf, date);
-        Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(),posInEME2000);
+        Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(), posInEME2000);
         test = test.subtract(vel);
         Assert.assertEquals(0, test.getNorm(), 2.9e-5);
 
