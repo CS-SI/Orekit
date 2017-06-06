@@ -172,16 +172,18 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
         final SpacecraftState evaluatedState;
 
+        final AbsoluteDate central;
         if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)) <= extrapolationThreshold) {
-            final double dt = date.durationFrom(getMinDate());
-            evaluatedState = cache.getEarliest().shiftedBy(dt);
+            // avoid TimeStampedCacheException as we are still within the tolerance before minDate
+            central = minDate;
         } else if (date.compareTo(maxDate) > 0 && FastMath.abs(date.durationFrom(maxDate)) <= extrapolationThreshold) {
-            final double dt = date.durationFrom(getMaxDate());
-            evaluatedState = cache.getLatest().shiftedBy(dt);
+            // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
+            central = maxDate;
         } else {
-            final List<SpacecraftState> neighbors = cache.getNeighbors(date).collect(Collectors.toList());
-            evaluatedState = neighbors.get(0).interpolate(date, neighbors);
+            central = date;
         }
+        final List<SpacecraftState> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
+        evaluatedState = neighbors.get(0).interpolate(date, neighbors);
 
         final AttitudeProvider attitudeProvider = getAttitudeProvider();
 
