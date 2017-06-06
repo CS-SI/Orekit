@@ -405,29 +405,6 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             yDot[6] = yDot[6].add(q);
         }
 
-//        /** {@inheritDoc} */
-//        public void addMassDerivative(final double q) {
-//            if (q > 0) {
-//                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
-//            }
-//            yDot[6] = yDot[6].add(q);
-//        }
-
-//        @Override
-//        public void addXYZAcceleration(final double x, final double y, final double z) {
-//            for (int i = 0; i < 6; ++i) {
-//                final T[] jRow = jacobian[i];
-//                yDot[i] = yDot[i].add(jRow[3].linearCombination(x, jRow[3], y, jRow[4], z, jRow[5]));
-//            }
-//        }
-//
-//        @Override
-//        public void addAcceleration(final Vector3D gamma, final Frame frame)
-//            throws OrekitException {
-//            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate().toAbsoluteDate());
-//            final Vector3D gammInRefFrame = t.transformVector(gamma);
-//            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-//        }
     }
 
     /** Estimate tolerance vectors for integrators.

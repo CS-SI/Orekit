@@ -49,10 +49,6 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-  ///** Default attitude provider. */
-//FieldAttitudeProvider<T> DEFAULT_LAW() = new  FieldInertialProvider(T); //TODO
-
-
     /** Indicator for slave mode. */
     int SLAVE_MODE = 0;
 

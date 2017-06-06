@@ -622,6 +622,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         }
 
     }
+
     /**Get PendingEvent.
      * @return if there is a pending event or not
      * */
@@ -629,12 +630,5 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     public boolean getPendingEvent() {
         return pendingEvent;
     }
-
-//    /**get next Action.
-//     * @return next action
-//     * */
-//    public EventHandler.Action getNextAction() {
-//        return nextAction;
-//    }
 
 }

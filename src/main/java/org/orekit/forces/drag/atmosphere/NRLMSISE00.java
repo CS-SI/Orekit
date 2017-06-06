@@ -1437,7 +1437,7 @@ public class NRLMSISE00 implements Atmosphere {
         // Slope
         final double s = g0 / (tinf - tlb);
 
-        // Lower thermosphere temp variations not significant for density above 300 km */
+        // Lower thermosphere temp variations not significant for density above 300 km
         meso_tn1[1]  = PTM[6] * PTL[0][0];
         meso_tn1[2]  = PTM[2] * PTL[1][0];
         meso_tn1[3]  = PTM[7] * PTL[2][0];

@@ -112,7 +112,7 @@ public class CircularFieldOfViewDetectorTest {
                                          Constants.WGS84_EARTH_FLATTENING,
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
-            // Create earth center pointing attitude provider */
+            // Create earth center pointing attitude provider
             earthCenterAttitudeLaw = new BodyCenterPointing(initialOrbit.getFrame(), earth);
 
         } catch (OrekitException oe) {

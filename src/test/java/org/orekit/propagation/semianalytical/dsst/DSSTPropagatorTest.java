@@ -311,7 +311,7 @@ public class DSSTPropagatorTest {
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                    provider, 2, 0, 0, 2, 2, 0, 0);
 
-        // Third Bodies Force Model (Moon + Sun) */
+        // Third Bodies Force Model (Moon + Sun)
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
         DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
 
@@ -799,7 +799,7 @@ public class DSSTPropagatorTest {
     public void testIssue257() throws OrekitException {
         final SpacecraftState meanState = getGEOrbit();
 
-        // Third Bodies Force Model (Moon + Sun) */
+        // Third Bodies Force Model (Moon + Sun)
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
         final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
 
