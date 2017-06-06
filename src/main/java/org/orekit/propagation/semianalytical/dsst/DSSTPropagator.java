@@ -322,10 +322,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param mean Mean state to convert
      * @param forces Forces to take into account
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
      * @return osculating state in a DSST sense
      * @throws OrekitException if computation of short periodics fails
      */
     public static SpacecraftState computeOsculatingState(final SpacecraftState mean,
+                                                         final AttitudeProvider attitudeProvider,
                                                          final Collection<DSSTForceModel> forces)
         throws OrekitException {
 
@@ -335,6 +338,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // Set the force models
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
+            force.registerAttitudeProvider(attitudeProvider);
             shortPeriodTerms.addAll(force.initialize(aux, false));
             force.updateShortPeriodTerms(mean);
         }
@@ -359,14 +363,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * The computation is done through a fixed-point iteration process.
      * </p>
      * @param osculating Osculating state to convert
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels Forces to take into account
      * @return mean state in a DSST sense
      * @throws OrekitException if computation of short periodics fails or iteration algorithm does not converge
      */
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
+                                                   final AttitudeProvider attitudeProvider,
                                                    final Collection<DSSTForceModel> forceModels)
         throws OrekitException {
-        final Orbit meanOrbit = computeMeanOrbit(osculating, forceModels);
+        final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
 
@@ -475,11 +482,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * The computing is done through a fixed-point iteration process.
      * </p>
      * @param osculating initial osculating state
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels force models
      * @return mean state
      * @throws OrekitException if the underlying computation of short periodic variation fails
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
+                                          final AttitudeProvider attitudeProvider,
                                           final Collection<DSSTForceModel> forceModels)
         throws OrekitException {
 
@@ -492,6 +502,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final double thresholdE = epsilon * (1 + meanOrbit.getE());
         final double thresholdI = epsilon * (1 + meanOrbit.getI());
         final double thresholdL = epsilon * FastMath.PI;
+
+        // ensure all Gaussian force models can rely on attitude
+        for (final DSSTForceModel force : forceModels) {
+            force.registerAttitudeProvider(attitudeProvider);
+        }
 
         int i = 0;
         while (i++ < 200) {
@@ -577,7 +592,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         if (initialIsOsculating) {
             // the initial state is an osculating state,
             // it must be converted to mean state
-            return computeMeanState(getInitialState(), forceModels);
+            return computeMeanState(getInitialState(), getAttitudeProvider(), forceModels);
         } else {
             // the initial state is already a mean state
             return getInitialState();
