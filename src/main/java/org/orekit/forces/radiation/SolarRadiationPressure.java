@@ -65,7 +65,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Earth model. */
+    /** Centrl body model. */
     private final double equatorialRadius;
 
     /** Spacecraft. */
@@ -135,17 +135,24 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param frame in which is defined the position
      * @param date the date
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      * @since 7.1
      */
     public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
+        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
+            // we are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet,we consider lighting ration is always 1
+            return 1.0;
+        }
+
         // Compute useful angles
         final double[] angle = getEclipseAngles(position, frame, date);
 
         // Sat-Sun / Sat-CentralBody angle
-        final double sunEarthAngle = angle[0];
+        final double sunSatCentralBodyAngle = angle[0];
 
         // Central Body apparent radius
         final double alphaCentral = angle[1];
@@ -156,12 +163,12 @@ public class SolarRadiationPressure extends AbstractForceModel {
         double result = 1.0;
 
         // Is the satellite in complete umbra ?
-        if (sunEarthAngle - alphaCentral + alphaSun <= 0.0) {
+        if (sunSatCentralBodyAngle - alphaCentral + alphaSun <= 0.0) {
             result = 0.0;
-        } else if (sunEarthAngle - alphaCentral - alphaSun < 0.0) {
+        } else if (sunSatCentralBodyAngle - alphaCentral - alphaSun < 0.0) {
             // Compute a lighting ratio in penumbra
-            final double sEA2    = sunEarthAngle * sunEarthAngle;
-            final double oo2sEA  = 1.0 / (2. * sunEarthAngle);
+            final double sEA2    = sunSatCentralBodyAngle * sunSatCentralBodyAngle;
+            final double oo2sEA  = 1.0 / (2. * sunSatCentralBodyAngle);
             final double aS2     = alphaSun * alphaSun;
             final double aE2     = alphaCentral * alphaCentral;
             final double aE2maS2 = aE2 - aS2;
@@ -190,7 +197,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param date the date
      * @param <T> extends RealFieldElement
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      * @since 7.1
      */
     public <T extends RealFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
@@ -198,11 +205,21 @@ public class SolarRadiationPressure extends AbstractForceModel {
                                                               final FieldAbsoluteDate<T> date)
         throws OrekitException {
 
+        final T one = date.getField().getOne();
+        final T zero = date.getField().getZero();
+
+        final Vector3D sunPosition = sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition();
+        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
+            // we are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet,we consider lighting ration is always 1
+            return one;
+        }
+
         // Compute useful angles
         final T[] angle = getEclipseAngles(position, frame, date);
 
         // Sat-Sun / Sat-CentralBody angle
-        final T sunEarthAngle = angle[0];
+        final T sunsatCentralBodyAngle = angle[0];
 
         // Central Body apparent radius
         final T alphaCentral = angle[1];
@@ -210,16 +227,14 @@ public class SolarRadiationPressure extends AbstractForceModel {
         // Sun apparent radius
         final T alphaSun = angle[2];
 
-        final T one = date.getField().getOne();
-        final T zero = date.getField().getZero();
         T result = one;
         // Is the satellite in complete umbra ?
-        if (sunEarthAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= 0.0) {
+        if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= 0.0) {
             result = date.getField().getZero();
-        } else if (sunEarthAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < 0.0) {
+        } else if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < 0.0) {
             // Compute a lighting ratio in penumbra
-            final T sEA2    = sunEarthAngle.multiply(sunEarthAngle);
-            final T oo2sEA  = sunEarthAngle.multiply(2).reciprocal();
+            final T sEA2    = sunsatCentralBodyAngle.multiply(sunsatCentralBodyAngle);
+            final T oo2sEA  = sunsatCentralBodyAngle.multiply(2).reciprocal();
             final T aS2     = alphaSun.multiply(alphaSun);
             final T aE2     = alphaCentral.multiply(alphaCentral);
             final T aE2maS2 = aE2.subtract(aS2);
@@ -300,11 +315,11 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** Get the useful angles for eclipse computation.
-     * @param position the satellite's position in the selected frame.
+     * @param position the satellite's position in the selected frame
      * @param frame in which is defined the position
      * @param date the date
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      */
     private double[] getEclipseAngles(final Vector3D position,
                                       final Frame frame,
@@ -336,7 +351,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param date the date
      * @param <T> extends RealFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      */
     private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> position,
                                                                  final Frame frame,
@@ -405,8 +420,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
             return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
-        /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the Earth's apparent radius.
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the central body apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
@@ -462,8 +477,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
             return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
-        /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the sum of the Earth's and Sun's apparent radius.
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the sum of the central body and Sun's apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed

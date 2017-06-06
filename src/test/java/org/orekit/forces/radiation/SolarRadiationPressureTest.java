@@ -34,6 +34,7 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,24 +93,51 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testLighting() throws OrekitException, ParseException {
+    public void testLightingInterplanetary() throws OrekitException, ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
-                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+        Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
+                                         CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
+                                         date, Constants.JPL_SSD_SUN_GM);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        OneAxisEllipsoid earth =
-            new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        SolarRadiationPressure SRP =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       (RadiationSensitive) new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+        SolarRadiationPressure srp =
+            new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
+                                       (RadiationSensitive) new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
 
-        double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-        Assert.assertEquals(86164, period, 1);
+        Vector3D position = orbit.getPVCoordinates().getPosition();
+        Frame frame       = orbit.getFrame();
+        Assert.assertEquals(1.0,
+                            srp.getLightingRatio(position, frame, date),
+                            1.0e-15);
+
+        Assert.assertEquals(1.0,
+                            srp.getLightingRatio(new FieldVector3D<>(Decimal64Field.getInstance(), position),
+                                                 frame,
+                                                 new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date)).getReal(),
+                            1.0e-15);
+    }
+
+    @Test
+    public void testLighting() throws OrekitException, ParseException {
+            // Initialization
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
+                                                 new TimeComponents(13, 59, 27.816),
+                                                 TimeScalesFactory.getUTC());
+            Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                               FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
+                                               0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+            PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+            OneAxisEllipsoid earth =
+                new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+            SolarRadiationPressure SRP =
+                new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                                           (RadiationSensitive) new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+
+            double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
+            Assert.assertEquals(86164, period, 1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);

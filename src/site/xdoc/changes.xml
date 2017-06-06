@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Florentin-Alin Butu">
+        Fixed lighting ratio in solar radiation pressure for interplanetary trajectories.
+      </action>
       <action dev="hank" type="fix">
         Allow small extrapolation before and after ephemeris.
         Fixes issue #261.
