@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="8.1-SNAPSHOT"   />
+  <property name="project.version"         value="9.0-SNAPSHOT"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"      value="1.0"                                           />
+  <property name="hipparchus.version"      value="1.1"                                           />
   <property name="hipparchus.core.jar"     value="hipparchus-core-${hipparchus.version}.jar"     />
   <property name="hipparchus.geometry.jar" value="hipparchus-geometry-${hipparchus.version}.jar" />
   <property name="hipparchus.ode.jar"      value="hipparchus-ode-${hipparchus.version}.jar"      />
@@ -34,7 +34,7 @@
   <property name="hamcrest.maven.path"     value="org/hamcrest"                                  />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2016 CS Syst&#232;mes d&#039;Information" />
+  <property name="copyright"               value="2002-2017 CS Syst&#232;mes d&#039;Information" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
