@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added parsing of CCSDS TDM (Tracking Data Messages) files.
+      </action>
       <action dev="luc" type="fix" due-to="Florentin-Alin Butu">
         Fixed lighting ratio in solar radiation pressure for interplanetary trajectories.
       </action>

@@ -152,8 +152,14 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this ODM file context"),
     CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the ephemeris blocks: {0} \u2260 {1}"),
-    CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED("use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit"),
+    CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED("use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
     CCSDS_NO_CORRESPONDING_TIME_SCALE("the CCSDS time system {0} has no corresponding Orekit TimeScale."),
+    CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} \u2260 {1}"),
+    CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file {0} at line {1}.\n" +
+                                     "A TDM data line should be as follows \"keyword = epoch value\".\n" +
+                                     "Whereas read data line is: {2}"),
+    CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
+    CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
