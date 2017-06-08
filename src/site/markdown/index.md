@@ -96,6 +96,10 @@
       * memory based
       * integration based
     * specialized GPS propagation, using SEM or YUMA files
+    * Taylor-algebra (or any other real field) version of most of the above propagators,
+        with all force models, events detection, orbits types, coordinates types and frames
+        allowing high order uncertainties and derivatives computation or very fast Monte-Carlo
+        analyzes
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
     * all propagators can be used in several different modes
