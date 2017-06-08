@@ -429,3 +429,12 @@ VALUE_NOT_FOUND = la valeur {0} n''a pas été trouvée dans {1}
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = le format de fichier des éphémérides n''autorise pas les objets spatiaux multiples
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = impossible de charger des coefficients de Klobuchar α ou β depuis {0}
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = les coefficients de Klobuchar α ou β ne sont pas disponibles pour la date {0}
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contiant pas de coefficients de Klobuchar α ou β

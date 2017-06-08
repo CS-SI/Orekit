@@ -22,6 +22,9 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="add" due-to="Maxime Journot">
+        Added parsing of University of Bern Astronomical Institute files for α and β Klobuchar coefficients.
+      </action>
+      <action dev="luc" type="add" due-to="Maxime Journot">
         Added parsing of CCSDS TDM (Tracking Data Messages) files.
       </action>
       <action dev="luc" type="fix" due-to="Florentin-Alin Butu">

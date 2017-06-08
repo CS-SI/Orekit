@@ -75,7 +75,7 @@ public enum OrekitMessages implements Localizable {
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
     NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE("no entries found in IERS UTC-TAI history file {0}"),
     MISSING_SERIE_J_IN_FILE("missing serie j = {0} in file {1} (line {2})"),
-    CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both \u03c4 and \u03b3 from the same Poissons series file"),
+    CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both τ and γ from the same Poissons series file"),
     UNEXPECTED_END_OF_FILE_AFTER_LINE("unexpected end of file {0} (after line {1})"),
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
@@ -151,10 +151,10 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this ODM file context"),
-    CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the ephemeris blocks: {0} \u2260 {1}"),
+    CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the ephemeris blocks: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED("use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
     CCSDS_NO_CORRESPONDING_TIME_SCALE("the CCSDS time system {0} has no corresponding Orekit TimeScale."),
-    CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} \u2260 {1}"),
+    CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} ≠ {1}"),
     CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file {0} at line {1}.\n" +
                                      "A TDM data line should be as follows \"keyword = epoch value\".\n" +
                                      "Whereas read data line is: {2}"),
@@ -192,7 +192,10 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"),
     VALUE_NOT_FOUND("value {0} not found in {1}"),
-    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects");
+    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
+    KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
+    KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
+    NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β");
 
 
     // CHECKSTYLE: resume JavadocVariable check

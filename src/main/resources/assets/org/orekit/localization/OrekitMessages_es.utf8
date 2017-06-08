@@ -429,3 +429,12 @@ VALUE_NOT_FOUND = <MISSING TRANSLATION>
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = <MISSING TRANSLATION>
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
