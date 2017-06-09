@@ -26,7 +26,6 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
@@ -309,7 +308,10 @@ public class GroundStationTest {
         for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
             final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0);
             dF[k] = differentiator.differentiate(new UnivariateVectorFunction() {
-                private Rotation previous = null;
+                private double previous0 = Double.NaN;
+                private double previous1 = Double.NaN;
+                private double previous2 = Double.NaN;
+                private double previous3 = Double.NaN;
                 @Override
                 public double[] value(double x) {
                     final double[] result = new double[13];
@@ -336,18 +338,21 @@ public class GroundStationTest {
                         result[ 4] = t.getVelocity().getY();
                         result[ 5] = t.getVelocity().getZ();
                         double sign = +1;
-                        if (previous != null) {
+                        if (Double.isNaN(previous0)) {
                             sign = FastMath.copySign(1.0,
-                                                     previous.getQ0() * t.getRotation().getQ0() +
-                                                     previous.getQ1() * t.getRotation().getQ1() +
-                                                     previous.getQ2() * t.getRotation().getQ2() +
-                                                     previous.getQ3() * t.getRotation().getQ3());
+                                                     previous0 * t.getRotation().getQ0() +
+                                                     previous1 * t.getRotation().getQ1() +
+                                                     previous2 * t.getRotation().getQ2() +
+                                                     previous3 * t.getRotation().getQ3());
                         }
-                        result[ 6] = sign * t.getRotation().getQ0();
-                        result[ 7] = sign * t.getRotation().getQ1();
-                        result[ 8] = sign * t.getRotation().getQ2();
-                        result[ 9] = sign * t.getRotation().getQ3();
-                        previous = t.getRotation();
+                        previous0  = sign * t.getRotation().getQ0();
+                        previous1  = sign * t.getRotation().getQ1();
+                        previous2  = sign * t.getRotation().getQ2();
+                        previous3  = sign * t.getRotation().getQ3();
+                        result[ 6] = previous0;
+                        result[ 7] = previous1;
+                        result[ 8] = previous2;
+                        result[ 9] = previous3;
                         result[10] = t.getRotationRate().getX();
                         result[11] = t.getRotationRate().getY();
                         result[12] = t.getRotationRate().getZ();
