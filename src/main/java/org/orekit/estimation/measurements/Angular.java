@@ -118,7 +118,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         final FieldVector3D<DerivativeStructure> pP = new FieldVector3D<>(factory.variable(0, transitp.getX()),
                                                                           factory.variable(1, transitp.getY()),
                                                                           factory.variable(2, transitp.getZ()));
-        // station-satellite vector expressed in station parent frame
+        // station-satellite vector expressed in inertial frame
         final FieldVector3D<DerivativeStructure> staSat = pP.subtract(qP);
 
         final DerivativeStructure baseAzimuth = DerivativeStructure.atan2(staSat.dotProduct(east), staSat.dotProduct(north));
@@ -159,28 +159,29 @@ public class Angular extends AbstractMeasurement<Angular> {
             station.getZenithOffsetDriver().isSelected()) {
 
             // partial derivatives with respect to parameters
-            // Be aware: east; north and zenith are expressed in station parent frame but the derivatives are expressed
+            // Be aware: east; north and zenith are expressed in inertial frame frame but the derivatives are expressed
             // with respect to reference station topocentric frame
 
             if (station.getEastOffsetDriver().isSelected()) {
                 estimated.setParameterDerivatives(station.getEastOffsetDriver(),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
+                                                  azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                  elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
             }
             if (station.getNorthOffsetDriver().isSelected()) {
                 estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
+                                                  azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
+                                                  elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
             }
             if (station.getZenithOffsetDriver().isSelected()) {
                 estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
+                                                  azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
+                                                  elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
             }
 
         }
 
         return estimated;
+
     }
 
 }
