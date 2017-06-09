@@ -16,18 +16,18 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -78,6 +78,9 @@ public class Angular extends AbstractMeasurement<Angular> {
                                                                   final SpacecraftState state)
         throws OrekitException {
 
+        final Field<DerivativeStructure> field = factory.getDerivativeField();
+        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
+
         // take propagation time into account
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and transitState will be
@@ -88,23 +91,30 @@ public class Angular extends AbstractMeasurement<Angular> {
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
 
-        // transformation from inertial frame to station parent frame
-        final Frame     bodyFrame = station.getOffsetFrame().getParentShape().getBodyFrame();
-        final Transform iner2Body = state.getFrame().getTransformTo(bodyFrame, getDate());
+        // transform between station and inertial frame, expressed as a derivative structure
+        // The components of station's position in offset frame are the 3 last derivative parameters
+        final AbsoluteDate downlinkDate = getDate();
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        new FieldAbsoluteDate<>(field, downlinkDate);
+        final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, 3, 4, 5);
 
-        // station topocentric frame (east-north-zenith) in station parent frame expressed as DerivativeStructures
-        final OffsetDerivatives od = station.getOffsetDerivatives(factory, 3, 4, 5);
-        final FieldVector3D<DerivativeStructure> east   = od.getEast();
-        final FieldVector3D<DerivativeStructure> north  = od.getNorth();
-        final FieldVector3D<DerivativeStructure> zenith = od.getZenith();
+        // Station position in inertial frame at end of the downlink leg
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
+                        offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
+                                                                                                            zero, zero, zero));
+        // station topocentric frame (east-north-zenith) in inertial frame expressed as DerivativeStructures
+        final FieldVector3D<DerivativeStructure> east   = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusI(field));
+        final FieldVector3D<DerivativeStructure> north  = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusJ(field));
+        final FieldVector3D<DerivativeStructure> zenith = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusK(field));
 
-        // station origin in station parent frame
-        final FieldVector3D<DerivativeStructure> qP = od.getOrigin();
+        // station origin in inertial frame
+        final FieldVector3D<DerivativeStructure> qP = stationDownlink.getPosition();
 
-        // satellite vector expressed in station parent frame
-        final Vector3D transitp = iner2Body.transformPosition(transitState.getPVCoordinates().getPosition());
+        // satellite vector expressed in inertial frame
+        final Vector3D transitp = transitState.getPVCoordinates().getPosition();
 
-        // satellite vector expressed in station parent frame expressed as DerivativeStructures
+        // satellite vector expressed in inertial frame expressed as DerivativeStructures
         final FieldVector3D<DerivativeStructure> pP = new FieldVector3D<>(factory.variable(0, transitp.getX()),
                                                                           factory.variable(1, transitp.getY()),
                                                                           factory.variable(2, transitp.getZ()));
@@ -125,38 +135,21 @@ public class Angular extends AbstractMeasurement<Angular> {
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
 
         // partial derivatives of azimuth with respect to state
-        final AngularCoordinates ac = iner2Body.getInverse().getAngular();
-
-        // partial derivatives of azimuth with respect to state expressed in station parent frame
-        final Vector3D tto  = new Vector3D(azimuth.getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                           azimuth.getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                           azimuth.getPartialDerivative(0, 0, 1, 0, 0, 0));
-
-        // partial derivatives of azimuth with respect to state expressed in satellite inertial frame
-        final Vector3D dAzOndPtmp = ac.getRotation().applyTo(tto);
+        final double dAzdX = azimuth.getPartialDerivative(1, 0, 0, 0, 0, 0);
+        final double dAzdY = azimuth.getPartialDerivative(0, 1, 0, 0, 0, 0);
+        final double dAzdZ = azimuth.getPartialDerivative(0, 0, 1, 0, 0, 0);
         final double[] dAzOndP = new double[] {
-                                               dAzOndPtmp.getX(),
-                                               dAzOndPtmp.getY(),
-                                               dAzOndPtmp.getZ(),
-                                               dAzOndPtmp.getX() * dt,
-                                               dAzOndPtmp.getY() * dt,
-                                               dAzOndPtmp.getZ() * dt
+            dAzdX,      dAzdY,      dAzdZ,
+            dAzdX * dt, dAzdY * dt, dAzdZ * dt
         };
 
-        // partial derivatives of Elevation with respect to state expressed in station parent frame
-        final Vector3D ttu  = new Vector3D(elevation.getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                           elevation.getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                           elevation.getPartialDerivative(0, 0, 1, 0, 0, 0));
-
-        // partial derivatives of elevation with respect to state expressed in satellite inertial frame
-        final Vector3D dElOndPtmp = ac.getRotation().applyTo(ttu);
+        // partial derivatives of Elevation with respect to state
+        final double dEldX = elevation.getPartialDerivative(1, 0, 0, 0, 0, 0);
+        final double dEldY = elevation.getPartialDerivative(0, 1, 0, 0, 0, 0);
+        final double dEldZ = elevation.getPartialDerivative(0, 0, 1, 0, 0, 0);
         final double[] dElOndP = new double[] {
-                                                dElOndPtmp.getX(),
-                                                dElOndPtmp.getY(),
-                                                dElOndPtmp.getZ(),
-                                                dElOndPtmp.getX() * dt,
-                                                dElOndPtmp.getY() * dt,
-                                                dElOndPtmp.getZ() * dt
+            dEldX,      dEldY,      dEldZ,
+            dEldX * dt, dEldY * dt, dEldZ * dt
         };
 
         estimated.setStateDerivatives(dAzOndP, dElOndP);

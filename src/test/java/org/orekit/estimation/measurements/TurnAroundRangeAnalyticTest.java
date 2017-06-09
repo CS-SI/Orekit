@@ -79,7 +79,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    1.3e-6, 2.1e-6, 5.3e-5, 1.2e-6, 3.5e-6, 1.3e-4);
+                                    1.4e-6, 1.4e-6, 2.6e-6, 9.7e-7, 1.0e-6, 2.1e-6);
     }
 
     /**
@@ -98,7 +98,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
+                                    5.7e-9, 2.2e-8, 4.6e-7, 7.3e-5, 3.6e-4, 1.4e-2);
     }
 
     /**
@@ -117,7 +117,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    1.2e-6, 2.1e-6, 3.1e-5, 1.2e-6, 3.5e-6, 1.3e-4);
+                                    1.5e-6, 2.0e-6, 2.3e-5, 1.0e-6, 1.0e-6, 2.1e-6);
     }
 
     /**
@@ -136,7 +136,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
+                                    6.0e-9, 2.2e-8, 4.7e-7, 7.3e-5, 3.6e-4, 1.4e-2);
     }
 
     /**
@@ -157,7 +157,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
+                                        4.4e-06, 6.9e-06, 1.3e-04, 3.4e-6, 4.9e-6, 3.6e-5);
 
     }
 
@@ -201,7 +201,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
+                                        4.4e-06, 6.9e-06, 1.3e-04, 3.4e-6, 4.9e-6, 3.6e-5);
 
     }
 
@@ -403,7 +403,7 @@ public class TurnAroundRangeAnalyticTest {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, state).getEstimatedValue();
                     }
-                }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
                 jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();

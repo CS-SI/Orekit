@@ -78,7 +78,15 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 5.0e-10;
+        double refErrorsPMean   = 4.2e-09;
+        double refErrorsPMax    = 1.9e-07;
+        double refErrorsVMedian = 1.7e-04;
+        double refErrorsVMean   = 6.9e-04;
+        double refErrorsVMax    = 1.4e-02;
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -95,7 +103,15 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 5.0e-10;
+        double refErrorsPMean   = 4.2e-09;
+        double refErrorsPMax    = 2.4e-07;
+        double refErrorsVMedian = 1.7e-04;
+        double refErrorsVMean   = 6.9e-04;
+        double refErrorsVMax    = 1.4e-02;
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -114,7 +130,11 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorsMedian = 9.0e-11;
+        double refErrorsMean   = 3.9e-10;
+        double refErrorsMax    = 9.0e-09;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -134,7 +154,11 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorsMedian = 9.9e-11;
+        double refErrorsMean   = 3.9e-10;
+        double refErrorsMax    = 9.0e-09;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -256,13 +280,9 @@ public class RangeTest {
 
     }
 
-    /**
-     * Generic test function for derivatives with respect to state
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults)
+    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
+                                     final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -321,7 +341,7 @@ public class RangeTest {
                         public double[] value(final SpacecraftState state) throws OrekitException {
                             return measurement.estimate(0, 0, state).getEstimatedValue();
                         }
-                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -398,18 +418,6 @@ public class RangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-
-        // Finite differences reference values
-        refErrorsPMedian = 1.2e-09;
-        refErrorsPMean   = 8.7e-09;
-        refErrorsPMax    = 3.7e-07;
-        refErrorsVMedian = 3.3e-04;
-        refErrorsVMean   = 1.7e-03;
-        refErrorsVMax    = 8.1e-02;
-
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
@@ -418,13 +426,8 @@ public class RangeTest {
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
-    /**
-     * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults)
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
+                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -558,16 +561,10 @@ public class RangeTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsMedian, refErrorsMean, refErrorsMax;
-
-        // Numeric references
-        refErrorsMedian = 9.4e-11;
-        refErrorsMean   = 3.4e-10;
-        refErrorsMax    = 1.3e-08;
-
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
         Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+
     }
+
 }

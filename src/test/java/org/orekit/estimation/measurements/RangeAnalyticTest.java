@@ -402,7 +402,7 @@ public class RangeAnalyticTest {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 return measurement.estimate(0, 0, state).getEstimatedValue();
                             }
-                        }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                        }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
                         jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();

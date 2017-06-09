@@ -77,7 +77,16 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 1.4e-6;
+        double refErrorsPMean   = 1.4e-06;
+        double refErrorsPMax    = 2.6e-06;
+        double refErrorsVMedian = 7.3e-05;
+        double refErrorsVMean   = 3.6e-04;
+        double refErrorsVMax    = 1.4e-02;
+
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -94,7 +103,16 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 1.4e-6;
+        double refErrorsPMean   = 1.4e-06;
+        double refErrorsPMax    = 2.6e-06;
+        double refErrorsVMedian = 7.3e-05;
+        double refErrorsVMean   = 3.6e-04;
+        double refErrorsVMax    = 1.4e-2;
+
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -113,9 +131,18 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMean   = 2.5e-6;
+        double refErrorQMMax    = 4.6e-6;
+        double refErrorQSMedian = 3.8e-7;
+        double refErrorQSMean   = 3.6e-7;
+        double refErrorQSMax    = 7.4e-7;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorQMMedian, refErrorQMMean, refErrorQMMax,
+                                             refErrorQSMedian, refErrorQSMean, refErrorQSMax);
 
     }
+
     /**
      * Test the values of the parameter derivatives with modifier
      * using a numerical finite differences calculation as a reference
@@ -132,7 +159,15 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMean   = 2.5e-6;
+        double refErrorQMMax    = 4.6e-6;
+        double refErrorQSMedian = 3.8e-7;
+        double refErrorQSMean   = 3.6e-7;
+        double refErrorQSMax    = 7.4e-7;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorQMMedian, refErrorQMMean, refErrorQMMax,
+                                             refErrorQSMedian, refErrorQSMean, refErrorQSMax);
     }
 
     /**
@@ -221,21 +256,17 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 1e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 2.5e-7);
+        Assert.assertEquals(0.0, absErrorsMedian, 2.3e-8);
+        Assert.assertEquals(0.0, absErrorsMin, 3.0e-7);
         Assert.assertEquals(0.0, absErrorsMax, 2.5e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.5e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 2e-14);
+        Assert.assertEquals(0.0, relErrorsMedian, 5.9e-15);
+        Assert.assertEquals(0.0, relErrorsMax , 1.8e-14);
     }
 
-    /**
-     * Generic test function for derivatives with respect to state
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults)
-                    throws OrekitException {
+    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
+                                     final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
+        throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -302,7 +333,7 @@ public class TurnAroundRangeTest {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, state).getEstimatedValue();
                 }
-            }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+            }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
             Assert.assertEquals(jacobianRef.length, jacobian.length);
             Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -356,19 +387,6 @@ public class TurnAroundRangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-
-        // Finite differences reference comparison
-        refErrorsPMedian = 1.1e-06;
-        refErrorsPMean   = 1.1e-06;
-        refErrorsPMax    = 2.3e-06;
-
-        refErrorsVMedian = 1.5e-04;
-        refErrorsVMean   = 4.7e-04;
-        refErrorsVMax    = 5.3e-03;
-
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
@@ -378,14 +396,10 @@ public class TurnAroundRangeTest {
     }
 
 
-    /**
-     * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults)
-                    throws OrekitException {
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
+                                         final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
+                                         final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
+        throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
 
@@ -531,19 +545,6 @@ public class TurnAroundRangeTest {
             System.out.format(Locale.US, "Relative errors dR/dQ slave station  -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsQSMedian, relErrorsQSMean, relErrorsQSMax);
         }
-
-        // Assert the results / max values depend on the test
-        double refErrorQMMedian, refErrorQMMean, refErrorQMMax;
-        double refErrorQSMedian, refErrorQSMean, refErrorQSMax;
-
-        // Finite differences reference values
-        refErrorQMMedian = 1.3e-10;
-        refErrorQMMean   = 2.3e-10;
-        refErrorQMMax    = 3.3e-09;
-
-        refErrorQSMedian = 2.1e-06;
-        refErrorQSMean   = 2.1e-06;
-        refErrorQSMax    = 4.1e-06;
 
         // Check values
         Assert.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);

@@ -20,6 +20,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -31,6 +32,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -212,13 +214,12 @@ public class GroundStation {
      */
     public <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
                                                                 final FieldVector3D<T> receiverPosition,
-                                                                final AbsoluteDate signalArrivalDate) {
+                                                                final FieldAbsoluteDate<T> signalArrivalDate) {
 
         // Initialize emission date search loop assuming the emitter PV is almost correct
         // this will be true for all but the first orbit determination iteration,
         // and even for the first iteration the loop will converge extremely fast
-        final Field<T> field = receiverPosition.getX().getField();
-        final T offset = new FieldAbsoluteDate<>(field, signalArrivalDate).durationFrom(adjustableEmitterPV.getDate());
+        final T offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
         T delay = offset;
 
         // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
@@ -236,7 +237,7 @@ public class GroundStation {
 
     }
 
-    /** Get the offset frame defining vectors with derivatives.
+    /** Get the transform between offset frame and inertial frame with derivatives.
      * <p>
      * Note that this method works only if the ground station is defined on
      * an {@link OneAxisEllipsoid ellipsoid} body. For any other body shape,
@@ -248,6 +249,8 @@ public class GroundStation {
      * So this method should not be used for stations less than 0.0001 degree from
      * either poles.
      * </p>
+     * @param inertial inertial frame to toransfor to
+     * @param date date of the transform
      * @param factory factory for the derivatives
      * @param eastOffsetIndex index of the East offset in the set of
      * free parameters in derivatives computations
@@ -258,17 +261,22 @@ public class GroundStation {
      * @return offset frame defining vectors with derivatives
      * @exception OrekitException if some frame transforms cannot be computed
      * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     * @since 9.0
      */
-    public OffsetDerivatives getOffsetDerivatives(final DSFactory factory,
-                                                  final int eastOffsetIndex,
-                                                  final int northOffsetIndex,
-                                                  final int zenithOffsetIndex)
+    public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
+                                                                   final FieldAbsoluteDate<DerivativeStructure> date,
+                                                                   final DSFactory factory,
+                                                                   final int eastOffsetIndex,
+                                                                   final int northOffsetIndex,
+                                                                   final int zenithOffsetIndex)
         throws OrekitException {
 
-        final TopocentricFrame frame = getOffsetFrame();
+        final Field<DerivativeStructure> field = factory.getDerivativeField();
+        final TopocentricFrame frame  = getOffsetFrame();
+        final Frame bodyFrame = baseFrame.getParent();
 
         // offset frame origin
-        final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), (AbsoluteDate) null);
+        final Transform offsetToBody = frame.getTransformTo(bodyFrame, (AbsoluteDate) null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
                         new FieldVector3D<>(factory.variable(eastOffsetIndex,   0.0),
@@ -291,13 +299,10 @@ public class GroundStation {
         FieldVector3D<DerivativeStructure>       meridianE = FieldVector3D.crossProduct(Vector3D.PLUS_K, meridianZ);
         if (meridianE.getNormSq().getValue() < Precision.SAFE_MIN) {
             // this should never happen, this case is present only for the sake of defensive programming
-            meridianE = new FieldVector3D<>(factory.getDerivativeField().getZero(),
-                                            factory.getDerivativeField().getOne(),
-                                            factory.getDerivativeField().getZero());
+            meridianE = FieldVector3D.getPlusJ(field);
         } else {
             meridianE = meridianE.normalize();
         }
-        final FieldVector3D<DerivativeStructure> meridianN = FieldVector3D.crossProduct(meridianZ, meridianE);
 
         // vectors changes due to offset in the transverse plane
         // (we are in fact only interested in the derivatives parts, not the values)
@@ -308,24 +313,26 @@ public class GroundStation {
         FieldVector3D<DerivativeStructure>       transverseE = FieldVector3D.crossProduct(Vector3D.PLUS_K, transverseZ);
         if (transverseE.getNormSq().getValue() < Precision.SAFE_MIN) {
             // this should never happen, this case is present only for the sake of defensive programming
-            transverseE = new FieldVector3D<>(factory.getDerivativeField().getZero(),
-                                              factory.getDerivativeField().getOne(),
-                                              factory.getDerivativeField().getZero());
+            transverseE = FieldVector3D.getPlusJ(field);
         } else {
             transverseE = transverseE.normalize();
         }
-        final FieldVector3D<DerivativeStructure> transverseN = FieldVector3D.crossProduct(transverseZ, transverseE);
 
-        // zero vector
-        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(offsetOriginDS.getX().getField());
+        final FieldVector3D<DerivativeStructure> eastDS   = combine(frame.getEast(),   meridianE, transverseE);
+        final FieldVector3D<DerivativeStructure> zenithDS = combine(frame.getZenith(), meridianZ, transverseZ);
 
-        // compose the value from the offset frame and the derivatives
-        // (the derivatives along the two orthogonal directions of principal curvatures are additive)
-        return new OffsetDerivatives(offsetOriginDS,
-                                     combine(frame.getEast(),   meridianE, transverseE),
-                                     combine(frame.getNorth(),  meridianN, transverseN),
-                                     combine(frame.getZenith(), meridianZ, transverseZ),
-                                     zero);
+        final FieldVector3D<DerivativeStructure> plusI =  FieldVector3D.getPlusI(date.getField());
+        final FieldVector3D<DerivativeStructure> plusK =  FieldVector3D.getPlusK(date.getField());
+        final FieldTransform<DerivativeStructure> offsetToBodyDS =
+                        new FieldTransform<>(date,
+                                             new FieldTransform<>(date,
+                                                                  new FieldRotation<>(plusI, plusK, eastDS, zenithDS),
+                                                                  FieldVector3D.getZero(field)),
+                                             new FieldTransform<>(date, offsetOriginDS));
+
+        final FieldTransform<DerivativeStructure> bodyToInertDS = bodyFrame.getTransformTo(inertial, date);
+
+        return new FieldTransform<>(date, offsetToBodyDS, bodyToInertDS);
 
     }
 
@@ -379,89 +386,6 @@ public class GroundStation {
         return new FieldVector3D<>(d1.getX().getFactory().build(x),
                                    d1.getX().getFactory().build(y),
                                    d1.getX().getFactory().build(z));
-
-    }
-
-    /** Container for offset frame defining vectors with derivatives.
-     * <p>
-     * The defining vectors are represented as vectors whose coordinates
-     * for which both the value and the first order derivatives with
-     * respect to the East, North and Zenith station offset are available.
-     * This allows to compute the partial derivatives of measurements
-     * with respect to station position.
-     * </p>
-     * @see GroundStation#getOffsetDerivatives(DSFactory, int, int, int)
-     */
-    public static class OffsetDerivatives {
-
-        /** Offset frame origin. */
-        private final FieldVector3D<DerivativeStructure> origin;
-
-        /** Offset frame East vector. */
-        private final FieldVector3D<DerivativeStructure> east;
-
-        /** Offset frame North vector. */
-        private final FieldVector3D<DerivativeStructure> north;
-
-        /** Offset frame Zenith vector. */
-        private final FieldVector3D<DerivativeStructure> zenith;
-
-        /** Zero vector. */
-        private final FieldVector3D<DerivativeStructure> zero;
-
-        /** Simple constructor.
-         * @param origin offset frame origin
-         * @param east offset frame East vector
-         * @param north offset frame North vector
-         * @param zenith offset frame Zenith vector
-         * @param zero vector with all components set to zero
-         */
-        private OffsetDerivatives(final FieldVector3D<DerivativeStructure> origin,
-                                  final FieldVector3D<DerivativeStructure> east,
-                                  final FieldVector3D<DerivativeStructure> north,
-                                  final FieldVector3D<DerivativeStructure> zenith,
-                                  final FieldVector3D<DerivativeStructure> zero) {
-            this.origin = origin;
-            this.east   = east;
-            this.north  = north;
-            this.zenith = zenith;
-            this.zero   = zero;
-        }
-
-        /** Get the offset frame origin.
-         * @return offset frame origin, in parent shape frame
-         */
-        public FieldVector3D<DerivativeStructure> getOrigin() {
-            return origin;
-        }
-
-        /** Get the offset frame East vector.
-         * @return offset frame East vector, in parent shape frame
-         */
-        public FieldVector3D<DerivativeStructure> getEast() {
-            return east;
-        }
-
-        /** Get the offset frame North vector.
-         * @return offset frame North vector, in parent shape frame
-         */
-        public FieldVector3D<DerivativeStructure> getNorth() {
-            return north;
-        }
-
-        /** Get the offset frame Zenith vector.
-         * @return offset frame Zenith vector, in parent shape frame
-         */
-        public FieldVector3D<DerivativeStructure> getZenith() {
-            return zenith;
-        }
-
-        /** Get the zero vector.
-         * @return vector with all components set to zero
-         */
-        public FieldVector3D<DerivativeStructure> getZero() {
-            return zero;
-        }
 
     }
 

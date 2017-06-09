@@ -152,7 +152,7 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 9.5e-7,
                                      0.0, 2.8e-6,
-                                     0.0, 3.5e-7,
+                                     0.0, 4.0e-7,
                                      0.0, 2.2e-10);
 
     }
