@@ -58,6 +58,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final double          meanDelay = 1; // measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
@@ -76,17 +77,17 @@ public class RangeRateTest {
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 1.2e-8);
 
     }
 
@@ -109,6 +110,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             //
@@ -129,17 +131,17 @@ public class RangeRateTest {
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 2.6e-5);
 
     }
 
@@ -166,6 +168,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
@@ -200,10 +203,11 @@ public class RangeRateTest {
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 7.4e-9);
 
     }
 
@@ -230,6 +234,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
@@ -264,10 +269,11 @@ public class RangeRateTest {
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 5.2e-5);
 
     }
 
@@ -289,6 +295,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
@@ -312,17 +319,17 @@ public class RangeRateTest {
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 1.5e-7);
 
     }
 
@@ -350,6 +357,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
@@ -387,12 +395,14 @@ public class RangeRateTest {
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 9.1e-9);
 
     }
+
 }
 
 

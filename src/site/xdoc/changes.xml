@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update" >
+        Use automatic differentiation for all orbit determination measurements types.
+        This allows simpler evolutions to estimate parameters for which derivatives
+        are not straightforward to compute; some of these parameters are needed for
+        precise orbit determination.
+      </action>
       <action dev="luc" type="add" due-to="Maxime Journot">
         Added parsing of University of Bern Astronomical Institute files for α and β Klobuchar coefficients.
       </action>
