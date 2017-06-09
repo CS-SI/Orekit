@@ -249,7 +249,7 @@ public class GroundStation {
      * So this method should not be used for stations less than 0.0001 degree from
      * either poles.
      * </p>
-     * @param inertial inertial frame to toransfor to
+     * @param inertial inertial frame to transform to
      * @param date date of the transform
      * @param factory factory for the derivatives
      * @param eastOffsetIndex index of the East offset in the set of
