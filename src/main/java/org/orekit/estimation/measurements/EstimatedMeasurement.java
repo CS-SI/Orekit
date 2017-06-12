@@ -42,6 +42,11 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Evaluations counter. */
     private final int count;
 
+    /** Initial state for current evaluation.
+     * @since 9.0
+     */
+    private SpacecraftState initialState;
+
     /** State of the spacecraft. */
     private final SpacecraftState state;
 
@@ -61,14 +66,17 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * @param observedMeasurement associated observed measurement
      * @param iteration iteration number
      * @param count evaluations counter
+     * @param initialState state at propagation start
      * @param state state of the spacecraft
      */
     public EstimatedMeasurement(final T observedMeasurement,
                                 final int iteration, final int count,
+                                final SpacecraftState initialState,
                                 final SpacecraftState state) {
         this.observedMeasurement           = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
+        this.initialState          = initialState;
         this.state                 = state;
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
@@ -98,6 +106,14 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      */
     public int getCount() {
         return count;
+    }
+
+    /** Get the initial state for current evaluation.
+     * @return initial state for current evaluation
+     * @since 9.0
+     */
+    public SpacecraftState getInitialState() {
+        return initialState;
     }
 
     /** Get the state of the spacecraft.

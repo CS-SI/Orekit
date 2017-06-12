@@ -79,13 +79,15 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * For now only the value of turn-around range and not its derivatives are available
      * @param iteration
      * @param evaluation
+     * @param initialState
      * @param state
      * @return
      * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
+                                                                                  final SpacecraftState initialState,
                                                                                   final SpacecraftState state)
-                                                                                                  throws OrekitException {
+        throws OrekitException {
 
         // Stations attributes from parent Range class
         final GroundStation masterGroundStation = this.getMasterStation();
@@ -189,9 +191,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - +slaveTauU to get transitStateLeg2
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
-                        new EstimatedMeasurement<TurnAroundRange>(this,
-                                        iteration, evaluation,
-                                        transitStateLeg2.shiftedBy(-tSu));
+                        new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   initialState, transitStateLeg2.shiftedBy(-tSu));
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -525,13 +526,15 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * Added for validation
      * @param iteration
      * @param evaluation
+     * @param initialState
      * @param state
      * @return
      * @throws OrekitException
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
+                                                                                    final SpacecraftState initialState,
                                                                                     final SpacecraftState state)
-                                                                                                    throws OrekitException {
+        throws OrekitException {
         // Stations & DSFactory attributes from parent TurnArounsRange class
         final GroundStation masterGroundStation       = getMasterStation();
         final GroundStation slaveGroundStation        = getSlaveStation();
@@ -698,9 +701,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - +slaveTauU to get transitStateLeg2
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
-                        new EstimatedMeasurement<TurnAroundRange>(this,
-                                        iteration, evaluation,
-                                        transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
+                        new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   initialState, transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

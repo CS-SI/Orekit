@@ -84,6 +84,11 @@ class Model implements MultivariateJacobianFunction {
     /** Counter for the iterations. */
     private Incrementor iterationsCounter;
 
+    /** Initial state for current evaluation.
+     * @since 9.0
+     */
+    private SpacecraftState initialState;
+
     /** Date of the first enabled measurement. */
     private AbsoluteDate firstDate;
 
@@ -211,6 +216,14 @@ class Model implements MultivariateJacobianFunction {
         return evaluationsCounter.getCount();
     }
 
+    /** Get the initial state for current evaluation.
+     * @return initial state for current evaluation
+     * @since 9.0
+     */
+    public SpacecraftState getInitialState() {
+        return initialState;
+    }
+
     /** Create the propagator and parameters corresponding to an evaluation point.
      * @param point evaluation point
      * @return a new propagator
@@ -227,6 +240,7 @@ class Model implements MultivariateJacobianFunction {
         }
         final NumericalPropagator propagator =
                         propagatorBuilder.buildPropagator(propagatorArray);
+        initialState = propagator.getInitialState();
 
         return propagator;
 

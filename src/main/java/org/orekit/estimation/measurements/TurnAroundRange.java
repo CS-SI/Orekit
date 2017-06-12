@@ -113,6 +113,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                          final SpacecraftState initialState,
                                                                           final SpacecraftState state)
         throws OrekitException {
 
@@ -291,9 +292,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         //  - +slaveTauU to get transitStateLeg2
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
-                        new EstimatedMeasurement<TurnAroundRange>(this,
-                                        iteration, evaluation,
-                                        transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
+                        new EstimatedMeasurement<>(this, iteration, evaluation, initialState,
+                                                   transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

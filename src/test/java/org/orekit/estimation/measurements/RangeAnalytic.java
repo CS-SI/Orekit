@@ -72,14 +72,16 @@ public class RangeAnalytic extends Range {
      * The derivative structures are not used, an analytical computation is used instead.
      * @param iteration current LS estimator iteration
      * @param evaluation current LS estimator evaluation
+     * @param initialState state at propagation start
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
      * @param interpolator Orekit step interpolator
      * @return
      * @throws OrekitException
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
+                                                                        final SpacecraftState initialState,
                                                                         final SpacecraftState state)
-                                                                                        throws OrekitException {
+        throws OrekitException {
 
         // Station attribute from parent Range class
         final GroundStation groundStation = this.getStation();
@@ -126,7 +128,7 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, initialState, transitState);
 
         // Set range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -244,11 +246,13 @@ public class RangeAnalytic extends Range {
      * Compares directly numeric and analytic computations
      * @param iteration
      * @param evaluation
+     * @param initialState state at propagation start
      * @param state
      * @return
      * @throws OrekitException
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationValidation(final int iteration, final int evaluation,
+                                                                          final SpacecraftState initialState,
                                                                           final SpacecraftState state)
         throws OrekitException {
 
@@ -333,7 +337,7 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, initialState, transitState);
 
         // Range value
         final DerivativeStructure tau    = tauD.add(tauU);

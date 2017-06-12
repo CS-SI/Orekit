@@ -274,7 +274,7 @@ public class TurnAroundRangeAnalyticTest {
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
             final double TARestimated = new TurnAroundRangeAnalytic((TurnAroundRange) measurement).
-                                                                    theoreticalEvaluationAnalytic(0, 0, state).getEstimatedValue()[0];
+                                                                    theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state).getEstimatedValue()[0];
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
@@ -388,7 +388,8 @@ public class TurnAroundRangeAnalyticTest {
             final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final EstimatedMeasurement<TurnAroundRange> TAR = new TurnAroundRangeAnalytic((TurnAroundRange)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+            final EstimatedMeasurement<TurnAroundRange> TAR = new TurnAroundRangeAnalytic((TurnAroundRange)measurement).
+                            theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state);
             if (isModifier) {
                 modifier.modify(TAR);
             }
@@ -401,12 +402,12 @@ public class TurnAroundRangeAnalyticTest {
                 // Compute a reference value using finite differences
                 jacobianRef = EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.estimate(0, 0, state).getEstimatedValue();
+                        return measurement.estimate(0, 0, propagator.getInitialState(), state).getEstimatedValue();
                     }
                 }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
-                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, propagator.getInitialState(), state).getStateDerivatives();
             }
 
 //            //Test: Test point by point with the debugger
@@ -580,7 +581,8 @@ public class TurnAroundRangeAnalyticTest {
             for (int i = 0; i < 6; ++i) {
                 // Analytical computation of the parameters derivatives
                 final EstimatedMeasurement<TurnAroundRange> TAR =
-                                new TurnAroundRangeAnalytic((TurnAroundRange) measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                                new TurnAroundRangeAnalytic((TurnAroundRange) measurement).
+                                theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state);
                 // Optional modifier addition
                 if (isModifier) {
                   modifier.modify(TAR);
@@ -599,13 +601,13 @@ public class TurnAroundRangeAnalyticTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                            return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                            return measurement.estimate(0, 0, propagator.getInitialState(), state).getEstimatedValue()[0];
                                         }
                                     }, drivers[i], 3, 20.0);
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, propagator.getInitialState(), state).getParameterDerivatives(drivers[i])[0];
                 }
 
                 // Deltas

@@ -95,7 +95,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, refstate);
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, propagator.getInitialState(), refstate);
             Assert.assertEquals(12, evalNoMod.getIteration());
             Assert.assertEquals(17, evalNoMod.getCount());
 
@@ -107,7 +107,7 @@ public class IonoModifierTest {
             }
             Assert.assertTrue(found);
             //
-            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  refstate);
+            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  propagator.getInitialState(), refstate);
             final double w = evalNoMod.getCurrentWeight()[0];
             Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
             eval.setCurrentWeight(new double[] { w + 2 });
@@ -159,7 +159,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
-            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, refstate);
+            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, propagator.getInitialState(), refstate);
             Assert.assertEquals(12, evalNoMod.getIteration());
             Assert.assertEquals(17, evalNoMod.getCount());
 
@@ -171,7 +171,7 @@ public class IonoModifierTest {
             }
             Assert.assertTrue(found);
             //
-            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(0, 0,  refstate);
+            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(0, 0, propagator.getInitialState(), refstate);
             final double w = evalNoMod.getCurrentWeight()[0];
             Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
             eval.setCurrentWeight(new double[] { w + 2 });
@@ -222,13 +222,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, refstate);
+            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, propagator.getInitialState(), refstate);
 
             // add modifier
             rangeRate.addModifier(modifier);
 
             //
-            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0,  refstate);
+            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0, propagator.getInitialState(), refstate);
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -269,12 +269,12 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Angular angular = (Angular) measurement;
-            EstimatedMeasurement<Angular> evalNoMod = angular.estimate(0, 0, refstate);
+            EstimatedMeasurement<Angular> evalNoMod = angular.estimate(0, 0, propagator.getInitialState(), refstate);
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<Angular> eval = angular.estimate(0, 0, refstate);
+            EstimatedMeasurement<Angular> eval = angular.estimate(0, 0, propagator.getInitialState(), refstate);
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];

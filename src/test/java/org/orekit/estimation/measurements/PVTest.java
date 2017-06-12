@@ -62,13 +62,13 @@ public class PVTest {
 
             final AbsoluteDate    date      = measurement.getDate();
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.estimate(0, 0, state).getStateDerivatives();
+            final double[][]      jacobian  = measurement.estimate(0, 0, propagator.getInitialState(), state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.estimate(0, 0, state).getEstimatedValue();
+                        return measurement.estimate(0, 0, propagator.getInitialState(), state).getEstimatedValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 1.0, 3).value(state);

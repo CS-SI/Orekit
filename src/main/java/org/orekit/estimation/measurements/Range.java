@@ -91,6 +91,7 @@ public class Range extends AbstractMeasurement<Range> {
     @Override
     protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
+                                                                final SpacecraftState initialState,
                                                                 final SpacecraftState state)
         throws OrekitException {
 
@@ -171,7 +172,7 @@ public class Range extends AbstractMeasurement<Range> {
                                                                     transitStateDS.getDate());
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, initialState, transitState);
 
         // Range value
         final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

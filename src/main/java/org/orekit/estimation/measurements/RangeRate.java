@@ -91,6 +91,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                    final SpacecraftState initialState,
                                                                     final SpacecraftState state)
         throws OrekitException {
 
@@ -163,7 +164,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // one-way (downlink) range-rate
         final EstimatedMeasurement<RangeRate> estimated =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, stationDownlink, transitPV, transitState);
+                        oneWayTheoreticalEvaluation(iteration, evaluation, initialState,
+                                                    stationDownlink, transitPV, transitState);
         if (twoway) {
             // one-way (uplink) light time correction
             final AbsoluteDate approxUplinkDate = downlinkDate.shiftedBy(-2 * tauD.getValue());
@@ -183,7 +185,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
 
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
-                            oneWayTheoreticalEvaluation(iteration, evaluation, stationUplink, transitPV, transitState);
+                            oneWayTheoreticalEvaluation(iteration, evaluation, initialState,
+                                                        stationUplink, transitPV, transitState);
 
             // combine uplink and downlink
             estimated.setEstimatedValue(0.5 * (estimated.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
@@ -218,6 +221,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** Evaluate measurement in one-way.
      * @param iteration iteration number
      * @param evaluation evaluations counter
+     * @param initialState state at propagation start
      * @param stationPV station coordinates when signal is at station
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
@@ -226,13 +230,14 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation,
+                                                                        final SpacecraftState initialState,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState)
         throws OrekitException {
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
-                        new EstimatedMeasurement<RangeRate>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<RangeRate>(this, iteration, evaluation, initialState, transitState);
 
         // range rate value
         final FieldVector3D<DerivativeStructure> stationPosition  = stationPV.getPosition();

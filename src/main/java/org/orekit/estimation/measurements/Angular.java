@@ -75,6 +75,7 @@ public class Angular extends AbstractMeasurement<Angular> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<Angular> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                  final SpacecraftState initialState,
                                                                   final SpacecraftState state)
         throws OrekitException {
 
@@ -129,7 +130,7 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         // prepare the estimation
         final EstimatedMeasurement<Angular> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<>(this, iteration, evaluation, initialState, transitState);
 
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());

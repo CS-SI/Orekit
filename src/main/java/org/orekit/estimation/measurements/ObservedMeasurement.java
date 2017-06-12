@@ -138,11 +138,13 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * </p>
      * @param iteration iteration number
      * @param evaluation evaluations number
+     * @param initialState state at propagation start
      * @param state orbital state at measurement date
      * @return estimated measurement
      * @exception OrekitException if value cannot be computed
      */
-    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState state)
+    EstimatedMeasurement<T> estimate(int iteration, int evaluation,
+                                     SpacecraftState initialState, SpacecraftState state)
         throws OrekitException;
 
 }
