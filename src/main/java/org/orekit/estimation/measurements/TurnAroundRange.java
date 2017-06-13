@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -59,10 +61,6 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     /** Slave ground station reflecting the signal. */
     private final GroundStation slaveStation;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
-
     /** Simple constructor.
      * @param masterStation ground station from which measurement is performed
      * @param slaveStation ground station reflecting the signal
@@ -86,7 +84,6 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
               slaveStation.getZenithOffsetDriver());
         this.masterStation = masterStation;
         this.slaveStation = slaveStation;
-        this.factory = new DSFactory(12, 1);
     }
 
     /** Get the master ground station from which measurement is performed.
@@ -103,22 +100,12 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         return slaveStation;
     }
 
-    /** Get the DSFactory of this class.
-     * @return DSFactory of this class
-     */
-    protected DSFactory getDSFactory() {
-        return factory;
-    }
-
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                           final SpacecraftState initialState,
                                                                           final SpacecraftState state)
         throws OrekitException {
-
-        final Field<DerivativeStructure> field = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
 
         /* Turn around range derivatives are computed with respect to:
          * - Spacecraft state in inertial frame
@@ -132,6 +119,46 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
          *  - 6..8  - QMTx, QMTy, QMTz: Position of the master station in station's offset topocentric frame
          *  - 9..11 - QSTx, QSTy, QSTz: Position of the slave station in station's offset topocentric frame
          */
+        int nbParams = 6;
+        final int masterEastOffsetIndex;
+        if (masterStation.getEastOffsetDriver().isSelected()) {
+            masterEastOffsetIndex = nbParams++;
+        } else {
+            masterEastOffsetIndex = -1;
+        }
+        final int masterNorthOffsetIndex;
+        if (masterStation.getNorthOffsetDriver().isSelected()) {
+            masterNorthOffsetIndex = nbParams++;
+        } else {
+            masterNorthOffsetIndex = -1;
+        }
+        final int masterZenithOffsetIndex;
+        if (masterStation.getZenithOffsetDriver().isSelected()) {
+            masterZenithOffsetIndex = nbParams++;
+        } else {
+            masterZenithOffsetIndex = -1;
+        }
+        final int slaveEastOffsetIndex;
+        if (slaveStation.getEastOffsetDriver().isSelected()) {
+            slaveEastOffsetIndex = nbParams++;
+        } else {
+            slaveEastOffsetIndex = -1;
+        }
+        final int slaveNorthOffsetIndex;
+        if (slaveStation.getNorthOffsetDriver().isSelected()) {
+            slaveNorthOffsetIndex = nbParams++;
+        } else {
+            slaveNorthOffsetIndex = -1;
+        }
+        final int slaveZenithOffsetIndex;
+        if (slaveStation.getZenithOffsetDriver().isSelected()) {
+            slaveZenithOffsetIndex = nbParams++;
+        } else {
+            slaveZenithOffsetIndex = -1;
+        }
+        final DSFactory                          factory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
+        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
 
         // PV coordinates of the spacecraft at time t'
         final PVCoordinates statePV = state.getPVCoordinates();
@@ -192,7 +219,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterStation.getOffsetToInertial(state.getFrame(), measurementDateDS, factory, 6, 7, 8);
+                        masterStation.getOffsetToInertial(state.getFrame(), measurementDateDS, factory,
+                                                          masterEastOffsetIndex, masterNorthOffsetIndex,
+                                                          masterZenithOffsetIndex);
 
         // Master station PV in inertial frame at measurement date
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);
@@ -213,8 +242,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // The components of slave station's position in offset frame are the 3 last derivative parameters
         final FieldAbsoluteDate<DerivativeStructure> approxReboundDate = measurementDateDS.shiftedBy(-delta);
         final FieldTransform<DerivativeStructure> slaveToInertApprox =
-                        slaveStation.getOffsetToInertial(state.getFrame(), approxReboundDate,
-                                                         factory, 9, 10, 11);
+                        slaveStation.getOffsetToInertial(state.getFrame(), approxReboundDate, factory,
+                                                         slaveEastOffsetIndex, slaveNorthOffsetIndex,
+                                                         slaveZenithOffsetIndex);
 
         // Slave station PV in inertial frame at approximate rebound date on slave station
         final TimeStampedFieldPVCoordinates<DerivativeStructure> QSlaveApprox =
@@ -236,8 +266,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Absolute date of rebound of the signal to slave station
         final FieldAbsoluteDate<DerivativeStructure> reboundDateDS = measurementDateDS.shiftedBy(tauLeg2.negate());
         final FieldTransform<DerivativeStructure> slaveToInert =
-                        slaveStation.getOffsetToInertial(state.getFrame(), reboundDateDS,
-                                                         factory, 9, 10, 11);
+                        slaveStation.getOffsetToInertial(state.getFrame(), reboundDateDS, factory,
+                                                         slaveEastOffsetIndex, slaveNorthOffsetIndex,
+                                                         slaveZenithOffsetIndex);
 
         // Slave station PV in inertial frame at rebound date on slave station
         final FieldVector3D<DerivativeStructure> QSlave = slaveToInert.transformPosition(zero);
@@ -260,8 +291,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldAbsoluteDate<DerivativeStructure> approxEmissionDate =
                         measurementDateDS.shiftedBy(-2 * (slaveTauU.getValue() + masterTauD.getValue()));
         final FieldTransform<DerivativeStructure> masterToInertApprox =
-                        masterStation.getOffsetToInertial(state.getFrame(), approxEmissionDate,
-                                                         factory, 6, 7, 8);
+                        masterStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, factory,
+                                                          masterEastOffsetIndex, masterNorthOffsetIndex,
+                                                          masterZenithOffsetIndex);
 
         // Master station PV in inertial frame at approximate emission date
         final TimeStampedFieldPVCoordinates<DerivativeStructure> QMasterApprox =
@@ -300,44 +332,31 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final DerivativeStructure turnAroundRange = (tauLeg2.add(tauLeg1)).multiply(cOver2);
         estimated.setEstimatedValue(turnAroundRange.getValue());
 
-
         // Turn-around range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {turnAroundRange.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
-                                                    turnAroundRange.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPy
-                                                    turnAroundRange.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPz
-                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndVx
-                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndVy
-                                                    turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndVz
-        });
-
+        final double[] derivatives = turnAroundRange.getAllDerivatives();
+        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
         // Set parameter drivers partial derivatives with respect to stations' position in stations'offset topocentric frame
         // Master station
-        if (masterStation.getEastOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(masterStation.getEastOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)); // dROndQMTx
+        if (masterEastOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(masterStation.getEastOffsetDriver(), derivatives[masterEastOffsetIndex + 1]);
         }
-        if (masterStation.getNorthOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(masterStation.getNorthOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)); // dROndQMTy
+        if (masterNorthOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(masterStation.getNorthOffsetDriver(), derivatives[masterNorthOffsetIndex + 1]);
         }
-        if (masterStation.getZenithOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(masterStation.getZenithOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0)); // dROndQMTz
+        if (masterZenithOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(masterStation.getZenithOffsetDriver(), derivatives[masterZenithOffsetIndex + 1]);
         }
 
         // Slave station
-        if (slaveStation.getEastOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(slaveStation.getEastOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQSTx
+        if (slaveEastOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(slaveStation.getEastOffsetDriver(), derivatives[slaveEastOffsetIndex + 1]);
         }
-        if (slaveStation.getNorthOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(slaveStation.getNorthOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQSTy
+        if (slaveNorthOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(slaveStation.getNorthOffsetDriver(), derivatives[slaveNorthOffsetIndex + 1]);
         }
-        if (slaveStation.getZenithOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(slaveStation.getZenithOffsetDriver(),
-                                              turnAroundRange.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQSTz
+        if (slaveZenithOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(slaveStation.getZenithOffsetDriver(), derivatives[slaveZenithOffsetIndex + 1]);
         }
 
         return estimated;

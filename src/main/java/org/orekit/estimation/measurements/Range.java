@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -50,9 +52,6 @@ public class Range extends AbstractMeasurement<Range> {
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
@@ -70,7 +69,6 @@ public class Range extends AbstractMeasurement<Range> {
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver());
         this.station = station;
-        this.factory = new DSFactory(9, 1);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -78,13 +76,6 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public GroundStation getStation() {
         return station;
-    }
-
-    /** Get the DSFactory of this class.
-     * @return DSFactory of this class
-     */
-    protected DSFactory getDSFactory() {
-        return factory;
     }
 
     /** {@inheritDoc} */
@@ -95,9 +86,6 @@ public class Range extends AbstractMeasurement<Range> {
                                                                 final SpacecraftState state)
         throws OrekitException {
 
-        final Field<DerivativeStructure> field = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
-
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
         // -------
@@ -106,6 +94,28 @@ public class Range extends AbstractMeasurement<Range> {
         //  - 0..2 - Px, Py, Pz   : Position of the spacecraft in inertial frame
         //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
         //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
+        int nbParams = 6;
+        final int eastOffsetIndex;
+        if (station.getEastOffsetDriver().isSelected()) {
+            eastOffsetIndex = nbParams++;
+        } else {
+            eastOffsetIndex = -1;
+        }
+        final int northOffsetIndex;
+        if (station.getNorthOffsetDriver().isSelected()) {
+            northOffsetIndex = nbParams++;
+        } else {
+            northOffsetIndex = -1;
+        }
+        final int zenithOffsetIndex;
+        if (station.getZenithOffsetDriver().isSelected()) {
+            zenithOffsetIndex = nbParams++;
+        } else {
+            zenithOffsetIndex = -1;
+        }
+        final DSFactory                          factory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
+        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
 
         // Position of the spacecraft expressed as a derivative structure
         // The components of the position are the 3 first derivative parameters
@@ -140,7 +150,8 @@ public class Range extends AbstractMeasurement<Range> {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, 6, 7, 8);
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
+                                                    eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -181,28 +192,18 @@ public class Range extends AbstractMeasurement<Range> {
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {
-                                          range.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
-                                          range.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndPy
-                                          range.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndPz
-                                          range.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0), // dROndVx
-                                          range.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0), // dROndVy
-                                          range.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0)  // dROndVz
-        });
-
+        final double[] derivatives = range.getAllDerivatives();
+        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
         // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
-        if (station.getEastOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getEastOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQTx
+        if (eastOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getEastOffsetDriver(), derivatives[eastOffsetIndex + 1]);
         }
-        if (station.getNorthOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQTy
+        if (northOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getNorthOffsetDriver(), derivatives[northOffsetIndex + 1]);
         }
-        if (station.getZenithOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQTz
+        if (zenithOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getZenithOffsetDriver(), derivatives[zenithOffsetIndex + 1]);
         }
 
         return estimated;

@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -184,6 +185,14 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
             this.stateDerivatives[i] = stateDerivatives[i].clone();
         }
+    }
+
+    /** Get all the drivers with set derivatives.
+     * @return all the drivers with set derivatives
+     * @since 9.0
+     */
+    public Stream<ParameterDriver> getDerivativesDrivers() {
+        return parametersDerivatives.entrySet().stream().map(entry -> entry.getKey());
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()

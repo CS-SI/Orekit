@@ -253,11 +253,11 @@ public class GroundStation {
      * @param date date of the transform
      * @param factory factory for the derivatives
      * @param eastOffsetIndex index of the East offset in the set of
-     * free parameters in derivatives computations
+     * free parameters in derivatives computations (negative if not used)
      * @param northOffsetIndex index of the North offset in the set of
-     * free parameters in derivatives computations
+     * free parameters in derivatives computations (negative if not used)
      * @param zenithOffsetIndex index of the Zenith offset in the set of
-     * free parameters in derivatives computations
+     * free parameters in derivatives computations (negative if not used)
      * @return offset frame defining vectors with derivatives
      * @exception OrekitException if some frame transforms cannot be computed
      * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
@@ -278,15 +278,18 @@ public class GroundStation {
         // offset frame origin
         final Transform offsetToBody = frame.getTransformTo(bodyFrame, (AbsoluteDate) null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
-        final FieldVector3D<DerivativeStructure> zeroEast =
-                        new FieldVector3D<>(factory.variable(eastOffsetIndex,   0.0),
-                                            baseFrame.getEast());
-        final FieldVector3D<DerivativeStructure> zeroNorth =
-                        new FieldVector3D<>(factory.variable(northOffsetIndex,  0.0),
-                                            baseFrame.getNorth());
-        final FieldVector3D<DerivativeStructure> zeroZenith =
-                        new FieldVector3D<>(factory.variable(zenithOffsetIndex, 0.0),
-                                            baseFrame.getZenith());
+        final DerivativeStructure eastZDS = eastOffsetIndex < 0 ?
+                                            factory.constant(0.0) :
+                                            factory.variable(eastOffsetIndex,   0.0);
+        final FieldVector3D<DerivativeStructure> zeroEast = new FieldVector3D<>(eastZDS, baseFrame.getEast());
+        final DerivativeStructure northZDS = northOffsetIndex < 0 ?
+                                             factory.constant(0.0) :
+                                             factory.variable(northOffsetIndex,   0.0);
+        final FieldVector3D<DerivativeStructure> zeroNorth = new FieldVector3D<>(northZDS, baseFrame.getNorth());
+        final DerivativeStructure zenithZDS = zenithOffsetIndex < 0 ?
+                                              factory.constant(0.0) :
+                                              factory.variable(zenithOffsetIndex,   0.0);
+        final FieldVector3D<DerivativeStructure> zeroZenith = new FieldVector3D<>(zenithZDS, baseFrame.getZenith());
         final FieldVector3D<DerivativeStructure> offsetOriginDS =
                 zeroEast.add(zeroNorth).add(zeroZenith).add(offsetOrigin);
 

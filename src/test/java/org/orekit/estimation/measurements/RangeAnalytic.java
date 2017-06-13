@@ -1,5 +1,7 @@
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -258,8 +260,29 @@ public class RangeAnalytic extends Range {
 
         // Station & DSFactory attributes from parent Range class
         final GroundStation groundStation             =  getStation();
-        final DSFactory     dsFactory                 =  getDSFactory();
-        final Field<DerivativeStructure> field        = dsFactory.getDerivativeField();
+
+        // get the number of parameters used for derivation
+        int nbParams = 6;
+        final int eastOffsetIndex;
+        if (groundStation.getEastOffsetDriver().isSelected()) {
+            eastOffsetIndex = nbParams++;
+        } else {
+            eastOffsetIndex = -1;
+        }
+        final int northOffsetIndex;
+        if (groundStation.getNorthOffsetDriver().isSelected()) {
+            northOffsetIndex = nbParams++;
+        } else {
+            northOffsetIndex = -1;
+        }
+        final int zenithOffsetIndex;
+        if (groundStation.getZenithOffsetDriver().isSelected()) {
+            zenithOffsetIndex = nbParams++;
+        } else {
+            zenithOffsetIndex = -1;
+        }
+        final DSFactory dsFactory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure> field = dsFactory.getDerivativeField();
         final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
@@ -304,7 +327,8 @@ public class RangeAnalytic extends Range {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory, 6, 7, 8);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory,
+                                                          eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -346,29 +370,20 @@ public class RangeAnalytic extends Range {
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {range.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
-                                                    range.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndPy
-                                                    range.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndPz
-                                                    range.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0), // dROndVx
-                                                    range.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0), // dROndVy
-                                                    range.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0), // dROndVz
-        });
+        final double[] derivatives = range.getAllDerivatives();
+        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
 
         // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
-        if (groundStation.getEastOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQTx
+        if (eastOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), derivatives[eastOffsetIndex + 1]);
         }
-        if (groundStation.getNorthOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQTy
+        if (northOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), derivatives[northOffsetIndex + 1]);
         }
-        if (groundStation.getZenithOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQTz
+        if (zenithOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), derivatives[zenithOffsetIndex + 1]);
         }
-
 
         // ----------
         // VALIDATION

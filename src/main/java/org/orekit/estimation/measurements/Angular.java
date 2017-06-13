@@ -42,9 +42,6 @@ public class Angular extends AbstractMeasurement<Angular> {
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
@@ -62,7 +59,6 @@ public class Angular extends AbstractMeasurement<Angular> {
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver());
         this.station = station;
-        this.factory = new DSFactory(6, 1);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -79,8 +75,29 @@ public class Angular extends AbstractMeasurement<Angular> {
                                                                   final SpacecraftState state)
         throws OrekitException {
 
-        final Field<DerivativeStructure> field = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
+        // get the number of parameters used for derivation
+        int nbParams = 3;
+        final int eastOffsetIndex;
+        if (station.getEastOffsetDriver().isSelected()) {
+            eastOffsetIndex = nbParams++;
+        } else {
+            eastOffsetIndex = -1;
+        }
+        final int northOffsetIndex;
+        if (station.getNorthOffsetDriver().isSelected()) {
+            northOffsetIndex = nbParams++;
+        } else {
+            northOffsetIndex = -1;
+        }
+        final int zenithOffsetIndex;
+        if (station.getZenithOffsetDriver().isSelected()) {
+            zenithOffsetIndex = nbParams++;
+        } else {
+            zenithOffsetIndex = -1;
+        }
+        final DSFactory                          factory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
+        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
 
         // take propagation time into account
         // (if state has already been set up to pre-compensate propagation delay,
@@ -98,7 +115,8 @@ public class Angular extends AbstractMeasurement<Angular> {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, 3, 4, 5);
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
+                                                    eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -136,49 +154,35 @@ public class Angular extends AbstractMeasurement<Angular> {
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
 
         // partial derivatives of azimuth with respect to state
-        final double dAzdX = azimuth.getPartialDerivative(1, 0, 0, 0, 0, 0);
-        final double dAzdY = azimuth.getPartialDerivative(0, 1, 0, 0, 0, 0);
-        final double dAzdZ = azimuth.getPartialDerivative(0, 0, 1, 0, 0, 0);
+        final double[] azDerivatives = azimuth.getAllDerivatives();
         final double[] dAzOndP = new double[] {
-            dAzdX,      dAzdY,      dAzdZ,
-            dAzdX * dt, dAzdY * dt, dAzdZ * dt
+            azDerivatives[1],      azDerivatives[2],      azDerivatives[3],
+            azDerivatives[1] * dt, azDerivatives[2] * dt, azDerivatives[3] * dt
         };
 
         // partial derivatives of Elevation with respect to state
-        final double dEldX = elevation.getPartialDerivative(1, 0, 0, 0, 0, 0);
-        final double dEldY = elevation.getPartialDerivative(0, 1, 0, 0, 0, 0);
-        final double dEldZ = elevation.getPartialDerivative(0, 0, 1, 0, 0, 0);
+        final double[] elDerivatives = elevation.getAllDerivatives();
         final double[] dElOndP = new double[] {
-            dEldX,      dEldY,      dEldZ,
-            dEldX * dt, dEldY * dt, dEldZ * dt
+            elDerivatives[1],      elDerivatives[2],      elDerivatives[3],
+            elDerivatives[1] * dt, elDerivatives[2] * dt, elDerivatives[3] * dt
         };
-
         estimated.setStateDerivatives(dAzOndP, dElOndP);
 
-        if (station.getEastOffsetDriver().isSelected()  ||
-            station.getNorthOffsetDriver().isSelected() ||
-            station.getZenithOffsetDriver().isSelected()) {
-
-            // partial derivatives with respect to parameters
-            // Be aware: east; north and zenith are expressed in inertial frame frame but the derivatives are expressed
-            // with respect to reference station topocentric frame
-
-            if (station.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getEastOffsetDriver(),
-                                                  azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                                  elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
-            }
-            if (station.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
-                                                  azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                  elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
-            }
-            if (station.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
-                                                  azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                                  elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
-            }
-
+        // partial derivatives with respect to parameters
+        if (eastOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getEastOffsetDriver(),
+                                              azDerivatives[eastOffsetIndex + 1],
+                                              elDerivatives[eastOffsetIndex + 1]);
+        }
+        if (northOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
+                                              azDerivatives[northOffsetIndex + 1],
+                                              elDerivatives[northOffsetIndex + 1]);
+        }
+        if (zenithOffsetIndex >= 0) {
+            estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
+                                              azDerivatives[zenithOffsetIndex + 1],
+                                              elDerivatives[zenithOffsetIndex + 1]);
         }
 
         return estimated;
