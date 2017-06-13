@@ -560,39 +560,19 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     }
 
-    /** Fill Jacobians rows when mass is needed.
+    /** Fill Jacobians rows.
      * @param accelerationComponent component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)
      */
     private void addToRow(final DerivativeStructure accelerationComponent, final int index) {
 
-        if (dAccdM == null) {
-
-            // free parameters 0, 1, 2 are for position
-            dAccdPos[index][0] += accelerationComponent.getPartialDerivative(1, 0, 0, 0, 0, 0);
-            dAccdPos[index][1] += accelerationComponent.getPartialDerivative(0, 1, 0, 0, 0, 0);
-            dAccdPos[index][2] += accelerationComponent.getPartialDerivative(0, 0, 1, 0, 0, 0);
-
-            // free parameters 3, 4, 5 are for velocity
-            dAccdVel[index][0] += accelerationComponent.getPartialDerivative(0, 0, 0, 1, 0, 0);
-            dAccdVel[index][1] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 1, 0);
-            dAccdVel[index][2] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 1);
-
-        } else {
-
-            // free parameters 0, 1, 2 are for position
-            dAccdPos[index][0] += accelerationComponent.getPartialDerivative(1, 0, 0, 0, 0, 0, 0);
-            dAccdPos[index][1] += accelerationComponent.getPartialDerivative(0, 1, 0, 0, 0, 0, 0);
-            dAccdPos[index][2] += accelerationComponent.getPartialDerivative(0, 0, 1, 0, 0, 0, 0);
-
-            // free parameters 3, 4, 5 are for velocity
-            dAccdVel[index][0] += accelerationComponent.getPartialDerivative(0, 0, 0, 1, 0, 0, 0);
-            dAccdVel[index][1] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 1, 0, 0);
-            dAccdVel[index][2] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 1, 0);
-
-            // free parameter 6 is for mass
-            dAccdM[index]      += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 0, 1);
-
+        final double[] derivatives = accelerationComponent.getAllDerivatives();
+        for (int i = 0; i < 3; ++i) {
+            dAccdPos[index][i] += derivatives[i + 1];
+            dAccdVel[index][i] += derivatives[i + 4];
+        }
+        if (dAccdM != null) {
+            dAccdM[index] += derivatives[7];
         }
 
     }
