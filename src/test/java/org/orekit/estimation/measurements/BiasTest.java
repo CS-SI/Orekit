@@ -111,7 +111,7 @@ public class BiasTest {
             }
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 6,
+        EstimationTestUtils.checkFit(context, estimator, 2, 7,
                                      0.0,  6.7e-7,
                                      0.0,  1.5e-6,
                                      0.0,  3.7e-7,

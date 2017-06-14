@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Improved computation ground station parameters derivatives
+        in orbit determination.
+      </action>
       <action dev="luc" type="add">
         Measurements now have access to initial state too (previously they
         could only access current state) this is helpful for measurements

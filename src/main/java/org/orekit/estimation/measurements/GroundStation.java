@@ -68,13 +68,13 @@ public class GroundStation {
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
 
-    /** Drivers for position offset along the East axis. */
+    /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
 
-    /** Drivers for position offset along the North axis. */
+    /** Driver for position offset along the North axis. */
     private final ParameterDriver northOffsetDriver;
 
-    /** Drivers for position offset along the zenith axis. */
+    /** Driver for position offset along the zenith axis. */
     private final ParameterDriver zenithOffsetDriver;
 
     /** Offset frame associated with the station, taking offset parameter into account. */
@@ -274,30 +274,39 @@ public class GroundStation {
         final Field<DerivativeStructure> field = factory.getDerivativeField();
         final TopocentricFrame frame  = getOffsetFrame();
         final Frame bodyFrame = baseFrame.getParent();
+        final Transform baseToBody = baseFrame.getTransformTo(bodyFrame, (AbsoluteDate) null);
 
         // offset frame origin
         final Transform offsetToBody = frame.getTransformTo(bodyFrame, (AbsoluteDate) null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
-        final DerivativeStructure eastZDS = eastOffsetIndex < 0 ?
-                                            factory.constant(0.0) :
-                                            factory.variable(eastOffsetIndex,   0.0);
-        final FieldVector3D<DerivativeStructure> zeroEast = new FieldVector3D<>(eastZDS, baseFrame.getEast());
-        final DerivativeStructure northZDS = northOffsetIndex < 0 ?
-                                             factory.constant(0.0) :
-                                             factory.variable(northOffsetIndex,   0.0);
-        final FieldVector3D<DerivativeStructure> zeroNorth = new FieldVector3D<>(northZDS, baseFrame.getNorth());
-        final DerivativeStructure zenithZDS = zenithOffsetIndex < 0 ?
-                                              factory.constant(0.0) :
-                                              factory.variable(zenithOffsetIndex,   0.0);
-        final FieldVector3D<DerivativeStructure> zeroZenith = new FieldVector3D<>(zenithZDS, baseFrame.getZenith());
+        final DerivativeStructure eastOffset   = eastOffsetIndex < 0 ?
+                                                 factory.constant(eastOffsetDriver.getValue()) :
+                                                 factory.variable(eastOffsetIndex,   eastOffsetDriver.getValue());
+        final DerivativeStructure northOffset  = northOffsetIndex < 0 ?
+                                                 factory.constant(northOffsetDriver.getValue()) :
+                                                 factory.variable(northOffsetIndex,   northOffsetDriver.getValue());
+        final DerivativeStructure zenithOffset = zenithOffsetIndex < 0 ?
+                                                 factory.constant(zenithOffsetDriver.getValue()) :
+                                                 factory.variable(zenithOffsetIndex,   zenithOffsetDriver.getValue());
         final FieldVector3D<DerivativeStructure> offsetOriginDS =
-                zeroEast.add(zeroNorth).add(zeroZenith).add(offsetOrigin);
+                        new FieldVector3D<DerivativeStructure>(field.getOne(), baseToBody.transformPosition(Vector3D.ZERO),
+                                                               eastOffset,     baseFrame.getEast(),
+                                                               northOffset,    baseFrame.getNorth(),
+                                                               zenithOffset,   baseFrame.getZenith());
 
         // vectors changes due to offset in the meridian plane
         // (we are in fact only interested in the derivatives parts, not the values)
+        final DerivativeStructure eastZero     = eastOffsetIndex < 0 ?
+                                                 factory.constant(0.0) :
+                                                 factory.variable(eastOffsetIndex,   0.0);
+        final DerivativeStructure northZero    = northOffsetIndex < 0 ?
+                                                 factory.constant(0.0) :
+                                                 factory.variable(northOffsetIndex,   0.0);
         final Vector3D meridianCenter = centerOfCurvature(offsetOrigin, frame.getEast());
         final FieldVector3D<DerivativeStructure> meridianCenterToOffset =
-                        zeroNorth.add(offsetOrigin).subtract(meridianCenter);
+                        new FieldVector3D<DerivativeStructure>(field.getOne(),          offsetOrigin,
+                                                               northZero,                baseFrame.getNorth(),
+                                                               field.getOne().negate(), meridianCenter);
         final FieldVector3D<DerivativeStructure> meridianZ = meridianCenterToOffset.normalize();
         FieldVector3D<DerivativeStructure>       meridianE = FieldVector3D.crossProduct(Vector3D.PLUS_K, meridianZ);
         if (meridianE.getNormSq().getValue() < Precision.SAFE_MIN) {
@@ -311,7 +320,9 @@ public class GroundStation {
         // (we are in fact only interested in the derivatives parts, not the values)
         final Vector3D transverseCenter = centerOfCurvature(offsetOrigin, frame.getNorth());
         final FieldVector3D<DerivativeStructure> transverseCenterToOffset =
-                        zeroEast.add(offsetOrigin).subtract(transverseCenter);
+                        new FieldVector3D<DerivativeStructure>(field.getOne(),          offsetOrigin,
+                                                               eastZero,                baseFrame.getEast(),
+                                                               field.getOne().negate(), transverseCenter);
         final FieldVector3D<DerivativeStructure> transverseZ = transverseCenterToOffset.normalize();
         FieldVector3D<DerivativeStructure>       transverseE = FieldVector3D.crossProduct(Vector3D.PLUS_K, transverseZ);
         if (transverseE.getNormSq().getValue() < Precision.SAFE_MIN) {
@@ -324,13 +335,14 @@ public class GroundStation {
         final FieldVector3D<DerivativeStructure> eastDS   = combine(frame.getEast(),   meridianE, transverseE);
         final FieldVector3D<DerivativeStructure> zenithDS = combine(frame.getZenith(), meridianZ, transverseZ);
 
-        final FieldVector3D<DerivativeStructure> plusI =  FieldVector3D.getPlusI(date.getField());
-        final FieldVector3D<DerivativeStructure> plusK =  FieldVector3D.getPlusK(date.getField());
+        final FieldVector3D<DerivativeStructure> plusI =  FieldVector3D.getPlusI(field);
+        final FieldVector3D<DerivativeStructure> plusK =  FieldVector3D.getPlusK(field);
+        final FieldVector3D<DerivativeStructure> zero  =  FieldVector3D.getZero(field);
         final FieldTransform<DerivativeStructure> offsetToBodyDS =
                         new FieldTransform<>(date,
                                              new FieldTransform<>(date,
                                                                   new FieldRotation<>(plusI, plusK, eastDS, zenithDS),
-                                                                  FieldVector3D.getZero(field)),
+                                                                  zero),
                                              new FieldTransform<>(date, offsetOriginDS));
 
         final FieldTransform<DerivativeStructure> bodyToInertDS = bodyFrame.getTransformTo(inertial, date);
@@ -369,8 +381,8 @@ public class GroundStation {
 
     /** Combine a vector and additive derivatives.
      * @param v vector value
-     * @param d1 vector derivative (values will be ignored)
-     * @param d2 vector derivative (values will be ignored)
+     * @param d1 vector derivative (values are ignored, only derivatives are considered)
+     * @param d2 vector derivative (values are ignored, only derivatives are considered)
      * @return combined vector
      */
     private FieldVector3D<DerivativeStructure> combine(final Vector3D v,
@@ -386,9 +398,8 @@ public class GroundStation {
         z[0] = v.getZ();
 
         // build the combined vector
-        return new FieldVector3D<>(d1.getX().getFactory().build(x),
-                                   d1.getX().getFactory().build(y),
-                                   d1.getX().getFactory().build(z));
+        final DSFactory factory = d1.getX().getFactory();
+        return new FieldVector3D<>(factory.build(x), factory.build(y), factory.build(z));
 
     }
 

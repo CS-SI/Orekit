@@ -80,7 +80,7 @@ public class TurnAroundRangeTest {
         double refErrorsPMedian = 1.4e-6;
         double refErrorsPMean   = 1.4e-06;
         double refErrorsPMax    = 2.6e-06;
-        double refErrorsVMedian = 7.3e-05;
+        double refErrorsVMedian = 8.2e-05;
         double refErrorsVMean   = 3.6e-04;
         double refErrorsVMax    = 1.4e-02;
 
@@ -106,7 +106,7 @@ public class TurnAroundRangeTest {
         double refErrorsPMedian = 1.4e-6;
         double refErrorsPMean   = 1.4e-06;
         double refErrorsPMax    = 2.6e-06;
-        double refErrorsVMedian = 7.3e-05;
+        double refErrorsVMedian = 8.2e-05;
         double refErrorsVMean   = 3.6e-04;
         double refErrorsVMax    = 1.4e-2;
 
@@ -256,7 +256,7 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 2.3e-8);
+        Assert.assertEquals(0.0, absErrorsMedian, 2.5e-8);
         Assert.assertEquals(0.0, absErrorsMin, 3.0e-7);
         Assert.assertEquals(0.0, absErrorsMax, 2.5e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 5.9e-15);
