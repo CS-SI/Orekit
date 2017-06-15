@@ -256,11 +256,11 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 2.5e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 3.0e-7);
-        Assert.assertEquals(0.0, absErrorsMax, 2.5e-7);
+        Assert.assertEquals(0.0, absErrorsMedian, 3.5e-8);
+        Assert.assertEquals(0.0, absErrorsMin, 5.0e-7);
+        Assert.assertEquals(0.0, absErrorsMax, 3.6e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 5.9e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 1.8e-14);
+        Assert.assertEquals(0.0, relErrorsMax , 2.9e-14);
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,

@@ -167,7 +167,8 @@ public class InterpolatingTransformProvider implements TransformProvider {
                                                                    cache.getMaxSpan(),
                                                                    cache.getNewSlotQuantumGap(),
                                                                    new FieldTransformGenerator<>(date.getField(),
-                                                                                                 cache,
+                                                                                                 cache.getNeighborsSize(),
+                                                                                                 rawProvider,
                                                                                                  step));
                 fieldCaches.put(date.getField(), fieldCache);
             }

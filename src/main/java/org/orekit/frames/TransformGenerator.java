@@ -48,7 +48,8 @@ public class TransformGenerator implements TimeStampedGenerator<Transform> {
      * @param step step size
      */
     public TransformGenerator(final int neighborsSize,
-                              final TransformProvider provider, final double step) {
+                              final TransformProvider provider,
+                              final double step) {
         this.neighborsSize = neighborsSize;
         this.provider      = provider;
         this.step          = step;
@@ -71,7 +72,6 @@ public class TransformGenerator implements TimeStampedGenerator<Transform> {
 
                 // some transforms have already been generated
                 // add the missing ones up to specified date
-
                 AbsoluteDate t = existingDate;
                 if (date.compareTo(t) > 0) {
                     // forward generation
@@ -86,6 +86,7 @@ public class TransformGenerator implements TimeStampedGenerator<Transform> {
                         generated.add(0, provider.getTransform(t));
                     } while (t.compareTo(date) >= 0);
                 }
+
             }
 
             // return the generated transforms

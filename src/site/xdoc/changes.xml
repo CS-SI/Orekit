@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed wrong generation of FieldTransforms by time stamped cache, when generation
+        happens backward in time.
+        Fixes issue #344.
+      </action>
       <action dev="luc" type="update">
         Improved computation ground station parameters derivatives
         in orbit determination.

@@ -25,8 +25,8 @@ import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
-import org.orekit.utils.TimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Generator to use field transforms in {@link GenericTimeStampedCache}.
@@ -39,23 +39,29 @@ public class FieldTransformGenerator<T extends RealFieldElement<T>> implements T
     /** Field to which the elements belong. */
     private final Field<T> field;
 
-    /** Underlying cache. */
-    private final TimeStampedCache<Transform> cache;
+    /** Number of neighbors. */
+    private int neighborsSize;
+
+    /** Underlying provider. */
+    private final TransformProvider provider;
 
     /** Step size. */
     private final double step;
 
     /** simple constructor.
      * @param field field to which the elements belong
-     * @param cache underlying cache
+     * @param neighborsSize number of neighbors
+     * @param provider underlying provider
      * @param step step size
      */
     public FieldTransformGenerator(final Field<T> field,
-                                   final TimeStampedCache<Transform> cache,
+                                   final int neighborsSize,
+                                   final TransformProvider provider,
                                    final double step) {
-        this.field = field;
-        this.cache = cache;
-        this.step  = step;
+        this.field         = field;
+        this.neighborsSize = neighborsSize;
+        this.provider      = provider;
+        this.step          = step;
     }
 
     /** {@inheritDoc} */
@@ -63,36 +69,34 @@ public class FieldTransformGenerator<T extends RealFieldElement<T>> implements T
 
         try {
 
+            final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, date);
             final List<FieldTransform<T>> generated = new ArrayList<>();
 
             if (existingDate == null) {
 
                 // no prior existing transforms, just generate a first set
-                cache.getNeighbors(date).forEach(tr -> generated.add(new FieldTransform<>(field, tr)));
+                for (int i = 0; i < neighborsSize; ++i) {
+                    generated.add(provider.getTransform(fieldDate.shiftedBy(i * step)));
+                }
 
             } else {
 
                 // some transforms have already been generated
                 // add the missing ones up to specified date
-                AbsoluteDate previous;
-                final AbsoluteDate last;
-                if (date.compareTo(existingDate) > 0) {
+                FieldAbsoluteDate<T> t = new FieldAbsoluteDate<>(field, existingDate);
+                if (date.compareTo(t.toAbsoluteDate()) > 0) {
                     // forward generation
-                    previous = existingDate;
-                    last     = date;
+                    do {
+                        t = t.shiftedBy(step);
+                        generated.add(generated.size(), provider.getTransform(t));
+                    } while (t.compareTo(fieldDate) <= 0);
                 } else {
                     // backward generation
-                    previous = date;
-                    last     = existingDate;
+                    do {
+                        t = t.shiftedBy(-step);
+                        generated.add(0, provider.getTransform(t));
+                    } while (t.compareTo(fieldDate) >= 0);
                 }
-
-                do {
-                    final AbsoluteDate target = previous.shiftedBy(step);
-                    cache.getNeighbors(target).
-                        filter(tr -> tr.getDate().durationFrom(target) >= 0).
-                        forEach(tr -> generated.add(new FieldTransform<>(field, tr)));
-                    previous = generated.get(generated.size() - 1).getDate();
-                } while (previous.compareTo(last) <= 0);
 
             }
 

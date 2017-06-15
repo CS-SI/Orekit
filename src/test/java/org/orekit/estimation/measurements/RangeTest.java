@@ -79,7 +79,7 @@ public class RangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 5.6e-10;
-        double refErrorsPMean   = 4.2e-09;
+        double refErrorsPMean   = 5.0e-09;
         double refErrorsPMax    = 1.9e-07;
         double refErrorsVMedian = 1.7e-04;
         double refErrorsVMean   = 6.9e-04;
@@ -104,7 +104,7 @@ public class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsPMedian = 6.2e-10;
-        double refErrorsPMean   = 4.2e-09;
+        double refErrorsPMean   = 5.3e-09;
         double refErrorsPMax    = 2.4e-07;
         double refErrorsVMedian = 1.7e-04;
         double refErrorsVMean   = 6.9e-04;
@@ -280,11 +280,11 @@ public class RangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 2e-7);
+        Assert.assertEquals(0.0, absErrorsMedian, 2e-8);
+        Assert.assertEquals(0.0, absErrorsMin, 2.2e-7);
         Assert.assertEquals(0.0, absErrorsMax, 2e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 1e-14);
-        Assert.assertEquals(0.0, relErrorsMax, 2e-14);
+        Assert.assertEquals(0.0, relErrorsMax, 2.6e-14);
 
 
     }

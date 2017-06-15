@@ -120,7 +120,7 @@ public class GroundStationTest {
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 7.6e-7,
-                                     0.0, 1.9e-6,
+                                     0.0, 2.1e-6,
                                      0.0, 1.4e-6,
                                      0.0, 6.2e-10);
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
@@ -135,7 +135,7 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 7.3e-16;
         double toleranceRotationDerivative       = 3.0e-14;
         double toleranceRotationRateValue        = 2.0e-19;
         double toleranceRotationRateDerivative   = 2.0e-19;
@@ -152,9 +152,9 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 7.0e-16;
+        double toleranceRotationValue            = 7.5e-16;
         double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 9.0e-20;
+        double toleranceRotationRateValue        = 1.1e-19;
         double toleranceRotationRateDerivative   = 4.0e-20;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0,
                                 toleranceTranslationValue,  toleranceTranslationDerivative,
@@ -169,7 +169,7 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 5.0e-16;
+        double toleranceRotationValue            = 6.4e-16;
         double toleranceRotationDerivative       = 3.0e-14;
         double toleranceRotationRateValue        = 2.0e-19;
         double toleranceRotationRateDerivative   = 9.0e-20;
@@ -186,9 +186,9 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 6.7e-16;
         double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 7.0e-20;
+        double toleranceRotationRateValue        = 1.1e-19;
         double toleranceRotationRateDerivative   = 4.0e-20;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0,
                                 toleranceTranslationValue,  toleranceTranslationDerivative,
@@ -203,7 +203,7 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 5.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 6.7e-16;
         double toleranceRotationDerivative       = 3.0e-14;
         double toleranceRotationRateValue        = 2.0e-19;
         double toleranceRotationRateDerivative   = 1.0e-19;
@@ -220,7 +220,7 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 6.0e-13;
         double toleranceVelocityDerivative       = 5.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 6.7e-16;
         double toleranceRotationDerivative       = 3.0e-14;
         double toleranceRotationRateValue        = 2.0e-19;
         double toleranceRotationRateDerivative   = 1.0e-19;
@@ -237,9 +237,9 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 7.0e-13;
         double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 6.7e-16;
         double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 9.0e-20;
+        double toleranceRotationRateValue        = 1.3e-19;
         double toleranceRotationRateDerivative   = 8.0e-20;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
                                 toleranceTranslationValue,  toleranceTranslationDerivative,
@@ -254,9 +254,9 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 4.0e-7;
         double toleranceVelocityValue            = 7.0e-13;
         double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.0e-16;
+        double toleranceRotationValue            = 6.7e-16;
         double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 9.0e-20;
+        double toleranceRotationRateValue        = 1.3e-19;
         double toleranceRotationRateDerivative   = 8.0e-20;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
                                 toleranceTranslationValue,  toleranceTranslationDerivative,
@@ -271,9 +271,9 @@ public class GroundStationTest {
         double toleranceTranslationDerivative    = 9.0e-6;
         double toleranceVelocityValue            = 2.0e-17;
         double toleranceVelocityDerivative       = 2.0e-17;
-        double toleranceRotationValue            = 7.0e-16;
+        double toleranceRotationValue            = 7.8e-16;
         double toleranceRotationDerivative       = 0.23; // near pole, the East and North directions are singular
-        double toleranceRotationRateValue        = 2.0e-19;
+        double toleranceRotationRateValue        = 2.2e-19;
         double toleranceRotationRateDerivative   = 2.0e-19;
         doTestOffsetDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0,
                                 toleranceTranslationValue,  toleranceTranslationDerivative,
