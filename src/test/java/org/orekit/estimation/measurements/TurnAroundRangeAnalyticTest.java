@@ -316,7 +316,7 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
         Assert.assertEquals(0.0, absErrorsMin, 9.0e-08);
         Assert.assertEquals(0.0, absErrorsMax, 1.1e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 1.7e-15);
+        Assert.assertEquals(0.0, relErrorsMedian, 2.0e-15);
         Assert.assertEquals(0.0, relErrorsMax , 6.4e-15);
     }
 

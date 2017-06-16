@@ -89,7 +89,7 @@ public class RangeAnalytic extends Range {
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetFrame().getTransformTo(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
         final PVCoordinates stationDownlink = topoToInertDownlink.
                         transformPVCoordinates(PVCoordinates.ZERO);
 
@@ -111,7 +111,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitDate);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitDate);
         final TimeStampedPVCoordinates stationAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
@@ -259,6 +259,42 @@ public class RangeAnalytic extends Range {
 
         // get the number of parameters used for derivation
         int nbParams = 6;
+        final int primeMeridianOffsetIndex;
+        if (groundStation.getPrimeMeridianOffsetDriver().isSelected()) {
+            primeMeridianOffsetIndex = nbParams++;
+        } else {
+            primeMeridianOffsetIndex = -1;
+        }
+        final int primeMeridianDriftIndex;
+        if (groundStation.getPrimeMeridianDriftDriver().isSelected()) {
+            primeMeridianDriftIndex = nbParams++;
+        } else {
+            primeMeridianDriftIndex = -1;
+        }
+        final int polarOffsetXIndex;
+        if (groundStation.getPolarOffsetXDriver().isSelected()) {
+            polarOffsetXIndex = nbParams++;
+        } else {
+            polarOffsetXIndex = -1;
+        }
+        final int polarDriftXIndex;
+        if (groundStation.getPolarDriftXDriver().isSelected()) {
+            polarDriftXIndex = nbParams++;
+        } else {
+            polarDriftXIndex = -1;
+        }
+        final int polarOffsetYIndex;
+        if (groundStation.getPolarOffsetYDriver().isSelected()) {
+            polarOffsetYIndex = nbParams++;
+        } else {
+            polarOffsetYIndex = -1;
+        }
+        final int polarDriftYIndex;
+        if (groundStation.getPolarDriftYDriver().isSelected()) {
+            polarDriftYIndex = nbParams++;
+        } else {
+            polarDriftYIndex = -1;
+        }
         final int eastOffsetIndex;
         if (groundStation.getEastOffsetDriver().isSelected()) {
             eastOffsetIndex = nbParams++;
@@ -324,6 +360,9 @@ public class RangeAnalytic extends Range {
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
                         groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory,
+                                                          primeMeridianOffsetIndex, primeMeridianDriftIndex,
+                                                          polarOffsetXIndex, polarDriftXIndex,
+                                                          polarOffsetYIndex, polarDriftYIndex,
                                                           eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg
@@ -392,7 +431,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at signal arrival
         final Transform topoToInertDownlink =
-                        groundStation.getOffsetFrame().getTransformTo(state.getFrame(), downlinkDate);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
         final PVCoordinates QDownlink = topoToInertDownlink.
                         transformPVCoordinates(PVCoordinates.ZERO);
 
@@ -415,7 +454,7 @@ public class RangeAnalytic extends Range {
 
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
-                      groundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitT);
+                      groundStation.getOffsetToInertial(state.getFrame(), transitT);
         TimeStampedPVCoordinates QAtTransitDate = topoToInertAtTransitDate.
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 

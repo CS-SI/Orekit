@@ -183,7 +183,6 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
     ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
-    BODY_SHAPE_IS_NOT_AN_ELLIPSOID("body shape is not an ellipsoid"),
     NO_SEM_ALMANAC_AVAILABLE("no SEM almanac file found"),
     NOT_A_SUPPORTED_SEM_ALMANAC_FILE("file {0} is not a supported SEM almanac file"),
     NO_YUMA_ALMANAC_AVAILABLE("no Yuma almanac file found"),
@@ -195,7 +194,8 @@ public enum OrekitMessages implements Localizable {
     EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
-    NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β");
+    NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
+    NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}");
 
 
     // CHECKSTYLE: resume JavadocVariable check

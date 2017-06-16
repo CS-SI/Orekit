@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Allow estimation of polar motion (offset plus linear drift) and prime meridian
+        correction (offset plus linear drift) in orbit determination. This is essentially
+        equivalent to add correction to the xp, yp, dtu1 and lod Earth Orientation Parameters.
+      </action>
       <action dev="luc" type="add">
         Parameters in orbit determination can be associated with a per-parameter reference date.
       </action>

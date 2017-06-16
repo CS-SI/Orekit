@@ -57,7 +57,13 @@ public class Angular extends AbstractMeasurement<Angular> {
         super(date, angular, sigma, baseWeight,
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver());
+              station.getZenithOffsetDriver(),
+              station.getPrimeMeridianOffsetDriver(),
+              station.getPrimeMeridianDriftDriver(),
+              station.getPolarOffsetXDriver(),
+              station.getPolarDriftXDriver(),
+              station.getPolarOffsetYDriver(),
+              station.getPolarDriftYDriver());
         this.station = station;
     }
 
@@ -76,6 +82,42 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         // get the number of parameters used for derivation
         int nbParams = 3;
+        final int primeMeridianOffsetIndex;
+        if (station.getPrimeMeridianOffsetDriver().isSelected()) {
+            primeMeridianOffsetIndex = nbParams++;
+        } else {
+            primeMeridianOffsetIndex = -1;
+        }
+        final int primeMeridianDriftIndex;
+        if (station.getPrimeMeridianDriftDriver().isSelected()) {
+            primeMeridianDriftIndex = nbParams++;
+        } else {
+            primeMeridianDriftIndex = -1;
+        }
+        final int polarOffsetXIndex;
+        if (station.getPolarOffsetXDriver().isSelected()) {
+            polarOffsetXIndex = nbParams++;
+        } else {
+            polarOffsetXIndex = -1;
+        }
+        final int polarDriftXIndex;
+        if (station.getPolarDriftXDriver().isSelected()) {
+            polarDriftXIndex = nbParams++;
+        } else {
+            polarDriftXIndex = -1;
+        }
+        final int polarOffsetYIndex;
+        if (station.getPolarOffsetYDriver().isSelected()) {
+            polarOffsetYIndex = nbParams++;
+        } else {
+            polarOffsetYIndex = -1;
+        }
+        final int polarDriftYIndex;
+        if (station.getPolarDriftYDriver().isSelected()) {
+            polarDriftYIndex = nbParams++;
+        } else {
+            polarDriftYIndex = -1;
+        }
         final int eastOffsetIndex;
         if (station.getEastOffsetDriver().isSelected()) {
             eastOffsetIndex = nbParams++;
@@ -102,7 +144,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and transitState will be
         //  the same as state)
-        final Vector3D        stationP     = station.getOffsetFrame().getPVCoordinates(getDate(), state.getFrame()).getPosition();
+        final Vector3D        stationP     = station.getOffsetToInertial(state.getFrame(), getDate()).transformPosition(Vector3D.ZERO);
         final double          tauD         = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
         final double          delta        = getDate().durationFrom(state.getDate());
         final double          dt           = delta - tauD;
@@ -115,6 +157,9 @@ public class Angular extends AbstractMeasurement<Angular> {
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
                         station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
+                                                    primeMeridianOffsetIndex, primeMeridianDriftIndex,
+                                                    polarOffsetXIndex, polarDriftXIndex,
+                                                    polarOffsetYIndex, polarDriftYIndex,
                                                     eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg

@@ -16,16 +16,15 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
@@ -35,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -55,8 +53,10 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 public class GroundStationTest {
 
@@ -130,164 +130,673 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
-        double toleranceTranslationValue         = 2.0e-8;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 7.3e-16;
-        double toleranceRotationDerivative       = 3.0e-14;
-        double toleranceRotationRateValue        = 2.0e-19;
-        double toleranceRotationRateDerivative   = 2.0e-19;
-        doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetCartesianDerivativesOctantPxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.9e-15;
+        double relativeTolerancePositionDerivative =  1.9e-10;
+        double relativeToleranceVelocityValue      =  5.5e-15;
+        double relativeToleranceVelocityDerivative =  3.1e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
-        double toleranceTranslationValue         = 8.0e-9;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 7.5e-16;
-        double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 1.1e-19;
-        double toleranceRotationRateDerivative   = 4.0e-20;
-        doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetAngularDerivativesOctantPxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.1e-15;
+        double toleranceRotationDerivative       =  4.2e-18;
+        double toleranceRotationRateValue        =  2.7e-19;
+        double toleranceRotationRateDerivative   =  1.6e-21;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
-        double toleranceTranslationValue         = 2.0e-8;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 6.0e-13;
-        double toleranceRotationValue            = 6.4e-16;
-        double toleranceRotationDerivative       = 3.0e-14;
-        double toleranceRotationRateValue        = 2.0e-19;
-        double toleranceRotationRateDerivative   = 9.0e-20;
-        doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetCartesianDerivativesOctantPxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  8.1e-11;
+        double relativeToleranceVelocityValue      =  4.7e-15;
+        double relativeToleranceVelocityDerivative =  2.4e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
-        double toleranceTranslationValue         = 6.0e-9;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.7e-16;
-        double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 1.1e-19;
-        double toleranceRotationRateDerivative   = 4.0e-20;
-        doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetAngularDerivativesOctantPxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  3.7e-18;
+        double toleranceRotationRateValue        =  1.6e-19;
+        double toleranceRotationRateDerivative   =  5.0e-22;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
-        double toleranceTranslationValue         = 2.0e-8;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 5.0e-13;
-        double toleranceRotationValue            = 6.7e-16;
-        double toleranceRotationDerivative       = 3.0e-14;
-        double toleranceRotationRateValue        = 2.0e-19;
-        double toleranceRotationRateDerivative   = 1.0e-19;
-        doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetCartesianDerivativesOctantPxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.7e-15;
+        double relativeTolerancePositionDerivative =  1.7e-10;
+        double relativeToleranceVelocityValue      =  4.9e-15;
+        double relativeToleranceVelocityDerivative =  3.0e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
-        double toleranceTranslationValue         = 2.0e-8;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 6.0e-13;
-        double toleranceVelocityDerivative       = 5.0e-13;
-        double toleranceRotationValue            = 6.7e-16;
-        double toleranceRotationDerivative       = 3.0e-14;
-        double toleranceRotationRateValue        = 2.0e-19;
-        double toleranceRotationRateDerivative   = 1.0e-19;
-        doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetAngularDerivativesOctantPxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  3.6e-18;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  1.2e-21;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
-        double toleranceTranslationValue         = 8.0e-9;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 7.0e-13;
-        double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.7e-16;
-        double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 1.3e-19;
-        double toleranceRotationRateDerivative   = 8.0e-20;
-        doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetCartesianDerivativesOctantPxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  7.5e-11;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
-        double toleranceTranslationValue         = 8.0e-9;
-        double toleranceTranslationDerivative    = 4.0e-7;
-        double toleranceVelocityValue            = 7.0e-13;
-        double toleranceVelocityDerivative       = 7.0e-13;
-        double toleranceRotationValue            = 6.7e-16;
-        double toleranceRotationDerivative       = 2.0e-7;
-        double toleranceRotationRateValue        = 1.3e-19;
-        double toleranceRotationRateDerivative   = 8.0e-20;
-        doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetAngularDerivativesOctantPxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  4.1e-18;
+        double toleranceRotationRateValue        =  1.4e-19;
+        double toleranceRotationRateDerivative   =  4.9e-22;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
     @Test
-    public void testOffsetDerivativesNearPole() throws OrekitException {
-        double toleranceTranslationValue         = 2.0e-8;
-        double toleranceTranslationDerivative    = 9.0e-6;
-        double toleranceVelocityValue            = 2.0e-17;
-        double toleranceVelocityDerivative       = 2.0e-17;
-        double toleranceRotationValue            = 7.8e-16;
-        double toleranceRotationDerivative       = 0.23; // near pole, the East and North directions are singular
-        double toleranceRotationRateValue        = 2.2e-19;
-        double toleranceRotationRateDerivative   = 2.0e-19;
-        doTestOffsetDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0,
-                                toleranceTranslationValue,  toleranceTranslationDerivative,
-                                toleranceVelocityValue,     toleranceVelocityDerivative,
-                                toleranceRotationValue,     toleranceRotationDerivative,
-                                toleranceRotationRateValue, toleranceRotationRateDerivative);
+    public void testStationOffsetCartesianDerivativesOctantMxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  1.4e-10;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  2.3e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
     }
 
-    private void doTestOffsetDerivatives(double latitude, double longitude, double altitude,
-                                         double toleranceTranslationValue,  double toleranceTranslationDerivative,
-                                         double toleranceVelocityValue,     double toleranceVelocityDerivative,
-                                         double toleranceRotationValue,     double toleranceRotationDerivative,
-                                         double toleranceRotationRateValue, double toleranceRotationRateDerivative)
-        throws OrekitException {
+    @Test
+    public void testStationOffsetAngularDerivativesOctantMxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  4.0e-18;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  1.3e-21;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetCartesianDerivativesOctantMxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  1.4e-10;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  2.3e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetAngularDerivativesOctantMxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  4.0e-18;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  1.3e-21;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetCartesianDerivativesOctantMxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  1.5e-10;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetAngularDerivativesOctantMxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  4.7e-18;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  1.1e-21;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetCartesianDerivativesOctantMxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  1.5e-10;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetAngularDerivativesOctantMxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  4.7e-18;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  1.1e-21;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetCartesianDerivativesNearPole() throws OrekitException {
+        double relativeTolerancePositionValue      =  5.2e-15;
+        double relativeTolerancePositionDerivative =  8.0e-10;
+        double relativeToleranceVelocityValue      =  2.7e-13;
+        double relativeToleranceVelocityDerivative =  1.1e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testStationOffsetAngularDerivativesNearPole() throws OrekitException {
+        double toleranceRotationValue            =  4.5e-15;
+        double toleranceRotationDerivative       =  8.1e-02; // near pole, the East and North directions are singular
+        double toleranceRotationRateValue        =  3.2e-19;
+        double toleranceRotationRateDerivative   =  2.2e-21;
+        doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 ".*-offset-East", ".*-offset-North", ".*-offset-Zenith");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantPxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.9e-15;
+        double relativeTolerancePositionDerivative =  1.9e-08;
+        double relativeToleranceVelocityValue      =  5.5e-15;
+        double relativeToleranceVelocityDerivative =  2.4e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantPxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.1e-15;
+        double toleranceRotationDerivative       =  7.7e-09;
+        double toleranceRotationRateValue        =  2.7e-19;
+        double toleranceRotationRateDerivative   =  2.9e-12;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantPxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  1.2e-08;
+        double relativeToleranceVelocityValue      =  4.7e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantPxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  8.4e-09;
+        double toleranceRotationRateValue        =  1.6e-19;
+        double toleranceRotationRateDerivative   =  1.1e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantPxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.7e-15;
+        double relativeTolerancePositionDerivative =  1.5e-08;
+        double relativeToleranceVelocityValue      =  4.9e-15;
+        double relativeToleranceVelocityDerivative =  3.0e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantPxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  9.2e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  2.8e-12;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantPxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  1.1e-08;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  1.8e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantPxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  8.3e-09;
+        double toleranceRotationRateValue        =  1.4e-19;
+        double toleranceRotationRateDerivative   =  1.1e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantMxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  2.1e-08;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantMxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.6e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  2.9e-12;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantMxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  2.1e-08;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantMxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.6e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  2.9e-12;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantMxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  1.5e-08;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.6e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantMxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  9.4e-09;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  2.2e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesOctantMxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  1.5e-08;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.6e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesOctantMxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  9.4e-09;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  2.2e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionCartesianDerivativesNearPole() throws OrekitException {
+        double relativeTolerancePositionValue      =  4.2e-15;
+        double relativeTolerancePositionDerivative =  1.7e-08;
+        double relativeToleranceVelocityValue      =  2.7e-13;
+        double relativeToleranceVelocityDerivative =  1.2e-09;
+        doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "polar-offset-X", "polar-drift-X",
+                                   "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPolarMotionAngularDerivativesNearPole() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  7.4e-09;
+        double toleranceRotationRateValue        =  3.2e-19;
+        double toleranceRotationRateDerivative   =  3.7e-12;
+        doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "polar-offset-X", "polar-drift-X",
+                                 "polar-offset-Y", "polar-drift-Y");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantPxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.9e-15;
+        double relativeTolerancePositionDerivative =  1.3e-08;
+        double relativeToleranceVelocityValue      =  5.5e-15;
+        double relativeToleranceVelocityDerivative =  1.7e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantPxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.1e-15;
+        double toleranceRotationDerivative       =  8.4e-09;
+        double toleranceRotationRateValue        =  2.7e-19;
+        double toleranceRotationRateDerivative   =  2.7e-12;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantPxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  7.6e-09;
+        double relativeToleranceVelocityValue      =  4.7e-15;
+        double relativeToleranceVelocityDerivative =  1.1e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantPxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.8e-09;
+        double toleranceRotationRateValue        =  1.6e-19;
+        double toleranceRotationRateDerivative   =  1.3e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantPxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.7e-15;
+        double relativeTolerancePositionDerivative =  1.2e-08;
+        double relativeToleranceVelocityValue      =  4.9e-15;
+        double relativeToleranceVelocityDerivative =  1.5e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantPxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.5e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  3.2e-12;
+        doTestAngularDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantPxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.2e-15;
+        double relativeTolerancePositionDerivative =  6.5e-09;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  1.2e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantPxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  8.0e-09;
+        double toleranceRotationRateValue        =  1.4e-19;
+        double toleranceRotationRateDerivative   =  1.1e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantMxPyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  1.4e-08;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  9.1e-09;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantMxPyPz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.3e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  2.6e-12;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantMxPyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  3.2e-15;
+        double relativeTolerancePositionDerivative =  1.4e-08;
+        double relativeToleranceVelocityValue      =  3.9e-15;
+        double relativeToleranceVelocityDerivative =  9.1e-09;
+        doTestCartesianDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantMxPyMz() throws OrekitException {
+        double toleranceRotationValue            =  2.0e-15;
+        double toleranceRotationDerivative       =  7.3e-09;
+        double toleranceRotationRateValue        =  2.6e-19;
+        double toleranceRotationRateDerivative   =  2.6e-12;
+        doTestAngularDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantMxMyPz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  9.1e-09;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.1e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantMxMyPz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  7.7e-09;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  2.0e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesOctantMxMyMz() throws OrekitException {
+        double relativeTolerancePositionValue      =  2.7e-15;
+        double relativeTolerancePositionDerivative =  9.1e-09;
+        double relativeToleranceVelocityValue      =  3.8e-15;
+        double relativeToleranceVelocityDerivative =  1.1e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesOctantMxMyMz() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  7.7e-09;
+        double toleranceRotationRateValue        =  1.7e-19;
+        double toleranceRotationRateDerivative   =  2.0e-12;
+        doTestAngularDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianCartesianDerivativesNearPole() throws OrekitException {
+        double relativeTolerancePositionValue      =  4.2e-15;
+        double relativeTolerancePositionDerivative =  1.8e-03; // near pole, the East and North directions are singular
+        double relativeToleranceVelocityValue      =  2.7e-13;
+        double relativeToleranceVelocityDerivative =  7.0e-08;
+        doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 1.0,
+                                   relativeTolerancePositionValue, relativeTolerancePositionDerivative,
+                                   relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
+                                   "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testPrimeMeridianAngularDerivativesNearPole() throws OrekitException {
+        double toleranceRotationValue            =  1.9e-15;
+        double toleranceRotationDerivative       =  8.1e-09;
+        double toleranceRotationRateValue        =  3.2e-19;
+        double toleranceRotationRateDerivative   =  3.6e-12;
+        doTestAngularDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 0.2,
+                                 toleranceRotationValue,     toleranceRotationDerivative,
+                                 toleranceRotationRateValue, toleranceRotationRateDerivative,
+                                 "prime-meridian-offset", "prime-meridian-drift");
+    }
+
+    @Test
+    public void testNoReferenceDate() throws OrekitException {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -296,152 +805,238 @@ public class GroundStationTest {
                                              Constants.WGS84_EARTH_FLATTENING,
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
+                                                                             new GeodeticPoint(0.1, 0.2, 100),
+                                                                             "dummy"));
+        try {
+            station.getOffsetToInertial(eme2000, date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+        try {
+            DSFactory factory = new DSFactory(9,  1);
+            station.getOffsetToInertial(eme2000, new FieldAbsoluteDate<>(factory.getDerivativeField(), date), factory,
+                                        0, 1, 2, 3, 4, 5, 6, 7, 8);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+    }
+
+    private void doTestCartesianDerivatives(double latitude, double longitude, double altitude, double stepFactor,
+                                            double relativeTolerancePositionValue, double relativeTolerancePositionDerivative,
+                                            double relativeToleranceVelocityValue, double relativeToleranceVelocityDerivative,
+                                            String... parameterPattern)
+        throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate date0 = date.shiftedBy(50000);
+        final OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
                                                                              "dummy"));
-        final DSFactory factory = new DSFactory(3, 1);
-        final FieldAbsoluteDate<DerivativeStructure> dateDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
-        final int eastIndex   = 0;
-        final int northIndex  = 1;
-        final int zenithIndex = 2;
-        UnivariateDifferentiableVectorFunction[] dF =
-                        new UnivariateDifferentiableVectorFunction[factory.getCompiler().getFreeParameters()];
-        for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
-            final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0);
-            dF[k] = differentiator.differentiate(new UnivariateVectorFunction() {
-                private double previous0 = Double.NaN;
-                private double previous1 = Double.NaN;
-                private double previous2 = Double.NaN;
-                private double previous3 = Double.NaN;
-                @Override
-                public double[] value(double x) {
-                    final double[] result = new double[13];
-                    try {
-                        final double previouspI;
-                        switch (k) {
-                            case 0 :
-                                previouspI = station.getEastOffsetDriver().getValue();
-                                station.getEastOffsetDriver().setValue(previouspI + x);
-                                break;
-                            case 1 :
-                                previouspI = station.getNorthOffsetDriver().getValue();
-                                station.getNorthOffsetDriver().setValue(previouspI + x);
-                                break;
-                            default :
-                                previouspI = station.getZenithOffsetDriver().getValue();
-                                station.getZenithOffsetDriver().setValue(previouspI + x);
-                        }
-                        Transform t = station.getOffsetFrame().getTransformTo(eme2000, date);
-                        result[ 0] = t.getTranslation().getX();
-                        result[ 1] = t.getTranslation().getY();
-                        result[ 2] = t.getTranslation().getZ();
-                        result[ 3] = t.getVelocity().getX();
-                        result[ 4] = t.getVelocity().getY();
-                        result[ 5] = t.getVelocity().getZ();
-                        double sign = +1;
-                        if (Double.isNaN(previous0)) {
-                            sign = FastMath.copySign(1.0,
-                                                     previous0 * t.getRotation().getQ0() +
-                                                     previous1 * t.getRotation().getQ1() +
-                                                     previous2 * t.getRotation().getQ2() +
-                                                     previous3 * t.getRotation().getQ3());
-                        }
-                        previous0  = sign * t.getRotation().getQ0();
-                        previous1  = sign * t.getRotation().getQ1();
-                        previous2  = sign * t.getRotation().getQ2();
-                        previous3  = sign * t.getRotation().getQ3();
-                        result[ 6] = previous0;
-                        result[ 7] = previous1;
-                        result[ 8] = previous2;
-                        result[ 9] = previous3;
-                        result[10] = t.getRotationRate().getX();
-                        result[11] = t.getRotationRate().getY();
-                        result[12] = t.getRotationRate().getZ();
-                        switch (k) {
-                            case 0 :
-                                station.getEastOffsetDriver().setValue(previouspI);
-                                break;
-                            case 1 :
-                                station.getNorthOffsetDriver().setValue(previouspI);
-                                break;
-                            default :
-                                station.getZenithOffsetDriver().setValue(previouspI);
-                        }
-                    } catch (OrekitException oe) {
-                        Assert.fail(oe.getLocalizedMessage());
-                    }
-                    return result;
+        final DSFactory factory = new DSFactory(parameterPattern.length, 1);
+        final FieldAbsoluteDate<DerivativeStructure> dateDS =
+                        new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
+        ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
+        UnivariateDifferentiableVectorFunction[] dFCartesian = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
+        final ParameterDriver[] allDrivers = selectAllDrivers(station);
+        for (ParameterDriver driver : allDrivers) {
+            driver.setReferenceDate(date0);
+        }
+        int[] indices = new int[allDrivers.length];
+        Arrays.fill(indices, -1);
+        for (int k = 0; k < dFCartesian.length; ++k) {
+            for (int i = 0; i < allDrivers.length; ++i) {
+                if (allDrivers[i].getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDrivers[i];
+                    dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
+                    indices[i] = k;
                 }
-            });
+            }
+        };
+        DSFactory factory11 = new DSFactory(1, 1);
+
+        RandomGenerator generator = new Well19937a(0x084d58a19c498a54l);
+
+        double maxPositionValueRelativeError      = 0;
+        double maxPositionDerivativeRelativeError = 0;
+        double maxVelocityValueRelativeError      = 0;
+        double maxVelocityDerivativeRelativeError = 0;
+        for (int i = 0; i < 1000; ++i) {
+
+            // randomly change one parameter
+            ParameterDriver changed = allDrivers[generator.nextInt(allDrivers.length)];
+            changed.setNormalizedValue(2 * generator.nextDouble() - 1);
+
+            // transform to check
+            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory,
+                                                                                indices[0], indices[1],
+                                                                                indices[2], indices[3], indices[4], indices[5],
+                                                                                indices[6], indices[7], indices[8]);
+            FieldPVCoordinates<DerivativeStructure> pv = t.transformPVCoordinates(FieldPVCoordinates.getZero(factory.getDerivativeField()));
+            for (int k = 0; k < dFCartesian.length; ++k) {
+
+                // reference values and derivatives computed using finite differences
+                DerivativeStructure[] refCartesian = dFCartesian[k].value(factory11.variable(0, selectedDrivers[k].getValue()));
+
+                // position
+                final Vector3D refP = new Vector3D(refCartesian[0].getValue(),
+                                                   refCartesian[1].getValue(),
+                                                   refCartesian[2].getValue());
+                final Vector3D resP = new Vector3D(pv.getPosition().getX().getValue(),
+                                                   pv.getPosition().getY().getValue(),
+                                                   pv.getPosition().getZ().getValue());
+                maxPositionValueRelativeError =
+                                FastMath.max(maxPositionValueRelativeError, Vector3D.distance(refP, resP) / refP.getNorm());
+                final Vector3D refPD = new Vector3D(refCartesian[0].getPartialDerivative(1),
+                                                    refCartesian[1].getPartialDerivative(1),
+                                                    refCartesian[2].getPartialDerivative(1));
+                final Vector3D resPD = new Vector3D(pv.getPosition().getX().getAllDerivatives()[k + 1],
+                                                    pv.getPosition().getY().getAllDerivatives()[k + 1],
+                                                    pv.getPosition().getZ().getAllDerivatives()[k + 1]);
+                maxPositionDerivativeRelativeError =
+                                FastMath.max(maxPositionDerivativeRelativeError, Vector3D.distance(refPD, resPD) / refPD.getNorm());
+
+                // velocity
+                final Vector3D refV = new Vector3D(refCartesian[3].getValue(),
+                                                   refCartesian[4].getValue(),
+                                                   refCartesian[5].getValue());
+                final Vector3D resV = new Vector3D(pv.getVelocity().getX().getValue(),
+                                                   pv.getVelocity().getY().getValue(),
+                                                   pv.getVelocity().getZ().getValue());
+                maxVelocityValueRelativeError =
+                                FastMath.max(maxVelocityValueRelativeError, Vector3D.distance(refV, resV) / refV.getNorm());
+                final Vector3D refVD = new Vector3D(refCartesian[3].getPartialDerivative(1),
+                                                    refCartesian[4].getPartialDerivative(1),
+                                                    refCartesian[5].getPartialDerivative(1));
+                final Vector3D resVD = new Vector3D(pv.getVelocity().getX().getAllDerivatives()[k + 1],
+                                                    pv.getVelocity().getY().getAllDerivatives()[k + 1],
+                                                    pv.getVelocity().getZ().getAllDerivatives()[k + 1]);
+                maxVelocityDerivativeRelativeError =
+                                FastMath.max(maxVelocityDerivativeRelativeError, Vector3D.distance(refVD, resVD) / refVD.getNorm());
+
+            }
+
         }
 
-        double maxTranslationValueError       = 0;
-        double maxTranslationDerivativeError  = 0;
-        double maxVelocityValueError          = 0;
-        double maxVelocityDerivativeError     = 0;
+        Assert.assertEquals(0.0, maxPositionValueRelativeError,      relativeTolerancePositionValue);
+        Assert.assertEquals(0.0, maxPositionDerivativeRelativeError, relativeTolerancePositionDerivative);
+        Assert.assertEquals(0.0, maxVelocityValueRelativeError,      relativeToleranceVelocityValue);
+        Assert.assertEquals(0.0, maxVelocityDerivativeRelativeError, relativeToleranceVelocityDerivative);
+
+    }
+
+    private void doTestAngularDerivatives(double latitude, double longitude, double altitude, double stepFactor,
+                                          double toleranceRotationValue,     double toleranceRotationDerivative,
+                                          double toleranceRotationRateValue, double toleranceRotationRateDerivative,
+                                          String... parameterPattern)
+        throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final AbsoluteDate date0 = date.shiftedBy(50000);
+        final OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
+                                                                             new GeodeticPoint(latitude, longitude, altitude),
+                                                                             "dummy"));
+        final DSFactory factory = new DSFactory(parameterPattern.length, 1);
+        final FieldAbsoluteDate<DerivativeStructure> dateDS =
+                        new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
+        ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
+        UnivariateDifferentiableVectorFunction[] dFAngular   = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
+        final ParameterDriver[] allDrivers = selectAllDrivers(station);
+        for (ParameterDriver driver : allDrivers) {
+            driver.setReferenceDate(date0);
+        }
+        int[] indices = new int[allDrivers.length];
+        Arrays.fill(indices, -1);
+        for (int k = 0; k < dFAngular.length; ++k) {
+            for (int i = 0; i < allDrivers.length; ++i) {
+                if (allDrivers[i].getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDrivers[i];
+                    dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
+                    indices[i] = k;
+                }
+            }
+        };
+        DSFactory factory11 = new DSFactory(1, 1);
+
+        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
+
         double maxRotationValueError          = 0;
         double maxRotationDerivativeError     = 0;
         double maxRotationRateValueError      = 0;
         double maxRotationRateDerivativeError = 0;
-        for (double dEast = -2; dEast <= 2; dEast += 0.5) {
-            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) {
-                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) {
-                    station.getEastOffsetDriver().setValue(dEast);
-                    station.getNorthOffsetDriver().setValue(dNorth);
-                    station.getZenithOffsetDriver().setValue(dZenith);
-                    FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory, eastIndex, northIndex, zenithIndex);
-                    for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
-                        DerivativeStructure[] result = dF[k].value(new DSFactory(1, 1).variable(0, 0.0));
-                        int[] orders = new int[3];
-                        orders[k] = 1;
+        for (int i = 0; i < 1000; ++i) {
 
-                        // translation
-                        maxTranslationValueError      = FastMath.max(maxTranslationValueError, FastMath.abs(result[0].getValue() - t.getTranslation().getX().getValue()));
-                        maxTranslationValueError      = FastMath.max(maxTranslationValueError, FastMath.abs(result[1].getValue() - t.getTranslation().getY().getValue()));
-                        maxTranslationValueError      = FastMath.max(maxTranslationValueError, FastMath.abs(result[2].getValue() - t.getTranslation().getZ().getValue()));
-                        maxTranslationDerivativeError = FastMath.max(maxTranslationDerivativeError, FastMath.abs(result[0].getPartialDerivative(1) - t.getTranslation().getX().getPartialDerivative(orders)));
-                        maxTranslationDerivativeError = FastMath.max(maxTranslationDerivativeError, FastMath.abs(result[1].getPartialDerivative(1) - t.getTranslation().getY().getPartialDerivative(orders)));
-                        maxTranslationDerivativeError = FastMath.max(maxTranslationDerivativeError, FastMath.abs(result[2].getPartialDerivative(1) - t.getTranslation().getZ().getPartialDerivative(orders)));
+            // randomly change one parameter
+            ParameterDriver changed = allDrivers[generator.nextInt(allDrivers.length)];
+            changed.setNormalizedValue(2 * generator.nextDouble() - 1);
 
-                        // velocity
-                        maxVelocityValueError      = FastMath.max(maxVelocityValueError, FastMath.abs(result[3].getValue() - t.getVelocity().getX().getValue()));
-                        maxVelocityValueError      = FastMath.max(maxVelocityValueError, FastMath.abs(result[4].getValue() - t.getVelocity().getY().getValue()));
-                        maxVelocityValueError      = FastMath.max(maxVelocityValueError, FastMath.abs(result[5].getValue() - t.getVelocity().getZ().getValue()));
-                        maxVelocityDerivativeError = FastMath.max(maxVelocityDerivativeError, FastMath.abs(result[3].getPartialDerivative(1) - t.getVelocity().getX().getPartialDerivative(orders)));
-                        maxVelocityDerivativeError = FastMath.max(maxVelocityDerivativeError, FastMath.abs(result[4].getPartialDerivative(1) - t.getVelocity().getY().getPartialDerivative(orders)));
-                        maxVelocityDerivativeError = FastMath.max(maxVelocityDerivativeError, FastMath.abs(result[5].getPartialDerivative(1) - t.getVelocity().getZ().getPartialDerivative(orders)));
+            // transform to check
+            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory,
+                                                                                indices[0], indices[1],
+                                                                                indices[2], indices[3], indices[4], indices[5],
+                                                                                indices[6], indices[7], indices[8]);
+            for (int k = 0; k < dFAngular.length; ++k) {
 
-                        // rotation
-                        double sign = FastMath.copySign(1.0,
-                                                        result[6].getValue() * t.getRotation().getQ0().getValue() +
-                                                        result[7].getValue() * t.getRotation().getQ1().getValue() +
-                                                        result[8].getValue() * t.getRotation().getQ2().getValue() +
-                                                        result[9].getValue() * t.getRotation().getQ3().getValue());
-                        maxRotationValueError = FastMath.max(maxRotationValueError, FastMath.abs(sign * result[6].getValue() - t.getRotation().getQ0().getValue()));
-                        maxRotationValueError = FastMath.max(maxRotationValueError, FastMath.abs(sign * result[7].getValue() - t.getRotation().getQ1().getValue()));
-                        maxRotationValueError = FastMath.max(maxRotationValueError, FastMath.abs(sign * result[8].getValue() - t.getRotation().getQ2().getValue()));
-                        maxRotationValueError = FastMath.max(maxRotationValueError, FastMath.abs(sign * result[9].getValue() - t.getRotation().getQ3().getValue()));
-                        maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError, FastMath.abs(result[6].getPartialDerivative(1) - t.getRotation().getQ0().getPartialDerivative(orders)));
-                        maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError, FastMath.abs(result[7].getPartialDerivative(1) - t.getRotation().getQ1().getPartialDerivative(orders)));
-                        maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError, FastMath.abs(result[8].getPartialDerivative(1) - t.getRotation().getQ2().getPartialDerivative(orders)));
-                        maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError, FastMath.abs(result[9].getPartialDerivative(1) - t.getRotation().getQ3().getPartialDerivative(orders)));
+                // reference values and derivatives computed using finite differences
+                DerivativeStructure[] refAngular = dFAngular[k].value(factory11.variable(0, selectedDrivers[k].getValue()));
 
-                        // rotation rate
-                        maxRotationRateValueError = FastMath.max(maxRotationRateValueError, FastMath.abs(result[10].getValue() - t.getRotationRate().getX().getValue()));
-                        maxRotationRateValueError = FastMath.max(maxRotationRateValueError, FastMath.abs(result[11].getValue() - t.getRotationRate().getY().getValue()));
-                        maxRotationRateValueError = FastMath.max(maxRotationRateValueError, FastMath.abs(result[12].getValue() - t.getRotationRate().getZ().getValue()));
-                        maxRotationRateDerivativeError = FastMath.max(maxRotationRateDerivativeError, FastMath.abs(result[10].getPartialDerivative(1) - t.getRotationRate().getX().getPartialDerivative(orders)));
-                        maxRotationRateDerivativeError = FastMath.max(maxRotationRateDerivativeError, FastMath.abs(result[11].getPartialDerivative(1) - t.getRotationRate().getY().getPartialDerivative(orders)));
-                        maxRotationRateDerivativeError = FastMath.max(maxRotationRateDerivativeError, FastMath.abs(result[12].getPartialDerivative(1) - t.getRotationRate().getZ().getPartialDerivative(orders)));
+                // rotation
+                final Rotation refQ = new Rotation(refAngular[0].getValue(),
+                                                   refAngular[1].getValue(),
+                                                   refAngular[2].getValue(),
+                                                   refAngular[3].getValue(),
+                                                   true);
+                final Rotation resQ = t.getRotation().toRotation();
+                maxRotationValueError      = FastMath.max(maxRotationValueError, Rotation.distance(refQ, resQ));
+                double sign = FastMath.copySign(1.0,
+                                                refAngular[0].getValue() * t.getRotation().getQ0().getValue() +
+                                                refAngular[1].getValue() * t.getRotation().getQ1().getValue() +
+                                                refAngular[2].getValue() * t.getRotation().getQ2().getValue() +
+                                                refAngular[3].getValue() * t.getRotation().getQ3().getValue());
+                maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
+                                                          FastMath.abs(sign * refAngular[0].getPartialDerivative(1) -
+                                                                       t.getRotation().getQ0().getAllDerivatives()[k + 1]));
+                maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
+                                                          FastMath.abs(sign * refAngular[1].getPartialDerivative(1) -
+                                                                       t.getRotation().getQ1().getAllDerivatives()[k + 1]));
+                maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
+                                                          FastMath.abs(sign * refAngular[2].getPartialDerivative(1) -
+                                                                       t.getRotation().getQ2().getAllDerivatives()[k + 1]));
+                maxRotationDerivativeError = FastMath.max(maxRotationDerivativeError,
+                                                          FastMath.abs(sign * refAngular[3].getPartialDerivative(1) -
+                                                                       t.getRotation().getQ3().getAllDerivatives()[k + 1]));
 
-                    }
-                }
+                // rotation rate
+                final Vector3D refRate  = new Vector3D(refAngular[4].getValue(), refAngular[5].getValue(), refAngular[6].getValue());
+                final Vector3D resRate  = t.getRotationRate().toVector3D();
+                final Vector3D refRateD = new Vector3D(refAngular[4].getPartialDerivative(1),
+                                                       refAngular[5].getPartialDerivative(1),
+                                                       refAngular[6].getPartialDerivative(1));
+                final Vector3D resRateD = new Vector3D(t.getRotationRate().getX().getAllDerivatives()[k + 1],
+                                                       t.getRotationRate().getY().getAllDerivatives()[k + 1],
+                                                       t.getRotationRate().getZ().getAllDerivatives()[k + 1]);
+                maxRotationRateValueError      = FastMath.max(maxRotationRateValueError, Vector3D.distance(refRate, resRate));
+                maxRotationRateDerivativeError = FastMath.max(maxRotationRateDerivativeError, Vector3D.distance(refRateD, resRateD));
+
             }
+
         }
 
-        Assert.assertEquals(0.0, maxTranslationValueError,        toleranceTranslationValue);
-        Assert.assertEquals(0.0, maxTranslationDerivativeError,   toleranceTranslationDerivative);
-        Assert.assertEquals(0.0, maxVelocityValueError,           toleranceVelocityValue);
-        Assert.assertEquals(0.0, maxVelocityDerivativeError,      toleranceVelocityDerivative);
         Assert.assertEquals(0.0, maxRotationValueError,           toleranceRotationValue);
         Assert.assertEquals(0.0, maxRotationDerivativeError,      toleranceRotationDerivative);
         Assert.assertEquals(0.0, maxRotationRateValueError,       toleranceRotationRateValue);
@@ -449,59 +1044,103 @@ public class GroundStationTest {
 
     }
 
-    @Test
-    public void testNonEllipsoid() throws OrekitException {
-        Utils.setDataRoot("regular-data");
-        final OneAxisEllipsoid ellipsoid =
-                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                             Constants.WGS84_EARTH_FLATTENING,
-                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        BodyShape nonEllipsoid = new BodyShape() {
-            private static final long serialVersionUID = 1L;
-            public Vector3D transform(GeodeticPoint point) {
-                return ellipsoid.transform(point);
+    private UnivariateDifferentiableVectorFunction differentiatedStationPV(final GroundStation station,
+                                                                           final Frame eme2000,
+                                                                           final AbsoluteDate date,
+                                                                           final ParameterDriver driver,
+                                                                           final double stepFactor) {
+
+        final FiniteDifferencesDifferentiator differentiator =
+                        new FiniteDifferencesDifferentiator(5, stepFactor * driver.getScale());
+
+        return differentiator.differentiate(new UnivariateVectorFunction() {
+            @Override
+            public double[] value(double x) {
+                final double[] result = new double[6];
+                try {
+                    final double previouspI = driver.getValue();
+                    driver.setValue(x);
+                    Transform t = station.getOffsetToInertial(eme2000, date);
+                    driver.setValue(previouspI);
+                    PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
+                    result[ 0] = stationPV.getPosition().getX();
+                    result[ 1] = stationPV.getPosition().getY();
+                    result[ 2] = stationPV.getPosition().getZ();
+                    result[ 3] = stationPV.getVelocity().getX();
+                    result[ 4] = stationPV.getVelocity().getY();
+                    result[ 5] = stationPV.getVelocity().getZ();
+                } catch (OrekitException oe) {
+                    Assert.fail(oe.getLocalizedMessage());
+                }
+                return result;
             }
-            public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
-                throws OrekitException {
-                return ellipsoid.transform(point, frame, date);
+        });
+    }
+
+    private UnivariateDifferentiableVectorFunction differentiatedTransformAngular(final GroundStation station,
+                                                                                  final Frame eme2000,
+                                                                                  final AbsoluteDate date,
+                                                                                  final ParameterDriver driver,
+                                                                                  final double stepFactor) {
+
+        final FiniteDifferencesDifferentiator differentiator =
+                        new FiniteDifferencesDifferentiator(5, stepFactor * driver.getScale());
+
+        return differentiator.differentiate(new UnivariateVectorFunction() {
+            private double previous0 = Double.NaN;
+            private double previous1 = Double.NaN;
+            private double previous2 = Double.NaN;
+            private double previous3 = Double.NaN;
+            @Override
+            public double[] value(double x) {
+                final double[] result = new double[7];
+                try {
+                    final double previouspI = driver.getValue();
+                    driver.setValue(x);
+                    Transform t = station.getOffsetToInertial(eme2000, date);
+                    driver.setValue(previouspI);
+                    final double sign;
+                    if (Double.isNaN(previous0)) {
+                        sign = +1;
+                    } else {
+                        sign = FastMath.copySign(1.0,
+                                                 previous0 * t.getRotation().getQ0() +
+                                                 previous1 * t.getRotation().getQ1() +
+                                                 previous2 * t.getRotation().getQ2() +
+                                                 previous3 * t.getRotation().getQ3());
+                    }
+                    previous0 = sign * t.getRotation().getQ0();
+                    previous1 = sign * t.getRotation().getQ1();
+                    previous2 = sign * t.getRotation().getQ2();
+                    previous3 = sign * t.getRotation().getQ3();
+                    result[0] = previous0;
+                    result[1] = previous1;
+                    result[2] = previous2;
+                    result[3] = previous3;
+                    result[4] = t.getRotationRate().getX();
+                    result[5] = t.getRotationRate().getY();
+                    result[6] = t.getRotationRate().getZ();
+                } catch (OrekitException oe) {
+                    Assert.fail(oe.getLocalizedMessage());
+                }
+                return result;
             }
-            public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point,
-                                                                                   Frame frame,
-                                                                                   FieldAbsoluteDate<T> date)
-                throws OrekitException {
-                return ellipsoid.transform(point, frame, date);
-            }
-            public TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)
-                    throws OrekitException {
-                return ellipsoid.projectToGround(pv, frame);
-            }
-            public Vector3D projectToGround(Vector3D point, AbsoluteDate date, Frame frame)
-                    throws OrekitException {
-                return ellipsoid.projectToGround(point, date, frame);
-            }
-            public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
-                                                      Frame frame, AbsoluteDate date)
-                                                              throws OrekitException {
-                return ellipsoid.getIntersectionPoint(line, close, frame, date);
-            }
-            public Frame getBodyFrame() {
-                return ellipsoid.getBodyFrame();
-            }
+        });
+    }
+
+    private ParameterDriver[] selectAllDrivers(final GroundStation station) {
+        return new ParameterDriver[] {
+            station.getPrimeMeridianOffsetDriver(),
+            station.getPrimeMeridianDriftDriver(),
+            station.getPolarOffsetXDriver(),
+            station.getPolarDriftXDriver(),
+            station.getPolarOffsetYDriver(),
+            station.getPolarDriftYDriver(),
+            station.getEastOffsetDriver(),
+            station.getNorthOffsetDriver(),
+            station.getZenithOffsetDriver()
         };
-        final GroundStation g = new GroundStation(new TopocentricFrame(nonEllipsoid,
-                                                                       new GeodeticPoint(0, 0, 0),
-                                                                       "dummy"));
-        final DSFactory factory = new DSFactory(3, 0); 
-        try {
-            g.getOffsetToInertial(FramesFactory.getEME2000(),
-                                  FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField()),
-                                  factory, 0, 1, 2);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.BODY_SHAPE_IS_NOT_AN_ELLIPSOID, oe.getSpecifier());
-        }
     }
 
 }
-
 

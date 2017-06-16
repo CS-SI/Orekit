@@ -394,9 +394,6 @@ OUT_OF_RANGE_LATITUDE = la latitud está fuera de rango: {0}, [{1}, {2}]
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = tipo de órbita {0} no permitida, los tipos permitidos son: {1}
 
-# body shape is not an ellipsoid
-BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>
-
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
 
@@ -438,3 +435,6 @@ KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
 
 # file {0} does not contain Klobuchar coefficients α or β
 NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
+
+# no reference date set for parameter {0}
+NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>

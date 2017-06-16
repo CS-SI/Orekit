@@ -67,7 +67,13 @@ public class Range extends AbstractMeasurement<Range> {
         super(date, range, sigma, baseWeight,
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver());
+              station.getZenithOffsetDriver(),
+              station.getPrimeMeridianOffsetDriver(),
+              station.getPrimeMeridianDriftDriver(),
+              station.getPolarOffsetXDriver(),
+              station.getPolarDriftXDriver(),
+              station.getPolarOffsetYDriver(),
+              station.getPolarDriftYDriver());
         this.station = station;
     }
 
@@ -94,6 +100,42 @@ public class Range extends AbstractMeasurement<Range> {
         //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
         //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
         int nbParams = 6;
+        final int primeMeridianOffsetIndex;
+        if (station.getPrimeMeridianOffsetDriver().isSelected()) {
+            primeMeridianOffsetIndex = nbParams++;
+        } else {
+            primeMeridianOffsetIndex = -1;
+        }
+        final int primeMeridianDriftIndex;
+        if (station.getPrimeMeridianDriftDriver().isSelected()) {
+            primeMeridianDriftIndex = nbParams++;
+        } else {
+            primeMeridianDriftIndex = -1;
+        }
+        final int polarOffsetXIndex;
+        if (station.getPolarOffsetXDriver().isSelected()) {
+            polarOffsetXIndex = nbParams++;
+        } else {
+            polarOffsetXIndex = -1;
+        }
+        final int polarDriftXIndex;
+        if (station.getPolarDriftXDriver().isSelected()) {
+            polarDriftXIndex = nbParams++;
+        } else {
+            polarDriftXIndex = -1;
+        }
+        final int polarOffsetYIndex;
+        if (station.getPolarOffsetYDriver().isSelected()) {
+            polarOffsetYIndex = nbParams++;
+        } else {
+            polarOffsetYIndex = -1;
+        }
+        final int polarDriftYIndex;
+        if (station.getPolarDriftYDriver().isSelected()) {
+            polarDriftYIndex = nbParams++;
+        } else {
+            polarDriftYIndex = -1;
+        }
         final int eastOffsetIndex;
         if (station.getEastOffsetDriver().isSelected()) {
             eastOffsetIndex = nbParams++;
@@ -150,6 +192,9 @@ public class Range extends AbstractMeasurement<Range> {
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
                         station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
+                                                    primeMeridianOffsetIndex, primeMeridianDriftIndex,
+                                                    polarOffsetXIndex, polarDriftXIndex,
+                                                    polarOffsetYIndex, polarDriftYIndex,
                                                     eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
         // Station position in inertial frame at end of the downlink leg
