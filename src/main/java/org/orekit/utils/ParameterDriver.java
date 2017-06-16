@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Class allowing to drive the value of a parameter.
@@ -69,6 +70,11 @@ public class ParameterDriver {
     /** Maximum value. */
     private final double maxValue;
 
+    /** Reference date.
+     * @since 9.0
+     */
+    private AbsoluteDate referenceDate;
+
     /** Current value. */
     private double value;
 
@@ -86,7 +92,8 @@ public class ParameterDriver {
     /** Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected,
-     * and the value is set to the {@code referenceValue}.
+     * the reference date is set to {@link AbsoluteDate#J2000_EPOCH} and the
+     * value is set to the {@code referenceValue}.
      * </p>
      * @param name name of the parameter
      * @param referenceValue reference value of the parameter
@@ -110,6 +117,7 @@ public class ParameterDriver {
         this.scale          = scale;
         this.minValue       = minValue;
         this.maxValue       = maxValue;
+        this.referenceDate  = AbsoluteDate.J2000_EPOCH;
         this.value          = referenceValue;
         this.selected       = false;
         this.observers      = new ArrayList<ParameterObserver>();
@@ -190,6 +198,27 @@ public class ParameterDriver {
      */
     public void setNormalizedValue(final double normalized) throws OrekitException {
         setValue(referenceValue + scale * normalized);
+    }
+
+    /** Get current reference date.
+     * @return current reference date
+     * @since 9.0
+     */
+    public AbsoluteDate getReferenceDate() {
+        return referenceDate;
+    }
+
+    /** Set reference date.
+     * @param newReferenceDate new reference date
+     * @exception OrekitException if an observer throws one
+     * @since 9.0
+     */
+    public void setReferenceDate(final AbsoluteDate newReferenceDate) throws OrekitException {
+        final AbsoluteDate previousReferenceDate = getReferenceDate();
+        referenceDate = newReferenceDate;
+        for (final ParameterObserver observer : observers) {
+            observer.referenceDateChanged(previousReferenceDate, this);
+        }
     }
 
     /** Get current parameter value.

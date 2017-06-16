@@ -99,6 +99,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
+        estimator.setParametersReferenceDate(AbsoluteDate.GALILEO_EPOCH);
         for (final ObservedMeasurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
@@ -149,11 +150,23 @@ public class BatchLSEstimatorTest {
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
         Assert.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
+
+        // before the call to estimate, the parameters still have their default reference date
+        ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(false);
+        for (final ParameterDriver driver : measurementsParameters.getDrivers()) {
+            Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        }
+
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 1.1e-6,
                                      0.0, 2.8e-6,
                                      0.0, 4.0e-7,
                                      0.0, 2.2e-10);
+
+        // after the call to estimate, the parameters have the prescribed reference date
+        for (final ParameterDriver driver : measurementsParameters.getDrivers()) {
+            Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+        }
 
     }
 

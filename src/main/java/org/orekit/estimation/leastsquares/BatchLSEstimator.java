@@ -41,6 +41,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -56,6 +57,9 @@ public class BatchLSEstimator {
     /** Builder for propagator. */
     private final NumericalPropagatorBuilder propagatorBuilder;
 
+    /** Reference date for parameters. */
+    private AbsoluteDate parametersReferenceDate;
+
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
 
@@ -68,7 +72,7 @@ public class BatchLSEstimator {
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
 
-    /** Oberver for iterations. */
+    /** Observer for iterations. */
     private BatchLSObserver observer;
 
     /** Last estimations. */
@@ -112,6 +116,21 @@ public class BatchLSEstimator {
         // so the least squares problem should not see our weights
         lsBuilder.weight(null);
 
+        // set the default value for parameters reference orbit date
+        setParametersReferenceDate(propagatorBuilder.getInitialOrbitDate());
+
+    }
+
+    /** Set the reference date for parameters.
+     * <p>
+     * If this method is not called by user, the reference date is set by default
+     * to the {@link NumericalPropagatorBuilder#getInitialOrbitDate() initial orbit
+     * date} from the propagator builder.
+     * </p>
+     * @param parametersReferenceDate reference date for parameters
+     */
+    public void setParametersReferenceDate(final AbsoluteDate parametersReferenceDate) {
+        this.parametersReferenceDate = parametersReferenceDate;
     }
 
     /** Set an observer for iterations.
@@ -278,6 +297,11 @@ public class BatchLSEstimator {
      * setting the values} of the parameters.
      * </p>
      * <p>
+     * The {@link ParameterDriver#getReferenceDate() reference date} for all parameters will
+     * be set automatically at the start of the estimation to the {@link
+     * NumericalPropagatorBuilder#getInitialOrbitDate() initial orbit date}.
+     * </p>
+     * <p>
      * After this method returns, the estimated parameters can be retrieved using
      * {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
      * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#getValue()
@@ -293,6 +317,17 @@ public class BatchLSEstimator {
      * or if orbit cannot be determined
      */
     public NumericalPropagator estimate() throws OrekitException {
+
+        // set reference date for all parameters (including the not estimated ones)
+        for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
+            driver.setReferenceDate(parametersReferenceDate);
+        }
+        for (final ParameterDriver driver : getPropagatorParametersDrivers(false).getDrivers()) {
+            driver.setReferenceDate(parametersReferenceDate);
+        }
+        for (final ParameterDriver driver : getMeasurementsParametersDrivers(false).getDrivers()) {
+            driver.setReferenceDate(parametersReferenceDate);
+        }
 
         // get all estimated parameters
         final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParametersDrivers(true);

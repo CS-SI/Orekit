@@ -23,10 +23,26 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Class managing several {@link ParameterDriver parameter drivers},
  * taking care of duplicated names.
+ * <p>
+ * Once parameter drivers sharing the same name have been added to
+ * an instance of this class, they are permanently bound together and
+ * also bound to the {@link #getDrivers() delegating driver} that
+ * manages them. This means that if drivers {@code d1}, {@code d2}...
+ * {@code dn} are added to the list and both correspond to parameter
+ * name "P", then {@link #getDrivers()} will return a list containing
+ * a delegating driver {@code delegateD} for the same name "P".
+ * Afterwards, whenever either {@link ParameterDriver#setValue(double)}
+ * or {@link ParameterDriver#setReferenceDate(AbsoluteDate)} is called
+ * on any of the {@code n+1} instances {@code d1}, {@code d2}... {@code dn}
+ * or {@code delegateD}, the call will be automatically forwarded to the
+ * {@code n} remaining instances, hence ensuring they remain consistent
+ * with each other.
+ * </p>
  * @author Luc Maisonobe
  * @since 8.0
  */
@@ -132,6 +148,9 @@ public class ParameterDriversList {
         /** Drivers managing the same parameter. */
         private final List<ParameterDriver> drivers;
 
+        /** Observer for propagating changes between all drivers. */
+        private final ChangesForwarder forwarder;
+
         /** Simple constructor.
          * @param driver first driver in the series
          * @exception OrekitException if first drivers throws one
@@ -143,20 +162,15 @@ public class ParameterDriversList {
             drivers.add(driver);
 
             setValue(driver.getValue());
+            setReferenceDate(driver.getReferenceDate());
             setSelected(driver.isSelected());
 
-            // when the value of the delegating driver changes,
+            // when the value or reference date of the delegating driver change,
             // all underlying drivers must reproduce the change
-            addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver)
-                    throws OrekitException {
-                    for (final ParameterDriver d : drivers) {
-                        d.setValue(driver.getValue());
-                    }
-                }
-            });
+            forwarder = new ChangesForwarder();
+
+            addObserver(forwarder);
+            driver.addObserver(forwarder);
 
         }
 
@@ -168,6 +182,7 @@ public class ParameterDriversList {
             throws OrekitException {
 
             setValue(driver.getValue());
+            setReferenceDate(driver.getReferenceDate());
 
             // if any of the drivers is selected, all must be selected
             if (isSelected()) {
@@ -176,6 +191,7 @@ public class ParameterDriversList {
                 setSelected(driver.isSelected());
             }
 
+            driver.addObserver(forwarder);
             drivers.add(driver);
 
         }
@@ -199,6 +215,70 @@ public class ParameterDriversList {
             return Collections.unmodifiableList(drivers);
         }
 
+        /** Local observer for propagating changes, avoiding infinite recursion. */
+        private class ChangesForwarder implements ParameterObserver {
+
+            /** Root of the current update chain. */
+            private ParameterDriver root;
+
+            /** {@inheritDoc} */
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver)
+                throws OrekitException {
+                updateAll(driver, d -> d.setValue(driver.getValue()));
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver)
+                throws OrekitException {
+                updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
+            }
+
+            /** Update all bound parameters.
+             * @param driver driver triggering the update
+             * @param updater updater to use
+             * @throws OrekitException if the update fails
+             */
+            private void updateAll(final ParameterDriver driver, final Updater updater)
+                throws OrekitException {
+
+                if (root == null) {
+                    // this is the root call
+                    root = driver;
+                }
+
+                if (driver == DelegatingDriver.this) {
+                    // propagate change downwards, which will trigger recursive calls
+                    for (final ParameterDriver d : drivers) {
+                        if (d != root) {
+                            updater.update(d);
+                        }
+                    }
+                } else if (driver == root) {
+                    // first call started from an underlying driver, propagate change upwards
+                    updater.update(DelegatingDriver.this);
+                }
+
+                if (root == driver) {
+                    // this is the end of the root call
+                    root = null;
+                }
+
+            }
+
+        }
+
+    }
+
+    /** Interface for updating parameters. */
+    @FunctionalInterface
+    private interface Updater {
+        /** Update a driver.
+         * @param driver driver to update
+         * @throws OrekitException if the update fails
+         */
+        void update(ParameterDriver driver) throws OrekitException;
     }
 
 }

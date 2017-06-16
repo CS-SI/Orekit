@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Interface for observing parameters changes.
@@ -27,10 +28,24 @@ import org.orekit.errors.OrekitException;
 public interface ParameterObserver {
 
     /** Notify that a parameter value has been changed.
-     * @param previousValue TODO
+     * @param previousValue previous value
      * @param driver parameter driver that has been changed
      * @exception OrekitException if value is invalid for the driven model
      */
     void valueChanged(double previousValue, ParameterDriver driver) throws OrekitException;
+
+    /** Notify that a parameter reference date has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousReferenceDate previous date
+     * @param driver parameter driver that has been changed
+     * @exception OrekitException if date is invalid for the driven model
+     * @since 9.0
+     */
+    default void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver)
+        throws OrekitException {
+        // nothing by default
+    }
 
 }
