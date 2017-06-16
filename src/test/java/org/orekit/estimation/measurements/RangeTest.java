@@ -212,11 +212,9 @@ public class RangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, propagator.getInitialState(), state);
+                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, state);
 
                     // the real state used for estimation is adjusted according to downlink delay
-                    // the initial state is not touched at all
-                    Assert.assertSame(propagator.getInitialState(), estimated.getInitialState());
                     double adjustment = state.getDate().durationFrom(estimated.getState().getDate());
                     Assert.assertTrue(adjustment > 0.006);
                     Assert.assertTrue(adjustment < 0.010);
@@ -340,7 +338,7 @@ public class RangeTest {
                     final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final double[][]      jacobian  = measurement.estimate(0, 0, propagator.getInitialState(), state).getStateDerivatives();
+                    final double[][]      jacobian  = measurement.estimate(0, 0, state).getStateDerivatives();
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
@@ -348,7 +346,7 @@ public class RangeTest {
                     // Compute a reference value using finite differences
                     jacobianRef = EstimationUtils.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) throws OrekitException {
-                            return measurement.estimate(0, 0, propagator.getInitialState(), state).getEstimatedValue();
+                            return measurement.estimate(0, 0, state).getEstimatedValue();
                         }
                     }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
@@ -504,7 +502,7 @@ public class RangeTest {
                     }
 
                     for (int i = 0; i < 3; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, propagator.getInitialState(), state).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
@@ -514,7 +512,7 @@ public class RangeTest {
                                             /** {@inheritDoc} */
                                             @Override
                                             public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                                return measurement.estimate(0, 0, propagator.getInitialState(), state).getEstimatedValue()[0];
+                                                return measurement.estimate(0, 0, state).getEstimatedValue()[0];
                                             }
                                         }, drivers[i], 3, 20.0);
                         final double ref = dMkdP.value(drivers[i]);

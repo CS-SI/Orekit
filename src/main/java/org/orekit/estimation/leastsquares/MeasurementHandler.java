@@ -89,7 +89,6 @@ class MeasurementHandler implements OrekitStepHandler {
             final SpacecraftState         state     = interpolator.getInterpolatedState(next.getDate());
             final EstimatedMeasurement<?> estimated = observed.estimate(model.getIterationsCount(),
                                                                         model.getEvaluationsCount(),
-                                                                        model.getInitialState(),
                                                                         state);
 
             // fetch the evaluated measurement to the estimator

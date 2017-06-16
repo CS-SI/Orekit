@@ -159,26 +159,21 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * </p>
      * @param iteration iteration number
      * @param evaluation evaluation number
-     * @param initialState state at propagation start
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #estimate(int, int, SpacecraftState)
      */
-    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation,
-                                                                     SpacecraftState initialState,
-                                                                     SpacecraftState state)
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation,
-                                            final SpacecraftState initialState,
-                                            final SpacecraftState state)
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, initialState, state);
+        final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, state);
 
         // apply the modifiers
         for (final EstimationModifier<T> modifier : modifiers) {

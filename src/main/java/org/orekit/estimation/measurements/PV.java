@@ -90,13 +90,12 @@ public class PV extends AbstractMeasurement<PV> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                             final SpacecraftState initialState,
                                                              final SpacecraftState state)
         throws OrekitException {
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =
-                        new EstimatedMeasurement<PV>(this, iteration, evaluation, initialState, state);
+                        new EstimatedMeasurement<PV>(this, iteration, evaluation, state);
 
         // PV value
         final PVCoordinates pv = state.getPVCoordinates();

@@ -30,13 +30,6 @@
         Improved computation ground station parameters derivatives
         in orbit determination.
       </action>
-      <action dev="luc" type="add">
-        Measurements now have access to initial state too (previously they
-        could only access current state) this is helpful for measurements
-        parameters that correspond to time-dependent models (say linear drift
-        for example) that can use the date of the initial state as their reference
-        date
-      </action>
       <action dev="luc" type="update" >
         Use automatic differentiation for all orbit determination measurements types.
         This allows simpler evolutions to estimate parameters for which derivatives
