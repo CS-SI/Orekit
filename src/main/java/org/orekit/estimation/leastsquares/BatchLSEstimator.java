@@ -294,6 +294,11 @@ public class BatchLSEstimator {
      * As a convenience, the method also returns a fully configured and ready to use
      * propagator set up with all the estimated values.
      * </p>
+     * <p>
+     * For even more in-depth information, the {@link #getOptimum()} method provides detailed
+     * elements (covariance matrix, estimated parameters standard deviation, weighted Jacobian, RMS,
+     * χ², residuals and more).
+     * </p>
      * @return propagator configured with estimated orbit as initial state, and all
      * propagator estimated parameters also set
      * @exception OrekitException if there is a conflict in parameters names
@@ -410,6 +415,10 @@ public class BatchLSEstimator {
     }
 
     /** Get the optimum found.
+     * <p>
+     * The {@link Optimum} object contains detailed elements (covariance matrix, estimated
+     * parameters standard deviation, weighted Jacobian, RMS, χ², residuals and more).
+     * </p>
      * @return optimum found after last call to {@link #estimate()}
      */
     public Optimum getOptimum() {
