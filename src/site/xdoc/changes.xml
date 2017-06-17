@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Parameters in orbit determination can be associated with a per-parameter reference date.
+      </action>
       <action dev="luc" type="fix">
         Fixed wrong generation of FieldTransforms by time stamped cache, when generation
         happens backward in time.

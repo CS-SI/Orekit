@@ -38,7 +38,8 @@ public interface ParameterObserver {
      * <p>
      * The default implementation does nothing
      * </p>
-     * @param previousReferenceDate previous date
+     * @param previousReferenceDate previous date (null if it is the first time
+     * the reference date is changed)
      * @param driver parameter driver that has been changed
      * @exception OrekitException if date is invalid for the driven model
      * @since 9.0

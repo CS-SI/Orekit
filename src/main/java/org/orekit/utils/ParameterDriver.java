@@ -92,8 +92,8 @@ public class ParameterDriver {
     /** Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected,
-     * the reference date is set to {@link AbsoluteDate#J2000_EPOCH} and the
-     * value is set to the {@code referenceValue}.
+     * the reference date is set to {@code null} and the value is set to the
+     * {@code referenceValue}.
      * </p>
      * @param name name of the parameter
      * @param referenceValue reference value of the parameter
@@ -117,7 +117,7 @@ public class ParameterDriver {
         this.scale          = scale;
         this.minValue       = minValue;
         this.maxValue       = maxValue;
-        this.referenceDate  = AbsoluteDate.J2000_EPOCH;
+        this.referenceDate  = null;
         this.value          = referenceValue;
         this.selected       = false;
         this.observers      = new ArrayList<ParameterObserver>();
@@ -201,7 +201,7 @@ public class ParameterDriver {
     }
 
     /** Get current reference date.
-     * @return current reference date
+     * @return current reference date (null if it was never set)
      * @since 9.0
      */
     public AbsoluteDate getReferenceDate() {
