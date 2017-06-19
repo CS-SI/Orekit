@@ -154,7 +154,6 @@ public class TDMParser {
      * @param fileName name of the file containing the message
      * @return parsed file content in a TDMFile object
      * @exception OrekitException if Tracking Date Message cannot be parsed or if file cannot be found
-     * @exception IOException if stream cannot be read
      */
     public TDMFile parse(final String fileName)
         throws OrekitException {
@@ -171,7 +170,6 @@ public class TDMParser {
      * @param stream stream containing message
      * @return parsed file content in a TDMFile object
      * @exception OrekitException if Tracking Date Message cannot be parsed
-     * @exception IOException if stream cannot be read
      */
     public TDMFile parse(final InputStream stream)
         throws OrekitException {
@@ -182,7 +180,6 @@ public class TDMParser {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-     * @exception IOException if stream cannot be read
      * @exception OrekitException if Tracking Date Message cannot be parsed
      */
     public TDMFile parse(final InputStream stream, final String fileName)
@@ -296,7 +293,6 @@ public class TDMParser {
      * @param pi ParseInfo object
      * @return true if the keyword was a meta-data keyword and has been parsed
      * @exception OrekitException if error in parsing dates
-     * @exception NumberFormatException if parsing integer or double fails
      */
     private boolean parseMetaDataEntry(final ParseInfo pi)
         throws OrekitException {
