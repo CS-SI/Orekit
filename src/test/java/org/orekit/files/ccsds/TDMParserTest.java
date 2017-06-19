@@ -22,34 +22,15 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
-import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
-import org.orekit.frames.FactoryManagedFrame;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.LOFType;
-import org.orekit.frames.Transform;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
