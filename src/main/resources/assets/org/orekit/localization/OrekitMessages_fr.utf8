@@ -434,7 +434,7 @@ KLOBUCHAR_ALPHA_BETA_NOT_LOADED = impossible de charger des coefficients de Klob
 KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = les coefficients de Klobuchar α ou β ne sont pas disponibles pour la date {0}
 
 # file {0} does not contain Klobuchar coefficients α or β
-NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contiant pas de coefficients de Klobuchar α ou β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contient pas de coefficients de Klobuchar α ou β
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = date de référence non initialisée pour le paramètre {0}
