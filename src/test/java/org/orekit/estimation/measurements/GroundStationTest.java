@@ -63,7 +63,7 @@ public class GroundStationTest {
     @Test
     public void testEstimateStationPosition() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -126,6 +126,131 @@ public class GroundStationTest {
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
+
+    }
+
+    @Test
+    public void testEstimateEOP() throws OrekitException {
+
+        Context linearEOPContext = EstimationTestUtils.eccentricContext("linear-EOP:regular-data/de431-ephemerides:potential:tides");
+
+        final AbsoluteDate refDate = new AbsoluteDate(2000, 2, 24, linearEOPContext.utc);
+        final double dut10 = 0.3079738;
+        final double lod   = 0.0011000;
+        final double xp0   = 68450.0e-6;
+        final double xpDot =   -50.0e-6;
+        final double yp0   =    60.0e-6;
+        final double ypDot =     2.0e-6;
+        for (double dt = -2 * Constants.JULIAN_DAY; dt < 2 * Constants.JULIAN_DAY; dt += 300.0) {
+            AbsoluteDate date = refDate.shiftedBy(dt);
+            Assert.assertEquals(dut10 - dt * lod / Constants.JULIAN_DAY,
+                                linearEOPContext.ut1.getEOPHistory().getUT1MinusUTC(date),
+                                1.0e-15);
+            Assert.assertEquals(lod,
+                                linearEOPContext.ut1.getEOPHistory().getLOD(date),
+                                1.0e-15);
+            Assert.assertEquals((xp0 + xpDot * dt / Constants.JULIAN_DAY) * Constants.ARC_SECONDS_TO_RADIANS,
+                                linearEOPContext.ut1.getEOPHistory().getPoleCorrection(date).getXp(),
+                                1.0e-15);
+            Assert.assertEquals((yp0 + ypDot * dt / Constants.JULIAN_DAY) * Constants.ARC_SECONDS_TO_RADIANS,
+                                linearEOPContext.ut1.getEOPHistory().getPoleCorrection(date).getYp(),
+                                1.0e-15);
+        }
+        final NumericalPropagatorBuilder linearPropagatorBuilder =
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(linearEOPContext.initialOrbit,
+                                                                           linearPropagatorBuilder);
+        final List<ObservedMeasurement<?>> linearMeasurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(linearEOPContext),
+                                                               1.0, 5.0, 60.0);
+
+        Context zeroEOPContext = EstimationTestUtils.eccentricContext("zero-EOP:regular-data/de431-ephemerides:potential:potential:tides");
+        for (double dt = -2 * Constants.JULIAN_DAY; dt < 2 * Constants.JULIAN_DAY; dt += 300.0) {
+            AbsoluteDate date = refDate.shiftedBy(dt);
+            Assert.assertEquals(0.0,
+                                zeroEOPContext.ut1.getEOPHistory().getUT1MinusUTC(date),
+                                1.0e-15);
+            Assert.assertEquals(0.0,
+                                zeroEOPContext.ut1.getEOPHistory().getLOD(date),
+                                1.0e-15);
+            Assert.assertEquals(0.0,
+                                zeroEOPContext.ut1.getEOPHistory().getPoleCorrection(date).getXp(),
+                                1.0e-15);
+            Assert.assertEquals(0.0,
+                                zeroEOPContext.ut1.getEOPHistory().getPoleCorrection(date).getYp(),
+                                1.0e-15);
+        }
+
+        // create orbit estimator
+        final NumericalPropagatorBuilder zeroPropagatorBuilder =
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final BatchLSEstimator estimator = new BatchLSEstimator(zeroPropagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        for (final ObservedMeasurement<?> linearMeasurement : linearMeasurements) {
+            Range linearRange = (Range) linearMeasurement;
+            for (final GroundStation station : zeroEOPContext.stations) {
+                if (station.getBaseFrame().getName().equals(linearRange.getStation().getBaseFrame().getName())) {
+                    Range zeroRange = new Range(station,
+                                                linearRange.getDate(),
+                                                linearRange.getObservedValue()[0],
+                                                linearRange.getTheoreticalStandardDeviation()[0],
+                                                linearRange.getBaseWeight()[0]);
+                    estimator.addMeasurement(zeroRange);
+                }
+            }
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-3);
+        estimator.setMaxIterations(100);
+        estimator.setMaxEvaluations(200);
+
+        // we want to estimate pole and prime meridian
+        GroundStation station = zeroEOPContext.stations.get(0);
+        station.getPrimeMeridianOffsetDriver().setReferenceDate(refDate);
+        station.getPrimeMeridianOffsetDriver().setSelected(true);
+        station.getPrimeMeridianDriftDriver().setSelected(true);
+        station.getPolarOffsetXDriver().setReferenceDate(refDate);
+        station.getPolarOffsetXDriver().setSelected(true);
+        station.getPolarDriftXDriver().setSelected(true);
+        station.getPolarOffsetYDriver().setReferenceDate(refDate);
+        station.getPolarOffsetYDriver().setSelected(true);
+        station.getPolarDriftYDriver().setSelected(true);
+
+        // just for the fun and to speed up test, we will use orbit determination, *without* estimating orbit
+        for (final ParameterDriver driver : zeroPropagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+
+        estimator.estimate();
+
+        // Angular velocity of the Earth, in rad/s, from TIRF model
+        final double ave = 7.292115146706979e-5;
+
+        final double computedDut1 = station.getPrimeMeridianOffsetDriver().getValue() / ave;
+        final double computedLOD  = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / ave);
+        final double computedXp    = station.getPolarOffsetXDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
+        final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+        final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
+        final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+        Assert.assertEquals(dut10, computedDut1, 2.0e-9);
+        Assert.assertEquals(lod,   computedLOD,  9.0e-10);
+        Assert.assertEquals(xp0,   computedXp,    2.0e-8);
+        Assert.assertEquals(xpDot, computedXpDot, 9.0e-9);
+        Assert.assertEquals(yp0,   computedYp,    7.0e-9);
+        Assert.assertEquals(ypDot, computedYpDot, 7.0e-9);
+
+        // threshold to use if orbit is estimated
+        // (i.e. when commenting out the loop above setting orbital parameters drivers to not selected)
+        // Assert.assertEquals(dut10, computedDut1,  1.7e-4);
+        // Assert.assertEquals(lod,   computedLOD,   3.0e-10);
+        // Assert.assertEquals(xp0,   computedXp,    5.0e-9);
+        // Assert.assertEquals(xpDot, computedXpDot, 6.0e-9);
+        // Assert.assertEquals(yp0,   computedYp,    4.0e-8);
+        // Assert.assertEquals(ypDot, computedYpDot, 4.0e-8);
 
     }
 

@@ -30,6 +30,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Class modeling a turn-around range measurement using a master ground station and a slave ground station.
@@ -401,30 +402,37 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final double[] derivatives = turnAroundRange.getAllDerivatives();
         estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
-        // Set parameter drivers partial derivatives with respect to stations' position in stations'offset topocentric frame
-        // Master station
-        if (masterEastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterStation.getEastOffsetDriver(), derivatives[masterEastOffsetIndex + 1]);
-        }
-        if (masterNorthOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterStation.getNorthOffsetDriver(), derivatives[masterNorthOffsetIndex + 1]);
-        }
-        if (masterZenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterStation.getZenithOffsetDriver(), derivatives[masterZenithOffsetIndex + 1]);
-        }
-
-        // Slave station
-        if (slaveEastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveStation.getEastOffsetDriver(), derivatives[slaveEastOffsetIndex + 1]);
-        }
-        if (slaveNorthOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveStation.getNorthOffsetDriver(), derivatives[slaveNorthOffsetIndex + 1]);
-        }
-        if (slaveZenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveStation.getZenithOffsetDriver(), derivatives[slaveZenithOffsetIndex + 1]);
-        }
+        // set partial derivatives with respect to parameters
+        setDerivatives(estimated, masterStation.getPrimeMeridianOffsetDriver(), primeMeridianOffsetIndex, derivatives);
+        setDerivatives(estimated, masterStation.getPrimeMeridianDriftDriver(),  primeMeridianDriftIndex,  derivatives);
+        setDerivatives(estimated, masterStation.getPolarOffsetXDriver(),        polarOffsetXIndex,        derivatives);
+        setDerivatives(estimated, masterStation.getPolarDriftXDriver(),         polarDriftXIndex,         derivatives);
+        setDerivatives(estimated, masterStation.getPolarOffsetYDriver(),        polarOffsetYIndex,        derivatives);
+        setDerivatives(estimated, masterStation.getPolarDriftYDriver(),         polarDriftYIndex,         derivatives);
+        setDerivatives(estimated, masterStation.getEastOffsetDriver(),          masterEastOffsetIndex,    derivatives);
+        setDerivatives(estimated, masterStation.getNorthOffsetDriver(),         masterNorthOffsetIndex,   derivatives);
+        setDerivatives(estimated, masterStation.getZenithOffsetDriver(),        masterZenithOffsetIndex,  derivatives);
+        setDerivatives(estimated, slaveStation.getEastOffsetDriver(),           slaveEastOffsetIndex,     derivatives);
+        setDerivatives(estimated, slaveStation.getNorthOffsetDriver(),          slaveNorthOffsetIndex,    derivatives);
+        setDerivatives(estimated, slaveStation.getZenithOffsetDriver(),         slaveZenithOffsetIndex,   derivatives);
 
         return estimated;
 
     }
+
+    /** Set derivatives with resptect to parameters.
+     * @param estimated estimated measurement
+     * @param driver parameter driver
+     * @param index index of the parameter in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param derivatives derivatives (beware element at index 0 is the value, not a derivative)
+     */
+    private void setDerivatives(final EstimatedMeasurement<TurnAroundRange> estimated,
+                                final ParameterDriver driver, final int index,
+                                final double[] derivatives) {
+        if (index >= 0) {
+            estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+        }
+    }
+
 }

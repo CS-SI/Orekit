@@ -178,7 +178,7 @@ public class TurnAroundRangeTest {
     void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -268,7 +268,7 @@ public class TurnAroundRangeTest {
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
         throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -401,7 +401,7 @@ public class TurnAroundRangeTest {
                                          final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
         throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,

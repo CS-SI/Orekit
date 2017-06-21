@@ -46,7 +46,7 @@ public class ModelTest {
     @Test
     public void testPerfectValue() throws OrekitException {
 
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,

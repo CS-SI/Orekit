@@ -212,7 +212,10 @@ public class GroundStation {
 
     /** Get a driver allowing to add a prime meridian rotation.
      * <p>
-     * The parameter is an angle in radians
+     * The parameter is an angle in radians. In order to convert this
+     * value to a DUT1 in seconds, the value must be divided by
+     * {@code ave = 7.292115146706979e-5} (which is the nominal Angular Velocity
+     * of Earth from the TIRF model).
      * </p>
      * @return driver for prime meridian rotation
      */
@@ -222,7 +225,10 @@ public class GroundStation {
 
     /** Get a driver allowing to add a prime meridian rotation rate.
      * <p>
-     * The parameter is an angle rate in radians per second
+     * The parameter is an angle rate in radians per second. In order to convert this
+     * value to a LOD in seconds, the value must be multiplied by -86400 and divided by
+     * {@code ave = 7.292115146706979e-5} (which is the nominal Angular Velocity
+     * of Earth from the TIRF model).
      * </p>
      * @return driver for prime meridian rotation rate
      */

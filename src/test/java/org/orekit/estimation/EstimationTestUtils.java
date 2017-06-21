@@ -69,9 +69,9 @@ import org.orekit.utils.ParameterDriver;
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
 
-    public static Context eccentricContext() throws OrekitException {
+    public static Context eccentricContext(final String dataRoot) throws OrekitException {
 
-        Utils.setDataRoot("regular-data:potential:tides");
+        Utils.setDataRoot(dataRoot);
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -120,9 +120,9 @@ public class EstimationTestUtils {
 
     }
 
-    public static Context geoStationnaryContext() throws OrekitException {
+    public static Context geoStationnaryContext(final String dataRoot) throws OrekitException {
 
-        Utils.setDataRoot("regular-data:potential:tides");
+        Utils.setDataRoot(dataRoot);
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
         context.utc = TimeScalesFactory.getUTC();

@@ -28,6 +28,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
@@ -226,6 +227,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final EstimatedMeasurement<RangeRate> estimated =
                         oneWayTheoreticalEvaluation(iteration, evaluation,
                                                     stationDownlink, transitPV, transitState,
+                                                    primeMeridianOffsetIndex, primeMeridianDriftIndex,
+                                                    polarOffsetXIndex, polarDriftXIndex,
+                                                    polarOffsetYIndex, polarDriftYIndex,
                                                     eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
         if (twoway) {
             // one-way (uplink) light time correction
@@ -252,6 +256,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
                             oneWayTheoreticalEvaluation(iteration, evaluation,
                                                         stationUplink, transitPV, transitState,
+                                                        primeMeridianOffsetIndex, primeMeridianDriftIndex,
+                                                        polarOffsetXIndex, polarDriftXIndex,
+                                                        polarOffsetYIndex, polarDriftYIndex,
                                                         eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
 
             // combine uplink and downlink values
@@ -290,6 +297,18 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param stationPV station coordinates when signal is at station
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
+     * @param primeMeridianOffsetIndex index of the prime meridian offset in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param primeMeridianDriftIndex index of the prime meridian drift in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param polarOffsetXIndex index of the polar offset along X in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param polarDriftXIndex index of the polar drift along X in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param polarOffsetYIndex index of the polar offset along Y in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param polarDriftYIndex index of the polar drift along Y in the set of
+     * free parameters in derivatives computations (negative if not used)
      * @param eastOffsetIndex index of the East offset in the set of
      * free parameters in derivatives computations (negative if not used)
      * @param northOffsetIndex index of the North offset in the set of
@@ -304,6 +323,12 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState,
+                                                                        final int primeMeridianOffsetIndex,
+                                                                        final int primeMeridianDriftIndex,
+                                                                        final int polarOffsetXIndex,
+                                                                        final int polarDriftXIndex,
+                                                                        final int polarOffsetYIndex,
+                                                                        final int polarDriftYIndex,
                                                                         final int eastOffsetIndex,
                                                                         final int northOffsetIndex,
                                                                         final int zenithOffsetIndex)
@@ -331,19 +356,34 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final double[] derivatives = rangeRate.getAllDerivatives();
         estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
-        // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
-        if (eastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getEastOffsetDriver(), derivatives[eastOffsetIndex + 1]);
-        }
-        if (northOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getNorthOffsetDriver(), derivatives[northOffsetIndex + 1]);
-        }
-        if (zenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getZenithOffsetDriver(), derivatives[zenithOffsetIndex + 1]);
-        }
+        // set partial derivatives with respect to parameters
+        setDerivatives(estimated, station.getPrimeMeridianOffsetDriver(), primeMeridianOffsetIndex, derivatives);
+        setDerivatives(estimated, station.getPrimeMeridianDriftDriver(),  primeMeridianDriftIndex,  derivatives);
+        setDerivatives(estimated, station.getPolarOffsetXDriver(),        polarOffsetXIndex,        derivatives);
+        setDerivatives(estimated, station.getPolarDriftXDriver(),         polarDriftXIndex,         derivatives);
+        setDerivatives(estimated, station.getPolarOffsetYDriver(),        polarOffsetYIndex,        derivatives);
+        setDerivatives(estimated, station.getPolarDriftYDriver(),         polarDriftYIndex,         derivatives);
+        setDerivatives(estimated, station.getEastOffsetDriver(),          eastOffsetIndex,          derivatives);
+        setDerivatives(estimated, station.getNorthOffsetDriver(),         northOffsetIndex,         derivatives);
+        setDerivatives(estimated, station.getZenithOffsetDriver(),        zenithOffsetIndex,        derivatives);
 
         return estimated;
 
+    }
+
+    /** Set derivatives with resptect to parameters.
+     * @param estimated estimated measurement
+     * @param driver parameter driver
+     * @param index index of the parameter in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param derivatives derivatives (beware element at index 0 is the value, not a derivative)
+     */
+    private void setDerivatives(final EstimatedMeasurement<RangeRate> estimated,
+                                final ParameterDriver driver, final int index,
+                                final double[] derivatives) {
+        if (index >= 0) {
+            estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+        }
     }
 
 }

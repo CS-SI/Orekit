@@ -27,6 +27,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
@@ -212,25 +213,35 @@ public class Angular extends AbstractMeasurement<Angular> {
         };
         estimated.setStateDerivatives(dAzOndP, dElOndP);
 
-        // partial derivatives with respect to parameters
-        if (eastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getEastOffsetDriver(),
-                                              azDerivatives[eastOffsetIndex + 1],
-                                              elDerivatives[eastOffsetIndex + 1]);
-        }
-        if (northOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
-                                              azDerivatives[northOffsetIndex + 1],
-                                              elDerivatives[northOffsetIndex + 1]);
-        }
-        if (zenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
-                                              azDerivatives[zenithOffsetIndex + 1],
-                                              elDerivatives[zenithOffsetIndex + 1]);
-        }
+        // set partial derivatives with respect to parameters
+        setDerivatives(estimated, station.getPrimeMeridianOffsetDriver(), primeMeridianOffsetIndex, azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getPrimeMeridianDriftDriver(),  primeMeridianDriftIndex,  azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getPolarOffsetXDriver(),        polarOffsetXIndex,        azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getPolarDriftXDriver(),         polarDriftXIndex,         azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getPolarOffsetYDriver(),        polarOffsetYIndex,        azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getPolarDriftYDriver(),         polarDriftYIndex,         azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getEastOffsetDriver(),          eastOffsetIndex,          azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getNorthOffsetDriver(),         northOffsetIndex,         azDerivatives, elDerivatives);
+        setDerivatives(estimated, station.getZenithOffsetDriver(),        zenithOffsetIndex,        azDerivatives, elDerivatives);
 
         return estimated;
 
+    }
+
+    /** Set derivatives with resptect to parameters.
+     * @param estimated estimated measurement
+     * @param driver parameter driver
+     * @param index index of the parameter in the set of
+     * free parameters in derivatives computations (negative if not used)
+     * @param azDerivatives azimuth derivatives (beware element at index 0 is the value, not a derivative)
+     * @param elDerivatives elevation derivatives (beware element at index 0 is the value, not a derivative)
+     */
+    private void setDerivatives(final EstimatedMeasurement<Angular> estimated,
+                                final ParameterDriver driver, final int index,
+                                final double[] azDerivatives, final double[] elDerivatives) {
+        if (index >= 0) {
+            estimated.setParameterDerivatives(driver, azDerivatives[index + 1], elDerivatives[index + 1]);
+        }
     }
 
 }

@@ -42,7 +42,7 @@ public class AngularTest {
     @Test
     public void testStateDerivatives() throws OrekitException {
 
-        Context context = EstimationTestUtils.geoStationnaryContext();
+        Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
@@ -141,7 +141,7 @@ public class AngularTest {
     @Test
     public void testParameterDerivatives() throws OrekitException {
 
-        Context context = EstimationTestUtils.geoStationnaryContext();
+        Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,

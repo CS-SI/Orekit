@@ -37,7 +37,7 @@ public class IodLambertTest {
 
     @Test
     public void testLambert() throws OrekitException {
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();
