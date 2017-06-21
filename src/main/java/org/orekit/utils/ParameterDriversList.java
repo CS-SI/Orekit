@@ -243,8 +243,8 @@ public class ParameterDriversList {
             private void updateAll(final ParameterDriver driver, final Updater updater)
                 throws OrekitException {
 
-                if (root == null) {
-                    // this is the root call
+                final boolean firstCall = root == null;
+                if (firstCall) {
                     root = driver;
                 }
 
@@ -255,7 +255,7 @@ public class ParameterDriversList {
                             updater.update(d);
                         }
                     }
-                } else if (driver == root) {
+                } else if (firstCall) {
                     // first call started from an underlying driver, propagate change upwards
                     updater.update(DelegatingDriver.this);
                 }
