@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Lars Næsbye Christensen">
+        Added Danish translations.
+        Fixes issue #346.
+      </action>
       <action dev="luc" type="add" >
         Allow estimation of polar motion (offset plus linear drift) and prime meridian
         correction (offset plus linear drift) in orbit determination. This is essentially

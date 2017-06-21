@@ -203,6 +203,7 @@
 
   * Localized in several languages
 
+    * Danish
     * English
     * French
     * Galician
