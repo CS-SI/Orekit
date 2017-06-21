@@ -183,13 +183,21 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Orbit determination
     <ul>
-      <li>batch least squares fitting of orbit</li>
+      <li>batch least squares fitting of
+        <ul>
+          <li>orbital parameters (or only a subset if desired)</li>
+          <li>force model parameters (drag coefficients, radiation pressure coefficients,
+              central attraction, maneuver thrust or flow rate)</li>
+          <li>measurements parameters (biases, station position, pole motion and rate,
+              prime meridian correction and rate)</li>
+        </ul>
+      </li>
       <li>several predefined measurements
         <ul>
           <li>range</li>
           <li>range rate</li>
-          <li>azimuth</li>
-          <li>elevation</li>
+          <li>turn-around range</li>
+          <li>azimuth/elevation</li>
           <li>position-velocity</li>
         </ul>
       </li>

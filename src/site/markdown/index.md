@@ -153,12 +153,17 @@
 
   * Orbit determination
   
-    * batch least squares fitting of orbit
+    * batch least squares fitting of
+      * orbital parameters (or only a subset if desired)
+      * force model parameters (drag coefficients, radiation pressure coefficients,
+        central attraction, maneuver thrust or flow rate)
+      * measurements parameters (biases, station position, pole motion and rate,
+        prime meridian correction and rate)
     * several predefined measurements
       * range
       * range rate
-      * azimuth
-      * elevation
+      * turn-around range
+      * azimuth/elevation
       * position-velocity
     * possibility to add custom measurements
     * several predefined modifiers
