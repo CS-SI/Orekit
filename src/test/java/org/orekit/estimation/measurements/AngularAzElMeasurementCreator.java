@@ -31,11 +31,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
-public class AngularMeasurementCreator extends MeasurementCreator {
+public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
 
-    public AngularMeasurementCreator(final Context context) {
+    public AngularAzElMeasurementCreator(final Context context) {
         this.context = context;
     }
 
@@ -81,7 +81,7 @@ public class AngularMeasurementCreator extends MeasurementCreator {
                                                                currentState.getFrame(),
                                                                currentState.getDate());
 
-                addMeasurement(new Angular(station, date, angular, sigma, baseweight));
+                addMeasurement(new AngularAzEL(station, date, angular, sigma, baseweight));
             }
 
         }

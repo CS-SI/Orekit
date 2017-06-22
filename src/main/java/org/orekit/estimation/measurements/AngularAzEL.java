@@ -38,7 +38,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class Angular extends AbstractMeasurement<Angular> {
+public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -52,8 +52,8 @@ public class Angular extends AbstractMeasurement<Angular> {
      * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
-    public Angular(final GroundStation station, final AbsoluteDate date,
-                   final double[] angular, final double[] sigma, final double[] baseWeight)
+    public AngularAzEL(final GroundStation station, final AbsoluteDate date,
+                       final double[] angular, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
         super(date, angular, sigma, baseWeight,
               station.getEastOffsetDriver(),
@@ -77,8 +77,8 @@ public class Angular extends AbstractMeasurement<Angular> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<Angular> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                  final SpacecraftState state)
+    protected EstimatedMeasurement<AngularAzEL> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                      final SpacecraftState state)
         throws OrekitException {
 
         // get the number of parameters used for derivation
@@ -192,7 +192,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
         // prepare the estimation
-        final EstimatedMeasurement<Angular> estimated =
+        final EstimatedMeasurement<AngularAzEL> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation, transitState);
 
         // azimuth - elevation values
@@ -236,7 +236,7 @@ public class Angular extends AbstractMeasurement<Angular> {
      * @param azDerivatives azimuth derivatives (beware element at index 0 is the value, not a derivative)
      * @param elDerivatives elevation derivatives (beware element at index 0 is the value, not a derivative)
      */
-    private void setDerivatives(final EstimatedMeasurement<Angular> estimated,
+    private void setDerivatives(final EstimatedMeasurement<AngularAzEL> estimated,
                                 final ParameterDriver driver, final int index,
                                 final double[] azDerivatives, final double[] elDerivatives) {
         if (index >= 0) {

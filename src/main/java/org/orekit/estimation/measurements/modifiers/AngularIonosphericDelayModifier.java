@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.Angular;
+import org.orekit.estimation.measurements.AngularAzEL;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularIonosphericDelayModifier implements EstimationModifier<Angular> {
+public class AngularIonosphericDelayModifier implements EstimationModifier<AngularAzEL> {
     /** Ionospheric delay model. */
     private final IonosphericModel ionoModel;
 
@@ -98,9 +98,9 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Angular> estimated)
+    public void modify(final EstimatedMeasurement<AngularAzEL> estimated)
         throws OrekitException {
-        final Angular         measure = estimated.getObservedMeasurement();
+        final AngularAzEL         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getState();
 

@@ -37,7 +37,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-public class AngularTest {
+public class AngularAzElTest {
 
     @Test
     public void testStateDerivatives() throws OrekitException {
@@ -53,7 +53,7 @@ public class AngularTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new AngularMeasurementCreator(context),
+                                                               new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
 
         propagator.setSlaveMode();
@@ -71,7 +71,7 @@ public class AngularTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Angular) measurement).getStation();
+            final GroundStation stationParameter = ((AngularAzEL) measurement).getStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -95,8 +95,8 @@ public class AngularTest {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, state).getEstimatedValue();
                     }
-                                                  }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 250.0, 4).value(state);
+                }, measurement.getDimension(), OrbitType.CARTESIAN,
+                   PositionAngle.TRUE, 250.0, 4).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -157,14 +157,14 @@ public class AngularTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new AngularMeasurementCreator(context),
+                                                               new AngularAzElMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
         propagator.setSlaveMode();
 
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Angular) measurement).getStation();
+            final GroundStation stationParameter = ((AngularAzEL) measurement).getStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
