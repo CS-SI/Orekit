@@ -1,6 +1,8 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -17,6 +19,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -539,83 +542,14 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final GroundStation masterGroundStation       = getMasterStation();
         final GroundStation slaveGroundStation        = getSlaveStation();
         int nbParams = 6;
-        final int primeMeridianOffsetIndex;
-        if (masterGroundStation.getPrimeMeridianOffsetDriver().isSelected() ||
-            slaveGroundStation.getPrimeMeridianOffsetDriver().isSelected()) {
-            primeMeridianOffsetIndex = nbParams++;
-        } else {
-            primeMeridianOffsetIndex = -1;
-        }
-        final int primeMeridianDriftIndex;
-        if (masterGroundStation.getPrimeMeridianDriftDriver().isSelected() ||
-            slaveGroundStation.getPrimeMeridianDriftDriver().isSelected()) {
-            primeMeridianDriftIndex = nbParams++;
-        } else {
-            primeMeridianDriftIndex = -1;
-        }
-        final int polarOffsetXIndex;
-        if (masterGroundStation.getPolarOffsetXDriver().isSelected() ||
-            slaveGroundStation.getPolarOffsetXDriver().isSelected()) {
-            polarOffsetXIndex = nbParams++;
-        } else {
-            polarOffsetXIndex = -1;
-        }
-        final int polarDriftXIndex;
-        if (masterGroundStation.getPolarDriftXDriver().isSelected() ||
-            slaveGroundStation.getPolarDriftXDriver().isSelected()) {
-            polarDriftXIndex = nbParams++;
-        } else {
-            polarDriftXIndex = -1;
-        }
-        final int polarOffsetYIndex;
-        if (masterGroundStation.getPolarOffsetYDriver().isSelected() ||
-            slaveGroundStation.getPolarOffsetYDriver().isSelected()) {
-            polarOffsetYIndex = nbParams++;
-        } else {
-            polarOffsetYIndex = -1;
-        }
-        final int polarDriftYIndex;
-        if (masterGroundStation.getPolarDriftYDriver().isSelected() ||
-            slaveGroundStation.getPolarDriftYDriver().isSelected()) {
-            polarDriftYIndex = nbParams++;
-        } else {
-            polarDriftYIndex = -1;
-        }
-        final int masterEastOffsetIndex;
-        if (masterGroundStation.getEastOffsetDriver().isSelected()) {
-            masterEastOffsetIndex = nbParams++;
-        } else {
-            masterEastOffsetIndex = -1;
-        }
-        final int masterNorthOffsetIndex;
-        if (masterGroundStation.getNorthOffsetDriver().isSelected()) {
-            masterNorthOffsetIndex = nbParams++;
-        } else {
-            masterNorthOffsetIndex = -1;
-        }
-        final int masterZenithOffsetIndex;
-        if (masterGroundStation.getZenithOffsetDriver().isSelected()) {
-            masterZenithOffsetIndex = nbParams++;
-        } else {
-            masterZenithOffsetIndex = -1;
-        }
-        final int slaveEastOffsetIndex;
-        if (slaveGroundStation.getEastOffsetDriver().isSelected()) {
-            slaveEastOffsetIndex = nbParams++;
-        } else {
-            slaveEastOffsetIndex = -1;
-        }
-        final int slaveNorthOffsetIndex;
-        if (slaveGroundStation.getNorthOffsetDriver().isSelected()) {
-            slaveNorthOffsetIndex = nbParams++;
-        } else {
-            slaveNorthOffsetIndex = -1;
-        }
-        final int slaveZenithOffsetIndex;
-        if (slaveGroundStation.getZenithOffsetDriver().isSelected()) {
-            slaveZenithOffsetIndex = nbParams++;
-        } else {
-            slaveZenithOffsetIndex = -1;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            // we have to check for duplicate keys because master and slave station share
+            // pole and prime meridian parameters names that must be considered
+            // as one set only (they are combined together by the estimation engine)
+            if (driver.isSelected() && !indices.containsKey(driver.getName())) {
+                indices.put(driver.getName(), nbParams++);
+            }
         }
         final DSFactory                          dsFactory = new DSFactory(nbParams, 1);
         final Field<DerivativeStructure>         field     = dsFactory.getDerivativeField();
@@ -680,12 +614,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // transform between master station topocentric frame (east-north-zenith) and inertial frame expressed as DerivativeStructures
         // The components of master station's position in offset frame are the 3 third derivative parameters
         final FieldTransform<DerivativeStructure> masterToInert =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDateDS, dsFactory,
-                                                                primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                                polarOffsetXIndex, polarDriftXIndex,
-                                                                polarOffsetYIndex, polarDriftYIndex,
-                                                                masterEastOffsetIndex, masterNorthOffsetIndex,
-                                                                masterZenithOffsetIndex);
+                        masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDateDS, dsFactory, indices);
 
         // Master station PV in inertial frame at measurement date
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);
@@ -706,12 +635,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // The components of slave station's position in offset frame are the 3 last derivative parameters
         final FieldAbsoluteDate<DerivativeStructure> approxReboundDate = measurementDateDS.shiftedBy(-delta);
         final FieldTransform<DerivativeStructure> slaveToInertApprox =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), approxReboundDate, dsFactory,
-                                                               primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                               polarOffsetXIndex, polarDriftXIndex,
-                                                               polarOffsetYIndex, polarDriftYIndex,
-                                                               slaveEastOffsetIndex, slaveNorthOffsetIndex,
-                                                               slaveZenithOffsetIndex);
+                        slaveGroundStation.getOffsetToInertial(state.getFrame(), approxReboundDate, dsFactory, indices);
 
         // Slave station PV in inertial frame at approximate rebound date on slave station
         final TimeStampedFieldPVCoordinates<DerivativeStructure> QSlaveApprox =
@@ -733,12 +657,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Absolute date of rebound of the signal to slave station
         final FieldAbsoluteDate<DerivativeStructure> reboundDateDS = measurementDateDS.shiftedBy(tauLeg2.negate());
         final FieldTransform<DerivativeStructure> slaveToInert =
-                        slaveGroundStation.getOffsetToInertial(state.getFrame(), reboundDateDS, dsFactory,
-                                                               primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                               polarOffsetXIndex, polarDriftXIndex,
-                                                               polarOffsetYIndex, polarDriftYIndex,
-                                                               slaveEastOffsetIndex, slaveNorthOffsetIndex,
-                                                               slaveZenithOffsetIndex);
+                        slaveGroundStation.getOffsetToInertial(state.getFrame(), reboundDateDS, dsFactory, indices);
 
         // Slave station PV in inertial frame at rebound date on slave station
         final FieldVector3D<DerivativeStructure> QSlave = slaveToInert.transformPosition(zero);
@@ -761,12 +680,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final FieldAbsoluteDate<DerivativeStructure> approxEmissionDate =
                         measurementDateDS.shiftedBy(-2 * (slaveTauU.getValue() + masterTauD.getValue()));
         final FieldTransform<DerivativeStructure> masterToInertApprox =
-                        masterGroundStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, dsFactory,
-                                                                primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                                polarOffsetXIndex, polarDriftXIndex,
-                                                                polarOffsetYIndex, polarDriftYIndex,
-                                                                masterEastOffsetIndex, masterNorthOffsetIndex,
-                                                                masterZenithOffsetIndex);
+                        masterGroundStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, dsFactory, indices);
 
         // Master station PV in inertial frame at approximate emission date
         final TimeStampedFieldPVCoordinates<DerivativeStructure> QMasterApprox =
@@ -810,29 +724,14 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double[] derivatives = turnAroundRange.getAllDerivatives();
         estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
-        // Set parameter drivers partial derivatives with respect to stations' position in stations'offset topocentric frame
-        // Master station
-        if (masterEastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterGroundStation.getEastOffsetDriver(), derivatives[masterEastOffsetIndex + 1]);
+        // set partial derivatives with respect to parameters
+        // (beware element at index 0 is the value, not a derivative)
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+            }
         }
-        if (masterNorthOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterGroundStation.getNorthOffsetDriver(), derivatives[masterNorthOffsetIndex + 1]);
-        }
-        if (masterZenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(masterGroundStation.getZenithOffsetDriver(), derivatives[masterZenithOffsetIndex + 1]);
-        }
-
-        // Slave station
-        if (slaveEastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveGroundStation.getEastOffsetDriver(), derivatives[slaveEastOffsetIndex + 1]);
-        }
-        if (slaveNorthOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveGroundStation.getNorthOffsetDriver(), derivatives[slaveNorthOffsetIndex + 1]);
-        }
-        if (slaveZenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(slaveGroundStation.getZenithOffsetDriver(), derivatives[slaveZenithOffsetIndex + 1]);
-        }
-
 
         // ----------
         // VALIDATION: Using analytical version to compare

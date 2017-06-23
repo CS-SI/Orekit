@@ -1,6 +1,8 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -17,6 +19,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -259,59 +262,11 @@ public class RangeAnalytic extends Range {
 
         // get the number of parameters used for derivation
         int nbParams = 6;
-        final int primeMeridianOffsetIndex;
-        if (groundStation.getPrimeMeridianOffsetDriver().isSelected()) {
-            primeMeridianOffsetIndex = nbParams++;
-        } else {
-            primeMeridianOffsetIndex = -1;
-        }
-        final int primeMeridianDriftIndex;
-        if (groundStation.getPrimeMeridianDriftDriver().isSelected()) {
-            primeMeridianDriftIndex = nbParams++;
-        } else {
-            primeMeridianDriftIndex = -1;
-        }
-        final int polarOffsetXIndex;
-        if (groundStation.getPolarOffsetXDriver().isSelected()) {
-            polarOffsetXIndex = nbParams++;
-        } else {
-            polarOffsetXIndex = -1;
-        }
-        final int polarDriftXIndex;
-        if (groundStation.getPolarDriftXDriver().isSelected()) {
-            polarDriftXIndex = nbParams++;
-        } else {
-            polarDriftXIndex = -1;
-        }
-        final int polarOffsetYIndex;
-        if (groundStation.getPolarOffsetYDriver().isSelected()) {
-            polarOffsetYIndex = nbParams++;
-        } else {
-            polarOffsetYIndex = -1;
-        }
-        final int polarDriftYIndex;
-        if (groundStation.getPolarDriftYDriver().isSelected()) {
-            polarDriftYIndex = nbParams++;
-        } else {
-            polarDriftYIndex = -1;
-        }
-        final int eastOffsetIndex;
-        if (groundStation.getEastOffsetDriver().isSelected()) {
-            eastOffsetIndex = nbParams++;
-        } else {
-            eastOffsetIndex = -1;
-        }
-        final int northOffsetIndex;
-        if (groundStation.getNorthOffsetDriver().isSelected()) {
-            northOffsetIndex = nbParams++;
-        } else {
-            northOffsetIndex = -1;
-        }
-        final int zenithOffsetIndex;
-        if (groundStation.getZenithOffsetDriver().isSelected()) {
-            zenithOffsetIndex = nbParams++;
-        } else {
-            zenithOffsetIndex = -1;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
+            }
         }
         final DSFactory dsFactory = new DSFactory(nbParams, 1);
         final Field<DerivativeStructure> field = dsFactory.getDerivativeField();
@@ -359,11 +314,7 @@ public class RangeAnalytic extends Range {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory,
-                                                          primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                          polarOffsetXIndex, polarDriftXIndex,
-                                                          polarOffsetYIndex, polarDriftYIndex,
-                                                          eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
+                        groundStation.getOffsetToInertial(state.getFrame(), downlinkDateDS, dsFactory, indices);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -408,16 +359,13 @@ public class RangeAnalytic extends Range {
         final double[] derivatives = range.getAllDerivatives();
         estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
-
-        // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
-        if (eastOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(groundStation.getEastOffsetDriver(), derivatives[eastOffsetIndex + 1]);
-        }
-        if (northOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(groundStation.getNorthOffsetDriver(), derivatives[northOffsetIndex + 1]);
-        }
-        if (zenithOffsetIndex >= 0) {
-            estimated.setParameterDerivatives(groundStation.getZenithOffsetDriver(), derivatives[zenithOffsetIndex + 1]);
+        // set partial derivatives with respect to parameters
+        // (beware element at index 0 is the value, not a derivative)
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+            }
         }
 
         // ----------

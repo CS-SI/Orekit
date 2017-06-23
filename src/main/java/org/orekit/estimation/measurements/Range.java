@@ -17,6 +17,8 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -97,63 +99,15 @@ public class Range extends AbstractMeasurement<Range> {
         // -------
         //
         // Parameters:
-        //  - 0..2 - Px, Py, Pz   : Position of the spacecraft in inertial frame
-        //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
-        //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
+        //  - 0..2 - Position of the spacecraft in inertial frame
+        //  - 3..5 - Velocity of the spacecraft in inertial frame
+        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
         int nbParams = 6;
-        final int primeMeridianOffsetIndex;
-        if (station.getPrimeMeridianOffsetDriver().isSelected()) {
-            primeMeridianOffsetIndex = nbParams++;
-        } else {
-            primeMeridianOffsetIndex = -1;
-        }
-        final int primeMeridianDriftIndex;
-        if (station.getPrimeMeridianDriftDriver().isSelected()) {
-            primeMeridianDriftIndex = nbParams++;
-        } else {
-            primeMeridianDriftIndex = -1;
-        }
-        final int polarOffsetXIndex;
-        if (station.getPolarOffsetXDriver().isSelected()) {
-            polarOffsetXIndex = nbParams++;
-        } else {
-            polarOffsetXIndex = -1;
-        }
-        final int polarDriftXIndex;
-        if (station.getPolarDriftXDriver().isSelected()) {
-            polarDriftXIndex = nbParams++;
-        } else {
-            polarDriftXIndex = -1;
-        }
-        final int polarOffsetYIndex;
-        if (station.getPolarOffsetYDriver().isSelected()) {
-            polarOffsetYIndex = nbParams++;
-        } else {
-            polarOffsetYIndex = -1;
-        }
-        final int polarDriftYIndex;
-        if (station.getPolarDriftYDriver().isSelected()) {
-            polarDriftYIndex = nbParams++;
-        } else {
-            polarDriftYIndex = -1;
-        }
-        final int eastOffsetIndex;
-        if (station.getEastOffsetDriver().isSelected()) {
-            eastOffsetIndex = nbParams++;
-        } else {
-            eastOffsetIndex = -1;
-        }
-        final int northOffsetIndex;
-        if (station.getNorthOffsetDriver().isSelected()) {
-            northOffsetIndex = nbParams++;
-        } else {
-            northOffsetIndex = -1;
-        }
-        final int zenithOffsetIndex;
-        if (station.getZenithOffsetDriver().isSelected()) {
-            zenithOffsetIndex = nbParams++;
-        } else {
-            zenithOffsetIndex = -1;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
+            }
         }
         final DSFactory                          factory = new DSFactory(nbParams, 1);
         final Field<DerivativeStructure>         field   = factory.getDerivativeField();
@@ -192,11 +146,7 @@ public class Range extends AbstractMeasurement<Range> {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
-                                                    primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                    polarOffsetXIndex, polarDriftXIndex,
-                                                    polarOffsetYIndex, polarDriftYIndex,
-                                                    eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -241,33 +191,16 @@ public class Range extends AbstractMeasurement<Range> {
         estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
-        setDerivatives(estimated, station.getPrimeMeridianOffsetDriver(), primeMeridianOffsetIndex, derivatives);
-        setDerivatives(estimated, station.getPrimeMeridianDriftDriver(),  primeMeridianDriftIndex,  derivatives);
-        setDerivatives(estimated, station.getPolarOffsetXDriver(),        polarOffsetXIndex,        derivatives);
-        setDerivatives(estimated, station.getPolarDriftXDriver(),         polarDriftXIndex,         derivatives);
-        setDerivatives(estimated, station.getPolarOffsetYDriver(),        polarOffsetYIndex,        derivatives);
-        setDerivatives(estimated, station.getPolarDriftYDriver(),         polarDriftYIndex,         derivatives);
-        setDerivatives(estimated, station.getEastOffsetDriver(),          eastOffsetIndex,          derivatives);
-        setDerivatives(estimated, station.getNorthOffsetDriver(),         northOffsetIndex,         derivatives);
-        setDerivatives(estimated, station.getZenithOffsetDriver(),        zenithOffsetIndex,        derivatives);
+        // (beware element at index 0 is the value, not a derivative)
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+            }
+        }
 
         return estimated;
 
-    }
-
-    /** Set derivatives with resptect to parameters.
-     * @param estimated estimated measurement
-     * @param driver parameter driver
-     * @param index index of the parameter in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param derivatives derivatives (beware element at index 0 is the value, not a derivative)
-     */
-    private void setDerivatives(final EstimatedMeasurement<Range> estimated,
-                                final ParameterDriver driver, final int index,
-                                final double[] derivatives) {
-        if (index >= 0) {
-            estimated.setParameterDerivatives(driver, derivatives[index + 1]);
-        }
     }
 
 }

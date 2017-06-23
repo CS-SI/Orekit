@@ -17,7 +17,9 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -942,8 +944,20 @@ public class GroundStationTest {
         
         try {
             DSFactory factory = new DSFactory(9,  1);
+            Map<String, Integer> indices = new HashMap<>();
+            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
+                                                              station.getPrimeMeridianDriftDriver(),
+                                                              station.getPolarOffsetXDriver(),
+                                                              station.getPolarDriftXDriver(),
+                                                              station.getPolarOffsetYDriver(),
+                                                              station.getPolarDriftYDriver(),
+                                                              station.getEastOffsetDriver(),
+                                                              station.getNorthOffsetDriver(),
+                                                              station.getZenithOffsetDriver())) {
+                indices.put(driver.getName(), indices.size());
+            }
             station.getOffsetToInertial(eme2000, new FieldAbsoluteDate<>(factory.getDerivativeField(), date), factory,
-                                        0, 1, 2, 3, 4, 5, 6, 7, 8);
+                                        indices);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
@@ -977,14 +991,13 @@ public class GroundStationTest {
         for (ParameterDriver driver : allDrivers) {
             driver.setReferenceDate(date0);
         }
-        int[] indices = new int[allDrivers.length];
-        Arrays.fill(indices, -1);
+        Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFCartesian.length; ++k) {
             for (int i = 0; i < allDrivers.length; ++i) {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices[i] = k;
+                    indices.put(selectedDrivers[k].getName(), k);
                 }
             }
         };
@@ -1003,10 +1016,7 @@ public class GroundStationTest {
             changed.setNormalizedValue(2 * generator.nextDouble() - 1);
 
             // transform to check
-            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory,
-                                                                                indices[0], indices[1],
-                                                                                indices[2], indices[3], indices[4], indices[5],
-                                                                                indices[6], indices[7], indices[8]);
+            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory, indices);
             FieldPVCoordinates<DerivativeStructure> pv = t.transformPVCoordinates(FieldPVCoordinates.getZero(factory.getDerivativeField()));
             for (int k = 0; k < dFCartesian.length; ++k) {
 
@@ -1085,14 +1095,13 @@ public class GroundStationTest {
         for (ParameterDriver driver : allDrivers) {
             driver.setReferenceDate(date0);
         }
-        int[] indices = new int[allDrivers.length];
-        Arrays.fill(indices, -1);
+        Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFAngular.length; ++k) {
             for (int i = 0; i < allDrivers.length; ++i) {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices[i] = k;
+                    indices.put(selectedDrivers[k].getName(), k);
                 }
             }
         };
@@ -1111,10 +1120,7 @@ public class GroundStationTest {
             changed.setNormalizedValue(2 * generator.nextDouble() - 1);
 
             // transform to check
-            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory,
-                                                                                indices[0], indices[1],
-                                                                                indices[2], indices[3], indices[4], indices[5],
-                                                                                indices[6], indices[7], indices[8]);
+            FieldTransform<DerivativeStructure> t = station.getOffsetToInertial(eme2000, dateDS, factory, indices);
             for (int k = 0; k < dFAngular.length; ++k) {
 
                 // reference values and derivatives computed using finite differences

@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -361,24 +363,7 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param date date of the transform
      * @param factory factory for the derivatives
-     * @param primeMeridianOffsetIndex index of the prime meridian offset in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param primeMeridianDriftIndex index of the prime meridian drift in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param polarOffsetXIndex index of the polar offset along X in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param polarDriftXIndex index of the polar drift along X in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param polarOffsetYIndex index of the polar offset along Y in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param polarDriftYIndex index of the polar drift along Y in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param eastOffsetIndex index of the East offset in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param northOffsetIndex index of the North offset in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param zenithOffsetIndex index of the Zenith offset in the set of
-     * free parameters in derivatives computations (negative if not used)
+     * @param indices indices of the estimated parameters in derivatives computations
      * @return offset frame defining vectors with derivatives
      * @exception OrekitException if some frame transforms cannot be computed
      * @since 9.0
@@ -386,15 +371,7 @@ public class GroundStation {
     public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
                                                                    final FieldAbsoluteDate<DerivativeStructure> date,
                                                                    final DSFactory factory,
-                                                                   final int primeMeridianOffsetIndex,
-                                                                   final int primeMeridianDriftIndex,
-                                                                   final int polarOffsetXIndex,
-                                                                   final int polarDriftXIndex,
-                                                                   final int polarOffsetYIndex,
-                                                                   final int polarDriftYIndex,
-                                                                   final int eastOffsetIndex,
-                                                                   final int northOffsetIndex,
-                                                                   final int zenithOffsetIndex)
+                                                                   final Map<String, Integer> indices)
         throws OrekitException {
 
         final Field<DerivativeStructure>         field = date.getField();
@@ -405,9 +382,9 @@ public class GroundStation {
 
         // take parametric prime meridian shift into account
         final DerivativeStructure theta    = linearModel(factory, date,
-                                                         primeMeridianOffsetIndex, primeMeridianOffsetDriver,
-                                                         primeMeridianDriftIndex,  primeMeridianDriftDriver);
-        final DerivativeStructure thetaDot = parametricModel(factory, primeMeridianDriftIndex, primeMeridianDriftDriver);
+                                                         primeMeridianOffsetDriver, primeMeridianDriftDriver,
+                                                         indices);
+        final DerivativeStructure thetaDot = parametricModel(factory, primeMeridianDriftDriver, indices);
         final FieldTransform<DerivativeStructure> meridianShift =
                         new FieldTransform<>(date,
                                              new FieldRotation<>(plusK, theta.negate(), RotationConvention.FRAME_TRANSFORM),
@@ -415,13 +392,11 @@ public class GroundStation {
 
         // take parametric pole shift into account
         final DerivativeStructure xp    = linearModel(factory, date,
-                                                      polarOffsetXIndex,        polarOffsetXDriver,
-                                                      polarDriftXIndex,         polarDriftXDriver);
+                                                      polarOffsetXDriver, polarDriftXDriver, indices);
         final DerivativeStructure yp    = linearModel(factory, date,
-                                                      polarOffsetYIndex,        polarOffsetYDriver,
-                                                      polarDriftYIndex,         polarDriftYDriver);
-        final DerivativeStructure xpDot = parametricModel(factory, polarDriftXIndex, polarDriftXDriver);
-        final DerivativeStructure ypDot = parametricModel(factory, polarDriftYIndex, polarDriftYDriver);
+                                                      polarOffsetYDriver, polarDriftYDriver, indices);
+        final DerivativeStructure xpDot = parametricModel(factory, polarDriftXDriver, indices);
+        final DerivativeStructure ypDot = parametricModel(factory, polarDriftYDriver, indices);
         final FieldTransform<DerivativeStructure> poleShift =
                         new FieldTransform<>(date,
                                              new FieldTransform<>(date,
@@ -432,9 +407,9 @@ public class GroundStation {
                                                              new FieldVector3D<>(field.getZero(), xpDot, field.getZero())));
 
         // take station offset into account
-        final DerivativeStructure  x          = parametricModel(factory, eastOffsetIndex,   eastOffsetDriver);
-        final DerivativeStructure  y          = parametricModel(factory, northOffsetIndex,  northOffsetDriver);
-        final DerivativeStructure  z          = parametricModel(factory, zenithOffsetIndex, zenithOffsetDriver);
+        final DerivativeStructure  x          = parametricModel(factory, eastOffsetDriver,   indices);
+        final DerivativeStructure  y          = parametricModel(factory, northOffsetDriver,  indices);
+        final DerivativeStructure  z          = parametricModel(factory, zenithOffsetDriver, indices);
         final BodyShape            baseShape  = baseFrame.getParentShape();
         final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
@@ -480,27 +455,24 @@ public class GroundStation {
     /** Evaluate a parametric linear model.
      * @param factory factory for the derivatives
      * @param date current date
-     * @param offsetIndex index of the offset in the set of
-     * free parameters in derivatives computations (negative if not used)
      * @param offsetDriver driver for the offset parameter
-     * @param driftIndex index of the drift in the set of
-     * free parameters in derivatives computations (negative if not used)
      * @param driftDriver driver for the drift parameter
+     * @param indices indices of the estimated parameters in derivatives computations
      * @return current value of the linear model
      * @exception OrekitException if reference date has not been set for the
      * offset driver
      */
     private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
-                                            final int offsetIndex, final ParameterDriver offsetDriver,
-                                            final int driftIndex,  final ParameterDriver driftDriver)
+                                            final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
+                                            final Map<String, Integer> indices)
         throws OrekitException {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
         }
         final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = parametricModel(factory, offsetIndex, offsetDriver);
-        final DerivativeStructure drift  = parametricModel(factory, driftIndex,  driftDriver);
+        final DerivativeStructure offset = parametricModel(factory, offsetDriver, indices);
+        final DerivativeStructure drift  = parametricModel(factory, driftDriver, indices);
         return dt.multiply(drift).add(offset);
     }
 
@@ -514,14 +486,14 @@ public class GroundStation {
 
     /** Evaluate a parametric model.
      * @param factory factory for the derivatives
-     * @param index index of the parameter in the set of
-     * free parameters in derivatives computations (negative if not used)
      * @param driver driver managing the parameter
+     * @param indices indices of the estimated parameters in derivatives computations
      * @return value of the parametric model
      */
-    private DerivativeStructure parametricModel(final DSFactory factory, final int index,
-                                                final ParameterDriver driver) {
-        return (index < 0) ?
+    private DerivativeStructure parametricModel(final DSFactory factory, final ParameterDriver driver,
+                                                final Map<String, Integer> indices) {
+        final Integer index = indices.get(driver.getName());
+        return (index == null) ?
              factory.constant(driver.getValue()) :
              factory.variable(index, driver.getValue());
     }

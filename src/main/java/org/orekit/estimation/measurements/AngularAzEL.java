@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -83,59 +86,11 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
 
         // get the number of parameters used for derivation
         int nbParams = 3;
-        final int primeMeridianOffsetIndex;
-        if (station.getPrimeMeridianOffsetDriver().isSelected()) {
-            primeMeridianOffsetIndex = nbParams++;
-        } else {
-            primeMeridianOffsetIndex = -1;
-        }
-        final int primeMeridianDriftIndex;
-        if (station.getPrimeMeridianDriftDriver().isSelected()) {
-            primeMeridianDriftIndex = nbParams++;
-        } else {
-            primeMeridianDriftIndex = -1;
-        }
-        final int polarOffsetXIndex;
-        if (station.getPolarOffsetXDriver().isSelected()) {
-            polarOffsetXIndex = nbParams++;
-        } else {
-            polarOffsetXIndex = -1;
-        }
-        final int polarDriftXIndex;
-        if (station.getPolarDriftXDriver().isSelected()) {
-            polarDriftXIndex = nbParams++;
-        } else {
-            polarDriftXIndex = -1;
-        }
-        final int polarOffsetYIndex;
-        if (station.getPolarOffsetYDriver().isSelected()) {
-            polarOffsetYIndex = nbParams++;
-        } else {
-            polarOffsetYIndex = -1;
-        }
-        final int polarDriftYIndex;
-        if (station.getPolarDriftYDriver().isSelected()) {
-            polarDriftYIndex = nbParams++;
-        } else {
-            polarDriftYIndex = -1;
-        }
-        final int eastOffsetIndex;
-        if (station.getEastOffsetDriver().isSelected()) {
-            eastOffsetIndex = nbParams++;
-        } else {
-            eastOffsetIndex = -1;
-        }
-        final int northOffsetIndex;
-        if (station.getNorthOffsetDriver().isSelected()) {
-            northOffsetIndex = nbParams++;
-        } else {
-            northOffsetIndex = -1;
-        }
-        final int zenithOffsetIndex;
-        if (station.getZenithOffsetDriver().isSelected()) {
-            zenithOffsetIndex = nbParams++;
-        } else {
-            zenithOffsetIndex = -1;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
+            }
         }
         final DSFactory                          factory = new DSFactory(nbParams, 1);
         final Field<DerivativeStructure>         field   = factory.getDerivativeField();
@@ -157,11 +112,7 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
                         new FieldAbsoluteDate<>(field, downlinkDate);
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory,
-                                                    primeMeridianOffsetIndex, primeMeridianDriftIndex,
-                                                    polarOffsetXIndex, polarDriftXIndex,
-                                                    polarOffsetYIndex, polarDriftYIndex,
-                                                    eastOffsetIndex, northOffsetIndex, zenithOffsetIndex);
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
 
         // Station position in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
@@ -214,34 +165,16 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
         estimated.setStateDerivatives(dAzOndP, dElOndP);
 
         // set partial derivatives with respect to parameters
-        setDerivatives(estimated, station.getPrimeMeridianOffsetDriver(), primeMeridianOffsetIndex, azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getPrimeMeridianDriftDriver(),  primeMeridianDriftIndex,  azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getPolarOffsetXDriver(),        polarOffsetXIndex,        azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getPolarDriftXDriver(),         polarDriftXIndex,         azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getPolarOffsetYDriver(),        polarOffsetYIndex,        azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getPolarDriftYDriver(),         polarDriftYIndex,         azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getEastOffsetDriver(),          eastOffsetIndex,          azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getNorthOffsetDriver(),         northOffsetIndex,         azDerivatives, elDerivatives);
-        setDerivatives(estimated, station.getZenithOffsetDriver(),        zenithOffsetIndex,        azDerivatives, elDerivatives);
+        // (beware element at index 0 is the value, not a derivative)
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, azDerivatives[index + 1], elDerivatives[index + 1]);
+            }
+        }
 
         return estimated;
 
-    }
-
-    /** Set derivatives with resptect to parameters.
-     * @param estimated estimated measurement
-     * @param driver parameter driver
-     * @param index index of the parameter in the set of
-     * free parameters in derivatives computations (negative if not used)
-     * @param azDerivatives azimuth derivatives (beware element at index 0 is the value, not a derivative)
-     * @param elDerivatives elevation derivatives (beware element at index 0 is the value, not a derivative)
-     */
-    private void setDerivatives(final EstimatedMeasurement<AngularAzEL> estimated,
-                                final ParameterDriver driver, final int index,
-                                final double[] azDerivatives, final double[] elDerivatives) {
-        if (index >= 0) {
-            estimated.setParameterDerivatives(driver, azDerivatives[index + 1], elDerivatives[index + 1]);
-        }
     }
 
 }
