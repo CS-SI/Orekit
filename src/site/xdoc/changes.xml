@@ -22,6 +22,10 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed Gaussian quadrature inconsistent with DSST theory when orbit derivatives are present.
+        Fixes issue #345.
+      </action>
+      <action dev="luc" type="fix">
         Fixed infinite recursion when attempting two orbit determinations in row.
         Fixes issue #347.
       </action>

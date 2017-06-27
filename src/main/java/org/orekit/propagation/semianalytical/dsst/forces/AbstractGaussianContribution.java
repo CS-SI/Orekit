@@ -36,6 +36,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
@@ -459,7 +460,15 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
          */
         IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) {
-            this.state = state;
+
+            // remove derivatives from state
+            final double[] stateVector = new double[6];
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
+            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                                           state.getDate(),
+                                                                           state.getMu(),
+                                                                           state.getFrame());
+            this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
             this.meanMode = meanMode;
             this.j = j;
         }
