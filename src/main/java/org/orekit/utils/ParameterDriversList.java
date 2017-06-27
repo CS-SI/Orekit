@@ -221,6 +221,9 @@ public class ParameterDriversList {
             /** Root of the current update chain. */
             private ParameterDriver root;
 
+            /** Depth of the current update chain. */
+            private int depth;
+
             /** {@inheritDoc} */
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver)
@@ -243,7 +246,7 @@ public class ParameterDriversList {
             private void updateAll(final ParameterDriver driver, final Updater updater)
                 throws OrekitException {
 
-                final boolean firstCall = root == null;
+                final boolean firstCall = depth++ == 0;
                 if (firstCall) {
                     root = driver;
                 }
@@ -260,7 +263,7 @@ public class ParameterDriversList {
                     updater.update(DelegatingDriver.this);
                 }
 
-                if (root == driver) {
+                if (--depth == 0) {
                     // this is the end of the root call
                     root = null;
                 }

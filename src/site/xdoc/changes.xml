@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed infinite recursion when attempting two orbit determinations in row.
+        Fixes issue #347.
+      </action>
       <action dev="luc" type="add" due-to="Lars Næsbye Christensen">
         Added Danish translations.
         Fixes issue #346.
