@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
+public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -55,7 +55,7 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
      * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
-    public AngularAzEL(final GroundStation station, final AbsoluteDate date,
+    public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
         super(date, angular, sigma, baseWeight,
@@ -80,7 +80,7 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<AngularAzEL> theoreticalEvaluation(final int iteration, final int evaluation,
+    protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                       final SpacecraftState state)
         throws OrekitException {
 
@@ -143,7 +143,7 @@ public class AngularAzEL extends AbstractMeasurement<AngularAzEL> {
         final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
         // prepare the estimation
-        final EstimatedMeasurement<AngularAzEL> estimated =
+        final EstimatedMeasurement<AngularAzEl> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation, transitState);
 
         // azimuth - elevation values

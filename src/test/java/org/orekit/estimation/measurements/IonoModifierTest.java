@@ -268,13 +268,13 @@ public class IonoModifierTest {
 
             final SpacecraftState refstate = propagator.propagate(date);
 
-            AngularAzEL angular = (AngularAzEL) measurement;
-            EstimatedMeasurement<AngularAzEL> evalNoMod = angular.estimate(0, 0, refstate);
+            AngularAzEl angular = (AngularAzEl) measurement;
+            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, refstate);
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEL> eval = angular.estimate(0, 0, refstate);
+            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, refstate);
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];

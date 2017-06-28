@@ -57,7 +57,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.BatchLSObserver;
-import org.orekit.estimation.measurements.AngularAzEL;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
@@ -263,7 +263,7 @@ public class OrbitDetermination {
                     final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
                     final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
                     final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
-                    final EvaluationCounter<AngularAzEL>   angularCounter   = new EvaluationCounter<AngularAzEL>();
+                    final EvaluationCounter<AngularAzEl>   angularCounter   = new EvaluationCounter<AngularAzEl>();
                     final EvaluationCounter<PV>        pvCounter        = new EvaluationCounter<PV>();
                     for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
                         if (entry.getKey() instanceof Range) {
@@ -274,9 +274,9 @@ public class OrbitDetermination {
                             @SuppressWarnings("unchecked")
                             EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
                             rangeRateCounter.add(evaluation);
-                        } else if (entry.getKey() instanceof AngularAzEL) {
+                        } else if (entry.getKey() instanceof AngularAzEl) {
                             @SuppressWarnings("unchecked")
-                            EstimatedMeasurement<AngularAzEL> evaluation = (EstimatedMeasurement<AngularAzEL>) entry.getValue();
+                            EstimatedMeasurement<AngularAzEl> evaluation = (EstimatedMeasurement<AngularAzEl>) entry.getValue();
                             angularCounter.add(evaluation);
                         } else if (entry.getKey() instanceof PV) {
                             @SuppressWarnings("unchecked")
@@ -330,9 +330,9 @@ public class OrbitDetermination {
                     @SuppressWarnings("unchecked")
                     EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
                     rangeRateLog.add(evaluation);
-                } else if (entry.getKey() instanceof AngularAzEL) {
+                } else if (entry.getKey() instanceof AngularAzEl) {
                     @SuppressWarnings("unchecked")
-                    EstimatedMeasurement<AngularAzEL> evaluation = (EstimatedMeasurement<AngularAzEL>) entry.getValue();
+                    EstimatedMeasurement<AngularAzEl> evaluation = (EstimatedMeasurement<AngularAzEl>) entry.getValue();
                     azimuthLog.add(evaluation);
                     elevationLog.add(evaluation);
                 } else if (entry.getKey() instanceof PV) {
@@ -932,11 +932,11 @@ public class OrbitDetermination {
             final double[] azELSigma = new double[] {
                 stationAzimuthSigma[i], stationElevationSigma[i]
             };
-            final Bias<AngularAzEL> azELBias;
+            final Bias<AngularAzEl> azELBias;
             if (FastMath.abs(stationAzimuthBias[i])   >= Precision.SAFE_MIN ||
                 FastMath.abs(stationElevationBias[i]) >= Precision.SAFE_MIN ||
                 stationAzElBiasesEstimated[i]) {
-                azELBias = new Bias<AngularAzEL>(new String[] {
+                azELBias = new Bias<AngularAzEl>(new String[] {
                                                  stationNames[i] + "/az bias",
                                                  stationNames[i] + "/el bias"
                                              },
@@ -1052,7 +1052,7 @@ public class OrbitDetermination {
      * @return outliers manager (null if none configured)
      * @throws OrekitException if outliers are partly configured
      */
-    private OutlierFilter<AngularAzEL> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
+    private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
         throws OrekitException {
         if (parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION)) {
@@ -1062,7 +1062,7 @@ public class OrbitDetermination {
                                       ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION.toString().toLowerCase().replace('_', '.') +
                                       " must be both present or both absent");
         }
-        return new OutlierFilter<AngularAzEL>(parser.getInt(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION),
+        return new OutlierFilter<AngularAzEl>(parser.getInt(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION),
                                           parser.getInt(ParameterKey.AZ_EL_OUTLIER_REJECTION_MULTIPLIER));
     }
 
@@ -1178,7 +1178,7 @@ public class OrbitDetermination {
                                                   final Weights weights,
                                                   final OutlierFilter<Range> rangeOutliersManager,
                                                   final OutlierFilter<RangeRate> rangeRateOutliersManager,
-                                                  final OutlierFilter<AngularAzEL> azElOutliersManager,
+                                                  final OutlierFilter<AngularAzEl> azElOutliersManager,
                                                   final OutlierFilter<PV> pvOutliersManager)
         throws UnsupportedEncodingException, IOException, OrekitException {
 
@@ -1216,7 +1216,7 @@ public class OrbitDetermination {
                             addIfNonZeroWeight(rangeRate, measurements);
                             break;
                         case "AZ_EL" :
-                            final AngularAzEL angular = new AzElParser().parseFields(fields, stations, pvData,
+                            final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData,
                                                                                  satRangeBias, weights,
                                                                                  line, lineNumber, file.getName());
                             if (azElOutliersManager != null) {
@@ -1293,7 +1293,7 @@ public class OrbitDetermination {
         private final double[] azElSigma;
 
         /** Azimuth-elevation bias (may be null if bias is fixed to zero). */
-        private final Bias<AngularAzEL> azELBias;
+        private final Bias<AngularAzEl> azELBias;
 
         /** Elevation refraction correction (may be null). */
         private final AngularRadioRefractionModifier refractionCorrection;
@@ -1315,7 +1315,7 @@ public class OrbitDetermination {
         public StationData(final GroundStation station,
                            final double rangeSigma, final Bias<Range> rangeBias,
                            final double rangeRateSigma, final Bias<RangeRate> rangeRateBias,
-                           final double[] azElSigma, final Bias<AngularAzEL> azELBias,
+                           final double[] azElSigma, final Bias<AngularAzEl> azELBias,
                            final AngularRadioRefractionModifier refractionCorrection,
                            final RangeTroposphericDelayModifier rangeTroposphericCorrection) {
             this.station                     = station;
@@ -1532,10 +1532,10 @@ public class OrbitDetermination {
     };
 
     /** Parser for azimuth-elevation measurements. */
-    private static class AzElParser extends MeasurementsParser<AngularAzEL> {
+    private static class AzElParser extends MeasurementsParser<AngularAzEl> {
         /** {@inheritDoc} */
         @Override
-        public AngularAzEL parseFields(final String[] fields,
+        public AngularAzEl parseFields(final String[] fields,
                                    final Map<String, StationData> stations,
                                    final PVData pvData,
                                    final Bias<Range> satRangeBias,
@@ -1546,7 +1546,7 @@ public class OrbitDetermination {
                                                    throws OrekitException {
             checkFields(5, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-            final AngularAzEL azEl = new AngularAzEL(stationData.station,
+            final AngularAzEl azEl = new AngularAzEl(stationData.station,
                                              getDate(fields[0], line, lineNumber, fileName),
                                              new double[] {
                                                            FastMath.toRadians(Double.parseDouble(fields[3])),
@@ -1788,7 +1788,7 @@ public class OrbitDetermination {
     }
 
     /** Logger for azimuth measurements. */
-    class AzimuthLog extends MeasurementLog<AngularAzEL> {
+    class AzimuthLog extends MeasurementLog<AngularAzEl> {
 
         /** Simple constructor.
          * @param home home directory
@@ -1810,7 +1810,7 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final EstimatedMeasurement<AngularAzEL> evaluation) {
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<AngularAzEl> evaluation) {
             final double[] theoretical = evaluation.getEstimatedValue();
             final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
@@ -1823,14 +1823,14 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final EstimatedMeasurement<AngularAzEL> evaluation) {
+        double residual(final EstimatedMeasurement<AngularAzEl> evaluation) {
             return FastMath.toDegrees(evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]);
         }
 
     }
 
     /** Logger for elevation measurements. */
-    class ElevationLog extends MeasurementLog<AngularAzEL> {
+    class ElevationLog extends MeasurementLog<AngularAzEl> {
 
         /** Simple constructor.
          * @param home home directory
@@ -1852,7 +1852,7 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final EstimatedMeasurement<AngularAzEL> evaluation) {
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<AngularAzEl> evaluation) {
             final double[] theoretical = evaluation.getEstimatedValue();
             final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
@@ -1865,7 +1865,7 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final EstimatedMeasurement<AngularAzEL> evaluation) {
+        double residual(final EstimatedMeasurement<AngularAzEl> evaluation) {
             return FastMath.toDegrees(evaluation.getEstimatedValue()[1] - evaluation.getObservedMeasurement().getObservedValue()[1]);
         }
 

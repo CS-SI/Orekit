@@ -81,7 +81,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                                                                currentState.getFrame(),
                                                                currentState.getDate());
 
-                addMeasurement(new AngularAzEL(station, date, angular, sigma, baseweight));
+                addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight));
             }
 
         }

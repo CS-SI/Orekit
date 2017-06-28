@@ -71,7 +71,7 @@ public class AngularAzElTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularAzEL) measurement).getStation();
+            final GroundStation stationParameter = ((AngularAzEl) measurement).getStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -164,7 +164,7 @@ public class AngularAzElTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((AngularAzEL) measurement).getStation();
+            final GroundStation stationParameter = ((AngularAzEl) measurement).getStation();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

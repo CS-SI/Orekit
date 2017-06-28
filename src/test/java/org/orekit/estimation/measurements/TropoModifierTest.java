@@ -222,13 +222,13 @@ public class TropoModifierTest {
 
             final SpacecraftState refState = propagator.propagate(date);
 
-            AngularAzEL angular = (AngularAzEL) measurement;
-            EstimatedMeasurement<AngularAzEL> evalNoMod = angular.estimate(0, 0, refState);
+            AngularAzEl angular = (AngularAzEl) measurement;
+            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, refState);
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEL> eval = angular.estimate(0, 0, refState);
+            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, refState);
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
@@ -268,8 +268,8 @@ public class TropoModifierTest {
 
             final SpacecraftState refState = propagator.propagate(date);
 
-            AngularAzEL angular = (AngularAzEL) measurement;
-            EstimatedMeasurement<AngularAzEL> evalNoMod = angular.estimate(0, 0, refState);
+            AngularAzEl angular = (AngularAzEl) measurement;
+            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, refState);
 
             // get the altitude of the station (in kilometers)
             final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
@@ -278,7 +278,7 @@ public class TropoModifierTest {
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEL> eval = angular.estimate(0, 0, refState);
+            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, refState);
 
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
