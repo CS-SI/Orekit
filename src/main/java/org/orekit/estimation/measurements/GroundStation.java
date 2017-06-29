@@ -138,10 +138,9 @@ public class GroundStation {
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
      * The initial values for the station offset model ({@link #getEastOffsetDriver()},
      * {@link #getNorthOffsetDriver()}, {@link #getZenithOffsetDriver()}) are set to 0.
-     * This implies that as long as these values are not changed, the {@link #getOffsetFrame()
-     * offset frame} is the same as the {@link #getBaseFrame() base frame}. As soon as some
-     * of these models are changed, the {@link #getOffsetFrame() offset frame} moves away
-     * from the {@link #getBaseFrame() base frame}.
+     * This implies that as long as these values are not changed, the offset frame is
+     * the same as the {@link #getBaseFrame() base frame}. As soon as some of these models
+     * are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
      * </p>
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
