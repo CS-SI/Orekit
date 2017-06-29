@@ -85,4 +85,19 @@ public interface OrekitStepInterpolator {
      */
     boolean isForward();
 
+    /** Create a new restricted version of the instance.
+     * <p>
+     * The instance is not changed at all.
+     * </p>
+     * @param newPreviousState start of the restricted step
+     * @param newCurrentState end of the restricted step
+     * @return restricted version of the instance
+     * @exception OrekitException if state cannot be converted
+     * @see #getPreviousState()
+     * @see #getCurrentState()
+     * @since 9.0
+     */
+    OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState)
+        throws OrekitException;
+
 }

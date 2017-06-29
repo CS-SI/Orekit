@@ -162,7 +162,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     t = target;
                 }
                 final SpacecraftState current = updateAdditionalStates(basicPropagate(t));
-                final BasicStepInterpolator interpolator = new BasicStepInterpolator(dt >= 0, previous, current);
+                final OrekitStepInterpolator interpolator = new BasicStepInterpolator(dt >= 0, previous, current);
 
 
                 // accept the step, trigger events and step handlers
@@ -188,7 +188,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @exception OrekitException if the switching function cannot be evaluated
      * @exception MathRuntimeException if an event cannot be located
      */
-    protected SpacecraftState acceptStep(final BasicStepInterpolator interpolator,
+    protected SpacecraftState acceptStep(final OrekitStepInterpolator interpolator,
                                          final AbsoluteDate target, final double epsilon)
         throws OrekitException, MathRuntimeException {
 
@@ -226,7 +226,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
         }
 
-        BasicStepInterpolator restricted = interpolator;
+        OrekitStepInterpolator restricted = interpolator;
 
         do {
 
@@ -263,7 +263,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     // this lets the user integrate to a STOP event and then restart
                     // integration from the same time.
                     eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
-                    restricted = new BasicStepInterpolator(restricted.isForward(), previous, eventState);
+                    restricted = restricted.restrictStep(previous, eventState);
                 }
 
                 // handle the first part of the step, up to the event
@@ -549,16 +549,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         BasicStepInterpolator(final boolean isForward,
                               final SpacecraftState previousState,
                               final SpacecraftState currentState) {
-            this.forward             = isForward;
+            this.forward         = isForward;
             this.previousState   = previousState;
             this.currentState    = currentState;
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState getPreviousState() {
             return previousState;
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean isPreviousStateInterpolated() {
             // no difference in analytical propagators
@@ -566,10 +568,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState getCurrentState() {
             return currentState;
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean isCurrentStateInterpolated() {
             // no difference in analytical propagators
@@ -577,6 +581,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
             throws OrekitException {
 
@@ -589,8 +594,16 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public boolean isForward() {
             return forward;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BasicStepInterpolator restrictStep(final SpacecraftState newPreviousState,
+                                                  final SpacecraftState newCurrentState) {
+            return new BasicStepInterpolator(forward, newPreviousState, newCurrentState);
         }
 
     }
