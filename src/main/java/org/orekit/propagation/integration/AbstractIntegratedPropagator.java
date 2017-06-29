@@ -963,7 +963,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
             throws OrekitException {
-            return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
+            return convert(mathInterpolator.getInterpolatedState(date.durationFrom(stateMapper.getReferenceDate())));
         }
 
         /** Convert a state from mathematical world to space flight dynamics world.

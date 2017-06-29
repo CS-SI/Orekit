@@ -141,6 +141,8 @@
       only eclipse entries and not eclipse exits)
     * possibility of filtering events based on an external enabling function (for
       example to detect events only during selected orbits and not others)
+    * possibility to run several propagators in parallel and manage their states
+       simultaneously throughout propagation
 
   * Attitude
 

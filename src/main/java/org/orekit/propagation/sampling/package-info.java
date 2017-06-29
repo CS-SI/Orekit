@@ -17,6 +17,7 @@
 /**
  *
  * This package provides interfaces and classes dealing with step handling during propagation.
+ * <p>
  * It is used when a {@link org.orekit.propagation.Propagator Propagator} is run in
  * {@link org.orekit.propagation.Propagator#MASTER_MODE master mode}. In this mode, the
  * (master) propagator integration loop calls (slave) application callback methods at each
@@ -24,6 +25,21 @@
  * org.orekit.propagation.sampling.OrekitFixedStepHandler} interface for fixed step sampling or
  * the {@link org.orekit.propagation.sampling.OrekitStepHandler} interface for variable step
  * sampling.
+ * </p>
+ *
+ * <p>
+ * Both regular propagators using double numbers for state components and field based propagators
+ * using any kind of {@link org.hipparchus.RealFieldElement field} are available. A typical
+ * example is to use {@link org.hipparchus.analysis.differentiation.DerivativeStructure derivative
+ * structure} objects to propagate orbits using Taylor Algebra, for either high order uncertainties
+ * propagation or very fast Monte-Carlo simulations.
+ * </p>
+ *
+ * <p>
+ * The {@link org.orekit.propagation.PropagatorsParallelizer PropagatorsParallelizer} class can
+ * be used to propagate orbits for several spacecrafts simultaneously, which can be useful for
+ * formation flying or orbit determination for complete navigation constellations.
+ * </p>
  *
  * <p>
  * The low level interfaces and classes (<code>OrekitXxx</code>)
