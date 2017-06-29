@@ -288,6 +288,25 @@ public class GroundStation {
         return baseFrame;
     }
 
+    /** Get the geodetic point at the center of the offset frame.
+     * @return geodetic point at the center of the offset frame
+     * @exception OrekitException if frames transforms cannot be computed
+     */
+    public GeodeticPoint getOffsetGeodeticPoint()
+        throws OrekitException {
+
+        // take station offset into account
+        final double    x          = parametricModel(eastOffsetDriver);
+        final double    y          = parametricModel(northOffsetDriver);
+        final double    z          = parametricModel(zenithOffsetDriver);
+        final BodyShape baseShape  = baseFrame.getParentShape();
+        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
+        final Vector3D  origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+
+        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+
+    }
+
     /** Get the transform between offset frame and inertial frame.
      * <p>
      * The offset frame takes the <em>current</em> position offset,

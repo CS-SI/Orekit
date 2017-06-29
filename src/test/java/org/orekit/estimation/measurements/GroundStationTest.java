@@ -129,6 +129,11 @@ public class GroundStationTest {
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
+        GeodeticPoint result = moved.getOffsetGeodeticPoint();
+        GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
+        Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  6.5e-15);
+        Assert.assertEquals(reference.getLongitude(), result.getLongitude(), 1.5e-14);
+        Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  1.6e-7);
     }
 
     @Test
