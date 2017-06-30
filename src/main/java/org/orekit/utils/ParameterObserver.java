@@ -49,4 +49,18 @@ public interface ParameterObserver {
         // nothing by default
     }
 
+    /** Notify that a parameter name has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousName previous name
+     * @param driver parameter driver that has been changed
+     * @exception OrekitException if name is invalid for the driven model
+     * @since 9.0
+     */
+    default void nameChanged(final String previousName, final ParameterDriver driver)
+        throws OrekitException {
+        // nothing by default
+    }
+
 }

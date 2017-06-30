@@ -56,7 +56,7 @@ import org.orekit.time.AbsoluteDate;
 public class ParameterDriver {
 
     /** Name of the parameter. */
-    private final String name;
+    private String name;
 
     /** Reference value. */
     private final double referenceValue;
@@ -138,6 +138,19 @@ public class ParameterDriver {
         throws OrekitException {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
+    }
+
+    /** Change the name of this parameter driver.
+     * @param name new name
+     * @exception OrekitException if an observer throws one
+     */
+    public void setName(final String name)
+        throws OrekitException {
+        final String previousName = this.name;
+        this.name = name;
+        for (final ParameterObserver observer : observers) {
+            observer.nameChanged(previousName, this);
+        }
     }
 
     /** Get name.

@@ -238,6 +238,13 @@ public class ParameterDriversList {
                 updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
             }
 
+            /** {@inheritDoc} */
+            @Override
+            public void nameChanged(final String previousName, final ParameterDriver driver)
+                throws OrekitException {
+                updateAll(driver, d -> d.setName(driver.getName()));
+            }
+
             /** Update all bound parameters.
              * @param driver driver triggering the update
              * @param updater updater to use

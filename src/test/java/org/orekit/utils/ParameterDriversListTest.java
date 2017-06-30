@@ -61,6 +61,18 @@ public class ParameterDriversListTest {
         Assert.assertEquals(-0.5, delegating21.getValue(), 1.0e-15);
         Assert.assertEquals(-0.5, delegating22.getValue(), 1.0e-15);
 
+        // downward settings, from top delegating driver to raw drivers and back to other list top
+        delegating11.setName("q1");
+        Assert.assertEquals("q1", p1A.getName());
+        Assert.assertEquals("q1", p1B.getName());
+        Assert.assertEquals("q1", delegating12.getName());
+
+        // upward settings, starting from raw drivers
+        p2A.setName("q2");
+        Assert.assertEquals("q2", p2B.getName());
+        Assert.assertEquals("q2", delegating21.getName());
+        Assert.assertEquals("q2", delegating22.getName());
+
     }
 
     private DelegatingDriver select(String name, ParameterDriversList list) {
