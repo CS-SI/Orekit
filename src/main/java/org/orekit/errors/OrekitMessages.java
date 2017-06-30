@@ -155,11 +155,15 @@ public enum OrekitMessages implements Localizable {
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED("use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
     CCSDS_NO_CORRESPONDING_TIME_SCALE("the CCSDS time system {0} has no corresponding Orekit TimeScale."),
     CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} ≠ {1}"),
-    CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file {0} at line {1}.\n" +
+    CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file at line {0} of file {1}.\n" +
                                      "A TDM data line should be as follows \"keyword = epoch value\".\n" +
                                      "Whereas read data line is: {2}"),
+    CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK("Inconsistent XML observation block at line {0} of TDM file {1}.\n" +
+                                         "A TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n" +
+                                         "\t\t<KEYWORD>value</KEYWORD>\n\t</observation>"),
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Parameter {0} needs a time system to be interpreted"),
+    CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -286,7 +290,5 @@ public enum OrekitMessages implements Localizable {
             }
             return bundle;
         }
-
     }
-
 }

@@ -27,21 +27,23 @@ public class KeyValueTest {
     @Test
     public void testUppercase() {
         for (final Keyword keyword : Keyword.values()) {
-            KeyValue kv = new KeyValue("  " + keyword + " = " + "aaa", 12, "dummy");
-            Assert.assertEquals(keyword, kv.getKeyword());
-            Assert.assertEquals(keyword.toString(), kv.getKey());
-            if (keyword == Keyword.COMMENT) {
-                Assert.assertEquals("aaa", kv.getValue());
-            } else {
-                Assert.assertEquals("AAA", kv.getValue());
-            }
-            try {
-                kv.getDoubleValue();
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-                Assert.assertEquals(12, ((Integer) oe.getParts()[0]).intValue());
-                Assert.assertEquals("dummy", ((String) oe.getParts()[1]));
+            if (keyword.toString().toUpperCase().equals(keyword.toString())) {
+                KeyValue kv = new KeyValue("  " + keyword + " = " + "aaa", 12, "dummy");
+                Assert.assertEquals(keyword, kv.getKeyword());
+                Assert.assertEquals(keyword.toString(), kv.getKey());
+                if (keyword == Keyword.COMMENT) {
+                    Assert.assertEquals("aaa", kv.getValue());
+                } else {
+                    Assert.assertEquals("AAA", kv.getValue());
+                }
+                try {
+                    kv.getDoubleValue();
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+                    Assert.assertEquals(12, ((Integer) oe.getParts()[0]).intValue());
+                    Assert.assertEquals("dummy", ((String) oe.getParts()[1]));
+                }
             }
         }
     }

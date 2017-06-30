@@ -380,16 +380,16 @@ public class TDMFile {
         /** Turn-around ratio numerator.<p>
          *  Numerator of the turn-around ratio that is necessary to calculate the coherent downlink from the uplink frequency.
          */
-        private int turnAroundNumerator;
+        private int turnaroundNumerator;
 
         /** Turn-around ratio denominator .*/
-        private int turnAroundDenominator;
+        private int turnaroundDenominator;
 
         /** Timetag reference.<p>
          *  Provides a reference for time tags in the tracking data.<p>
          *  It indicates whether the timetag associated with the data is the transmit time or the receive time.
          */
-        private String timeTagRef;
+        private String timetagRef;
 
         /** Integration interval. <p>
          *  Provides the Doppler count time in seconds for Doppler data or for the creation
@@ -688,46 +688,46 @@ public class TDMFile {
             this.receiveBand = receiveBand;
         }
 
-        /** Getter for the turnAroundNumerator.
-         * @return the turnAroundNumerator
+        /** Getter for the turnaroundNumerator.
+         * @return the turnaroundNumerator
          */
-        public int getTurnAroundNumerator() {
-            return turnAroundNumerator;
+        public int getTurnaroundNumerator() {
+            return turnaroundNumerator;
         }
 
-        /** Setter for the turnAroundNumerator.
-         * @param turnAroundNumerator the turnAroundNumerator to set
+        /** Setter for the turnaroundNumerator.
+         * @param turnaroundNumerator the turnaroundNumerator to set
          */
-        public void setTurnAroundNumerator(final int turnAroundNumerator) {
-            this.turnAroundNumerator = turnAroundNumerator;
+        public void setTurnaroundNumerator(final int turnaroundNumerator) {
+            this.turnaroundNumerator = turnaroundNumerator;
         }
 
-        /** Getter for the turnAroundDenominator.
-         * @return the turnAroundDenominator
+        /** Getter for the turnaroundDenominator.
+         * @return the turnaroundDenominator
          */
-        public int getTurnAroundDenominator() {
-            return turnAroundDenominator;
+        public int getTurnaroundDenominator() {
+            return turnaroundDenominator;
         }
 
-        /** Setter for the turnAroundDenominator.
-         * @param turnAroundDenominator the turnAroundDenominator to set
+        /** Setter for the turnaroundDenominator.
+         * @param turnaroundDenominator the turnaroundDenominator to set
          */
-        public void setTurnAroundDenominator(final int turnAroundDenominator) {
-            this.turnAroundDenominator = turnAroundDenominator;
+        public void setTurnaroundDenominator(final int turnaroundDenominator) {
+            this.turnaroundDenominator = turnaroundDenominator;
         }
 
-        /** Getter for the timeTagRef.
-         * @return the timeTagRef
+        /** Getter for the timetagRef.
+         * @return the timetagRef
          */
-        public String getTimeTagRef() {
-            return timeTagRef;
+        public String getTimetagRef() {
+            return timetagRef;
         }
 
-        /** Setter for the timeTagRef.
-         * @param timeTagRef the timeTagRef to set
+        /** Setter for the timetagRef.
+         * @param timetagRef the timetagRef to set
          */
-        public void setTimeTagRef(final String timeTagRef) {
-            this.timeTagRef = timeTagRef;
+        public void setTimetagRef(final String timetagRef) {
+            this.timetagRef = timetagRef;
         }
 
         /** Getter for the integrationInterval.
@@ -1026,6 +1026,5 @@ public class TDMFile {
         public void setComment(final List<String> comment) {
             this.comment = new ArrayList<>(comment);
         }
-
     }
 }

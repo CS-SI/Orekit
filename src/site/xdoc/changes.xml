@@ -68,7 +68,7 @@
         Added parsing of University of Bern Astronomical Institute files for α and β Klobuchar coefficients.
       </action>
       <action dev="luc" type="add" due-to="Maxime Journot">
-        Added parsing of CCSDS TDM (Tracking Data Messages) files.
+        Added parsing of CCSDS TDM (Tracking Data Messages) files, both text and XML.
       </action>
       <action dev="luc" type="fix" due-to="Florentin-Alin Butu">
         Fixed lighting ratio in solar radiation pressure for interplanetary trajectories.

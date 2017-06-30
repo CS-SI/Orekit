@@ -150,13 +150,13 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // Turn around range derivatives are computed with respect to:
         // - Spacecraft state in inertial frame
-        // - Master station position in master station's offset frame
-        // - Slave station position in slave station's offset frame
-        // -------
+        // - Master station parameters
+        // - Slave station parameters
+        // --------------------------
         //
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - stations parameters (station offsets, pole, prime meridian...)
+        //  - 6..n - stations' parameters (stations' offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {

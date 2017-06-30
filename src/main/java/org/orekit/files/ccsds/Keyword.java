@@ -545,7 +545,7 @@ public enum Keyword {
     /** Data: TROPO WET [m].<p>
      * Wet zenith delay through the troposphere measured at the timetag.
      */
-    TROP_WET,
+    TROPO_WET,
 
     // Meteorological Related Keywords
     /** Data: Pressure [hPa].<p>
@@ -561,11 +561,25 @@ public enum Keyword {
      */
     TEMPERATURE,
 
-    // Miscellaneous keywords
-    /** Keyword used to delineate the start of a Data block. */
+    // Miscellaneous KEYVALUE keywords
+    /** Keyword used to delineate the start of a Data block in Keyvalue files. */
     DATA_START,
+    /** Keyword used to delineate the end of a Data block in Keyvalue files.. */
+    DATA_STOP,
 
-    /** Keyword used to delineate the end of a Data block. */
-    DATA_STOP;
-
+    // XML TDM start/end keywords
+    /** TDM first keyword. */
+    tdm,
+    /** Header keyword. */
+    header,
+    /** Body keyword. */
+    body,
+    /** Segment keyword. */
+    segment,
+    /** Meta-data keyword. */
+    metadata,
+    /** Data keyword. */
+    data,
+    /** Observation keyword. */
+    observation;
 }

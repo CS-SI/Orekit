@@ -316,7 +316,7 @@ CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporais inconsistentes nos bloq
 # Inconsistent time systems in the observations blocks: {0} ≠ {1}
 CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
-# Inconsistent data line in TDM file {0} at line {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
 CCSDS_TDM_INCONSISTENT_DATA_LINE = <MISSING TRANSLATION>
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
@@ -324,6 +324,12 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = <MISSING TRANSLATION>
 
 # Parameter {0} needs a time system to be interpreted
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+
+# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = <MISSING TRANSLATION>
+
+# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+CCSDS_TDM_UNKNOWN_FORMAT = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = o nome {0} xa está empregado por un estado adicional
