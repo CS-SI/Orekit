@@ -13,7 +13,7 @@ import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Unit tests for {@link BooleanDetector#or(EventDetector...)}.
+ * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
  *
  * @author Evan Ward
  */
@@ -34,7 +34,7 @@ public class OrDetectorTest {
         a = new MockDetector();
         b = new MockDetector();
         s = null;
-        or = BooleanDetector.or(a, b);
+        or = BooleanDetector.orCombine(a, b);
     }
 
     /**
@@ -111,7 +111,7 @@ public class OrDetectorTest {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
-        BooleanDetector or = BooleanDetector.or(a, b);
+        BooleanDetector or = BooleanDetector.orCombine(a, b);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
         Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
@@ -129,7 +129,7 @@ public class OrDetectorTest {
     public void testZeroDetectors() {
         // action
         try {
-            BooleanDetector.or(Collections.emptyList());
+            BooleanDetector.orCombine(Collections.emptyList());
             Assert.fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected

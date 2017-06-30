@@ -34,7 +34,7 @@ public class AndDetectorTest {
         a = new MockDetector();
         b = new MockDetector();
         s = null;
-        and = BooleanDetector.and(a, b);
+        and = BooleanDetector.andCombine(a, b);
     }
 
     /**
@@ -107,7 +107,7 @@ public class AndDetectorTest {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
-        BooleanDetector and = BooleanDetector.and(a, b);
+        BooleanDetector and = BooleanDetector.andCombine(a, b);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
         Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
@@ -125,7 +125,7 @@ public class AndDetectorTest {
     public void testZeroDetectors() {
         // action
         try {
-            BooleanDetector.and(Collections.emptyList());
+            BooleanDetector.andCombine(Collections.emptyList());
             Assert.fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
