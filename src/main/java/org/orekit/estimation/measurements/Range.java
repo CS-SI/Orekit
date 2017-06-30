@@ -120,8 +120,8 @@ public class Range extends AbstractMeasurement<Range> {
         final SpacecraftState state = states[0];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
-        // and station position in station's offset frame
-        // -------
+        // and station parameters
+        // ----------------------
         //
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
