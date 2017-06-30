@@ -140,22 +140,7 @@ public class PropagatorsParallelizer {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
-            propagators.get(0).setMasterMode(new OrekitStepHandler() {
-
-                /** {@inheritDoc} */
-                @Override
-                public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
-                    globalHandler.init(Collections.singletonList(s0), target);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-                    throws OrekitException {
-                    globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
-                }
-
-            });
+            propagators.get(0).setMasterMode(new SinglePropagatorHandler(globalHandler));
             return Collections.singletonList(propagators.get(0).propagate(start, target));
         }
 
@@ -165,23 +150,20 @@ public class PropagatorsParallelizer {
         // set up queues for propagators synchronization
         // the main thread will let underlying propagators go forward
         // by consuming the step handling parameters they will put at each step
-        final List<SynchronousQueue<StepHandlingParameters>> queues = new ArrayList<>(n);
+        final List<SynchronousQueue<SpacecraftState>>        initQueues = new ArrayList<>(n);
+        final List<SynchronousQueue<StepHandlingParameters>> shpQueues  = new ArrayList<>(n);
         for (final Propagator propagator : propagators) {
-            final SynchronousQueue<StepHandlingParameters> queue = new SynchronousQueue<>();
-            queues.add(queue);
-            propagator.setMasterMode((interpolator, isLast) -> {
-                try {
-                    queue.put(new StepHandlingParameters(interpolator, isLast));
-                } catch (InterruptedException ie) {
-                    // use a dedicated exception to stop thread almost gracefully
-                    throw new PropagatorStoppingException(ie);
-                }
-            });
+            final SynchronousQueue<SpacecraftState>        initQueue = new SynchronousQueue<>();
+            initQueues.add(initQueue);
+            final SynchronousQueue<StepHandlingParameters> shpQueue  = new SynchronousQueue<>();
+            shpQueues.add(shpQueue);
+            propagator.setMasterMode(new MultiplePropagatorsHandler(initQueue, shpQueue));
         }
 
         // concurrently run all propagators
         final ExecutorService               executorService        = Executors.newFixedThreadPool(n);
         final List<Future<SpacecraftState>> futures                = new ArrayList<>(n);
+        final List<SpacecraftState>         initialStates          = new ArrayList<>(n);
         final List<StepHandlingParameters>  stepHandlingParameters = new ArrayList<>(n);
         final List<OrekitStepInterpolator>  restricted             = new ArrayList<>(n);
         final List<SpacecraftState>         finalStates            = new ArrayList<>(n);
@@ -189,13 +171,15 @@ public class PropagatorsParallelizer {
             final Propagator propagator = propagators.get(i);
             final Future<SpacecraftState> future = executorService.submit(() -> propagator.propagate(start, target));
             futures.add(future);
-            stepHandlingParameters.add(getParameters(i, future, queues.get(i)));
+            initialStates.add(getParameters(i, future, initQueues.get(i)));
+            stepHandlingParameters.add(getParameters(i, future, shpQueues.get(i)));
             restricted.add(null);
             finalStates.add(null);
         }
 
         // main loop
         AbsoluteDate previousDate = start;
+        globalHandler.init(initialStates, target);
         for (boolean isLast = false; !isLast;) {
 
             // select the earliest ending propagator, according to propagation direction
@@ -226,7 +210,7 @@ public class PropagatorsParallelizer {
             if (!isLast) {
                 // advance one step
                 stepHandlingParameters.set(selected,
-                                           getParameters(selected, futures.get(selected), queues.get(selected)));
+                                           getParameters(selected, futures.get(selected), shpQueues.get(selected)));
             }
 
             previousDate = selectedStepEnd;
@@ -256,19 +240,20 @@ public class PropagatorsParallelizer {
 
     }
 
-    /** Retrieve step handling parameters.
+    /** Retrieve parameters.
      * @param index index of the propagator
      * @param future propagation task
-     * @param queue queue for transferring step handling parameters
+     * @param queue queue for transferring parameters
+     * @param <T> type of the parameters
      * @return retrieved parameters
      * @exception OrekitException if tasks stops before parameters are available
      */
-    private StepHandlingParameters getParameters(final int index,
-                                                 final Future<SpacecraftState> future,
-                                                 final SynchronousQueue<StepHandlingParameters> queue)
+    private <T> T getParameters(final int index,
+                                final Future<SpacecraftState> future,
+                                final SynchronousQueue<T> queue)
         throws OrekitException {
         try {
-            StepHandlingParameters params = null;
+            T params = null;
             while (params == null && !future.isDone()) {
                 params = queue.poll(MAX_WAIT, TimeUnit.MILLISECONDS);
             }
@@ -314,6 +299,80 @@ public class PropagatorsParallelizer {
          */
         PropagatorStoppingException(final InterruptedException ie) {
             super(ie, LocalizedCoreFormats.SIMPLE_MESSAGE, ie.getLocalizedMessage());
+        }
+
+    }
+
+    /** Local class for handling single propagator steps. */
+    private static class SinglePropagatorHandler implements OrekitStepHandler {
+
+        /** Global handler. */
+        private final MultiSatStepHandler globalHandler;
+
+        /** Simple constructor.
+         * @param globalHandler global handler to call
+         */
+        SinglePropagatorHandler(final MultiSatStepHandler globalHandler) {
+            this.globalHandler = globalHandler;
+        }
+
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+            globalHandler.init(Collections.singletonList(s0), t);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
+            throws OrekitException {
+            globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
+        }
+
+    }
+
+    /** Local class for handling multiple propagator steps. */
+    private static class MultiplePropagatorsHandler implements OrekitStepHandler {
+
+        /** Queue for passing initial state. */
+        private final SynchronousQueue<SpacecraftState> initQueue;
+
+        /** Queue for passing step handling parameters. */
+        private final SynchronousQueue<StepHandlingParameters> shpQueue;
+
+        /** Simple constructor.
+         * @param initQueue queuefor passing initial state
+         * @param shpQueue queue for passing step handling parameters.
+         */
+        MultiplePropagatorsHandler(final SynchronousQueue<SpacecraftState> initQueue,
+                                   final SynchronousQueue<StepHandlingParameters> shpQueue) {
+            this.initQueue = initQueue;
+            this.shpQueue  = shpQueue;
+        }
+
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+            try {
+                initQueue.put(s0);
+            } catch (InterruptedException ie) {
+                // use a dedicated exception to stop thread almost gracefully
+                throw new PropagatorStoppingException(ie);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
+                        throws OrekitException {
+            try {
+                shpQueue.put(new StepHandlingParameters(interpolator, isLast));
+            } catch (InterruptedException ie) {
+                // use a dedicated exception to stop thread almost gracefully
+                throw new PropagatorStoppingException(ie);
+            }
         }
 
     }
