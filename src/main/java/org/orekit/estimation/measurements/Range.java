@@ -56,6 +56,11 @@ public class Range extends AbstractMeasurement<Range> {
     private final GroundStation station;
 
     /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param range observed value
@@ -67,7 +72,25 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, range, sigma, baseWeight,
+        this(station, date, range, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public Range(final GroundStation station, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final int propagatorIndex)
+        throws OrekitException {
+        super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver(),
@@ -91,8 +114,10 @@ public class Range extends AbstractMeasurement<Range> {
     @Override
     protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
-                                                                final SpacecraftState state)
+                                                                final SpacecraftState[] states)
         throws OrekitException {
+
+        final SpacecraftState state = states[0];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
@@ -178,7 +203,10 @@ public class Range extends AbstractMeasurement<Range> {
                                                                     transitStateDS.getDate());
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                                                        new SpacecraftState[] {
+                                                            transitState
+                                                        });
 
         // Range value
         final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

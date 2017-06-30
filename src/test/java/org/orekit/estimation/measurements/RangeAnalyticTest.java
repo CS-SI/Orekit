@@ -401,12 +401,12 @@ public class RangeAnalyticTest {
                         // Compute a reference value using finite differences
                         jacobianRef = EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
-                                return measurement.estimate(0, 0, state).getEstimatedValue();
+                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }
                         }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
-                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
                     }
 
 //                    //Test: Test point by point with the debugger
@@ -575,7 +575,7 @@ public class RangeAnalyticTest {
                     }
 
                     for (int i = 0; i < 3; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 

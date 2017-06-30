@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 8.0
  */
-class MeasurementHandler implements OrekitStepHandler {
+class MeasurementHandler implements MultiSatStepHandler {
 
     /** Least squares model. */
     private final Model model;
@@ -55,16 +55,18 @@ class MeasurementHandler implements OrekitStepHandler {
         this.precompensated = precompensated;
     }
 
+    /**
+
     /** {@inheritDoc} */
     @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+    public void init(final List<SpacecraftState> initialStates, final AbsoluteDate target) {
         number = 0;
         index  = 0;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
+    public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast)
         throws OrekitException {
 
         while (number < precompensated.size()) {
@@ -72,7 +74,7 @@ class MeasurementHandler implements OrekitStepHandler {
             // consider the next measurement to handle
             final PreCompensation next = precompensated.get(number);
 
-            if (next.getDate().compareTo(interpolator.getCurrentState().getDate()) > 0) {
+            if (next.getDate().compareTo(interpolators.get(0).getCurrentState().getDate()) > 0) {
                 // the next date is past the end of the interpolator,
                 // it will be picked-up in a future step
                 if (isLast) {
@@ -86,10 +88,14 @@ class MeasurementHandler implements OrekitStepHandler {
             final ObservedMeasurement<?> observed = next.getMeasurement();
 
             // estimate the theoretical measurement
-            final SpacecraftState         state     = interpolator.getInterpolatedState(next.getDate());
+            final List<Integer>           indices  = observed.getPropagatorsIndices();
+            final SpacecraftState[]       states   = new SpacecraftState[indices.size()];
+            for (int i = 0; i < states.length; ++i) {
+                states[i] = interpolators.get(i).getInterpolatedState(next.getDate());
+            }
             final EstimatedMeasurement<?> estimated = observed.estimate(model.getIterationsCount(),
                                                                         model.getEvaluationsCount(),
-                                                                        state);
+                                                                        states);
 
             // fetch the evaluated measurement to the estimator
             model.fetchEvaluatedMeasurement(index, estimated);

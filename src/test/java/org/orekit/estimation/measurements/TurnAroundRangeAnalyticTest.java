@@ -402,12 +402,12 @@ public class TurnAroundRangeAnalyticTest {
                 // Compute a reference value using finite differences
                 jacobianRef = EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.estimate(0, 0, state).getEstimatedValue();
+                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                 }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
-                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
             }
 
 //            //Test: Test point by point with the debugger
@@ -601,13 +601,13 @@ public class TurnAroundRangeAnalyticTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                            return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
                                     }, drivers[i], 3, 20.0);
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i])[0];
                 }
 
                 // Deltas

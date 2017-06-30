@@ -197,7 +197,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   transitStateLeg2.shiftedBy(-tSu));
+                                                   new SpacecraftState[] { transitStateLeg2.shiftedBy(-tSu) });
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -712,7 +712,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
+                                                   new SpacecraftState[] { transitStateLeg2.shiftedBy(-slaveTauU.getValue()) });
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

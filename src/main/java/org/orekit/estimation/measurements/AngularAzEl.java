@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,11 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     private final GroundStation station;
 
     /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param angular observed value
@@ -58,7 +64,25 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
-        super(date, angular, sigma, baseWeight,
+        this(station, date, angular, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param angular observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public AngularAzEl(final GroundStation station, final AbsoluteDate date,
+                       final double[] angular, final double[] sigma, final double[] baseWeight,
+                       final int propagatorIndex)
+        throws OrekitException {
+        super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver(),
@@ -81,8 +105,10 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                      final SpacecraftState state)
+                                                                      final SpacecraftState[] states)
         throws OrekitException {
+
+        final SpacecraftState state = states[0];
 
         // get the number of parameters used for derivation
         int nbParams = 3;
@@ -144,7 +170,10 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
         // prepare the estimation
         final EstimatedMeasurement<AngularAzEl> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       transitState
+                                                   });
 
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());

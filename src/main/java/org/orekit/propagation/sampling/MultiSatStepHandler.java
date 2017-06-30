@@ -52,6 +52,10 @@ public interface MultiSatStepHandler {
     }
 
     /** Handle the current step.
+     * <p>
+     * When called by {@link org.orekit.propagation.PropagatorsParallelizer PropagatorsParallelizer},
+     * all interpolators have the same time range.
+     * </p>
      * @param interpolators interpolators set up for the current step in the same order
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#MultiSatPropagator(List)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}

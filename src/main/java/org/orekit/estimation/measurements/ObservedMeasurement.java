@@ -131,6 +131,19 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      */
     List<ParameterDriver> getParametersDrivers();
 
+    /** Get the indices of the {@link org.orekit.propagation.Propagator propagators}
+     * related to this measurement.
+     * <p>
+     * The propagators are indexed starting from 0 and ordered according to
+     * the order of the {@link org.orekit.propoagation.conversion.PropagatorBuilder
+     * propagators builders} in the orbit determination engine used.
+     * </p>
+     * @return indices of the {@link org.orekit.propagation.Propagator propagators}
+     * related to this measurement
+     * @since 9.0
+     */
+    List<Integer> getPropagatorsIndices();
+
     /** Estimate the theoretical value of the measurement.
      * <p>
      * The estimated value is the <em>combination</em> of the raw estimated
@@ -138,11 +151,11 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * </p>
      * @param iteration iteration number
      * @param evaluation evaluations number
-     * @param state orbital state at measurement date
+     * @param states orbital states at measurement date
      * @return estimated measurement
      * @exception OrekitException if value cannot be computed
      */
-    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState state)
+    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states)
         throws OrekitException;
 
 }

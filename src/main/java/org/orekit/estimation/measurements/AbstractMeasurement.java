@@ -36,6 +36,11 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;
 
+    /** Indices of the propagators related to this measurement.
+     * @since 9.0
+     */
+    private final List<Integer> propagatorsIndices;
+
     /** Date of the measurement. */
     private final AbsoluteDate date;
 
@@ -62,10 +67,12 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
+                                  final List<Integer> propagatorsIndices,
                                   final ParameterDriver... supportedParameters) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
@@ -84,6 +91,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
             baseWeight
         };
 
+        this.propagatorsIndices = propagatorsIndices;
+
         this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
 
@@ -97,10 +106,12 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
+                                  final List<Integer> propagatorsIndices,
                                   final ParameterDriver... supportedParameters) {
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
@@ -111,6 +122,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
         this.baseWeight = baseWeight.clone();
+
+        this.propagatorsIndices = propagatorsIndices;
 
         this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
@@ -153,27 +166,33 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return baseWeight.clone();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<Integer> getPropagatorsIndices() {
+        return propagatorsIndices;
+    }
+
     /** Estimate the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param iteration iteration number
      * @param evaluation evaluation number
-     * @param state orbital state at measurement date
+     * @param states orbital states at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #estimate(int, int, SpacecraftState)
      */
-    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState state)
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState state)
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states)
         throws OrekitException {
 
         // compute the theoretical value
-        final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, state);
+        final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, states);
 
         // apply the modifiers
         for (final EstimationModifier<T> modifier : modifiers) {

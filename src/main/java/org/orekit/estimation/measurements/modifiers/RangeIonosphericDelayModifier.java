@@ -169,7 +169,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
         throws OrekitException {
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
-        final SpacecraftState state       = estimated.getState();
+        final SpacecraftState state       = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 

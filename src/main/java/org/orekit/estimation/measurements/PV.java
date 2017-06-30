@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -49,6 +51,11 @@ public class PV extends AbstractMeasurement<PV> {
      * <p>
      * The measurement must be in the orbit propagation frame.
      * </p>
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param date date of the measurement
      * @param position position
      * @param velocity velocity
@@ -58,6 +65,25 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double sigmaPosition, final double sigmaVelocity, final double baseWeight) {
+        this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * The measurement must be in the orbit propagation frame.
+     * </p>
+     * @param date date of the measurement
+     * @param position position
+     * @param velocity velocity
+     * @param sigmaPosition theoretical standard deviation on position components
+     * @param sigmaVelocity theoretical standard deviation on velocity components
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @since 9.0
+     */
+    public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
+              final double sigmaPosition, final double sigmaVelocity, final double baseWeight,
+              final int propagatorIndex) {
         super(date,
               new double[] {
                   position.getX(), position.getY(), position.getZ(),
@@ -68,7 +94,7 @@ public class PV extends AbstractMeasurement<PV> {
               }, new double[] {
                   baseWeight, baseWeight, baseWeight,
                   baseWeight, baseWeight, baseWeight
-              });
+              }, Arrays.asList(propagatorIndex));
     }
 
     /** Get the position.
@@ -90,15 +116,15 @@ public class PV extends AbstractMeasurement<PV> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                             final SpacecraftState state)
+                                                             final SpacecraftState[] states)
         throws OrekitException {
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =
-                        new EstimatedMeasurement<PV>(this, iteration, evaluation, state);
+                        new EstimatedMeasurement<PV>(this, iteration, evaluation, states);
 
         // PV value
-        final PVCoordinates pv = state.getPVCoordinates();
+        final PVCoordinates pv = states[0].getPVCoordinates();
         estimated.setEstimatedValue(new double[] {
             pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
             pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()

@@ -1004,21 +1004,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // secondary part of the ODE
             final double[][] secondary    = new double[additionalEquations.size()][];
-            final double[][] secondaryDot = new double[additionalEquations.size()][];
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final AdditionalEquations additional = additionalEquations.get(i);
                 secondary[i] = state.getAdditionalState(additional.getName());
-                final double[] additionalMainDot = additional.computeDerivatives(state, secondaryDot[i]);
-                if (additionalMainDot != null) {
-                    for (int k = 0; k < additionalMainDot.length; ++k) {
-                        primaryDot[k] += additionalMainDot[k];
-                    }
-                }
             }
 
             return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
                                              primary, primaryDot,
-                                             secondary, secondaryDot);
+                                             secondary, null);
 
         }
 

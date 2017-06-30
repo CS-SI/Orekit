@@ -97,8 +97,8 @@ public class GroundStationTest {
                                                                            base.getName() + movedSuffix));
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
             final String name = range.getStation().getBaseFrame().getName() + movedSuffix;
@@ -121,7 +121,7 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 7.6e-7,
+                                     0.0, 1.5e-6,
                                      0.0, 2.1e-6,
                                      0.0, 1.4e-6,
                                      0.0, 6.2e-10);
@@ -196,8 +196,8 @@ public class GroundStationTest {
         final NumericalPropagatorBuilder zeroPropagatorBuilder =
                         linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        final BatchLSEstimator estimator = new BatchLSEstimator(zeroPropagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                zeroPropagatorBuilder);
         for (final ObservedMeasurement<?> linearMeasurement : linearMeasurements) {
             Range linearRange = (Range) linearMeasurement;
             for (final GroundStation station : zeroEOPContext.stations) {

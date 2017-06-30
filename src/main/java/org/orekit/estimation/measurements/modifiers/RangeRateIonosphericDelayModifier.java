@@ -206,7 +206,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
-        final SpacecraftState state       = estimated.getState();
+        final SpacecraftState state       = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 

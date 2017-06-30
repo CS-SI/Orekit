@@ -56,6 +56,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     private final boolean twoway;
 
     /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
@@ -71,7 +76,29 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double baseWeight,
                      final boolean twoway)
         throws OrekitException {
-        super(date, rangeRate, sigma, baseWeight,
+        this(station, date, rangeRate, sigma, baseWeight, twoway, 0);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value, m/s
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public RangeRate(final GroundStation station, final AbsoluteDate date,
+                     final double rangeRate,
+                     final double sigma,
+                     final double baseWeight,
+                     final boolean twoway,
+                     final int propagatorIndex)
+        throws OrekitException {
+        super(date, rangeRate, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver(),
@@ -95,8 +122,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                    final SpacecraftState state)
+                                                                    final SpacecraftState[] states)
         throws OrekitException {
+
+        final SpacecraftState state = states[0];
 
         // Range-rate derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
@@ -247,7 +276,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         throws OrekitException {
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
-                        new EstimatedMeasurement<RangeRate>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<RangeRate>(this, iteration, evaluation,
+                                                            new SpacecraftState[] {
+                                                                transitState
+                                                            });
 
         // range rate value
         final FieldVector3D<DerivativeStructure> stationPosition  = stationPV.getPosition();

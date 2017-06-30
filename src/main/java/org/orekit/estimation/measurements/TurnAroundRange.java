@@ -65,6 +65,11 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     private final GroundStation slaveStation;
 
     /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param masterStation ground station from which measurement is performed
      * @param slaveStation ground station reflecting the signal
      * @param date date of the measurement
@@ -78,7 +83,27 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, turnAroundRange, sigma, baseWeight,
+        this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * @param masterStation ground station from which measurement is performed
+     * @param slaveStation ground station reflecting the signal
+     * @param date date of the measurement
+     * @param turnAroundRange observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
+                           final AbsoluteDate date, final double turnAroundRange,
+                           final double sigma, final double baseWeight,
+                           final int propagatorIndex)
+        throws OrekitException {
+        super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
               masterStation.getEastOffsetDriver(),
               masterStation.getNorthOffsetDriver(),
               masterStation.getZenithOffsetDriver(),
@@ -118,8 +143,10 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                          final SpacecraftState state)
+                                                                          final SpacecraftState[] states)
         throws OrekitException {
+
+        final SpacecraftState state = states[0];
 
         // Turn around range derivatives are computed with respect to:
         // - Spacecraft state in inertial frame
@@ -301,7 +328,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   transitStateLeg2.shiftedBy(-slaveTauU.getValue()));
+                                                   new SpacecraftState[] {
+                                                       transitStateLeg2.shiftedBy(-slaveTauU.getValue())
+                                                   });
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

@@ -80,8 +80,8 @@ public class BiasTest {
         }
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
 
         // add the measurements, with both spacecraft and stations biases
         for (final ObservedMeasurement<?> measurement : measurements) {

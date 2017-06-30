@@ -102,7 +102,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         throws OrekitException {
         final AngularAzEl         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = estimated.getState();
+        final SpacecraftState state   = estimated.getStates()[0];
 
         final double delay = angularErrorIonosphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position

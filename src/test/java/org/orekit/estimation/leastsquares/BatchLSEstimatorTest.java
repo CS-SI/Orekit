@@ -62,8 +62,8 @@ public class BatchLSEstimatorTest {
                                                                0.0, 1.0, 300.0);
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
@@ -97,8 +97,8 @@ public class BatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
@@ -111,7 +111,7 @@ public class BatchLSEstimatorTest {
             /** {@inheritDoc} */
             @Override
             public void evaluationPerformed(int iterationsCount, int evaluationscount,
-                                            Orbit orbit,
+                                            Orbit[] orbits,
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
@@ -189,8 +189,8 @@ public class BatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
@@ -201,7 +201,7 @@ public class BatchLSEstimatorTest {
             /** {@inheritDoc} */
             @Override
             public void evaluationPerformed(int iterationsCount, int evaluationscount,
-                                           Orbit orbit,
+                                           Orbit[] orbits,
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
@@ -251,8 +251,8 @@ public class BatchLSEstimatorTest {
         measurements.addAll(measurements1);
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> rangerate : measurements) {
             estimator.addMeasurement(rangerate);
         }
@@ -295,8 +295,8 @@ public class BatchLSEstimatorTest {
         measurements.addAll(measurementsRangeRate);
 
         // create orbit estimator
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
         for (final ObservedMeasurement<?> meas : measurements) {
             estimator.addMeasurement(meas);
         }

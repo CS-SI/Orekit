@@ -269,7 +269,7 @@ public class EstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps)
         throws OrekitException {
 
-        final Orbit estimatedOrbit = estimator.estimate().getInitialState().getOrbit();
+        final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 

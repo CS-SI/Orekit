@@ -131,7 +131,7 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] { transitState });
 
         // Set range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -347,7 +347,7 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] { transitState });
 
         // Range value
         final DerivativeStructure tau    = tauD.add(tauU);

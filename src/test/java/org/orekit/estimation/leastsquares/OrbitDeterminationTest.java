@@ -428,7 +428,7 @@ public class OrbitDeterminationTest {
             estimator.addMeasurement(measurement);
         }
 
-        Orbit estimated = estimator.estimate().getInitialState().getOrbit();
+        Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
@@ -1165,7 +1165,7 @@ public class OrbitDeterminationTest {
             maxEvaluations = parser.getInt(ParameterKey.ESTIMATOR_MAX_EVALUATIONS);
         }
 
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder, optimizer);
+        final BatchLSEstimator estimator = new BatchLSEstimator(optimizer, propagatorBuilder);
         estimator.setParametersConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);

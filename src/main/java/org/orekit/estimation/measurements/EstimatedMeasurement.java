@@ -43,8 +43,8 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Evaluations counter. */
     private final int count;
 
-    /** State of the spacecraft. */
-    private final SpacecraftState state;
+    /** States of the spacecrafts. */
+    private final SpacecraftState[] states;
 
     /** Estimated value. */
     private double[] estimatedValue;
@@ -62,15 +62,15 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * @param observedMeasurement associated observed measurement
      * @param iteration iteration number
      * @param count evaluations counter
-     * @param state state of the spacecraft
+     * @param states states of the spacecrafts
      */
     public EstimatedMeasurement(final T observedMeasurement,
                                 final int iteration, final int count,
-                                final SpacecraftState state) {
+                                final SpacecraftState[] states) {
         this.observedMeasurement           = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
-        this.state                 = state;
+        this.states                = states;
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
 
@@ -101,18 +101,18 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         return count;
     }
 
-    /** Get the state of the spacecraft.
-     * @return state of the spacecraft
+    /** Get the states of the spacecrafts.
+     * @return states of the spacecrafts
      */
-    public SpacecraftState getState() {
-        return state;
+    public SpacecraftState[] getStates() {
+        return states.clone();
     }
 
-    /** Get the time offset from state date to measurement date.
-     * @return time offset from state date to measurement date
+    /** Get the time offset from first state date to measurement date.
+     * @return time offset from first state date to measurement date
      */
     public double getTimeOffset() {
-        return observedMeasurement.getDate().durationFrom(state.getDate());
+        return observedMeasurement.getDate().durationFrom(states[0].getDate());
     }
 
     /** Get the estimated value.

@@ -86,7 +86,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         throws OrekitException {
         final AngularAzEl         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = estimated.getState();
+        final SpacecraftState state   = estimated.getStates()[0];
         final double correction = angularErrorRadioRefractionModel(station, state);
 
         // update estimated value taking into account the tropospheric elevation corection.

@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -136,6 +137,27 @@ public class PropagatorsParallelizer {
      */
     public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target)
         throws OrekitException {
+
+        if (propagators.size() == 1) {
+            // special handling when only one propagator is used
+            propagators.get(0).setMasterMode(new OrekitStepHandler() {
+
+                /** {@inheritDoc} */
+                @Override
+                public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+                    globalHandler.init(Collections.singletonList(s0), target);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
+                    throws OrekitException {
+                    globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
+                }
+
+            });
+            return Collections.singletonList(propagators.get(0).propagate(start, target));
+        }
 
         final double sign = FastMath.copySign(1.0, target.durationFrom(start));
         final int n = propagators.size();

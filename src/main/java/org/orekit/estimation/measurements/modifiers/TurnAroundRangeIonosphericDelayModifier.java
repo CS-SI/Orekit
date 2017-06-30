@@ -168,7 +168,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
         final TurnAroundRange measurement   = estimated.getObservedMeasurement();
         final GroundStation   masterStation = measurement.getMasterStation();
         final GroundStation   slaveStation  = measurement.getSlaveStation();
-        final SpacecraftState state         = estimated.getState();
+        final SpacecraftState state         = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 

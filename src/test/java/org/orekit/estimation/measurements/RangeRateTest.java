@@ -65,12 +65,12 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
                     EstimationUtils.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
@@ -119,12 +119,12 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
                     EstimationUtils.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
@@ -190,7 +190,7 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -199,7 +199,7 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
@@ -256,7 +256,7 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -265,7 +265,7 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
@@ -307,12 +307,12 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
                     EstimationUtils.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
@@ -382,7 +382,7 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -391,7 +391,7 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);

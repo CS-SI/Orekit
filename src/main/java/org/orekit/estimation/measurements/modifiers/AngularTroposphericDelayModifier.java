@@ -111,7 +111,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         throws OrekitException {
         final AngularAzEl         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = estimated.getState();
+        final SpacecraftState state   = estimated.getStates()[0];
 
         final double delay = angularErrorTroposphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position

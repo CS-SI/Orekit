@@ -252,13 +252,13 @@ public class OrbitDetermination {
                 /** {@inheritDoc} */
                 @Override
                 public void evaluationPerformed(final int iterationsCount, final int evaluationsCount,
-                                               final Orbit orbit,
+                                               final Orbit[] orbits,
                                                final ParameterDriversList estimatedOrbitalParameters,
                                                final ParameterDriversList estimatedPropagatorParameters,
                                                final ParameterDriversList estimatedMeasurementsParameters,
                                                final EstimationsProvider  evaluationsProvider,
                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
-                    PVCoordinates currentPV = orbit.getPVCoordinates();
+                    PVCoordinates currentPV = orbits[0].getPVCoordinates();
                     final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
                     final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
                     final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
@@ -318,7 +318,7 @@ public class OrbitDetermination {
                     previousPV = currentPV;
                 }
             });
-            Orbit estimated = estimator.estimate().getInitialState().getOrbit();
+            Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
             // compute some statistics
             for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
@@ -1150,7 +1150,7 @@ public class OrbitDetermination {
             maxEvaluations = parser.getInt(ParameterKey.ESTIMATOR_MAX_EVALUATIONS);
         }
 
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder, optimizer);
+        final BatchLSEstimator estimator = new BatchLSEstimator(optimizer, propagatorBuilder);
         estimator.setParametersConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
