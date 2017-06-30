@@ -130,13 +130,13 @@ public class AngularAzElTest {
         }
 
         // median errors on Azimuth
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 5.0e-6);
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.3e-5);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.1e-10);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 5.7e-5);
 
         // median errors on Elevation
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 5.0e-6);
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.0e-5);
-           }
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 3.5e-11);
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 1.4e-5);
+    }
 
     @Test
     public void testParameterDerivatives() throws OrekitException {
@@ -202,7 +202,7 @@ public class AngularAzElTest {
                     final double ref = dMkdP.value(drivers[i]);
 
                     if (ref > 1.e-12) {
-                        Assert.assertEquals(ref, gradient[k], 1e-5 * FastMath.abs(ref));
+                        Assert.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));
                     }
                 }
             }

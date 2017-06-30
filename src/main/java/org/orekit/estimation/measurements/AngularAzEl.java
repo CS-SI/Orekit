@@ -110,8 +110,18 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
 
         final SpacecraftState state = states[0];
 
-        // get the number of parameters used for derivation
-        int nbParams = 3;
+        // Azimuth/elevation derivatives are computed with respect to spacecraft state in inertial frame
+        // and station parameters
+        // ----------------------
+        //
+        // Parameters:
+        //  - 0..2 - Position of the spacecraft in inertial frame
+        //  - 3..5 - Velocity of the spacecraft in inertial frame
+        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+
+        // Get the number of parameters used for derivation
+        // Place the selected drivers into a map
+        int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -122,17 +132,34 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         final Field<DerivativeStructure>         field   = factory.getDerivativeField();
         final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
 
-        // take propagation time into account
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have offset == downlinkDelay and transitState will be
-        //  the same as state)
-        final Vector3D        stationP     = station.getOffsetToInertial(state.getFrame(), getDate()).transformPosition(Vector3D.ZERO);
-        final double          tauD         = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
-        final double          delta        = getDate().durationFrom(state.getDate());
-        final double          dt           = delta - tauD;
-        final SpacecraftState transitState = state.shiftedBy(dt);
+        // Position of the spacecraft expressed as a derivative structure
+        // The components of the position are the 3 first derivative parameters
+        final Vector3D stateP = state.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> pDS =
+                        new FieldVector3D<>(factory.variable(0, stateP.getX()),
+                                            factory.variable(1, stateP.getY()),
+                                            factory.variable(2, stateP.getZ()));
 
-        // transform between station and inertial frame, expressed as a derivative structure
+        // Velocity of the spacecraft expressed as a derivative structure
+        // The components of the velocity are the 3 second derivative parameters
+        final Vector3D stateV = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<DerivativeStructure> vDS =
+                        new FieldVector3D<>(factory.variable(3, stateV.getX()),
+                                            factory.variable(4, stateV.getY()),
+                                            factory.variable(5, stateV.getZ()));
+
+        // Acceleration of the spacecraft
+        // The components of the acceleration are not derivative parameters
+        final Vector3D stateA = state.getPVCoordinates().getAcceleration();
+        final FieldVector3D<DerivativeStructure> aDS =
+                        new FieldVector3D<>(factory.constant(stateA.getX()),
+                                            factory.constant(stateA.getY()),
+                                            factory.constant(stateA.getZ()));
+
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
+                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+
+        // Transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
         final AbsoluteDate downlinkDate = getDate();
         final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
@@ -140,35 +167,41 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
                         station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
 
-        // Station position in inertial frame at end of the downlink leg
+        // Station position/velocity in inertial frame at end of the downlink leg
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
                         offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
                                                                                                             zero, zero, zero));
-        // station topocentric frame (east-north-zenith) in inertial frame expressed as DerivativeStructures
+        // Station topocentric frame (east-north-zenith) in inertial frame expressed as DerivativeStructures
         final FieldVector3D<DerivativeStructure> east   = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<DerivativeStructure> north  = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusJ(field));
         final FieldVector3D<DerivativeStructure> zenith = offsetToInertialDownlink.transformVector(FieldVector3D.getPlusK(field));
 
-        // station origin in inertial frame
-        final FieldVector3D<DerivativeStructure> qP = stationDownlink.getPosition();
+        // Compute propagation times
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have delta == tauD and transitState will be the same as state)
 
-        // satellite vector expressed in inertial frame
-        final Vector3D transitp = transitState.getPVCoordinates().getPosition();
+        // Downlink delay
+        final DerivativeStructure tauD = station.signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
-        // satellite vector expressed in inertial frame expressed as DerivativeStructures
-        final FieldVector3D<DerivativeStructure> pP = new FieldVector3D<>(factory.variable(0, transitp.getX()),
-                                                                          factory.variable(1, transitp.getY()),
-                                                                          factory.variable(2, transitp.getZ()));
-        // station-satellite vector expressed in inertial frame
-        final FieldVector3D<DerivativeStructure> staSat = pP.subtract(qP);
+        // Transit state
+        final double                delta        = downlinkDate.durationFrom(state.getDate());
+        final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
 
+        // Transit state (re)computed with derivative structures
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
+
+        // Station-satellite vector expressed in inertial frame
+        final FieldVector3D<DerivativeStructure> staSat = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
+
+        // Compute azimuth/elevation
         final DerivativeStructure baseAzimuth = DerivativeStructure.atan2(staSat.dotProduct(east), staSat.dotProduct(north));
         final double              twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth.getReal(), getObservedValue()[0]) -
                                                 baseAzimuth.getReal();
         final DerivativeStructure azimuth     = baseAzimuth.add(twoPiWrap);
         final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
-        // prepare the estimation
+        // Prepare the estimation
         final EstimatedMeasurement<AngularAzEl> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
@@ -178,22 +211,14 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
 
-        // partial derivatives of azimuth with respect to state
+        // Partial derivatives of azimuth/elevation with respect to state
+        // (beware element at index 0 is the value, not a derivative)
         final double[] azDerivatives = azimuth.getAllDerivatives();
-        final double[] dAzOndP = new double[] {
-            azDerivatives[1],      azDerivatives[2],      azDerivatives[3],
-            azDerivatives[1] * dt, azDerivatives[2] * dt, azDerivatives[3] * dt
-        };
-
-        // partial derivatives of Elevation with respect to state
         final double[] elDerivatives = elevation.getAllDerivatives();
-        final double[] dElOndP = new double[] {
-            elDerivatives[1],      elDerivatives[2],      elDerivatives[3],
-            elDerivatives[1] * dt, elDerivatives[2] * dt, elDerivatives[3] * dt
-        };
-        estimated.setStateDerivatives(dAzOndP, dElOndP);
+        estimated.setStateDerivatives(Arrays.copyOfRange(azDerivatives, 1, 7),
+                                      Arrays.copyOfRange(elDerivatives, 1, 7));
 
-        // set partial derivatives with respect to parameters
+        // Set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
@@ -203,7 +228,5 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         }
 
         return estimated;
-
     }
-
 }
