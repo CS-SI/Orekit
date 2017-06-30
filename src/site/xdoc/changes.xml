@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added right ascension and declination angular measurements.
+      </action>
       <action dev="luc" type="add">
         Added a parallel propagation feature for addressing multi-satellites needs.
         Propagators of different types (analytical, semi-analytical, numerical,
