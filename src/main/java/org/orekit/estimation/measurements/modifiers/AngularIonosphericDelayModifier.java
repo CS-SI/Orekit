@@ -100,7 +100,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
     @Override
     public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
         throws OrekitException {
-        final AngularAzEl         measure = estimated.getObservedMeasurement();
+        final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
 
