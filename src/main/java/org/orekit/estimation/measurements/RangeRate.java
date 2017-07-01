@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
@@ -146,32 +145,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final Field<DerivativeStructure> field = factory.getDerivativeField();
         final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
 
-        // Position of the spacecraft expressed as a derivative structure
-        // The components of the position are the 3 first derivative parameters
-        final Vector3D stateP = state.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<>(factory.variable(0, stateP.getX()),
-                                            factory.variable(1, stateP.getY()),
-                                            factory.variable(2, stateP.getZ()));
-
-        // Velocity of the spacecraft expressed as a derivative structure
-        // The components of the velocity are the 3 second derivative parameters
-        final Vector3D stateV = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<>(factory.variable(3, stateV.getX()),
-                                            factory.variable(4, stateV.getY()),
-                                            factory.variable(5, stateV.getZ()));
-
-        // Acceleration of the spacecraft
-        // The components of the acceleration are not derivative parameters
-        final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<>(factory.constant(stateA.getX()),
-                                            factory.constant(stateA.getY()),
-                                            factory.constant(stateA.getZ()));
-
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+        // Coordinates of the spacecraft expressed as a derivative structure
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, factory);
 
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
@@ -191,7 +166,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = station.signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
@@ -216,9 +191,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
                                                                                                                     zero, zero, zero));
 
-            final DerivativeStructure tauU = station.signalTimeOfFlight(stationApproxUplink,
-                                                                        transitPV.getPosition(),
-                                                                        transitPV.getDate());
+            final DerivativeStructure tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
 
             final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));

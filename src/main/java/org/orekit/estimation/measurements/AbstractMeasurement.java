@@ -20,10 +20,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class handling measurements boilerplate.
  * @param <T> the type of the measurement
@@ -231,6 +241,116 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     @Override
     public List<EstimationModifier<T>> getModifiers() {
         return Collections.unmodifiableList(modifiers);
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     */
+    public static double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
+                                            final Vector3D receiverPosition,
+                                            final AbsoluteDate signalArrivalDate) {
+
+        // initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final double offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        double delay = offset;
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay;
+            final Vector3D transitP = adjustableEmitterPV.shiftedBy(offset - delay).getPosition();
+            delay                   = receiverPosition.distance(transitP) * cReciprocal;
+            delta                   = FastMath.abs(delay - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
+
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param <T> the type of the components
+     */
+    public static <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
+                                                                       final FieldVector3D<T> receiverPosition,
+                                                                       final FieldAbsoluteDate<T> signalArrivalDate) {
+
+        // Initialize emission date search loop assuming the emitter PV is almost correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge extremely fast
+        final T offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
+        T delay = offset;
+
+        // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous           = delay.getReal();
+            final FieldVector3D<T> transitP = adjustableEmitterPV.shiftedBy(delay.negate().add(offset)).getPosition();
+            delay                           = receiverPosition.distance(transitP).multiply(cReciprocal);
+            delta                           = FastMath.abs(delay.getReal() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
+
+        return delay;
+
+    }
+
+    /** Get Cartesian coordinates as derivatives.
+     * <p>
+     * The position will correspond to variables {@code firstDerivative},
+     * {@code firstDerivative + 1} and {@code firstDerivative + 2}.
+     * The velocity will correspond to variables {@code firstDerivative + 3},
+     * {@code firstDerivative + 4} and {@code firstDerivative + 5}.
+     * The acceleration will corredpon to constants.
+     * </p>
+     * @param state state of the satellite considered
+     * @param firstDerivative index of the first derivative
+     * @param factory factory for building the derivatives
+     * @return Cartesian coordinates as derivatives
+     */
+    public static TimeStampedFieldPVCoordinates<DerivativeStructure> getCoordinates(final SpacecraftState state,
+                                                                                    final int firstDerivative,
+                                                                                    final DSFactory factory) {
+
+        // Position of the satellite expressed as a derivative structure
+        // The components of the position are the 3 first derivative parameters
+        final Vector3D p = state.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> pDS =
+                        new FieldVector3D<>(factory.variable(firstDerivative + 0, p.getX()),
+                                            factory.variable(firstDerivative + 1, p.getY()),
+                                            factory.variable(firstDerivative + 2, p.getZ()));
+
+        // Velocity of the satellite expressed as a derivative structure
+        // The components of the velocity are the 3 second derivative parameters
+        final Vector3D v = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<DerivativeStructure> vDS =
+                        new FieldVector3D<>(factory.variable(firstDerivative + 3, v.getX()),
+                                            factory.variable(firstDerivative + 4, v.getY()),
+                                            factory.variable(firstDerivative + 5, v.getZ()));
+
+        // Acceleration of the satellite
+        // The components of the acceleration are not derivative parameters
+        final Vector3D a = state.getPVCoordinates().getAcceleration();
+        final FieldVector3D<DerivativeStructure> aDS =
+                        new FieldVector3D<>(factory.constant(a.getX()),
+                                            factory.constant(a.getY()),
+                                            factory.constant(a.getZ()));
+
+        return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+
     }
 
 }

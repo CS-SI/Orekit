@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements;
 import java.util.Map;
 
 import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -40,10 +39,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -514,71 +510,6 @@ public class GroundStation {
         return (index == null) ?
              factory.constant(driver.getValue()) :
              factory.variable(index, driver.getValue());
-    }
-
-    /** Compute propagation delay on a link leg (either downlink or uplink).
-     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableEmitterPV}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     */
-    public double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
-                                     final Vector3D receiverPosition,
-                                     final AbsoluteDate signalArrivalDate) {
-
-        // initialize emission date search loop assuming the state is already correct
-        // this will be true for all but the first orbit determination iteration,
-        // and even for the first iteration the loop will converge very fast
-        final double offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
-        double delay = offset;
-
-        // search signal transit date, computing the signal travel in inertial frame
-        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
-        double delta;
-        int count = 0;
-        do {
-            final double previous   = delay;
-            final Vector3D transitP = adjustableEmitterPV.shiftedBy(offset - delay).getPosition();
-            delay                   = receiverPosition.distance(transitP) * cReciprocal;
-            delta                   = FastMath.abs(delay - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
-
-        return delay;
-
-    }
-
-    /** Compute propagation delay on a link leg (either downlink or uplink).
-     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
-     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableEmitterPV}
-     * @param signalArrivalDate date at which the signal arrives to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @param <T> the type of the components
-     */
-    public <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
-                                                                final FieldVector3D<T> receiverPosition,
-                                                                final FieldAbsoluteDate<T> signalArrivalDate) {
-
-        // Initialize emission date search loop assuming the emitter PV is almost correct
-        // this will be true for all but the first orbit determination iteration,
-        // and even for the first iteration the loop will converge extremely fast
-        final T offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
-        T delay = offset;
-
-        // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
-        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
-        double delta;
-        int count = 0;
-        do {
-            final double previous           = delay.getReal();
-            final FieldVector3D<T> transitP = adjustableEmitterPV.shiftedBy(delay.negate().add(offset)).getPosition();
-            delay                           = receiverPosition.distance(transitP).multiply(cReciprocal);
-            delta                           = FastMath.abs(delay.getReal() - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
-
-        return delay;
-
     }
 
 }

@@ -101,9 +101,9 @@ public class RangeAnalytic extends Range {
         //  we will have offset == downlinkDelay and transitState will be
         //  the same as state)
         // Downlink time of flight
-        final double          tauD         = groundStation.signalTimeOfFlight(state.getPVCoordinates(),
-                                                                        stationDownlink.getPosition(),
-                                                                        downlinkDate);
+        final double          tauD         = signalTimeOfFlight(state.getPVCoordinates(),
+                                                                stationDownlink.getPosition(),
+                                                                downlinkDate);
         final double          delta        = downlinkDate.durationFrom(state.getDate());
         final double          dt           = delta - tauD;
 
@@ -119,10 +119,8 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double          tauU             = groundStation.signalTimeOfFlight(stationAtTransitDate,
-                                                                            transitP,
-                                                                            transitDate);
-        final double          tau              = tauD + tauU;
+        final double          tauU         = signalTimeOfFlight(stationAtTransitDate, transitP, transitDate);
+        final double          tau          = tauD + tauU;
 
         // Real date and position of station at signal departure
         final AbsoluteDate             uplinkDate    = downlinkDate.shiftedBy(-tau);
@@ -281,32 +279,8 @@ public class RangeAnalytic extends Range {
         //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
         //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
 
-        // Position of the spacecraft expressed as a derivative structure
-        // The components of the position are the 3 first derivative parameters
-        final Vector3D stateP = state.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<>(dsFactory.variable(0, stateP.getX()),
-                                            dsFactory.variable(1, stateP.getY()),
-                                            dsFactory.variable(2, stateP.getZ()));
-
-        // Velocity of the spacecraft expressed as a derivative structure
-        // The components of the velocity are the 3 second derivative parameters
-        final Vector3D stateV = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<>(dsFactory.variable(3, stateV.getX()),
-                                            dsFactory.variable(4, stateV.getY()),
-                                            dsFactory.variable(5, stateV.getZ()));
-
-        // Acceleration of the spacecraft
-        // The components of the acceleration are not derivative parameters
-        final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<>(dsFactory.constant(stateA.getX()),
-                                            dsFactory.constant(stateA.getY()),
-                                            dsFactory.constant(stateA.getZ()));
-
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+        // Coordinates of the spacecraft expressed as a derivative structure
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, dsFactory);
 
         // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
@@ -327,7 +301,7 @@ public class RangeAnalytic extends Range {
         //  the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = groundStation.signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
@@ -341,9 +315,8 @@ public class RangeAnalytic extends Range {
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
                         stationDownlink.shiftedBy(tauD.negate());
         // Uplink delay
-        final DerivativeStructure tauU = groundStation.signalTimeOfFlight(stationAtTransitDate,
-                                                                    transitStateDS.getPosition(),
-                                                                    transitStateDS.getDate());
+        final DerivativeStructure tauU =
+                        signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
@@ -384,7 +357,7 @@ public class RangeAnalytic extends Range {
                         transformPVCoordinates(PVCoordinates.ZERO);
 
         // Downlink time of flight from spacecraft to station
-        final double td = groundStation.signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate);
+        final double td = signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate);
         final double dt = delta - td;
 
         // Transit state position
@@ -407,7 +380,7 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double tu = groundStation.signalTimeOfFlight(QAtTransitDate, transitP, transitT);
+        final double tu = signalTimeOfFlight(QAtTransitDate, transitP, transitT);
 
         // Total time of flight
         final double t = td + tu;

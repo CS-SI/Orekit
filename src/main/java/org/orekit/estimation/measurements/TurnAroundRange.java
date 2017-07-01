@@ -236,7 +236,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);
 
         // Compute propagation times
-        final DerivativeStructure masterTauD = masterStation.signalTimeOfFlight(pvaDS, QMaster, measurementDateDS);
+        final DerivativeStructure masterTauD = signalTimeOfFlight(pvaDS, QMaster, measurementDateDS);
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final DerivativeStructure dtLeg2 = masterTauD.negate().add(delta);
@@ -259,10 +259,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                                                                                                       zero, zero, zero));
 
         // Uplink time of flight from slave station to transit state of leg2
-        final DerivativeStructure slaveTauU =
-                        slaveStation.signalTimeOfFlight(QSlaveApprox,
-                                                        transitStateLeg2PV.getPosition(),
-                                                        transitStateLeg2PV.getDate());
+        final DerivativeStructure slaveTauU = signalTimeOfFlight(QSlaveApprox,
+                                                                 transitStateLeg2PV.getPosition(),
+                                                                 transitStateLeg2PV.getDate());
 
         // Total time of flight for leg 2
         final DerivativeStructure tauLeg2 = masterTauD.add(slaveTauU);
@@ -279,10 +278,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldVector3D<DerivativeStructure> QSlave = slaveToInert.transformPosition(zero);
 
         // Downlink time of flight from transitStateLeg1 to slave station at rebound date
-        final DerivativeStructure slaveTauD =
-                        slaveStation.signalTimeOfFlight(transitStateLeg2PV,
-                                                        QSlave,
-                                                        reboundDateDS);
+        final DerivativeStructure slaveTauD = signalTimeOfFlight(transitStateLeg2PV,
+                                                                 QSlave,
+                                                                 reboundDateDS);
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -304,10 +302,9 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                                                                                                        zero, zero, zero));
 
         // Uplink time of flight from master station to transit state of leg1
-        final DerivativeStructure masterTauU =
-                        masterStation.signalTimeOfFlight(QMasterApprox,
-                                                         transitStateLeg1PV.getPosition(),
-                                                         transitStateLeg1PV.getDate());
+        final DerivativeStructure masterTauU = signalTimeOfFlight(QMasterApprox,
+                                                                  transitStateLeg1PV.getPosition(),
+                                                                  transitStateLeg1PV.getDate());
 
         // Total time of flight for leg 1
         final DerivativeStructure tauLeg1 = slaveTauD.add(masterTauU);

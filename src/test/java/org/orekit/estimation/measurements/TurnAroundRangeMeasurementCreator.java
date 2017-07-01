@@ -157,12 +157,9 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
 
                     // Master station uplink delay - from master station to P1
-                    // Here the state date is known. Thus we can use the function "uplinkTimeOfFlight"
-                    // of the GroundStation class
-                    //final double masterTauU = masterStation.uplinkTimeOfFlight(S1);
-                    final double masterTauU = masterStation.signalTimeOfFlight(masterStationAtReception,
-                                                                               P1,
-                                                                               T1);
+                    // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
+                    // of the AbstractMeasurement class
+                    final double masterTauU = AbstractMeasurement.signalTimeOfFlight(masterStationAtReception, P1, T1);
 
                     final AbsoluteDate masterEmissionDate   = T1.shiftedBy(-masterTauU);
 

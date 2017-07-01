@@ -83,7 +83,7 @@ public class AngularRaDecTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = stationParameter.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -176,7 +176,7 @@ public class AngularRaDecTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = stationParameter.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);

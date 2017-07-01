@@ -125,8 +125,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D QMaster = masterTopoToInert.transformPosition(Vector3D.ZERO);
 
         // Downlink time of flight from master station at t to spacecraft at t'
-        final double tMd    = masterGroundStation.
-                        signalTimeOfFlight(state.getPVCoordinates(), QMaster, measurementDate);
+        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), QMaster, measurementDate);
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay, delta = masterTauD + slaveTauU)
@@ -143,9 +142,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                         transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
         // Uplink time of flight from slave station to transit state leg2
-        final double tSu    = slaveGroundStation.signalTimeOfFlight(QSlaveTransitLeg2PV,
-                                                              transitStateLeg2.getPVCoordinates().getPosition(),
-                                                              transitDateLeg2);
+        final double tSu    = signalTimeOfFlight(QSlaveTransitLeg2PV,
+                                                 transitStateLeg2.getPVCoordinates().getPosition(),
+                                                 transitDateLeg2);
 
         // Total time of flight for leg 2
         final double t2     = tMd + tSu;
@@ -163,8 +162,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D QSlaveArrivalDate = slaveTopoToInertArrivalDate.transformPosition(Vector3D.ZERO);
 
         // Dowlink time of flight from transitStateLeg1 to slave station at slaveStationArrivalDate
-        final double tSd = slaveGroundStation.
-                        signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), QSlaveArrivalDate, slaveStationArrivalDate);
+        final double tSd = signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), QSlaveArrivalDate, slaveStationArrivalDate);
 
         // Transit state from which the satellite reflected the signal from master to slave station
         final SpacecraftState transitStateLeg1  = state.shiftedBy(delta -tMd -tSu -tSd);
@@ -177,9 +175,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                         transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
         // Uplink time of flight from master station to transit state leg1
-        final double tMu = masterGroundStation.signalTimeOfFlight(QMasterTransitLeg1PV,
-                                                            transitStateLeg1.getPVCoordinates().getPosition(),
-                                                            transitDateLeg1);
+        final double tMu = signalTimeOfFlight(QMasterTransitLeg1PV,
+                                              transitStateLeg1.getPVCoordinates().getPosition(),
+                                              transitDateLeg1);
         // Total time of flight for leg 1
         final double t1 = tSd + tMu;
 
@@ -555,36 +553,8 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Field<DerivativeStructure>         field     = dsFactory.getDerivativeField();
         final FieldVector3D<DerivativeStructure> zero      = FieldVector3D.getZero(field);
 
-        // PV coordinates of the spacecraft at time t'
-        final PVCoordinates statePV = state.getPVCoordinates();
-
-        // Position of the spacecraft expressed as a derivative structure
-        // The components of the position are the 3 first derivative parameters
-        Vector3D stateP = statePV.getPosition();
-        final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<>(dsFactory.variable(0, stateP.getX()),
-                                            dsFactory.variable(1, stateP.getY()),
-                                            dsFactory.variable(2, stateP.getZ()));
-
-        // Velocity of the spacecraft expressed as a derivative structure
-        // The components of the velocity are the 3 second derivative parameters
-        Vector3D stateV = statePV.getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<>(dsFactory.variable(3, stateV.getX()),
-                                            dsFactory.variable(4, stateV.getY()),
-                                            dsFactory.variable(5, stateV.getZ()));
-
-        // Acceleration of the spacecraft
-        // The components of the acceleration are not derivative parameters
-        final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<>(dsFactory.constant(stateA.getX()),
-                                            dsFactory.constant(stateA.getY()),
-                                            dsFactory.constant(stateA.getZ()));
-
-        // Place the derivative structures in a time-stamped PV
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+        // Coordinates of the spacecraft expressed as a derivative structure
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, dsFactory);
 
         // The path of the signal is divided in two legs.
         // Leg1: Emission from master station to satellite in masterTauU seconds
@@ -620,7 +590,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final FieldVector3D<DerivativeStructure> QMaster = masterToInert.transformPosition(zero);
 
         // Compute propagation times
-        final DerivativeStructure masterTauD = masterGroundStation.signalTimeOfFlight(pvaDS, QMaster, measurementDateDS);
+        final DerivativeStructure masterTauD = signalTimeOfFlight(pvaDS, QMaster, measurementDateDS);
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final DerivativeStructure dtLeg2 = masterTauD.negate().add(delta);
@@ -644,9 +614,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Uplink time of flight from slave station to transit state of leg2
         final DerivativeStructure slaveTauU =
-                        slaveGroundStation.signalTimeOfFlight(QSlaveApprox,
-                                                        transitStateLeg2PV.getPosition(),
-                                                        transitStateLeg2PV.getDate());
+                        signalTimeOfFlight(QSlaveApprox,
+                                           transitStateLeg2PV.getPosition(),
+                                           transitStateLeg2PV.getDate());
 
         // Total time of flight for leg 2
         final DerivativeStructure tauLeg2 = masterTauD.add(slaveTauU);
@@ -663,10 +633,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final FieldVector3D<DerivativeStructure> QSlave = slaveToInert.transformPosition(zero);
 
         // Downlink time of flight from transitStateLeg1 to slave station at rebound date
-        final DerivativeStructure slaveTauD =
-                        slaveGroundStation.signalTimeOfFlight(transitStateLeg2PV,
-                                                        QSlave,
-                                                        reboundDateDS);
+        final DerivativeStructure slaveTauD = signalTimeOfFlight(transitStateLeg2PV, QSlave, reboundDateDS);
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -688,10 +655,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                                                                                                        zero, zero, zero));
 
         // Uplink time of flight from master station to transit state of leg1
-        final DerivativeStructure masterTauU =
-                        masterGroundStation.signalTimeOfFlight(QMasterApprox,
-                                                         transitStateLeg1PV.getPosition(),
-                                                         transitStateLeg1PV.getDate());
+        final DerivativeStructure masterTauU = signalTimeOfFlight(QMasterApprox,
+                                                                  transitStateLeg1PV.getPosition(),
+                                                                  transitStateLeg1PV.getDate());
 
         // Total time of flight for leg 1
         final DerivativeStructure tauLeg1 = slaveTauD.add(masterTauU);
@@ -757,8 +723,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                         transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate, PVCoordinates.ZERO));
 
         // Downlink time of flight from master station at t to spacecraft at t'
-        final double tMd    = masterGroundStation.
-                        signalTimeOfFlight(state.getPVCoordinates(), QMt.getPosition(), measurementDate);
+        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), QMt.getPosition(), measurementDate);
 
         // Transit state from which the satellite reflected the signal from slave to master station
         final SpacecraftState state2            = state.shiftedBy(delta - tMd);
@@ -771,9 +736,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg2, PVCoordinates.ZERO));
 
         // Uplink time of flight from slave station to transit state leg2
-        final double tSu    = slaveGroundStation.signalTimeOfFlight(QSdate2PV,
-                                                              state2.getPVCoordinates().getPosition(),
-                                                              transitDateLeg2);
+        final double tSu    = signalTimeOfFlight(QSdate2PV,
+                                                 state2.getPVCoordinates().getPosition(),
+                                                 transitDateLeg2);
 
         // Total time of flight for leg 2
         final double t2     = tMd + tSu;
@@ -791,8 +756,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Vector3D QSA = slaveTopoToInertArrivalDate.transformPosition(Vector3D.ZERO);
 
         // Dowlink time of flight from transitStateLeg1 to slave station at slaveStationArrivalDate
-        final double tSd = slaveGroundStation.
-                        signalTimeOfFlight(state2.getPVCoordinates(), QSA, tQSA);
+        final double tSd = signalTimeOfFlight(state2.getPVCoordinates(), QSA, tQSA);
 
 
         // Transit state from which the satellite reflected the signal from master to slave station
@@ -806,9 +770,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDateLeg1, PVCoordinates.ZERO));
 
         // Uplink time of flight from master station to transit state leg1
-        final double tMu = masterGroundStation.signalTimeOfFlight(QMdate1PV,
-                                                            state1.getPVCoordinates().getPosition(),
-                                                            transitDateLeg1);
+        final double tMu = signalTimeOfFlight(QMdate1PV,
+                                              state1.getPVCoordinates().getPosition(),
+                                              transitDateLeg1);
 
         // Total time of flight for leg 1
         final double          t1           = tSd + tMu;
