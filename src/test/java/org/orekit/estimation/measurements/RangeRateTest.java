@@ -49,13 +49,16 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
+        for (final ObservedMeasurement<?> m : measurements) {
+            Assert.assertFalse(((RangeRate) m).isTwoWay());
+        }
         propagator.setSlaveMode();
 
         double maxRelativeError = 0;
@@ -101,13 +104,16 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, true),
                                                                1.0, 3.0, 300.0);
+        for (final ObservedMeasurement<?> m : measurements) {
+            Assert.assertTrue(((RangeRate) m).isTwoWay());
+        }
         propagator.setSlaveMode();
 
         double maxRelativeError = 0;
@@ -154,7 +160,7 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -220,7 +226,7 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -286,7 +292,7 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -343,7 +349,7 @@ public class RangeRateTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);

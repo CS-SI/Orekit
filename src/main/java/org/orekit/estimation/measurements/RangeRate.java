@@ -111,6 +111,13 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         this.twoway  = twoway;
     }
 
+    /** Check if the instance represents a two-way measurement.
+     * @return true if the instance represents a two-way measurement
+     */
+    public boolean isTwoWay() {
+        return twoway;
+    }
+
     /** Get the ground station from which measurement is performed.
      * @return ground station from which measurement is performed
      */
