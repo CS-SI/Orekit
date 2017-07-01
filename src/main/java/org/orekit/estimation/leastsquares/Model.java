@@ -340,7 +340,7 @@ class Model implements MultivariateJacobianFunction {
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current orbital state
-            final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(), false);
+            final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
             // Jacobian of the measurement with respect to initial orbital state

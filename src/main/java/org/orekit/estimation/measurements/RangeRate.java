@@ -204,15 +204,15 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             estimated.setEstimatedValue(0.5 * (estimated.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
 
             // combine uplink and downlink partial derivatives with respect to state
-            final double[][] sd1 = estimated.getStateDerivatives();
-            final double[][] sd2 = evalOneWay2.getStateDerivatives();
+            final double[][] sd1 = estimated.getStateDerivatives(0);
+            final double[][] sd2 = evalOneWay2.getStateDerivatives(0);
             final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
                 for (int j = 0; j < sd[0].length; ++j) {
                     sd[i][j] = 0.5 * (sd1[i][j] + sd2[i][j]);
                 }
             }
-            estimated.setStateDerivatives(sd);
+            estimated.setStateDerivatives(0, sd);
 
             // combine uplink and downlink partial derivatives with respect to parameters
             estimated.getDerivativesDrivers().forEach(driver -> {
@@ -271,7 +271,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
         final double[] derivatives = rangeRate.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

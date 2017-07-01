@@ -220,13 +220,13 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         final double[][] djac = rangeRateErrorJacobianState(station,
                                       state,
                                       delay);
-        final double[][] stateDerivatives = estimated.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] += djac[irow][jcol];
             }
         }
-        estimated.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(0, stateDerivatives);
 
         for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),

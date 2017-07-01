@@ -392,7 +392,7 @@ public class RangeAnalyticTest {
                     if (isModifier) {
                         modifier.modify(range);
                     }
-                    final double[][] jacobian  = range.getStateDerivatives();
+                    final double[][] jacobian  = range.getStateDerivatives(0);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
@@ -406,7 +406,7 @@ public class RangeAnalyticTest {
                         }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
-                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
+                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
                     }
 
 //                    //Test: Test point by point with the debugger

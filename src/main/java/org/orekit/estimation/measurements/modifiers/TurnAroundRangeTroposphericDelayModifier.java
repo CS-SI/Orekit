@@ -185,7 +185,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // Update estimated derivatives with Jacobian of the measure wrt state
         final double[][] masterDjac = rangeErrorJacobianState(masterStation, state);
         final double[][] slaveDjac = rangeErrorJacobianState(slaveStation, state);
-        final double[][] stateDerivatives = estimated.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] = stateDerivatives[irow][jcol] +
@@ -193,7 +193,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
                                                slaveDjac[irow][jcol];
             }
         }
-        estimated.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(0, stateDerivatives);
 
         // Update derivatives with respect to master station position
         for (final ParameterDriver driver : Arrays.asList(masterStation.getEastOffsetDriver(),

@@ -190,8 +190,8 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
         // (beware element at index 0 is the value, not a derivative)
         final double[] azDerivatives = azimuth.getAllDerivatives();
         final double[] elDerivatives = elevation.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(azDerivatives, 1, 7),
-                                      Arrays.copyOfRange(elDerivatives, 1, 7));
+        estimated.setStateDerivatives(0,
+                                      Arrays.copyOfRange(azDerivatives, 1, 7), Arrays.copyOfRange(elDerivatives, 1, 7));
 
         // Set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

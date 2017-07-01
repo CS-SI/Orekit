@@ -190,7 +190,7 @@ public class Range extends AbstractMeasurement<Range> {
 
         // Range partial derivatives with respect to state
         final double[] derivatives = range.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

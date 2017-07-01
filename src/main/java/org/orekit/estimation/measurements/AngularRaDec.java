@@ -208,8 +208,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         // (beware element at index 0 is the value, not a derivative)
         final double[] raDerivatives  = rightAscension.getAllDerivatives();
         final double[] decDerivatives = declination.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(raDerivatives, 1, 7),
-                                      Arrays.copyOfRange(decDerivatives, 1, 7));
+        estimated.setStateDerivatives(0,
+                                      Arrays.copyOfRange(raDerivatives, 1, 7), Arrays.copyOfRange(decDerivatives, 1, 7));
 
         // Partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

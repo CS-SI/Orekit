@@ -221,13 +221,13 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
         // update estimated derivatives with Jacobian of the measure wrt state
         final double[][] djac = rangeErrorJacobianState(station,
                                       state);
-        final double[][] stateDerivatives = estimated.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] += djac[irow][jcol];
             }
         }
-        estimated.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(0, stateDerivatives);
 
         for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),

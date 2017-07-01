@@ -332,7 +332,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         double dRdVy = (dt1dVy + dt2dVy)*cOver2;
         double dRdVz = (dt1dVz + dt2dVz)*cOver2;
 
-        estimated.setStateDerivatives(new double[] {dRdPx, dRdPy, dRdPz, // dROndP
+        estimated.setStateDerivatives(0, new double[] {dRdPx, dRdPy, dRdPz, // dROndP
                                                     dRdVx, dRdVy, dRdVz  // dROndV
         });
 
@@ -688,7 +688,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // Turn-around range partial derivatives with respect to state
         final double[] derivatives = turnAroundRange.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

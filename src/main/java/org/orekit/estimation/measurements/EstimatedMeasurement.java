@@ -52,8 +52,8 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Current weight. */
     private double[] currentWeight;
 
-    /** Partial derivatives with respect to state. */
-    private double[][] stateDerivatives;
+    /** Partial derivatives with respect to states. */
+    private double[][][] stateDerivatives;
 
     /** Partial derivatives with respect to parameters. */
     private final Map<ParameterDriver, double[]> parametersDerivatives;
@@ -67,10 +67,11 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     public EstimatedMeasurement(final T observedMeasurement,
                                 final int iteration, final int count,
                                 final SpacecraftState[] states) {
-        this.observedMeasurement           = observedMeasurement;
+        this.observedMeasurement   = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
         this.states                = states;
+        this.stateDerivatives      = new double[states.length][][];
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
 
@@ -149,25 +150,29 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
+     * @param index index of the state, according to the {@code states}
+     * passed at construction
      * @return partial derivatives of the simulated value (array of size
      * {@link ObservedMeasurement#getDimension() dimension} x 6)
      */
-    public double[][] getStateDerivatives() {
+    public double[][] getStateDerivatives(final int index) {
         final double[][] sd = new double[observedMeasurement.getDimension()][];
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
-            sd[i] = stateDerivatives[i].clone();
+            sd[i] = stateDerivatives[index][i].clone();
         }
         return sd;
     }
 
     /** Set the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
-     * @param stateDerivatives partial derivatives with respect to state
+     * @param index index of the state, according to the {@code states}
+     * passed at construction
+     * @param derivatives partial derivatives with respect to state
      */
-    public void setStateDerivatives(final double[]... stateDerivatives) {
-        this.stateDerivatives = new double[observedMeasurement.getDimension()][];
+    public void setStateDerivatives(final int index, final double[]... derivatives) {
+        this.stateDerivatives[index] = new double[observedMeasurement.getDimension()][];
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
-            this.stateDerivatives[i] = stateDerivatives[i].clone();
+            this.stateDerivatives[index][i] = derivatives[i].clone();
         }
     }
 

@@ -393,7 +393,7 @@ public class TurnAroundRangeAnalyticTest {
             if (isModifier) {
                 modifier.modify(TAR);
             }
-            final double[][] jacobian  = TAR.getStateDerivatives();
+            final double[][] jacobian  = TAR.getStateDerivatives(0);
 
             // Jacobian reference value
             final double[][] jacobianRef;
@@ -407,7 +407,7 @@ public class TurnAroundRangeAnalyticTest {
                 }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
-                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
+                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
             }
 
 //            //Test: Test point by point with the debugger

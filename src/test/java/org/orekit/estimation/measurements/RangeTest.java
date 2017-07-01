@@ -338,7 +338,7 @@ public class RangeTest {
                     final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
+                    final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;

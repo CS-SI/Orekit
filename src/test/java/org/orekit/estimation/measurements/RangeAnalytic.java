@@ -180,7 +180,7 @@ public class RangeAnalytic extends Range {
         final double dRdPx = (dTauDdPx + dTauUdPx) * cOver2;
         final double dRdPy = (dTauDdPy + dTauUdPy) * cOver2;
         final double dRdPz = (dTauDdPz + dTauUdPz) * cOver2;
-        estimated.setStateDerivatives(new double[] {
+        estimated.setStateDerivatives(0, new double[] {
                                                     dRdPx,      dRdPy,      dRdPz,
                                                     dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
@@ -330,7 +330,7 @@ public class RangeAnalytic extends Range {
 
         // Range partial derivatives with respect to state
         final double[] derivatives = range.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

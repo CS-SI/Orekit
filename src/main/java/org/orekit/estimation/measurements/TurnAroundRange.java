@@ -336,7 +336,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // Turn-around range partial derivatives with respect to state
         final double[] derivatives = turnAroundRange.getAllDerivatives();
-        estimated.setStateDerivatives(Arrays.copyOfRange(derivatives, 1, 7));
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)

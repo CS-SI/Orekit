@@ -62,7 +62,7 @@ public class PVTest {
 
             final AbsoluteDate    date      = measurement.getDate();
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives();
+            final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =

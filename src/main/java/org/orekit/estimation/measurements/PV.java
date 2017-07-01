@@ -131,7 +131,7 @@ public class PV extends AbstractMeasurement<PV> {
         });
 
         // partial derivatives with respect to state
-        estimated.setStateDerivatives(IDENTITY);
+        estimated.setStateDerivatives(0, IDENTITY);
 
         return estimated;
 
