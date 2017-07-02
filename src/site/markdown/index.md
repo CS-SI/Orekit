@@ -163,10 +163,12 @@
         prime meridian correction and rate)
     * several predefined measurements
       * range
-      * range rate
+      * range rate (one way and two way)
       * turn-around range
       * azimuth/elevation
+      * right ascension/declination
       * position-velocity
+      * inter-satellites range (one way and two way)
     * possibility to add custom measurements
     * several predefined modifiers
       * tropospheric effects

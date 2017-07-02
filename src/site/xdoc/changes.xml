@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a multi-satellites orbit determination feature.
+      </action>
+      <action dev="luc" type="add">
+        Added one-way and two-way inter-satellites range measurements.
+      </action>
       <action dev="luc" type="fix" due-to="Glenn Ehrlich">
         Avoid clash with Python reserved keywords and, or and not in BooleanDetector.
       </action>

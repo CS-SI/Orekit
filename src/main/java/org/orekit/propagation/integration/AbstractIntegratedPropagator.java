@@ -897,8 +897,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
             try {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                             stateMapper.mapDoubleToDate(t));
+                if (activate) {
+                    handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                                 stateMapper.mapDoubleToDate(t));
+                }
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
