@@ -27,6 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way or two-way range measurements between two satellites.
  * <p>
@@ -126,12 +127,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final DerivativeStructure deltaMTauD = tauD.negate().add(delta);
 
         // prepare the evaluation
-        final EstimatedMeasurement<InterSatellitesRange> estimated =
-                        new EstimatedMeasurement<InterSatellitesRange>(this, iteration, evaluation,
-                                                                       new SpacecraftState[] {
-                                                                           states[0].shiftedBy(deltaMTauD.getValue()),
-                                                                           states[1].shiftedBy(deltaMTauD.getValue())
-                                                                       });
+        final EstimatedMeasurement<InterSatellitesRange> estimated;
 
         final DerivativeStructure range;
         if (twoway) {
@@ -142,10 +138,33 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             final DerivativeStructure tauU = signalTimeOfFlight(pva1,
                                                                 transitStateDS.getPosition(),
                                                                 transitStateDS.getDate());
+            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       states[0].shiftedBy(deltaMTauD.getValue()),
+                                                       states[1].shiftedBy(deltaMTauD.getValue())
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       states[0].shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
+                                                       states[1].shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       states[0].shiftedBy(delta).getPVCoordinates()
+                                                   });
+
             // Range value
             range  = tauD.add(tauU).multiply(0.5 * Constants.SPEED_OF_LIGHT);
+
         } else {
+
+            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       states[0].shiftedBy(deltaMTauD.getValue()),
+                                                       states[1].shiftedBy(deltaMTauD.getValue())
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       states[1].shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       states[0].shiftedBy(delta).getPVCoordinates()
+                                                   });
+
+            // Range value
             range  = tauD.multiply(Constants.SPEED_OF_LIGHT);
+
         }
         estimated.setEstimatedValue(range.getValue());
 

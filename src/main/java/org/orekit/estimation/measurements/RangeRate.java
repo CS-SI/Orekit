@@ -31,6 +31,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
@@ -184,9 +185,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV = pvaDS.shiftedBy(deltaMTauD);
 
         // one-way (downlink) range-rate
-        final EstimatedMeasurement<RangeRate> estimated =
-                        oneWayTheoreticalEvaluation(iteration, evaluation,
+        final EstimatedMeasurement<RangeRate> evalOneWay1 =
+                        oneWayTheoreticalEvaluation(iteration, evaluation, true,
                                                     stationDownlink, transitPV, transitState, indices);
+        final EstimatedMeasurement<RangeRate> estimated;
         if (twoway) {
             // one-way (uplink) light time correction
             final AbsoluteDate approxUplinkDate = downlinkDate.shiftedBy(-2 * tauD.getValue());
@@ -204,14 +206,21 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
 
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
-                            oneWayTheoreticalEvaluation(iteration, evaluation,
+                            oneWayTheoreticalEvaluation(iteration, evaluation, false,
                                                         stationUplink, transitPV, transitState, indices);
 
             // combine uplink and downlink values
-            estimated.setEstimatedValue(0.5 * (estimated.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
+            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
+                                                   evalOneWay1.getStates(),
+                                                   new TimeStampedPVCoordinates[] {
+                                                       evalOneWay2.getParticipants()[0],
+                                                       evalOneWay1.getParticipants()[0],
+                                                       evalOneWay1.getParticipants()[1]
+                                                   });
+            estimated.setEstimatedValue(0.5 * (evalOneWay1.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
 
             // combine uplink and downlink partial derivatives with respect to state
-            final double[][] sd1 = estimated.getStateDerivatives(0);
+            final double[][] sd1 = evalOneWay1.getStateDerivatives(0);
             final double[][] sd2 = evalOneWay2.getStateDerivatives(0);
             final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
@@ -222,8 +231,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             estimated.setStateDerivatives(0, sd);
 
             // combine uplink and downlink partial derivatives with respect to parameters
-            estimated.getDerivativesDrivers().forEach(driver -> {
-                final double[] pd1 = estimated.getParameterDerivatives(driver);
+            evalOneWay1.getDerivativesDrivers().forEach(driver -> {
+                final double[] pd1 = evalOneWay1.getParameterDerivatives(driver);
                 final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
                 final double[] pd = new double[pd1.length];
                 for (int i = 0; i < pd.length; ++i) {
@@ -232,14 +241,18 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                 estimated.setParameterDerivatives(driver, pd);
             });
 
+        } else {
+            estimated = evalOneWay1;
         }
 
         return estimated;
+
     }
 
     /** Evaluate measurement in one-way.
      * @param iteration iteration number
      * @param evaluation evaluations counter
+     * @param downlink indicator for downlink leg
      * @param stationPV station coordinates when signal is at station
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
@@ -248,17 +261,21 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation,
+    private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState,
                                                                         final Map<String, Integer> indices)
         throws OrekitException {
+
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
                         new EstimatedMeasurement<RangeRate>(this, iteration, evaluation,
                                                             new SpacecraftState[] {
                                                                 transitState
+                                                            }, new TimeStampedPVCoordinates[] {
+                                                                (downlink ? transitPV : stationPV).toTimeStampedPVCoordinates(),
+                                                                (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()
                                                             });
 
         // range rate value

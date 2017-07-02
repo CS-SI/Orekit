@@ -87,7 +87,9 @@ public class AngularRaDecTest {
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
-            final double[][]   jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            Assert.assertEquals(2, estimated.getParticipants().length);
+            final double[][]   jacobian  = estimated.getStateDerivatives(0);
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =

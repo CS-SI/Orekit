@@ -68,7 +68,9 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            Assert.assertEquals(2, estimated.getParticipants().length);
+            final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
                     EstimationUtils.differentiate(new StateFunction() {
@@ -125,7 +127,9 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            Assert.assertEquals(3, estimated.getParticipants().length);
+            final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
                     EstimationUtils.differentiate(new StateFunction() {

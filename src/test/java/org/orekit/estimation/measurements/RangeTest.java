@@ -45,6 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class RangeTest {
 
@@ -213,6 +214,12 @@ public class RangeTest {
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
                     final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+
+                    final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+                    Assert.assertEquals(3, participants.length);
+                    Assert.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[2].getDate().durationFrom(participants[0].getDate()),
+                                        estimated.getEstimatedValue()[0],
+                                        2.0e-8);
 
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());

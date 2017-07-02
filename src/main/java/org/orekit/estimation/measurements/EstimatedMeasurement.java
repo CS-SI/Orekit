@@ -26,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -46,6 +47,9 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** States of the spacecrafts. */
     private final SpacecraftState[] states;
 
+    /** Coordinates of the participants in signal travel order. */
+    private final TimeStampedPVCoordinates[] participants;
+
     /** Estimated value. */
     private double[] estimatedValue;
 
@@ -63,14 +67,18 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * @param iteration iteration number
      * @param count evaluations counter
      * @param states states of the spacecrafts
+     * @param participants coordinates of the participants in signal travel order
+     * in inertial frame
      */
     public EstimatedMeasurement(final T observedMeasurement,
                                 final int iteration, final int count,
-                                final SpacecraftState[] states) {
+                                final SpacecraftState[] states,
+                                final TimeStampedPVCoordinates[] participants) {
         this.observedMeasurement   = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
         this.states                = states;
+        this.participants          = participants;
         this.stateDerivatives      = new double[states.length][][];
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
@@ -107,6 +115,21 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      */
     public SpacecraftState[] getStates() {
         return states.clone();
+    }
+
+    /** Get the coordinates of the measurements participants in signal travel order.
+     * <p>
+     * First participant (at index 0) emits the signal (it is for example a ground
+     * station for two-way range measurement). Last participant receives the signal
+     * (it is also the ground station for two-way range measurement, but a few
+     * milliseconds later). Intermediate participants relfect the signal (it is the
+     * spacecraft for two-way range measurement).
+     * </p>
+     * @return coordinates of the measurements participants in signal travel order
+     * in inertial frame
+     */
+    public TimeStampedPVCoordinates[] getParticipants() {
+        return participants.clone();
     }
 
     /** Get the time offset from first state date to measurement date.

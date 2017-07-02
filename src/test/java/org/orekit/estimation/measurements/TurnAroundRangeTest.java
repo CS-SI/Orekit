@@ -44,6 +44,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TurnAroundRangeTest {
 
@@ -216,8 +217,14 @@ public class TurnAroundRangeTest {
 
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
-            final double TARestimated = measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final double TARestimated = estimated.getEstimatedValue()[0];
 
+            final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+            Assert.assertEquals(5, participants.length);
+            Assert.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[4].getDate().durationFrom(participants[0].getDate()),
+                                estimated.getEstimatedValue()[0],
+                                2.0e-8);
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);

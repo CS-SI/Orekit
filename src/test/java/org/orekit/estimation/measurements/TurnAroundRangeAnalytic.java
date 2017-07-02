@@ -122,10 +122,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final AbsoluteDate measurementDate = this.getDate();
         final Transform masterTopoToInert =
                         masterGroundStation.getOffsetToInertial(state.getFrame(), measurementDate);
-        final Vector3D QMaster = masterTopoToInert.transformPosition(Vector3D.ZERO);
+        final TimeStampedPVCoordinates masterArrival =
+                        masterTopoToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
+                                                                                              PVCoordinates.ZERO));
 
         // Downlink time of flight from master station at t to spacecraft at t'
-        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), QMaster, measurementDate);
+        final double tMd    = signalTimeOfFlight(state.getPVCoordinates(), masterArrival.getPosition(), measurementDate);
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
         // (if state has already been set up to pre-compensate propagation delay, delta = masterTauD + slaveTauU)
@@ -159,10 +161,12 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // Slave station position in inertial frame at date slaveStationArrivalDate
         final Transform slaveTopoToInertArrivalDate =
                         slaveGroundStation.getOffsetToInertial(state.getFrame(), slaveStationArrivalDate);
-        final Vector3D QSlaveArrivalDate = slaveTopoToInertArrivalDate.transformPosition(Vector3D.ZERO);
+        final TimeStampedPVCoordinates slaveRebound =
+                        slaveTopoToInertArrivalDate.transformPVCoordinates(new TimeStampedPVCoordinates(slaveStationArrivalDate,
+                                                                                                        PVCoordinates.ZERO));
 
         // Dowlink time of flight from transitStateLeg1 to slave station at slaveStationArrivalDate
-        final double tSd = signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), QSlaveArrivalDate, slaveStationArrivalDate);
+        final double tSd = signalTimeOfFlight(transitStateLeg2.getPVCoordinates(), slaveRebound.getPosition(), slaveStationArrivalDate);
 
         // Transit state from which the satellite reflected the signal from master to slave station
         final SpacecraftState transitStateLeg1  = state.shiftedBy(delta -tMd -tSu -tSd);
@@ -178,6 +182,10 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double tMu = signalTimeOfFlight(QMasterTransitLeg1PV,
                                               transitStateLeg1.getPVCoordinates().getPosition(),
                                               transitDateLeg1);
+        final AbsoluteDate emissionDate = transitDateLeg1.shiftedBy(-tMu);
+        final TimeStampedPVCoordinates masterDeparture =
+                        masterTopoToInertTransitLeg1.shiftedBy(emissionDate.durationFrom(masterTopoToInertTransitLeg1.getDate())).
+                        transformPVCoordinates(new TimeStampedPVCoordinates(emissionDate, PVCoordinates.ZERO));
         // Total time of flight for leg 1
         final double t1 = tSd + tMu;
 
@@ -195,7 +203,15 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] { transitStateLeg2.shiftedBy(-tSu) });
+                                                   new SpacecraftState[] {
+                                                       transitStateLeg2.shiftedBy(-tSu)
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       masterDeparture,
+                                                       transitStateLeg1.getPVCoordinates(),
+                                                       slaveRebound,
+                                                       transitStateLeg2.getPVCoordinates(),
+                                                       masterArrival
+                                                   });
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -678,7 +694,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         //  - -slaveTauD to get transitStateLeg1
         final EstimatedMeasurement<TurnAroundRange> estimated =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
-                                                   new SpacecraftState[] { transitStateLeg2.shiftedBy(-slaveTauU.getValue()) });
+                                                   new SpacecraftState[] {
+                                                       transitStateLeg2.shiftedBy(-slaveTauU.getValue())
+                                                   }, null);
 
         // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

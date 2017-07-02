@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a position-velocity state.
  * @author Luc Maisonobe
@@ -119,12 +119,16 @@ public class PV extends AbstractMeasurement<PV> {
                                                              final SpacecraftState[] states)
         throws OrekitException {
 
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =
-                        new EstimatedMeasurement<PV>(this, iteration, evaluation, states);
+                        new EstimatedMeasurement<>(this, iteration, evaluation, states,
+                                                   new TimeStampedPVCoordinates[] {
+                                                       pv
+                                                   });
 
-        // PV value
-        final PVCoordinates pv = states[0].getPVCoordinates();
         estimated.setEstimatedValue(new double[] {
             pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
             pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()

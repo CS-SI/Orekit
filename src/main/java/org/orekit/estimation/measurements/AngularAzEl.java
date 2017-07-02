@@ -32,6 +32,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -181,6 +182,9 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        transitState
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       transitStateDS.toTimeStampedPVCoordinates(),
+                                                       stationDownlink.toTimeStampedPVCoordinates()
                                                    });
 
         // azimuth - elevation values

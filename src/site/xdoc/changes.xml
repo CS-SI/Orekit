@@ -22,6 +22,11 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added coordinates of all intermediate participants in estimated measurements.
+        This will allow estimation modifiers to get important vectors (sighting
+        directions for example) without recomputing everything from the states.
+      </action>
+      <action dev="luc" type="add">
         Added a multi-satellites orbit determination feature.
       </action>
       <action dev="luc" type="add">

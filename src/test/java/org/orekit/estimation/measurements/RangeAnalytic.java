@@ -93,8 +93,9 @@ public class RangeAnalytic extends Range {
         final AbsoluteDate downlinkDate = getDate();
         final Transform topoToInertDownlink =
                         groundStation.getOffsetToInertial(state.getFrame(), downlinkDate);
-        final PVCoordinates stationDownlink = topoToInertDownlink.
-                        transformPVCoordinates(PVCoordinates.ZERO);
+        final TimeStampedPVCoordinates stationDownlink =
+                        topoToInertDownlink.transformPVCoordinates(new TimeStampedPVCoordinates(downlinkDate,
+                                                                                                PVCoordinates.ZERO));
 
         // Take propagation time into account
         // (if state has already been set up to pre-compensate propagation delay,
@@ -129,7 +130,14 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] { transitState });
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                                                        new SpacecraftState[] {
+                                                            transitState
+                                                        }, new TimeStampedPVCoordinates[] {
+                                                            stationUplink,
+                                                            transitState.getPVCoordinates(),
+                                                            stationDownlink
+                                                        });
 
         // Set range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -320,7 +328,10 @@ public class RangeAnalytic extends Range {
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, new SpacecraftState[] { transitState });
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                                                        new SpacecraftState[] {
+                                                            transitState
+                                                        }, null);
 
         // Range value
         final DerivativeStructure tau    = tauD.add(tauU);

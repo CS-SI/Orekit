@@ -33,6 +33,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling an Right Ascension - Declination measurement from a ground point (station, telescope).
  * The angles are given in an inertial reference frame.
@@ -199,6 +200,9 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        transitState
+                                                   }, new TimeStampedPVCoordinates[] {
+                                                       transitStateDS.toTimeStampedPVCoordinates(),
+                                                       stationDownlink.toTimeStampedPVCoordinates()
                                                    });
 
         // azimuth - elevation values

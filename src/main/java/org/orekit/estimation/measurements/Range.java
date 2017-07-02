@@ -32,6 +32,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -175,11 +176,18 @@ public class Range extends AbstractMeasurement<Range> {
         // Uplink delay
         final DerivativeStructure tauU =
                         signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
+                        stationDownlink.shiftedBy(-tauD.getValue() - tauU.getValue());
+
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
                         new EstimatedMeasurement<Range>(this, iteration, evaluation,
                                                         new SpacecraftState[] {
                                                             transitState
+                                                        }, new TimeStampedPVCoordinates[] {
+                                                            stationUplink.toTimeStampedPVCoordinates(),
+                                                            transitStateDS.toTimeStampedPVCoordinates(),
+                                                            stationDownlink.toTimeStampedPVCoordinates()
                                                         });
 
         // Range value
