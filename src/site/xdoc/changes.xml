@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove">
+        Removed classes and methods deprecated in 8.0.
+      </action>
       <action dev="luc" type="add">
         Added coordinates of all intermediate participants in estimated measurements.
         This will allow estimation modifiers to get important vectors (sighting

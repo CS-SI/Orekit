@@ -275,44 +275,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return Collections.unmodifiableList(forceModels);
     }
 
-    /** Get perturbing force models list.
-     * @return list of perturbing force models
-     * @see #addForceModel(ForceModel)
-     * @see #getNewtonianAttractionForceModel()
-     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public List<ForceModel> getForceModels() {
-        if (hasNewtonianAttraction()) {
-            // take care to not include central attraction
-            return Collections.unmodifiableList(forceModels.subList(0, forceModels.size() - 1));
-        } else {
-            return Collections.unmodifiableList(forceModels);
-        }
-    }
-
-    /** Get the Newtonian attraction from the central body force model.
-     * <p>
-     * This method should be called after either {@link #setMu(double)},
-     * {@link #setInitialState(SpacecraftState)}, or
-     * {@link #resetInitialState(SpacecraftState)} have been called,
-     * or {@link #addForceModel(ForceModel)} has been called with a
-     * {@link NewtonianAttraction} instance.
-     * </p>
-     * @return Newtonian attraction force model, or null if it has
-     * not been set up by one of the methods explained above
-     * @see #setMu(double)
-     * @see #getForceModels()
-     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public NewtonianAttraction getNewtonianAttractionForceModel() {
-        if (!hasNewtonianAttraction()) {
-            return null;
-        }
-        return (NewtonianAttraction) forceModels.get(forceModels.size() - 1);
-    }
-
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */

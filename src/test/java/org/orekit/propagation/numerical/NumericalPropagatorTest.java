@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -1470,43 +1469,23 @@ public class NumericalPropagatorTest {
     private static class ForceModelAdapter implements ForceModel {
 
         @Override
-        @Deprecated
-        public List<String> getParametersNames() {
-            return Collections.emptyList();
-        }
-
-        @Override
         public boolean isSupported(String name) {
             return false;
-        }
-
-        @Override
-        @Deprecated
-        public double getParameter(String name) throws MathIllegalArgumentException {
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    getParametersNames());
-        }
-
-        @Override
-        @Deprecated
-        public void setParameter(String name, double value)
-                throws MathIllegalArgumentException {
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    getParametersNames());
         }
 
         @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(
                 SpacecraftState s,
                 String name) throws OrekitException {
+            final ParameterDriver[] drivers =  getParametersDrivers();
+            final String[] names = new String[drivers.length];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = drivers[i].getName();
+            }
             throw new MathIllegalArgumentException(
                     OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                     name,
-                    getParametersNames());
+                    names);
         }
 
         @Override
@@ -1548,8 +1527,13 @@ public class NumericalPropagatorTest {
         @Override
         public ParameterDriver getParameterDriver(String name)
             throws OrekitException {
+            final ParameterDriver[] drivers =  getParametersDrivers();
+            final String[] names = new String[drivers.length];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = drivers[i].getName();
+            }
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, getParametersNames());
+                                      name, names);
         }
 
     }

@@ -16,16 +16,12 @@
  */
 package org.orekit.forces.radiation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.LocalizedODEFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -111,80 +107,5 @@ public interface RadiationSensitive {
                                                                      Rotation rotation, double mass, Vector3D flux,
                                                                      String paramName)
         throws OrekitException;
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @deprecated as of 8.0, replaced with {@link #getRadiationParametersDrivers()}
-     */
-    @Deprecated
-    default List<String> getRadiationParametersNames() {
-        final List<String> names = new ArrayList<String>();
-        for (final ParameterDriver driver : getRadiationParametersDrivers()) {
-            names.add(driver.getName());
-        }
-        return names;
-    }
-
-    /** Set the absorption coefficient.
-     * @param value absorption coefficient
-     * @exception OrekitException if parameter cannot be set
-     * @deprecated as of 8.0, replaced with {@link #getRadiationParametersDrivers()}
-     */
-    @Deprecated
-    default void setAbsorptionCoefficient(double value) throws OrekitException {
-        for (final ParameterDriver driver : getRadiationParametersDrivers()) {
-            if (driver.getName().equals(ABSORPTION_COEFFICIENT)) {
-                driver.setValue(value);
-                return;
-            }
-        }
-        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, ABSORPTION_COEFFICIENT);
-    }
-
-    /** Get the absorption coefficient.
-     * @return absorption coefficient
-     * @exception OrekitException if parameter cannot be set
-     * @deprecated as of 8.0, replaced with {@link #getRadiationParametersDrivers()}
-     */
-    @Deprecated
-    default double getAbsorptionCoefficient() throws OrekitException {
-        for (final ParameterDriver driver : getRadiationParametersDrivers()) {
-            if (driver.getName().equals(ABSORPTION_COEFFICIENT)) {
-                return driver.getValue();
-            }
-        }
-        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, ABSORPTION_COEFFICIENT);
-    }
-
-    /** Set the specular reflection coefficient.
-     * @param value specular reflection coefficient
-     * @exception OrekitException if parameter cannot be set
-     * @deprecated as of 8.0, replaced with {@link #getRadiationParametersDrivers()}
-     */
-    @Deprecated
-    default void setReflectionCoefficient(double value) throws OrekitException {
-        for (final ParameterDriver driver : getRadiationParametersDrivers()) {
-            if (driver.getName().equals(REFLECTION_COEFFICIENT)) {
-                driver.setValue(value);
-                return;
-            }
-        }
-        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, REFLECTION_COEFFICIENT);
-    }
-
-    /** Get the specular reflection coefficient.
-     * @return reflection coefficient
-     * @exception OrekitException if parameter cannot be set
-     * @deprecated as of 8.0, replaced with {@link #getRadiationParametersDrivers()}
-     */
-    @Deprecated
-    default double getReflectionCoefficient() throws OrekitException {
-        for (final ParameterDriver driver : getRadiationParametersDrivers()) {
-            if (driver.getName().equals(REFLECTION_COEFFICIENT)) {
-                return driver.getValue();
-            }
-        }
-        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, REFLECTION_COEFFICIENT);
-    }
 
 }

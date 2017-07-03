@@ -17,8 +17,6 @@
 package org.orekit.forces.drag;
 
 
-import java.util.List;
-
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -74,18 +72,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DragForceTest extends AbstractForceModelTest {
-
-    @Test
-    @Deprecated
-    public void testDeprecatedMethods() throws OrekitException {
-        final DragSensitive ds = new IsotropicDrag(2.5, 1.2);
-        final List<String> names = ds.getDragParametersNames();
-        Assert.assertEquals(1, names.size());
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, names.get(0));
-        Assert.assertEquals(1.2, ds.getDragCoefficient(), 1.0e-10);
-        ds.setDragCoefficient(10.0);
-        Assert.assertEquals(10.0, ds.getDragCoefficient(), 1.0e-10);
-    }
 
     @Test
     public void testParameterDerivativeSphere() throws OrekitException {

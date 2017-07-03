@@ -19,7 +19,6 @@ package org.orekit.forces.radiation;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
-import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -75,22 +74,6 @@ import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
-
-    @Test
-    @Deprecated
-    public void testDeprecatedMethods() throws OrekitException {
-        final RadiationSensitive rs = new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2);
-        final List<String> names = rs.getRadiationParametersNames();
-        Assert.assertEquals(2, names.size());
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, names.get(0));
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, names.get(1));
-        Assert.assertEquals(0.7, rs.getAbsorptionCoefficient(), 1.0e-10);
-        rs.setAbsorptionCoefficient(0.8);
-        Assert.assertEquals(0.8, rs.getAbsorptionCoefficient(), 1.0e-10);
-        Assert.assertEquals(0.2, rs.getReflectionCoefficient(), 1.0e-10);
-        rs.setReflectionCoefficient(0.3);
-        Assert.assertEquals(0.3, rs.getReflectionCoefficient(), 1.0e-10);
-    }
 
     @Test
     public void testLightingInterplanetary() throws OrekitException, ParseException {

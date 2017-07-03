@@ -16,10 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -173,94 +171,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
         freezeParametersSelection();
         return selected;
-    }
-
-    /** Get the names of the available parameters in the propagator.
-     * <p>
-     * The names returned depend on the force models set up in the propagator,
-     * including the Newtonian attraction from the central body.
-     * </p>
-     * @return available parameters
-     * @deprecated as of 8.0, this method is not needed anymore, as
-     * parameters selection is performed at force model level
-     */
-    @Deprecated
-    public List<String> getAvailableParameters() {
-        final List<String> available = new ArrayList<String>();
-        for (final ForceModel model : propagator.getAllForceModels()) {
-            for (final ParameterDriver driver : model.getParametersDrivers()) {
-                available.add(driver.getName());
-            }
-        }
-        return available;
-    }
-
-    /** Select the parameters to consider for Jacobian processing.
-     * <p>This method is deprecated. Starting with version 8.0, parameters
-     * selection is implemented at {@link ForceModel force models} level.</p>
-     * @param parameters parameters to consider for Jacobian processing
-     * @see NumericalPropagator#addForceModel(ForceModel)
-     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @deprecated as of 8.0, this method is not needed anymore, as
-     * parameters selection is performed at force model level
-     */
-    @Deprecated
-    public void selectParameters(final Iterable<String> parameters) {
-
-        // unselect everything
-        for (final ForceModel model : propagator.getAllForceModels()) {
-            for (final ParameterDriver driver : model.getParametersDrivers()) {
-                driver.setSelected(false);
-            }
-        }
-
-        // select the specified parameters
-        for (String param : parameters) {
-            for (final ForceModel model : propagator.getAllForceModels()) {
-                for (final ParameterDriver driver : model.getParametersDrivers()) {
-                    if (param.equals(driver.getName())) {
-                        driver.setSelected(true);
-                    }
-                }
-            }
-        }
-
-    }
-
-    /** Select the parameters to consider for Jacobian processing.
-     * <p>This method is deprecated. Starting with version 8.0, parameters
-     * selection is implemented at {@link ForceModel force models} level.</p>
-     * @param parameters parameters to consider for Jacobian processing
-     * @see NumericalPropagator#addForceModel(ForceModel)
-     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @deprecated as of 8.0, this method is not needed anymore, as
-     * parameters selection is performed at force model level
-     */
-    @Deprecated
-    public void selectParameters(final String... parameters) {
-        selectParameters(Arrays.asList(parameters));
-    }
-
-    /** Select the parameters to consider for Jacobian processing.
-     * <p>This method is deprecated. Starting with version 8.0, parameters
-     * selection is implemented at {@link ForceModel force models} level.</p>
-     * @param parameter parameter to consider for Jacobian processing
-     * @param ignored ignored parameter (used to be the step to use for
-     * computing Jacobian column using finite differences)
-     * @see NumericalPropagator#addForceModel(ForceModel)
-     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @deprecated as of 8.0, this method is not needed anymore, as
-     * parameters selection is performed at force model level
-     */
-    @Deprecated
-    public void selectParamAndStep(final String parameter, final double ignored) {
-        for (final ForceModel model : propagator.getAllForceModels()) {
-            for (final ParameterDriver driver : model.getParametersDrivers()) {
-                if (parameter.equals(driver.getName())) {
-                    driver.setSelected(true);
-                }
-            }
-        }
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.

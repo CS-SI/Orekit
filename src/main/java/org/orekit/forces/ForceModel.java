@@ -16,7 +16,6 @@
  */
 package org.orekit.forces;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -172,33 +171,5 @@ public interface ForceModel {
      * @see #getParametersDrivers()
      */
     boolean isSupported(String name);
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @see #isSupported(String)
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()}
-     */
-    @Deprecated
-    List<String> getParametersNames();
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @exception OrekitException if parameter is not supported
-     * @deprecated as of 8.0, replaced with
-     * {@link #getParameterDriver(String)}.{@link ParameterDriver#getName()}
-     */
-    @Deprecated
-    double getParameter(String name) throws OrekitException;
-
-    /** Set the value for a given parameter.
-     * @param name parameter name
-     * @param value parameter value
-     * @exception OrekitException if parameter is not supported
-     * @deprecated as of 8.0, replaced with
-     * {@link #getParameterDriver(String)}.{@link ParameterDriver#setValue(double)}
-     */
-    @Deprecated
-    void setParameter(String name, double value) throws OrekitException;
 
 }
