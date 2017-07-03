@@ -36,34 +36,39 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-/** Loader for EOP 08 C04 files.
- * <p>EOP 08 C04 files contain {@link EOPEntry
- * Earth Orientation Parameters} consistent with ITRF2008 for one year periods.</p>
- * <p>The EOP 08 C04 files are recognized thanks to their base names, which
- * must match one of the patterns <code>eopc04_08_IAU2000.##</code> or
- * <code>eopc04_08.##</code> (or the same ending with <code>.gz</code> for
+/** Loader for EOP xx C04 files.
+ * <p>EOP xx C04 files contain {@link EOPEntry
+ * Earth Orientation Parameters} consistent with ITRF20xx for one year periods, with various
+ * xx (05, 08, 14) depending on the data source.</p>
+ * <p>The EOP xx C04 files retrieved from the ftp site
+ * <a href="ftp://ftp.iers.org/products/eop/long-term/">ftp://ftp.iers.org/products/eop/long-term/</a>
+ * are recognized thanks to their base names, which must match one of the patterns
+ * {@code eopc04_##_IAU2000.##} or {@code eopc04_##.##} (or the same ending with <code>.gz</code> for
  * gzip-compressed files) where # stands for a digit character.</p>
+ * <p>
+ * Beware that files retrieved from the web site
+ * <a href="http://hpiers.obspm.fr/eoppc/eop/">http://hpiers.obspm.fr/eoppc/eop/</a> do
+ * <em>not</em> follow the same naming convention. They lack the _05, _08 or _14
+ * marker (and for EOP 14 C04 even the directory does not have this marker anymore...),
+ * so all the files in this site have the same name and can easily be confused. This is the reason
+ * why the default regular expression in {@link FramesFactory} does not recognize them and
+ * enforces the year marker presence.
+ * </p>
  * <p>Between 2002 and 2007, another series of Earth Orientation Parameters was
- * in use: EOPC04 (without the 08). These parameters were consistent with the
+ * in use: EOPC04 (without the _##). These parameters were consistent with the
  * previous ITRS realization: ITRF2000.</p>
- * <p>Between 2008 and 20011, another series of Earth Orientation Parameters was
- * in use: EOP 05 C04 (instead of 08). These parameters were consistent with the
- * previous ITRS realization: ITRF2005.</p>
- * <p>These files are no longer provided by IERS and only the new files consistent
- * with ITRF 2008 are available now (as of early 2013). The content of the older
- * pre-2005 files is not the same as the content of the new files supported by this class,
- * however IERS uses the same file naming convention for all of them. If a file from the older
- * series is found by this class, a parse error will be triggered. Users must remove
- * such files to avoid being lured in believing they do have EOP data.</p>
- * <p>Files containing old data (back to 1962) have been regenerated in the new file
- * format and are available at IERS web site: <a
- * href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">Index of /eoppc/eop/eopc04</a>.</p>
+ * <p>Since 2008, several series of Earth Orientation Parameters have been available:
+ * EOP 05 C04 consistent with ITRF 2005, EOP 08 C04 consistent with ITRF 2008, and
+ * EOP 14 C04 consistent with ITRF 2014. As of mid 2017, only the EOP 08 C04 and
+ * EOP 14 C04 are updated for current years.</p>
+ * <p>Files are available at IERS FTP site: <a
+ * href="ftp://ftp.iers.org/products/eop/long-term/">ftp://ftp.iers.org/products/eop/long-term/</a>.</p>
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
  */
-class EOP08C04FilesLoader implements EOPHistoryLoader {
+class EOPC04FilesLoader implements EOPHistoryLoader {
 
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
@@ -113,7 +118,7 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
         //
         COLUMNS_HEADER_PATTERN = Pattern.compile("^ *Date +MJD +x +y +UT1-UTC +LOD +((?:dPsi +dEps)|(?:dX +dY)) .*");
 
-        // The data lines in the EOP 08 C04 yearly data files have the following fixed form:
+        // The data lines in the EOP C04 yearly data files have the following fixed form:
         // year month day MJD ...12 floating values fields in decimal format...
         // 2000   1   1  51544   0.043242   0.377915   0.3554777   ...
         // 2000   1   2  51545   0.043515   0.377753   0.3546065   ...
@@ -138,10 +143,10 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** Build a loader for IERS EOP 08 C04 files.
+    /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      */
-    EOP08C04FilesLoader(final String supportedNames) {
+    EOPC04FilesLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 

@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added support for ITRF 2014.
+        As of mid-2017, depending on the source of EOP, the ITRF retrieved using
+        FramesFactory.getITRF will be either ITRF-2014 (if using EOP 14 C04) or
+        ITRF-2008 (if using EOP 08 C04, bulletins A, bulletins B, or finals .all).
+        If another ITRF is needed, it can be built using HelmertTransformation.
+      </action>
       <action dev="luc" type="remove">
         Removed classes and methods deprecated in 8.0.
       </action>

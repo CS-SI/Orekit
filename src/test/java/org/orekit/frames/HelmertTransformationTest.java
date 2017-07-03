@@ -33,6 +33,7 @@ public class HelmertTransformationTest {
 
     @Test
     public void testHelmert20052008() throws OrekitException {
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2005 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005.createTransformedITRF(itrf2008, "2005");
@@ -61,6 +62,7 @@ public class HelmertTransformationTest {
 
     @Test
     public void testHelmert20002005() throws OrekitException {
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
@@ -91,6 +93,7 @@ public class HelmertTransformationTest {
 
     @Test
     public void testHelmert19972000() throws OrekitException {
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
@@ -121,6 +124,7 @@ public class HelmertTransformationTest {
 
     @Test
     public void testHelmert19932000() throws OrekitException {
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
                 HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
@@ -147,6 +151,37 @@ public class HelmertTransformationTest {
         error         = generalOffset.subtract(linearOffset);
         Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos93.getNorm()));
 
+    }
+
+    @Test
+    public void test2014PivotVs2008Pivot() throws OrekitException {
+
+        // for this test, we arbitrarily assume FramesFactory provides an ITRF 2014
+        Frame itrf2014 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf2008 = HelmertTransformation.Predefined.ITRF_2014_TO_ITRF_2008.createTransformedITRF(itrf2014, "2008");
+
+        for (final HelmertTransformation.Predefined p2008 : HelmertTransformation.Predefined.values()) {
+            if (p2008.toString().startsWith("ITRF_2008_TO")) {
+                HelmertTransformation.Predefined p2014 =
+                                HelmertTransformation.Predefined.valueOf(p2008.toString().replaceAll("2008", "2014"));
+                Frame itrfXFrom2008 = p2008.createTransformedITRF(itrf2008, "x-from-2008");
+                Frame itrfXFrom2014 = p2014.createTransformedITRF(itrf2014, "x-from-2014");
+                for (int year = 2000; year < 2007; ++year) {
+                    AbsoluteDate date = new AbsoluteDate(year, 4, 17, 12, 0, 0, TimeScalesFactory.getTT());
+                    Transform t = itrfXFrom2014.getTransformTo(itrfXFrom2008, date);
+                    // the errors are not strictly zero (but they are very small) because
+                    // Helmert transformations are a translation plus a rotation. If we do
+                    // t1 -> r1 -> t2 -> r2, it is not the same as t1 -> t2 -> r1 -> r2
+                    // which would correspond to simply add the offsets, velocities, rotations and rate,
+                    // which is what is done in the reference documents. Anyway, the non-commutativity
+                    // errors are well below models accuracy
+                    Assert.assertEquals(0, t.getTranslation().getNorm(),  6.0e-6);
+                    Assert.assertEquals(0, t.getVelocity().getNorm(),     2.0e-22);
+                    Assert.assertEquals(0, t.getRotation().getAngle(),    2.0e-12);
+                    Assert.assertEquals(0, t.getRotationRate().getNorm(), 2.0e-32);
+                }
+            }
+        }
     }
 
     private Vector3D computeOffsetLinearly(final double t1,    final double t2,    final double t3,

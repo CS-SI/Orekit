@@ -168,7 +168,7 @@ public class FramesFactory {
     public static final String RAPID_DATA_PREDICTION_XML_1980_FILENAME = "^finals\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04_08\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04_\\d\\d\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -180,7 +180,7 @@ public class FramesFactory {
     public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_08_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04_\\d\\d_IAU2000\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -209,7 +209,7 @@ public class FramesFactory {
 
     /** Add the default loaders EOP history (IAU 1980 precession/nutation).
      * <p>
-     * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
+     * The default loaders look for IERS EOP C04 and bulletins B files. They
      * correspond to {@link IERSConventions#IERS_1996 IERS 1996} conventions.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
@@ -218,13 +218,13 @@ public class FramesFactory {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
@@ -247,7 +247,7 @@ public class FramesFactory {
         final String eopcNames =
                 (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
@@ -260,7 +260,7 @@ public class FramesFactory {
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
      * <p>
-     * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
+     * The default loaders look for IERS EOP C04 and bulletins B files. They
      * correspond to both {@link IERSConventions#IERS_2003 IERS 2003} and {@link
      * IERSConventions#IERS_2010 IERS 2010} conventions.
      * </p>
@@ -270,13 +270,13 @@ public class FramesFactory {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
@@ -303,9 +303,9 @@ public class FramesFactory {
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
