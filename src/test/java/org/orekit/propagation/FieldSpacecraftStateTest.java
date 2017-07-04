@@ -327,7 +327,6 @@ public class FieldSpacecraftStateTest {
     // (expected=IllegalArgumentException.class)
     private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) throws OrekitException {
 
-        T one = field.getOne();
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
         T e = zero.add(rOrbit.getE());
