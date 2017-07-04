@@ -41,7 +41,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -141,8 +140,10 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
+
         // Get the position in body frame
         final AbsoluteDate date = s.getDate();
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
@@ -293,10 +294,8 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             aZ -= mu * sum2 / r2;
 
         }
-        // provide the perturbing acceleration to the derivatives adder in inertial frame
-        final Vector3D accInInert =
-            bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
-        adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
+
+        return bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
 
     }
 
@@ -493,7 +492,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         final FieldVector3D<T> accInInert =
             bodyToInertial.transformVector(new FieldVector3D<>(aX, aY, aZ));
-        adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
+        adder.addNonKeplerianAcceleration(accInInert);
     }
 
 }

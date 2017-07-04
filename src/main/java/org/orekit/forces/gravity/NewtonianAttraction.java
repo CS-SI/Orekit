@@ -90,7 +90,37 @@ public class NewtonianAttraction extends AbstractForceModel {
         this.factory = new DSFactory(1, 1);
     }
 
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return mu;
+    }
+
     /** {@inheritDoc} */
+    @Override
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
+        throws OrekitException {
+        final double r2 = s.getPVCoordinates().getPosition().getNormSq();
+        return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
                                                                       final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
@@ -102,6 +132,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
@@ -114,37 +145,20 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     }
 
-    /** Get the central attraction coefficient μ.
-     * @return mu central attraction coefficient (m³/s²)
-     */
-    public double getMu() {
-        return mu;
-    }
-
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
-        adder.addKeplerContribution(mu);
-    }
-
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
-        adder.addKeplerContribution(mu);
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
     }

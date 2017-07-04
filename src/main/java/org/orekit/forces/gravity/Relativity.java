@@ -35,7 +35,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -100,9 +99,10 @@ public class Relativity extends AbstractForceModel {
         this.gm = gm;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder) throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s)
+        throws OrekitException {
 
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D p = pv.getPosition();
@@ -114,13 +114,13 @@ public class Relativity extends AbstractForceModel {
         final double s2 = v.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
-        final Vector3D accel = new Vector3D(
+        return new Vector3D(
                 4 * this.gm / r - s2,
                 p,
                 4 * p.dotProduct(v),
                 v)
                 .scalarMultiply(this.gm / (r2 * r * c2));
-        adder.addAcceleration(accel, s.getFrame());
+
     }
 
     @Override
@@ -205,7 +205,7 @@ public class Relativity extends AbstractForceModel {
                                                            p,
                                                            p.dotProduct(v).multiply(4),
                                                            v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
-        adder.addAcceleration(accel, s.getFrame()); //TODO NOT TESTED
+        adder.addNonKeplerianAcceleration(accel);
     }
 
 }

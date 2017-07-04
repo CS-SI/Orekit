@@ -35,11 +35,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.FieldAbsoluteDate;
@@ -361,6 +361,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         }
 
         /** {@inheritDoc} */
+        @Override
         public T[] computeDerivatives(final FieldSpacecraftState<T> state) throws OrekitException {
             final T zero = state.getA().getField().getZero();
             orbit = state.getOrbit();
@@ -377,27 +378,25 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         }
 
         /** {@inheritDoc} */
+        @Override
         public void addKeplerContribution(final double mu) {
             orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }
 
         /** {@inheritDoc} */
-        public void addXYZAcceleration(final T x, final T y, final T z) {
+        @Override
+        public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma)
+            throws OrekitException {
             for (int i = 0; i < 6; ++i) {
                 final T[] jRow = jacobian[i];
-                yDot[i] = yDot[i].add(jRow[3].linearCombination(jRow[3], x, jRow[4], y, jRow[5], z));
+                yDot[i] = yDot[i].add(jRow[3].linearCombination(jRow[3], gamma.getX(),
+                                                                jRow[4], gamma.getY(),
+                                                                jRow[5], gamma.getZ()));
             }
         }
 
         /** {@inheritDoc} */
-        public void addAcceleration(final FieldVector3D<T> gamma, final Frame frame)
-            throws OrekitException {
-            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate().toAbsoluteDate());
-            final FieldVector3D<T> gammInRefFrame = t.transformVector(gamma);
-            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public void addMassDerivative(final T q) {
             if (q.getReal() > 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);

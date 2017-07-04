@@ -27,7 +27,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -315,16 +314,9 @@ public class Jacobianizer {
         }
 
         /** {@inheritDoc} */
-        public void addXYZAcceleration(final double x, final double y, final double z) {
-            acceleration = acceleration.add(new Vector3D(x, y, z));
-        }
-
-        /** {@inheritDoc} */
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
+        public void addNonKeplerianAcceleration(final Vector3D gamma)
             throws OrekitException {
-            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
-            final Vector3D gammInRefFrame = t.transformVector(gamma);
-            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
+            acceleration = acceleration.add(gamma);
         }
 
         /** {@inheritDoc} */

@@ -37,7 +37,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -109,7 +108,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         final AbsoluteDate date         = s.getDate();
@@ -122,11 +122,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
         final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
-        final Vector3D acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                               s.getMass(), flux);
-
-        // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(acceleration, s.getFrame());
+        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                        s.getMass(), flux);
 
     }
 
@@ -511,7 +508,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
                                                                                s.getMass(), flux);
 
         // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(acceleration, s.getFrame());
+        adder.addNonKeplerianAcceleration(acceleration);
     }
 
     @Override

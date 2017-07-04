@@ -46,7 +46,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -1043,7 +1042,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         // get the position in body frame
@@ -1053,8 +1053,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        return fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
+
     }
 
     /** {@inheritDoc} */
@@ -1069,7 +1069,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // gradient of the non-central part of the gravity field
         final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        adder.addNonKeplerianAcceleration(gInertial);
     }
 
     /** {@inheritDoc} */

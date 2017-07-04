@@ -40,7 +40,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -141,7 +140,8 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         // get the position in body frame
@@ -377,9 +377,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         }
 
         // compute acceleration in inertial frame
-        final Vector3D acceleration =
-            fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
-        adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
+        return fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
 
     }
 
@@ -663,7 +661,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         // compute acceleration in inertial frame
         final FieldVector3D<T> acceleration =
             fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
-        adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
+        adder.addNonKeplerianAcceleration(acceleration);
     }
 
 }

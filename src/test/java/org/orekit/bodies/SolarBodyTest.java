@@ -54,7 +54,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -453,7 +452,8 @@ public class SolarBodyTest {
         }
 
         /** {@inheritDoc} */
-        public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+        @Override
+        public Vector3D acceleration(final SpacecraftState s)
             throws OrekitException {
 
             // compute bodies separation vectors and squared norm
@@ -462,11 +462,7 @@ public class SolarBodyTest {
             final double r2Sat           = satToBody.getNormSq();
 
             // compute relative acceleration
-            final Vector3D gamma =
-                new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
-
-            // add contribution to the ODE second member
-            adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
+            return new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody);
 
         }
 

@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -50,11 +49,7 @@ public abstract class AbstractForceModelTest {
         public void addKeplerContribution(double mu) {
         }
 
-        public void addXYZAcceleration(double x, double y, double z) {
-            acceleration = new Vector3D(x, y, z);
-        }
-
-        public void addAcceleration(Vector3D gamma, Frame frame) {
+        public void addNonKeplerianAcceleration(Vector3D gamma) {
             acceleration = gamma;
         }
 

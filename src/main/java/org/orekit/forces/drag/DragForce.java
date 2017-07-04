@@ -36,7 +36,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -75,13 +74,9 @@ public class DragForce extends AbstractForceModel {
         this.spacecraft = spacecraft;
     }
 
-    /** Compute the contribution of the drag to the perturbing acceleration.
-     * @param s the current state information : date, kinematics, attitude
-     * @param adder object where the contribution should be added
-     * @exception OrekitException if some specific error occurs
-     */
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder)
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         final AbsoluteDate date     = s.getDate();
@@ -92,12 +87,12 @@ public class DragForce extends AbstractForceModel {
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
-        // Addition of calculated acceleration to adder
-        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                          s.getMass(), rho, relativeVelocity), frame);
+        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                           s.getMass(), rho, relativeVelocity);
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
@@ -112,8 +107,8 @@ public class DragForce extends AbstractForceModel {
         final FieldVector3D<T> relativeVelocity = s.getPVCoordinates().getVelocity().negate().add(vAtm);
 
         // Addition of calculated acceleration to adder
-        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                          s.getMass(), rho, relativeVelocity), frame);
+        adder.addNonKeplerianAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                                      s.getMass(), rho, relativeVelocity));
     }
 
     /** There are no discrete events for this model.

@@ -33,7 +33,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -283,7 +282,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     protected Vector3D getAcceleration(final SpacecraftState state)
         throws OrekitException {
-        final AccelerationRetriever retriever = new AccelerationRetriever(state);
+        final AccelerationRetriever retriever = new AccelerationRetriever();
         contribution.addContribution(state, retriever);
 
         return retriever.getAcceleration();
@@ -393,15 +392,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** acceleration vector. */
         private Vector3D acceleration;
 
-        /** state. */
-        private final SpacecraftState state;
-
         /** Simple constructor.
-         *  @param state input state
          */
-        AccelerationRetriever(final SpacecraftState state) {
+        AccelerationRetriever() {
             this.acceleration = Vector3D.ZERO;
-            this.state = state;
         }
 
         /** {@inheritDoc} */
@@ -411,16 +405,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         /** {@inheritDoc} */
         @Override
-        public void addXYZAcceleration(final double x, final double y, final double z) {
-            acceleration = new Vector3D(x, y, z);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
+        public void addNonKeplerianAcceleration(final Vector3D gamma)
             throws OrekitException {
-            acceleration = frame.getTransformTo(state.getFrame(),
-                                                state.getDate()).transformVector(gamma);
+            acceleration = gamma;
         }
 
         /** {@inheritDoc} */

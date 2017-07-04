@@ -1498,6 +1498,13 @@ public class NumericalPropagatorTest {
                         FieldTimeDerivativesEquations<T> adder) {
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D acceleration(final SpacecraftState s)
+            throws OrekitException {
+            return Vector3D.ZERO;
+        }
+
         @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(
                 AbsoluteDate date,
