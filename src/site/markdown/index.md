@@ -33,7 +33,7 @@
 
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
-    * predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008
+    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, tnw and qsw
       local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
@@ -76,7 +76,8 @@
       * gravity models including time-dependent like trends and pulsations
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
+      * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and 2008, NRL MSISE 2000,
+        Harris-Priester and simple exponential models),
         and Marshall solar Activity Future Estimation, optionally with lift component
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
@@ -123,8 +124,8 @@
       * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
         as seen from an observer (typically a ground station)
       * raising/setting with respect to a ground location
-        (with customizable triggering elevation)
-      * date
+        (with customizable triggering elevation and ground mask, optionally considering refraction)
+      * date and on-the-fly resetting countdown
       * latitude, longitude, altitude crossing
       * latitude, longitude extremum
       * elevation extremum
@@ -137,11 +138,12 @@
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
-    * possibility of filtering events based on their direction (for example to detect
+    * events filtering based on their direction (for example to detect
       only eclipse entries and not eclipse exits)
-    * possibility of filtering events based on an external enabling function (for
+    * events filtering  based on an external enabling function (for
       example to detect events only during selected orbits and not others)
-    * possibility to run several propagators in parallel and manage their states
+    * events combination with boolean operators
+    * ability to run several propagators in parallel and manage their states
        simultaneously throughout propagation
 
   * Attitude
@@ -155,12 +157,13 @@
 
   * Orbit determination
   
-    * batch least squares fitting of
-      * orbital parameters (or only a subset if desired)
-      * force model parameters (drag coefficients, radiation pressure coefficients,
+    * batch least squares fitting
+      * orbital parameters estimation (or only a subset if desired)
+      * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
-      * measurements parameters (biases, station position, pole motion and rate,
+      * measurements parameters estimation (biases, station position, pole motion and rate,
         prime meridian correction and rate)
+    * multi-satellites orbit determination
     * several predefined measurements
       * range
       * range rate (one way and two way)
