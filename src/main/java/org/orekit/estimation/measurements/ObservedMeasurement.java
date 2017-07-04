@@ -111,7 +111,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
     /** Add a modifier.
      * <p>
      * The modifiers are applied in the order in which they are added in order to
-     * {@link #estimate(int, int, SpacecraftState) evaluate} the measurement.
+     * {@link #estimate(int, int, SpacecraftState[]) estimate} the measurement.
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
@@ -135,7 +135,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * related to this measurement.
      * <p>
      * The propagators are indexed starting from 0 and ordered according to
-     * the order of the {@link org.orekit.propoagation.conversion.PropagatorBuilder
+     * the order of the {@link org.orekit.propagation.conversion.PropagatorBuilder
      * propagators builders} in the orbit determination engine used.
      * </p>
      * @return indices of the {@link org.orekit.propagation.Propagator propagators}

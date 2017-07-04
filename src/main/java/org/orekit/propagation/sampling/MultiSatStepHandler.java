@@ -41,7 +41,7 @@ public interface MultiSatStepHandler {
      * The default method does nothing
      * </p>
      * @param states0 initial states, one for each satellite in the same order
-     * used to {@link org.orekit.propagation.PropagatorsParallelizer#MultiSatPropagator(List)
+     * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}.
      * @param t target time for the integration
      * @exception OrekitException if step handler cannot be initialized
@@ -57,7 +57,7 @@ public interface MultiSatStepHandler {
      * all interpolators have the same time range.
      * </p>
      * @param interpolators interpolators set up for the current step in the same order
-     * used to {@link org.orekit.propagation.PropagatorsParallelizer#MultiSatPropagator(List)
+     * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}
      * @param isLast if true, this is the last integration step
      * @exception OrekitException if step cannot be handled

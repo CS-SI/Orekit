@@ -191,7 +191,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param states orbital states at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
-     * @see #estimate(int, int, SpacecraftState)
+     * @see #estimate(int, int, SpacecraftState[])
      */
     protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states)
         throws OrekitException;

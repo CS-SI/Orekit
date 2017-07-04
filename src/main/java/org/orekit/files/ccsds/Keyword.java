@@ -438,7 +438,7 @@ public enum Keyword {
     /** Data: Ranging power to noise spectral density ratio (Pr/No) [dBHz]. */
     PR_N0,
     /** Data: Range value [km, s or RU].
-     * @see RANGE_UNITS
+     * @see #RANGE_UNITS
      */
     RANGE,
     /** Data: Received frequencies [Hz].<p>

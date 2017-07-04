@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitMessages;
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedPVCoordinates} and
  * {@link TimeStampedFieldPVCoordinates} interpolation.
  * @see TimeStampedPVCoordinates#interpolate(org.orekit.time.AbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
- * @see TimeStampedFieldPVCoordinates#interpolate(org.orekit.time.AbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
+ * @see TimeStampedFieldPVCoordinates#interpolate(org.orekit.time.FieldAbsoluteDate, CartesianDerivativesFilter, java.util.Collection)
  * @see AngularDerivativesFilter
  * @author Luc Maisonobe
  * @since 7.0
