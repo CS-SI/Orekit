@@ -240,7 +240,13 @@ interoperability in space systems.
 ## Maintained library
 
 Orekit has been in development since 2002 inside [CS Systèmes
-d'Information](http://www.c-s.fr/) and is still used and maintained by its space dynamics experts.
+d'Information](http://www.c-s.fr/) and is still used and maintained by its
+experts and an open community. It is ruled by a meritocratic governance
+model and the Project Management Committee involves actors from
+industry (CS, Thales Alenia Space, Applied Defense Solutions), research
+(Naval Research Laboratory), agencies (European Space Operations Centre,
+European Space Research and Technology Centre) and academics (University
+at Buffalo, Institut National Supérieur de l'Aéronautique et de l'Espace - Sup'Aéro).
 
 Orekit has already been successfully used during the real time monitoring of the rendez-vous
 phase between the Automated Transfer Vehicle (ATV) and the International Space Station (ISS)
