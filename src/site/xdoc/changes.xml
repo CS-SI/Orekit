@@ -22,7 +22,7 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="update">
-        Make NRL MSISE 2000 thread-safe.
+        Make NRL MSISE 2000 thread-safe and field-aware.
       </action>
       <action dev="luc" type="update">
         Make DTM2000 thread-safe and field-aware.

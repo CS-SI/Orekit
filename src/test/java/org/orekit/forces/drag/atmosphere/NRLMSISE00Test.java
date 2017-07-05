@@ -20,9 +20,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +46,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -67,120 +79,109 @@ public class NRLMSISE00Test {
         double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
         final boolean print = false;
 
-        Constructor<NRLMSISE00.Output> cons =
-                        NRLMSISE00.Output.class.getDeclaredConstructor(NRLMSISE00.class,
-                                                                       Integer.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       double[].class);
-        cons.setAccessible(true);
-        Method gtd7 = NRLMSISE00.Output.class.getDeclaredMethod("gtd7", Double.TYPE);
+        Method gtd7 = getOutputClass().getDeclaredMethod("gtd7", Double.TYPE);
         gtd7.setAccessible(true);
 
         // Case #1
-        final NRLMSISE00.Output out1 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out1 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out1, alt);
         checkLegacy(1, out1, print);
 
         // Case #2
         final int doy2 = 81;
-        final NRLMSISE00.Output out2 = cons.newInstance(atm, doy2, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out2 = createOutput(atm, doy2, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out2, alt);
         checkLegacy(2, out2, print);
 
         // Case #3
         final double sec3 = 75000.;
         final double alt3 = 1000.;
-        final NRLMSISE00.Output out3 = cons.newInstance(atm, doy, sec3, lat, lon, hl, f107a, f107, ap);
+        final Object out3 = createOutput(atm, doy, sec3, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out3, alt3);
         checkLegacy(3, out3, print);
 
         // Case #4
         final double alt4 = 100.;
-        final NRLMSISE00.Output out4 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out4 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out4, alt4);
         checkLegacy(4, out4, print);
 
         // Case #5
         final double lat5 = 0.;
-        final NRLMSISE00.Output out5 = cons.newInstance(atm, doy, sec, lat5, lon, hl, f107a, f107, ap);
+        final Object out5 = createOutput(atm, doy, sec, lat5, lon, hl, f107a, f107, ap);
         gtd7.invoke(out5, alt);
         checkLegacy(5, out5, print);
 
         // Case #6
         final double lon6 = 0.;
-        final NRLMSISE00.Output out6 = cons.newInstance(atm, doy, sec, lat, lon6, hl, f107a, f107, ap);
+        final Object out6 = createOutput(atm, doy, sec, lat, lon6, hl, f107a, f107, ap);
         gtd7.invoke(out6, alt);
         checkLegacy(6, out6, print);
 
         // Case #7
         final double hl7 = 4.;
-        final NRLMSISE00.Output out7 = cons.newInstance(atm, doy, sec, lat, lon, hl7, f107a, f107, ap);
+        final Object out7 = createOutput(atm, doy, sec, lat, lon, hl7, f107a, f107, ap);
         gtd7.invoke(out7, alt);
         checkLegacy(7, out7, print);
 
         // Case #8
         final double f107a8 = 70.;
-        final NRLMSISE00.Output out8 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a8, f107, ap);
+        final Object out8 = createOutput(atm, doy, sec, lat, lon, hl, f107a8, f107, ap);
         gtd7.invoke(out8, alt);
         checkLegacy(8, out8, print);
 
         // Case #9
         final double f1079 = 180.;
-        final NRLMSISE00.Output out9 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f1079, ap);
+        final Object out9 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f1079, ap);
         gtd7.invoke(out9, alt);
         checkLegacy(9, out9, print);
 
         // Case #10
         ap[0] = 40.;
-        final NRLMSISE00.Output out10 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out10 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out10, alt);
         checkLegacy(10, out10, print);
         ap[0] = 4.;
 
         // Case #11
         final double alt11 =  0.;
-        final NRLMSISE00.Output out11 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out11 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out11, alt11);
         checkLegacy(11, out11, print);
 
         // Case #12
         final double alt12 = 10.;
-        final NRLMSISE00.Output out12 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out12 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out12, alt12);
         checkLegacy(12, out12, print);
 
         // Case #13
         final double alt13 = 30.;
-        final NRLMSISE00.Output out13 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out13 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out13, alt13);
         checkLegacy(13, out13, print);
 
         // Case #14
         final double alt14 = 50.;
-        final NRLMSISE00.Output out14 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out14 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out14, alt14);
         checkLegacy(14, out14, print);
 
         // Case #15
         final double alt15 = 70.;
-        final NRLMSISE00.Output out15 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out15 = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out15, alt15);
         checkLegacy(15, out15, print);
 
         // Case #16
         NRLMSISE00 otherAtm = atm.withSwitch(9, -1);
-        final NRLMSISE00.Output out16 = cons.newInstance(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out16 = createOutput(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out16, alt);
         checkLegacy(16, out16, print);
 
         // Case #17
         final double alt17 = 100.;
-        final NRLMSISE00.Output out17 = cons.newInstance(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        final Object out17 = createOutput(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
         gtd7.invoke(out17, alt17);
         checkLegacy(17, out17, print);
 
@@ -191,7 +192,7 @@ public class NRLMSISE00Test {
                               InstantiationException, IllegalAccessException,
                               IllegalArgumentException, InvocationTargetException,
                               NoSuchMethodException, SecurityException {
-        // Build the iput params provider
+        // Build the input params provider
         final InputParams ip = new InputParams();
         // Get Sun
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -219,23 +220,137 @@ public class NRLMSISE00Test {
         final double lst = 29000. / 3600. - 70. / 15.;
         final double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
 
-        Constructor<NRLMSISE00.Output> cons =
-                        NRLMSISE00.Output.class.getDeclaredConstructor(NRLMSISE00.class,
-                                                                       Integer.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       Double.TYPE,
-                                                                       double[].class);
+        Class<?> outputClass = getOutputClass();
+        Constructor<?> cons = outputClass.getDeclaredConstructor(NRLMSISE00.class,
+                                                                 Integer.TYPE,
+                                                                 Double.TYPE,
+                                                                 Double.TYPE,
+                                                                 Double.TYPE,
+                                                                 Double.TYPE,
+                                                                 Double.TYPE,
+                                                                 Double.TYPE,
+                                                                 double[].class);
         cons.setAccessible(true);
-        Method gtd7 = NRLMSISE00.Output.class.getDeclaredMethod("gtd7", Double.TYPE);
-        gtd7.setAccessible(true);
+        Method gtd7d = outputClass.getDeclaredMethod("gtd7d", Double.TYPE);
+        gtd7d.setAccessible(true);
+        Method getDensity = outputClass.getDeclaredMethod("getDensity", Integer.TYPE);
+        getDensity.setAccessible(true);
 
-        final NRLMSISE00.Output out = cons.newInstance(atm, 172, 29000., 60., -70, lst, 150., 150., ap);
-        out.gtd7d(400.0);
-        Assert.assertEquals(rho, out.getDensity(5), rho * 1.e-3);
+        final Object out = createOutput(atm, 172, 29000., 60., -70, lst, 150., 150., ap);
+        gtd7d.invoke(out, 400.0);
+        Assert.assertEquals(rho, ((Double) getDensity.invoke(out, 5)).doubleValue(), rho * 1.e-3);
+
+    }
+
+    @Test
+    public void testDensityField() throws OrekitException {
+        // Build the input params provider
+        final InputParams ip = new InputParams();
+        // Get Sun
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        // Get Earth body shape
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        // Build the model
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth);
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 172),
+                                                   new TimeComponents(29000.),
+                                                   TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
+        // Build the position
+        final double alt = 400.;
+        final double lat =  60.;
+        final double lon = -70.;
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(lat),
+                                                      FastMath.toRadians(lon),
+                                                      alt * 1000.);
+        final Vector3D pos = earth.transform(point);
+        Field<Decimal64> field = Decimal64Field.getInstance();
+
+        // Run
+        final double    rho = atm.getDensity(date, pos, itrf);
+        final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                               new FieldVector3D<>(field.getOne(), pos),
+                                               itrf);
+
+        Assert.assertEquals(rho, rho64.getReal(), rho * 2.0e-13);
+
+    }
+
+    @Test
+    public void testDensityGradient() throws OrekitException {
+        // Build the input params provider
+        final InputParams ip = new InputParams();
+        // Get Sun
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        // Get Earth body shape
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        // Build the model
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth);
+        // Build the date
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 172),
+                                                   new TimeComponents(29000.),
+                                                   TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
+        // Build the position
+        final double alt = 400.;
+        final double lat =  60.;
+        final double lon = -70.;
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(lat),
+                                                      FastMath.toRadians(lon),
+                                                      alt * 1000.);
+        final Vector3D pos = earth.transform(point);
+
+        // Run
+        DerivativeStructure zero = new DSFactory(1, 1).variable(0, 0.0);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 10.0);
+        DerivativeStructure  rhoX = differentiator.
+                        differentiate((double x) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, x, Vector3D.PLUS_I), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+        DerivativeStructure  rhoY = differentiator.
+                        differentiate((double y) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, y, Vector3D.PLUS_J), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+        DerivativeStructure  rhoZ = differentiator.
+                        differentiate((double z) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, z, Vector3D.PLUS_K), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+
+        DSFactory factory3 = new DSFactory(3, 1);
+        Field<DerivativeStructure> field = factory3.getDerivativeField();
+        final DerivativeStructure rhoDS = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                         new FieldVector3D<>(factory3.variable(0, pos.getX()),
+                                                                             factory3.variable(1, pos.getY()),
+                                                                             factory3.variable(2, pos.getZ())),
+                                                         itrf);
+
+        Assert.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-13);
+        Assert.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-13);
+        Assert.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-13);
+        Assert.assertEquals(rhoX.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(1, 0, 0),
+                            FastMath.abs(2.0e-10 * rhoX.getPartialDerivative(1)));
+        Assert.assertEquals(rhoY.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(0, 1, 0),
+                            FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
+        Assert.assertEquals(rhoZ.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(0, 0, 1),
+                            FastMath.abs(2.0e-10 * rhoY.getPartialDerivative(1)));
 
     }
 
@@ -265,7 +380,400 @@ public class NRLMSISE00Test {
         }
     }
 
-    private void checkLegacy(final int nb, final NRLMSISE00.Output out, final boolean print) {
+    @Test
+    public void testGlobe7SwitchesOn() throws OrekitException {
+        RandomGenerator random = new Well19937a(0xb9d06451353d23cbl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 1);
+        }
+        doTestDoubleMethod(atm, random, "globe7", 2.0e-14, 2.0e-16);
+    }
+
+    @Test
+    public void testGlobe7SwitchesOff() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x778b486a40464b8fl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 0);
+        }
+        doTestDoubleMethod(atm, random, "globe7", 1.0e-50, 1.0e-50);
+    }
+
+    @Test
+    public void testGlobe7SwitchesRandom() throws OrekitException {
+        RandomGenerator random = new Well19937a(0xe20a69235cc9583dl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, random.nextInt(3) - 2);
+        }
+        doTestDoubleMethod(atm, random, "globe7", 3.0e-14, 4.0e-16);
+    }
+
+    @Test
+    public void testGlob7sSwitchesOn() throws OrekitException {
+        RandomGenerator random = new Well19937a(0xc7c218fabec5e98cl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 1);
+        }
+        doTestDoubleMethod(atm, random, "glob7s", 4.0e-15, 9.0e-16);
+    }
+
+    @Test
+    public void testGlob7sSwitchesOff() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x141f7aa933299a83l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 0);
+        }
+        doTestDoubleMethod(atm, random, "glob7s", 1.0e-50, 1.0e-50);
+    }
+
+    @Test
+    public void testGlob7sSwitchesRandom() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x3671893ce741fc5cl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, random.nextInt(3) - 2);
+        }
+        doTestDoubleMethod(atm, random, "glob7s", 1.0e-50, 1.0e-50);
+    }
+
+    @Test
+    public void testgts7SwitchesOn() throws OrekitException {
+        RandomGenerator random = new Well19937a(0xb6dcf73ed5e5d985l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 1);
+        }
+        doTestVoidMethod(atm, random, "gts7", 1.0e-50, 6.0e-14);
+    }
+
+    @Test
+    public void testgts7SwitchesOff() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x0c953641bea0f6d2l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 0);
+        }
+        doTestVoidMethod(atm, random, "gts7", 1.0e-50, 6.0e-14);
+    }
+
+    @Test
+    public void testgts7SwitchesRandom() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x7347cacb946cb93bl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, random.nextInt(3) - 2);
+        }
+        doTestVoidMethod(atm, random, "gts7", 1.0e-50, 6.0e-14);
+    }
+
+    @Test
+    public void testgtd7SwitchesOn() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x3439206bdd4dff5dl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 1);
+        }
+        doTestVoidMethod(atm, random, "gtd7", 5.0e-16, 3.0e-14);
+    }
+
+    @Test
+    public void testgtd7SwitchesOff() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x3dc1f824e1033d1bl);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 0);
+        }
+        doTestVoidMethod(atm, random, "gtd7", 1.0e-50, 3.0e-14);
+    }
+
+    @Test
+    public void testgtd7SwitchesRandom() throws OrekitException {
+        RandomGenerator random = new Well19937a(0xa12175ef0b689b04l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, random.nextInt(3) - 2);
+        }
+        doTestVoidMethod(atm, random, "gtd7", 1.0e-50, 3.0e-14);
+    }
+
+    @Test
+    public void testgtd7dSwitchesOn() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x4bbb424422a1b909l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 1);
+        }
+        doTestVoidMethod(atm, random, "gtd7d", 3.0e-16, 3.0e-14);
+    }
+
+    @Test
+    public void testgtd7dSwitchesOff() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x7f6da37655e30103l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, 0);
+        }
+        doTestVoidMethod(atm, random, "gtd7d", 1.0e-50, 2.0e-14);
+    }
+
+    @Test
+    public void testgtd7dSwitchesRandom() throws OrekitException {
+        RandomGenerator random = new Well19937a(0x4a75e29ddf23ccd7l);
+        NRLMSISE00 atm = new NRLMSISE00(null, null, null);
+        for (int i = 1; i <= 23; ++i) {
+            atm = atm.withSwitch(i, random.nextInt(3) - 2);
+        }
+        doTestVoidMethod(atm, random, "gtd7d", 1.0e-50, 3.0e-14);
+    }
+
+    private void doTestDoubleMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
+                                    double absTolerance, double relTolerance)
+        throws OrekitException {
+        try {
+            // Common data for all cases
+            final int doy = 172;
+            final double sec   = 29000.;
+            final double lat   =  60.;
+            final double lon   = -70.;
+            final double hl    =  16.;
+            final double f107a = 149.;
+            final double f107  = 150.;
+            double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
+
+            Method methodD = getOutputClass().getDeclaredMethod(methodName, double[].class);
+            methodD.setAccessible(true);
+
+            Method methodF = getFieldOutputClass().getDeclaredMethod(methodName, double[].class);
+            methodF.setAccessible(true);
+
+            double[] p = new double[150];
+
+            Object output = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+            Object fieldOutput = createFieldOutput(Decimal64Field.getInstance(),
+                                                   atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+            double maxAbsoluteError = 0;
+            double maxRelativeError = 0;
+            for (int i = 0; i < 100; ++i) {
+                for (int k = 0; k < p.length; ++k) {
+                    p[k] = random.nextDouble();
+                }
+                double resDouble = ((Double) methodD.invoke(output, p)).doubleValue();
+                double resField  = ((RealFieldElement<?>) methodF.invoke(fieldOutput, p)).getReal();
+                maxAbsoluteError = FastMath.max(maxAbsoluteError, FastMath.abs(resDouble - resField));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((resDouble - resField) / resDouble));
+            }
+            Assert.assertEquals(0.0, maxAbsoluteError, absTolerance);
+            if (maxAbsoluteError != 0.0) {
+                Assert.assertEquals(0.0, maxRelativeError, relTolerance);
+            }
+
+        } catch (NoSuchMethodException | SecurityException |
+                        IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    private void doTestVoidMethod(NRLMSISE00 atm, RandomGenerator random, String methodName,
+                                  double temperatureRelativeTolerance, double densityRelativeTolerance)
+        throws OrekitException {
+        try {
+
+            // Common data for all cases
+            final int doy = 172;
+            final double sec   = 29000.;
+            final double lat   =  60.;
+            final double lon   = -70.;
+            final double hl    =  16.;
+            final double f107a = 149.;
+            final double f107  = 150.;
+            double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
+
+            Method methodD = getOutputClass().getDeclaredMethod(methodName, Double.TYPE);
+            methodD.setAccessible(true);
+
+            Method methodF = getFieldOutputClass().getDeclaredMethod(methodName, RealFieldElement.class);
+            methodF.setAccessible(true);
+
+            Object output = createOutput(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+            Object fieldOutput = createFieldOutput(Decimal64Field.getInstance(),
+                                                   atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+            double maxTemperatureError = 0;
+            double maxDensityError     = 0;
+            for (int i = 0; i < 100; ++i) {
+                double alt = 500.0 * random.nextDouble();
+                methodD.invoke(output, alt);
+                methodF.invoke(fieldOutput, new Decimal64(alt));
+                for (int index = 0; index < 2; ++index) {
+                    double tD = getOutputTemperature(output, index);
+                    double tF = getFieldOutputTemperature(fieldOutput, index);
+                    maxTemperatureError = FastMath.max(maxTemperatureError, FastMath.abs((tD - tF) / tF));
+                }
+                for (int index = 0; index < 9; ++index) {
+                    double dD = getOutputDensity(output, index);
+                    double dF = getFieldOutputDensity(fieldOutput, index);
+                    if (Double.isNaN(dD)) {
+                        // when switches are off, some altitudes generate NaNs
+                        // for example when switch 15 is 0, DM28 is not set and remains equals to 0
+                        // so a division later on generate NaNs
+                        Assert.assertTrue(Double.isNaN(dF));
+                    } else if (dD == 0) {
+                        // some densities are forced to zero depending on altitude
+                        Assert.assertEquals(dD, dF, Precision.SAFE_MIN);
+                    } else {
+                        maxDensityError = FastMath.max(maxDensityError, FastMath.abs((dD - dF) / dD));
+                    }
+                }
+            }
+            Assert.assertEquals(0.0, maxTemperatureError, temperatureRelativeTolerance);
+            Assert.assertEquals(0.0, maxDensityError,     densityRelativeTolerance);
+
+        } catch (NoSuchMethodException | SecurityException |
+                        IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    private Class<?> getOutputClass() {
+        for (final Class<?> c : NRLMSISE00.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("$Output")) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private Object createOutput(final NRLMSISE00 atm,
+                                final int doy, final double sec,
+                                final double lat, final double lon, final double hl,
+                                final double f107a, final double f107, final double[] ap) {
+        try {
+            Class<?> outputClass = getOutputClass();
+            Constructor<?> cons = outputClass.getDeclaredConstructor(NRLMSISE00.class,
+                                                                     Integer.TYPE,
+                                                                     Double.TYPE,
+                                                                     Double.TYPE,
+                                                                     Double.TYPE,
+                                                                     Double.TYPE,
+                                                                     Double.TYPE,
+                                                                     Double.TYPE,
+                                                                     double[].class);
+            cons.setAccessible(true);
+
+            return cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        } catch (NoSuchMethodException | SecurityException | InstantiationException |
+                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return null;
+        }
+
+    }
+
+    private double getOutputDensity(Object o, int index) {
+        try {
+            Method getDensity = getOutputClass().
+                                    getDeclaredMethod("getDensity", Integer.TYPE);
+            getDensity.setAccessible(true);
+            return ((Double) getDensity.invoke(o, index)).doubleValue();
+        } catch (NoSuchMethodException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return Double.NaN;
+        }
+    }
+
+    private double getOutputTemperature(Object o, int index) {
+        try {
+            Method getTemperature = getOutputClass().
+                                    getDeclaredMethod("getTemperature", Integer.TYPE);
+            getTemperature.setAccessible(true);
+            return ((Double) getTemperature.invoke(o, index)).doubleValue();
+        } catch (NoSuchMethodException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return Double.NaN;
+        }
+
+    }
+
+    private Class<?> getFieldOutputClass() {
+        for (final Class<?> c : NRLMSISE00.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("$FieldOutput")) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    private <T extends RealFieldElement<T>> Object createFieldOutput(Field<T>field,
+                                                                     final NRLMSISE00 atm,
+                                                                     final int doy, final double sec,
+                                                                     final double lat, final double lon,
+                                                                     final double hl,
+                                                                     final double f107a, final double f107,
+                                                                     final double[] ap) {
+        try {
+            Class<?> fieldOutputClass = getFieldOutputClass();
+            Constructor<?> cons = fieldOutputClass.getDeclaredConstructor(NRLMSISE00.class,
+                                                                          Integer.TYPE,
+                                                                          RealFieldElement.class,
+                                                                          RealFieldElement.class,
+                                                                          RealFieldElement.class,
+                                                                          RealFieldElement.class,
+                                                                          Double.TYPE,
+                                                                          Double.TYPE,
+                                                                          double[].class);
+            cons.setAccessible(true);
+            return cons.newInstance(atm, doy,
+                                    field.getZero().add(sec),
+                                    field.getZero().add(lat),
+                                    field.getZero().add(lon),
+                                    field.getZero().add(hl),
+                                    f107a, f107, ap);
+        } catch (NoSuchMethodException | SecurityException | InstantiationException |
+                 IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return null;
+        }
+
+    }
+
+    private double getFieldOutputDensity(Object o, int index) {
+        try {
+            Method getDensity = getFieldOutputClass().
+                                    getDeclaredMethod("getDensity", Integer.TYPE);
+            getDensity.setAccessible(true);
+            return ((RealFieldElement<?>) getDensity.invoke(o, index)).getReal();
+        } catch (NoSuchMethodException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return Double.NaN;
+        }
+    }
+
+    private double getFieldOutputTemperature(Object o, int index) {
+        try {
+            Method getTemperature = getFieldOutputClass().
+                                    getDeclaredMethod("getTemperature", Integer.TYPE);
+            getTemperature.setAccessible(true);
+            return ((RealFieldElement<?>) getTemperature.invoke(o, index)).getReal();
+        } catch (NoSuchMethodException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return Double.NaN;
+        }
+
+    }
+
+    private void checkLegacy(final int nb, final Object out, final boolean print)
+        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final double[] tInfRef = {1.250540E+03, 1.166754E+03, 1.239892E+03, 1.027318E+03,
                                   1.212396E+03, 1.220146E+03, 1.116385E+03, 1.031247E+03,
                                   1.306052E+03, 1.361868E+03, 1.027318E+03, 1.027318E+03,
@@ -326,29 +834,29 @@ public class NRLMSISE00Test {
         final int id = nb - 1;
         if (print) {
             System.out.printf("Case #%d\n", nb);
-            System.out.printf("Tinf: %E  %E\n", tInfRef[id], out.getTemperature(0));
-            System.out.printf("Talt: %E  %E\n", tAltRef[id], out.getTemperature(1));
-            System.out.printf("He:   %E  %E\n", dHeRef[id], out.getDensity(0) * 1e-6);
-            System.out.printf("O:    %E  %E\n", dORef[id], out.getDensity(1) * 1e-6);
-            System.out.printf("N2:   %E  %E\n", dN2Ref[id], out.getDensity(2) * 1e-6);
-            System.out.printf("O2:   %E  %E\n", dO2Ref[id], out.getDensity(3) * 1e-6);
-            System.out.printf("Ar:   %E  %E\n", dARRef[id], out.getDensity(4) * 1e-6);
-            System.out.printf("H:    %E  %E\n", dHRef[id], out.getDensity(6) * 1e-6);
-            System.out.printf("N:    %E  %E\n", dNRef[id], out.getDensity(7) * 1e-6);
-            System.out.printf("AnO:  %E  %E\n", dAnORef[id], out.getDensity(8) * 1e-6);
-            System.out.printf("Rho:  %E  %E\n\n", rhoRef[id], out.getDensity(5) * 1e-3);
+            System.out.printf("Tinf: %E  %E\n", tInfRef[id],  getOutputTemperature(out, 0));
+            System.out.printf("Talt: %E  %E\n", tAltRef[id],  getOutputTemperature(out, 1));
+            System.out.printf("He:   %E  %E\n", dHeRef[id],   getOutputDensity(out, 0) * 1e-6);
+            System.out.printf("O:    %E  %E\n", dORef[id],    getOutputDensity(out, 1) * 1e-6);
+            System.out.printf("N2:   %E  %E\n", dN2Ref[id],   getOutputDensity(out, 2) * 1e-6);
+            System.out.printf("O2:   %E  %E\n", dO2Ref[id],   getOutputDensity(out, 3) * 1e-6);
+            System.out.printf("Ar:   %E  %E\n", dARRef[id],   getOutputDensity(out, 4) * 1e-6);
+            System.out.printf("H:    %E  %E\n", dHRef[id],    getOutputDensity(out, 6) * 1e-6);
+            System.out.printf("N:    %E  %E\n", dNRef[id],    getOutputDensity(out, 7) * 1e-6);
+            System.out.printf("AnO:  %E  %E\n", dAnORef[id],  getOutputDensity(out, 8) * 1e-6);
+            System.out.printf("Rho:  %E  %E\n\n", rhoRef[id], getOutputDensity(out, 5) * 1e-3);
         } else {
-            Assert.assertEquals(tInfRef[id], out.getTemperature(0), deltaT);
-            Assert.assertEquals(tAltRef[id], out.getTemperature(1), deltaT);
-            Assert.assertEquals(dHeRef[id],  out.getDensity(0) * 1e-6, dHeRef[id] * deltaD);
-            Assert.assertEquals(dORef[id],   out.getDensity(1) * 1e-6, dORef[id] * deltaD);
-            Assert.assertEquals(dN2Ref[id],  out.getDensity(2) * 1e-6, dN2Ref[id] * deltaD);
-            Assert.assertEquals(dO2Ref[id],  out.getDensity(3) * 1e-6, dO2Ref[id] * deltaD);
-            Assert.assertEquals(dARRef[id],  out.getDensity(4) * 1e-6, dARRef[id] * deltaD);
-            Assert.assertEquals(dHRef[id],   out.getDensity(6) * 1e-6, dHRef[id] * deltaD);
-            Assert.assertEquals(dNRef[id],   out.getDensity(7) * 1e-6, dNRef[id] * deltaD);
-            Assert.assertEquals(dAnORef[id], out.getDensity(8) * 1e-6, dAnORef[id] * deltaD);
-            Assert.assertEquals(rhoRef[id],  out.getDensity(5) * 1e-3, rhoRef[id] * deltaD);
+            Assert.assertEquals(tInfRef[id], getOutputTemperature(out, 0), deltaT);
+            Assert.assertEquals(tAltRef[id], getOutputTemperature(out, 1), deltaT);
+            Assert.assertEquals(dHeRef[id],  getOutputDensity(out, 0) * 1e-6, dHeRef[id]  * deltaD);
+            Assert.assertEquals(dORef[id],   getOutputDensity(out, 1) * 1e-6, dORef[id]   * deltaD);
+            Assert.assertEquals(dN2Ref[id],  getOutputDensity(out, 2) * 1e-6, dN2Ref[id]  * deltaD);
+            Assert.assertEquals(dO2Ref[id],  getOutputDensity(out, 3) * 1e-6, dO2Ref[id]  * deltaD);
+            Assert.assertEquals(dARRef[id],  getOutputDensity(out, 4) * 1e-6, dARRef[id]  * deltaD);
+            Assert.assertEquals(dHRef[id],   getOutputDensity(out, 6) * 1e-6, dHRef[id]   * deltaD);
+            Assert.assertEquals(dNRef[id],   getOutputDensity(out, 7) * 1e-6, dNRef[id]   * deltaD);
+            Assert.assertEquals(dAnORef[id], getOutputDensity(out, 8) * 1e-6, dAnORef[id] * deltaD);
+            Assert.assertEquals(rhoRef[id],  getOutputDensity(out, 5) * 1e-3, rhoRef[id]  * deltaD);
         }
 
     }

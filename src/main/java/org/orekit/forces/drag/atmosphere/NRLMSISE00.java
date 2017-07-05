@@ -18,12 +18,15 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.util.Arrays;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -31,6 +34,8 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -125,6 +130,41 @@ public class NRLMSISE00 implements Atmosphere {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -7923498628122574334L;
+
+    // Constants
+
+    /** Identifier for helium density. */
+    private static final int HELIUM = 0;
+
+    /** Identifier for atomic oxygen density. */
+    private static final int ATOMIC_OXYGEN = 1;
+
+    /** Identifier for molecular nitrogen density. */
+    private static final int MOLECULAR_NITROGEN = 2;
+
+    /** Identifier for molecular oxygen density. */
+    private static final int MOLECULAR_OXYGEN = 3;
+
+    /** Identifier for argon density. */
+    private static final int ARGON = 4;
+
+    /** Identifier for atomic nitrogen density. */
+    private static final int TOTAL_MASS = 5;
+
+    /** Identifier for hydrogen density. */
+    private static final int HYDROGEN = 6;
+
+    /** Identifier for atomic nitrogen density. */
+    private static final int ATOMIC_NITROGEN = 7;
+
+    /** Identifier for anomalous oxygen density. */
+    private static final int ANOMALOUS_OXYGEN = 8;
+
+    /** Identifier for exospheric temperature. */
+    private static final int EXOSPHERIC = 0;
+
+    /** Identifier for temperature at altitude. */
+    private static final int ALTITUDE = 1;
 
     // CONVERSION CONSTANTS
 
@@ -970,9 +1010,6 @@ public class NRLMSISE00 implements Atmosphere {
     /** Earth body shape. */
     private final BodyShape earth;
 
-//    /** Input switches. */
-//    private final int[] switches;
-
     /** Switches for main effects. */
     private final int[] sw;
 
@@ -1030,10 +1067,6 @@ public class NRLMSISE00 implements Atmosphere {
      * This method creates a new instance, the current instance is
      * not changed at all!
      * </p>
-     * <p>
-     * For switches from #1 to #8 and #10 to #23, any value not equal to 1 or 2 is set to 0.<br>
-     * For switch #9, any value not equal to -1 or 1 is set to 0.
-     * </p>
      * @param number switch number between 1 and 23
      * @param value switch value
      * @return a <em>new</em> instance, with switch changed
@@ -1073,11 +1106,13 @@ public class NRLMSISE00 implements Atmosphere {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Frame getFrame() {
         return earth.getBodyFrame();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getDensity(final AbsoluteDate date,
                              final Vector3D position,
                              final Frame frame)
@@ -1110,17 +1145,48 @@ public class NRLMSISE00 implements Atmosphere {
         out.gtd7d(alt);
 
         // return the local density
-        return out.getDensity(Output.TOTAL_MASS);
+        return out.getDensity(TOTAL_MASS);
 
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T
-        getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
-                   final Frame frame)
-            throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+                                                        final FieldVector3D<T> position,
+                                                        final Frame frame)
+        throws OrekitException {
+        // check if data are available :
+        final AbsoluteDate dateD = date.toAbsoluteDate();
+        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
+            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+            throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
+                                      dateD, inputParams.getMinDate(), inputParams.getMaxDate());
+        }
+
+        // compute day number in current year and the seconds within the day
+        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        final DateTimeComponents dtc = dateD.getComponents(ut1);
+        final int    doy = dtc.getDate().getDayOfYear();
+        final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut1));
+
+        // compute geodetic position (km and °)
+        final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
+        final T alt = inBody.getAltitude().divide(1000.);
+        final T lon = inBody.getLongitude().multiply(180.0 / FastMath.PI);
+        final T lat = inBody.getLatitude().multiply(180.0 / FastMath.PI);
+
+        // compute local solar time
+        final T lst = localSolarTime(dateD, position, frame);
+
+        // get solar activity data and compute
+        final FieldOutput<T> out = new FieldOutput<>(doy, sec, lat, lon, lst,
+                                                     inputParams.getAverageFlux(dateD),
+                                                     inputParams.getDailyFlux(dateD), inputParams.getAp(dateD));
+        out.gtd7d(alt);
+
+        // return the local density
+        return out.getDensity(TOTAL_MASS);
+
     }
 
     /** Get local solar time.
@@ -1195,47 +1261,7 @@ public class NRLMSISE00 implements Atmosphere {
      * The 120 km gradient is left at global average value for altitudes below 72 km.
      * </p>
      */
-    public class Output {
-
-        // Constants
-
-        /** Identifier for helium density. */
-        public static final int HELIUM = 0;
-
-        /** Identifier for atomic oxygen density. */
-        public static final int ATOMIC_OXYGEN = 1;
-
-        /** Identifier for molecular nitrogen density. */
-        public static final int MOLECULAR_NITROGEN = 2;
-
-        /** Identifier for molecular oxygen density. */
-        public static final int MOLECULAR_OXYGEN = 3;
-
-        /** Identifier for argon density. */
-        public static final int ARGON = 4;
-
-        /** Identifier for atomic nitrogen density. */
-        public static final int TOTAL_MASS = 5;
-
-        /** Identifier for hydrogen density. */
-        public static final int HYDROGEN = 6;
-
-        /** Identifier for atomic nitrogen density. */
-        public static final int ATOMIC_NITROGEN = 7;
-
-        /** Identifier for anomalous oxygen density. */
-        public static final int ANOMALOUS_OXYGEN = 8;
-
-        /** Identifier for exospheric temperature. */
-        public static final int EXOSPHERIC = 0;
-
-        /** Identifier for temperature at altitude. */
-        public static final int ALTITUDE = 1;
-
-        /** Error message for wrong index. */
-        private static final String WRONG_INDEX = "Unexpected index";
-
-        // Fields
+    private class Output {
 
         /** Day of year (from 1 to 365 or 366). */
         private final int doy;
@@ -1420,12 +1446,12 @@ public class NRLMSISE00 implements Atmosphere {
                 s3tloc = FastMath.sin(tlx3);
                 c3tloc = FastMath.cos(tlx3);
             } else {
-                stloc  = Double.NaN;
-                ctloc  = Double.NaN;
-                s2tloc = Double.NaN;
-                c2tloc = Double.NaN;
-                s3tloc = Double.NaN;
-                c3tloc = Double.NaN;
+                stloc  = 0;
+                ctloc  = 0;
+                s2tloc = 0;
+                c2tloc = 0;
+                s3tloc = 0;
+                c3tloc = 0;
             }
 
         }
@@ -1469,7 +1495,7 @@ public class NRLMSISE00 implements Atmosphere {
             if (alt > ZN1[0]) {
                 tinf *= 1.0 + sw[16] * globe7(PT);
             }
-            setTemperature(Output.EXOSPHERIC, tinf);
+            setTemperature(EXOSPHERIC, tinf);
 
             // Gradient variations not important below ZN[4]
             double g0 = PTM[3] * PS[0];
@@ -1491,16 +1517,17 @@ public class NRLMSISE00 implements Atmosphere {
             meso_tn1[4]  = PTM[4] * PTL[3][0];
             meso_tgn1[1] = PTM[8] * PMA[8][0];
             if (alt < 300.0) {
+                final double r = PTM[4] * PTL[3][0];
                 meso_tn1[1]  /= 1.0 - sw[18] * glob7s(PTL[0]);
                 meso_tn1[2]  /= 1.0 - sw[18] * glob7s(PTL[1]);
                 meso_tn1[3]  /= 1.0 - sw[18] * glob7s(PTL[2]);
                 meso_tn1[4]  /= 1.0 - sw[18] * sw[20] * glob7s(PTL[3]);
                 meso_tgn1[1] *= 1.0 + sw[18] * sw[20] * glob7s(PMA[8]);
-                meso_tgn1[1] *= meso_tn1[4] * meso_tn1[4] / FastMath.pow(PTM[4] * PTL[3][0], 2);
+                meso_tgn1[1] *= meso_tn1[4] * meso_tn1[4] / (r * r);
             }
 
             /**** Temperature at altitude ****/
-            setTemperature(Output.ALTITUDE, densu(alt, 1.0, tinf, tlb, 0.0, 0.0, PTM[5], s));
+            setTemperature(ALTITUDE, densu(alt, 1.0, tinf, tlb, 0.0, 0.0, PTM[5], s));
 
             /**** N2 density ****/
             /*   Density variation factor at Zlb */
@@ -1509,7 +1536,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db28 = PDM[2][0] * FastMath.exp(g28) * PD[2][0];
             /* Diffusive density at Alt */
             double diffusiveDensity = densu(alt, db28, tinf, tlb, N2_MASS, alpha[2], PTM[5], s);
-            setDensity(Output.MOLECULAR_NITROGEN, diffusiveDensity);
+            setDensity(MOLECULAR_NITROGEN, diffusiveDensity);
             // Variation of turbopause height
             final double zhf = PDL[1][24] * (1.0 + sw[5] * PDL[0][24] *
                                        FastMath.sin(DEG_TO_RAD * lat) *
@@ -1523,7 +1550,7 @@ public class NRLMSISE00 implements Atmosphere {
                 /*  Mixed density at Alt */
                 dm28 = densu(alt, b28, tinf, tlb, xmm, alpha[2], PTM[5], s);
                 /*  Net density at Alt */
-                setDensity(Output.MOLECULAR_NITROGEN, dnet(diffusiveDensity, dm28, zhm28, xmm, N2_MASS));
+                setDensity(MOLECULAR_NITROGEN, dnet(diffusiveDensity, dm28, zhm28, xmm, N2_MASS));
             }
 
             /**** He density ****/
@@ -1533,7 +1560,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db04 = PDM[0][0] * FastMath.exp(g4) * PD[0][0];
             /*  Diffusive density at Alt */
             diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
-            setDensity(Output.HELIUM, diffusiveDensity);
+            setDensity(HELIUM, diffusiveDensity);
             if (sw[15] != 0 && alt < altl[0]) {
                 /*  Turbopause */
                 final double zh04 = PDM[0][2];
@@ -1549,7 +1576,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zc04 = PDM[0][4] * PDL[1][0];
                 final double hc04 = PDM[0][5] * PDL[1][1];
                 /*  Net density corrected at Alt */
-                setDensity(Output.HELIUM, diffusiveDensity * ccor(alt, rl, hc04, zc04));
+                setDensity(HELIUM, diffusiveDensity * ccor(alt, rl, hc04, zc04));
             }
 
             /**** O density ****/
@@ -1559,7 +1586,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db16 = PDM[1][0] * FastMath.exp(g16) * PD[1][0];
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
-            setDensity(Output.ATOMIC_OXYGEN, diffusiveDensity);
+            setDensity(ATOMIC_OXYGEN, diffusiveDensity);
             if (sw[15] != 0 && alt < altl[1]) {
                 /* Turbopause */
                 final double zh16 = PDM[1][2];
@@ -1580,7 +1607,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc16 = PDM[1][6] * PDL[1][12];
                 final double rc16  = PDM[1][3] * PDL[1][14];
                 /* Net density corrected at Alt */
-                setDensity(Output.ATOMIC_OXYGEN, diffusiveDensity * ccor(alt, rc16, hcc16, zcc16));
+                setDensity(ATOMIC_OXYGEN, diffusiveDensity * ccor(alt, rc16, hcc16, zcc16));
             }
 
             /**** O2 density ****/
@@ -1590,7 +1617,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db32 = PDM[3][0] * FastMath.exp(g32) * PD[4][0];
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db32, tinf, tlb, O2_MASS, alpha[3], PTM[5], s);
-            setDensity(Output.MOLECULAR_OXYGEN, diffusiveDensity);
+            setDensity(MOLECULAR_OXYGEN, diffusiveDensity);
             if (sw[15] != 0) {
                 if (alt <= altl[3]) {
                     /* Turbopause */
@@ -1614,7 +1641,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc32  = PDM[3][6] * PDL[1][21];
                 final double rc32   = PDM[3][3] * PDL[1][23] * (1. + sw[1] * PDL[0][23] * (f107a - FLUX_REF));
                 /* Net density corrected at Alt */
-                setDensity(Output.MOLECULAR_OXYGEN, diffusiveDensity * ccor2(alt, rc32, hcc32, zcc32, hcc232));
+                setDensity(MOLECULAR_OXYGEN, diffusiveDensity * ccor2(alt, rc32, hcc32, zcc32, hcc232));
             }
 
             /**** Ar density ****/
@@ -1624,7 +1651,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db40 = PDM[4][0] * FastMath.exp(g40) * PD[5][0];
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db40, tinf, tlb, AR_MASS, alpha[4], PTM[5], s);
-            setDensity(Output.ARGON, diffusiveDensity);
+            setDensity(ARGON, diffusiveDensity);
             if (sw[15] != 0 && alt <= altl[4]) {
                 /* Turbopause */
                 final double zh40 = PDM[4][2];
@@ -1640,7 +1667,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double hc40 = PDM[4][5] * PDL[1][9];
                 final double zc40 = PDM[4][4] * PDL[1][8];
                 /* Net density corrected at Alt */
-                setDensity(Output.ARGON, diffusiveDensity * ccor(alt, rl, hc40, zc40));
+                setDensity(ARGON, diffusiveDensity * ccor(alt, rl, hc40, zc40));
             }
 
             /**** H density ****/
@@ -1650,7 +1677,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db01 = PDM[5][0] * FastMath.exp(g1) * PD[6][0];
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db01, tinf, tlb, H_MASS, alpha[6], PTM[5], s);
-            setDensity(Output.HYDROGEN, diffusiveDensity);
+            setDensity(HYDROGEN, diffusiveDensity);
             if (sw[15] != 0 && alt <= altl[6]) {
                 /* Turbopause */
                 final double zh01 = PDM[5][2];
@@ -1671,7 +1698,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc01 = PDM[5][6] * PDL[1][18];
                 final double rc01 = PDM[5][3] * PDL[1][20];
                 /* Net density corrected at Alt */
-                setDensity(Output.HYDROGEN, diffusiveDensity * ccor(alt, rc01, hcc01, zcc01));
+                setDensity(HYDROGEN, diffusiveDensity * ccor(alt, rc01, hcc01, zcc01));
             }
 
             /**** N density ****/
@@ -1681,7 +1708,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double db14 = PDM[6][0] * FastMath.exp(g14) * PD[7][0];
             /* Diffusive density at Alt */
             diffusiveDensity = densu(alt, db14, tinf, tlb, N_MASS, alpha[7], PTM[5], s);
-            setDensity(Output.ATOMIC_NITROGEN, diffusiveDensity);
+            setDensity(ATOMIC_NITROGEN, diffusiveDensity);
             if (sw[15] != 0 && alt <= altl[7]) {
                 /* Turbopause */
                 final double zh14 = PDM[6][2];
@@ -1702,7 +1729,7 @@ public class NRLMSISE00 implements Atmosphere {
                 final double zcc14 = PDM[6][6] * PDL[0][3];
                 final double rc14 = PDM[6][3] * PDL[0][5];
                 /* Net density corrected at Alt */
-                setDensity(Output.ATOMIC_NITROGEN, diffusiveDensity * ccor(alt, rc14, hcc14, zcc14));
+                setDensity(ATOMIC_NITROGEN, diffusiveDensity * ccor(alt, rc14, hcc14, zcc14));
             }
 
             /**** Anomalous O density ****/
@@ -1714,7 +1741,7 @@ public class NRLMSISE00 implements Atmosphere {
             final double zmho = PDM[7][4];
             final double zsho = scalh(zmho, O_MASS, tho);
             diffusiveDensity *= FastMath.exp(-zsht / zsho * (FastMath.exp((zmho - alt ) / zsht) - 1.));
-            setDensity(Output.ANOMALOUS_OXYGEN, diffusiveDensity);
+            setDensity(ANOMALOUS_OXYGEN, diffusiveDensity);
 
             // Convert densities from cm-3 to m-3
             for (int i = 0; i < 9; i++) {
@@ -1722,14 +1749,14 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             /**** Total mass density ****/
-            final double tmd = AMU * (HE_MASS * getDensity(Output.HELIUM) +
-                                      O_MASS  * getDensity(Output.ATOMIC_OXYGEN) +
-                                      N2_MASS * getDensity(Output.MOLECULAR_NITROGEN) +
-                                      O2_MASS * getDensity(Output.MOLECULAR_OXYGEN) +
-                                      AR_MASS * getDensity(Output.ARGON) +
-                                      H_MASS  * getDensity(Output.HYDROGEN) +
-                                      N_MASS  * getDensity(Output.ATOMIC_NITROGEN));
-            setDensity(Output.TOTAL_MASS, tmd);
+            final double tmd = AMU * (HE_MASS * getDensity(HELIUM) +
+                                      O_MASS  * getDensity(ATOMIC_OXYGEN) +
+                                      N2_MASS * getDensity(MOLECULAR_NITROGEN) +
+                                      O2_MASS * getDensity(MOLECULAR_OXYGEN) +
+                                      AR_MASS * getDensity(ARGON) +
+                                      H_MASS  * getDensity(HYDROGEN) +
+                                      N_MASS  * getDensity(ATOMIC_NITROGEN));
+            setDensity(TOTAL_MASS, tmd);
 
         }
 
@@ -1766,76 +1793,78 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculates for lower mesosphere/upper stratosphere (between ZN2[0] and ZN3[0]):
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
+            final double r = PMA[2][0] * PAVGM[2];
             meso_tgn2[0] = meso_tgn1[1];
             meso_tn2[0]  = meso_tn1[4];
             meso_tn2[1]  = PMA[0][0] * PAVGM[0] / (1.0 - sw[20] * glob7s(PMA[0]));
             meso_tn2[2]  = PMA[1][0] * PAVGM[1] / (1.0 - sw[20] * glob7s(PMA[1]));
             meso_tn2[3]  = PMA[2][0] * PAVGM[2] / (1.0 - sw[20] * sw[22] * glob7s(PMA[2]));
             meso_tgn2[1] = PMA[9][0] * PAVGM[8] * (1.0 + sw[20] * sw[22] * glob7s(PMA[9])) *
-                           meso_tn2[3] * meso_tn2[3] / FastMath.pow(PMA[2][0] * PAVGM[2], 2);
+                           meso_tn2[3] * meso_tn2[3] / (r * r);
             meso_tn3[0]  = meso_tn2[3];
 
             // Calculates for lower stratosphere and troposphere (below ZN3[0])
             // Temperature at nodes and gradients at end nodes
             // Inverse temperature a linear function of spherical harmonics
             if (alt < ZN3[0]) {
+                final double q = PMA[6][0] * PAVGM[6];
                 meso_tgn3[0] = meso_tgn2[1];
                 meso_tn3[1]  = PMA[3][0] * PAVGM[3] / (1.0 - sw[22] * glob7s(PMA[3]));
                 meso_tn3[2]  = PMA[4][0] * PAVGM[4] / (1.0 - sw[22] * glob7s(PMA[4]));
                 meso_tn3[3]  = PMA[5][0] * PAVGM[5] / (1.0 - sw[22] * glob7s(PMA[5]));
                 meso_tn3[4]  = PMA[6][0] * PAVGM[6] / (1.0 - sw[22] * glob7s(PMA[6]));
                 meso_tgn3[1] = PMA[7][0] * PAVGM[7] * (1.0 + sw[22] * glob7s(PMA[7])) *
-                               meso_tn3[4] * meso_tn3[4] / FastMath.pow(PMA[6][0] * PAVGM[6], 2);
+                               meso_tn3[4] * meso_tn3[4] / (q * q);
 
             }
 
             // Linear transition to full mixing below ZN2[0]
             final double dmc = (alt > ZMIX) ? 1.0 - (ZN2[0] - alt) / (ZN2[0] - ZMIX) : 0.;
-            final double dz28 = getDensity(Output.MOLECULAR_NITROGEN);
+            final double dz28 = getDensity(MOLECULAR_NITROGEN);
 
             // N2 density
             final double dm28m = dm28 * 1.0e+06;
             double dmr = dz28 / dm28m - 1.0;
             double dst = densm(alt, dm28m, PDM[2][4]) * (1.0 + dmr * dmc);
-            setDensity(Output.MOLECULAR_NITROGEN, dst);
+            setDensity(MOLECULAR_NITROGEN, dst);
 
             // HE density
-            dmr = getDensity(Output.HELIUM) / (dz28 * PDM[0][1]) - 1.0;
-            dst = getDensity(Output.MOLECULAR_NITROGEN) * PDM[0][1] * (1.0 + dmr * dmc);
-            setDensity(Output.HELIUM, dst);
+            dmr = getDensity(HELIUM) / (dz28 * PDM[0][1]) - 1.0;
+            dst = getDensity(MOLECULAR_NITROGEN) * PDM[0][1] * (1.0 + dmr * dmc);
+            setDensity(HELIUM, dst);
 
             // O density
-            setDensity(Output.ATOMIC_OXYGEN, 0.);
-            setDensity(Output.ANOMALOUS_OXYGEN, 0.);
+            setDensity(ATOMIC_OXYGEN, 0.);
+            setDensity(ANOMALOUS_OXYGEN, 0.);
 
             // O2 density
-            dmr = getDensity(Output.MOLECULAR_OXYGEN) / (dz28 * PDM[3][1]) - 1.0;
-            dst = getDensity(Output.MOLECULAR_NITROGEN) * PDM[3][1] * (1.0 + dmr * dmc);
-            setDensity(Output.MOLECULAR_OXYGEN, dst);
+            dmr = getDensity(MOLECULAR_OXYGEN) / (dz28 * PDM[3][1]) - 1.0;
+            dst = getDensity(MOLECULAR_NITROGEN) * PDM[3][1] * (1.0 + dmr * dmc);
+            setDensity(MOLECULAR_OXYGEN, dst);
 
             // AR density
-            dmr = getDensity(Output.ARGON) / (dz28 * PDM[4][1]) - 1.0;
-            dst = getDensity(Output.MOLECULAR_NITROGEN) * PDM[4][1] * (1.0 + dmr * dmc);
-            setDensity(Output.ARGON, dst);
+            dmr = getDensity(ARGON) / (dz28 * PDM[4][1]) - 1.0;
+            dst = getDensity(MOLECULAR_NITROGEN) * PDM[4][1] * (1.0 + dmr * dmc);
+            setDensity(ARGON, dst);
 
             // H density
-            setDensity(Output.HYDROGEN, 0.);
+            setDensity(HYDROGEN, 0.);
 
             // N density
-            setDensity(Output.ATOMIC_NITROGEN, 0.);
+            setDensity(ATOMIC_NITROGEN, 0.);
 
             // Total mass density
-            final double tmd = AMU * (HE_MASS * getDensity(Output.HELIUM) +
-                                      O_MASS  * getDensity(Output.ATOMIC_OXYGEN) +
-                                      N2_MASS * getDensity(Output.MOLECULAR_NITROGEN) +
-                                      O2_MASS * getDensity(Output.MOLECULAR_OXYGEN) +
-                                      AR_MASS * getDensity(Output.ARGON) +
-                                      H_MASS  * getDensity(Output.HYDROGEN) +
-                                      N_MASS  * getDensity(Output.ATOMIC_NITROGEN));
-            setDensity(Output.TOTAL_MASS, tmd);
+            final double tmd = AMU * (HE_MASS * getDensity(HELIUM) +
+                                      O_MASS  * getDensity(ATOMIC_OXYGEN) +
+                                      N2_MASS * getDensity(MOLECULAR_NITROGEN) +
+                                      O2_MASS * getDensity(MOLECULAR_OXYGEN) +
+                                      AR_MASS * getDensity(ARGON) +
+                                      H_MASS  * getDensity(HYDROGEN) +
+                                      N_MASS  * getDensity(ATOMIC_NITROGEN));
+            setDensity(TOTAL_MASS, tmd);
 
             // Temperature at altitude
-            setTemperature(Output.ALTITUDE, densm(alt, 1.0, 0));
+            setTemperature(ALTITUDE, densm(alt, 1.0, 0));
 
         }
 
@@ -1867,9 +1896,8 @@ public class NRLMSISE00 implements Atmosphere {
             gtd7(alt);
 
             // Update the total mass density with anomalous oxygen contribution
-            final double dTot = getDensity(Output.TOTAL_MASS) +
-                                AMU * O_MASS * getDensity(Output.ANOMALOUS_OXYGEN);
-            setDensity(Output.TOTAL_MASS, dTot);
+            final double dTot = getDensity(TOTAL_MASS) + AMU * O_MASS * getDensity(ANOMALOUS_OXYGEN);
+            setDensity(TOTAL_MASS, dTot);
 
         }
 
@@ -1904,13 +1932,6 @@ public class NRLMSISE00 implements Atmosphere {
             temperatures[index] = t;
         }
 
-        /** Get the stored densities.
-         * @return the densities as an array of 9 values
-         */
-        public double[] getDensities() {
-            return densities.clone();
-        }
-
         /** Get one of the stored densities.
          * @param index one of the nine elements :
          * <ul>
@@ -1927,17 +1948,7 @@ public class NRLMSISE00 implements Atmosphere {
          * @return the requested density
          */
         public double getDensity(final int index) {
-            if (index < 0 || index > 8) {
-                throw new IllegalArgumentException(WRONG_INDEX);
-            }
             return densities[index];
-        }
-
-        /** Get the stored temperatures.
-         * @return the temperatures as an array of 2 values
-         */
-        public double[] getTemperatures() {
-            return temperatures.clone();
         }
 
         /** Get one of the stored temperatures.
@@ -1948,10 +1959,8 @@ public class NRLMSISE00 implements Atmosphere {
          * </ul>
          * @return the requested temperature
          */
+        @SuppressWarnings("unused")
         public double getTemperature(final int index) {
-            if (index < 0 || index > 1) {
-                throw new IllegalArgumentException(WRONG_INDEX);
-            }
             return temperatures[index];
         }
 
@@ -2100,6 +2109,7 @@ public class NRLMSISE00 implements Atmosphere {
 
             // Return G(L)
             return tinf;
+
         }
 
         /** Calculate G(L) function with lower atmosphere parameters.
@@ -2166,8 +2176,8 @@ public class NRLMSISE00 implements Atmosphere {
                 final double lonr = DEG_TO_RAD * lon;
                 t[10] = (1.0 + plg[0][1] * (p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
                                             p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))) +
-                                            p[83] * swc[3] * FastMath.cos(DAY_TO_RAD * (doy - p[84])) +
-                                            p[87] * swc[4] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[88]))) *
+                               p[83] * swc[3] * FastMath.cos(DAY_TO_RAD * (doy - p[84])) +
+                               p[87] * swc[4] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[88]))) *
                         ((p[64] * plg[1][2] + p[65] * plg[1][4] + p[66] * plg[1][6] +
                           p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) * FastMath.cos(lonr) +
                          (p[90] * plg[1][2] + p[91] * plg[1][4] + p[92] * plg[1][6] +
@@ -2437,8 +2447,9 @@ public class NRLMSISE00 implements Atmosphere {
                 xs[k] = zeta(ZN2[k], z1) / zgdif;
                 ys[k] = 1.0 / meso_tn2[k];
             }
+            final double qSM = (rlat + z2) / (rlat + z1);
             double yd1 = -meso_tgn2[0] / (t1 * t1) * zgdif;
-            double yd2 = -meso_tgn2[1] / (t2 * t2) * zgdif * FastMath.pow((rlat + z2) / (rlat + z1), 2);
+            double yd2 = -meso_tgn2[1] / (t2 * t2) * zgdif * qSM * qSM;
 
             /* calculate spline coefficients */
             double[] y2out = spline(xs, ys, yd1, yd2);
@@ -2482,8 +2493,9 @@ public class NRLMSISE00 implements Atmosphere {
                 xs[k] = zeta(ZN3[k], z1) / zgdif;
                 ys[k] = 1.0 / meso_tn3[k];
             }
+            final double qTS = (rlat + z2) / (rlat + z1);
             yd1 = -meso_tgn3[0] / (t1 * t1) * zgdif;
-            yd2 = -meso_tgn3[1] / (t2 * t2) * zgdif * FastMath.pow((rlat + z2) / (rlat + z1), 2);
+            yd2 = -meso_tgn3[1] / (t2 * t2) * zgdif * qTS * qTS;
 
             /* calculate spline coefficients */
             y2out = spline(xs, ys, yd1, yd2);
@@ -2543,7 +2555,8 @@ public class NRLMSISE00 implements Atmosphere {
             if (alt < ZN1[0]) {
                 /* calculate temperature below ZA
                  * temperature gradient at ZA from Bates profile */
-                final double dta = (tinf - ta) * s2 * FastMath.pow((rlat + zlb) / (rlat + ZN1[0]), 2);
+                final double p = (rlat + zlb) / (rlat + ZN1[0]);
+                final double dta = (tinf - ta) * s2 * p * p;
                 meso_tgn1[0] = dta;
                 meso_tn1[0] = ta;
                 z = (alt > ZN1[mn - 1]) ? alt : ZN1[mn - 1];
@@ -2559,12 +2572,13 @@ public class NRLMSISE00 implements Atmosphere {
                     ys[k] = 1.0 / meso_tn1[k];
                 }
                 /* end node derivatives */
+                final double q   = (rlat + ZN1[mn - 1]) / (rlat + ZN1[0]);
                 final double yd1 = -meso_tgn1[0] / (t1 * t1) * zgdif;
-                final double yd2 = -meso_tgn1[1] / (t2 * t2) * zgdif * FastMath.pow((rlat + ZN1[mn - 1]) / (rlat + ZN1[0]), 2);
+                final double yd2 = -meso_tgn1[1] / (t2 * t2) * zgdif * q * q;
                 /* calculate spline coefficients */
                 y2out = spline(xs, ys, yd1, yd2);
                 x = zg / zgdif;
-                final double y = splint (xs, ys, y2out, x);
+                final double y = splint(xs, ys, y2out, x);
                 /* temperature at altitude */
                 tz = 1.0 / y;
             }
@@ -2598,7 +2612,8 @@ public class NRLMSISE00 implements Atmosphere {
          * @return gravity at altitude (cm/s2)
          */
         private double galt(final double alt) {
-            return glat / FastMath.pow(1.0 + alt / rlat, 2);
+            final double r = 1.0 + alt / rlat;
+            return glat / (r * r);
         }
 
         /** Calculate zeta function.
@@ -2648,7 +2663,1438 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the field elements
      * @since 9.0
      */
-    public static class FieldOutput<T extends RealFieldElement<T>> {
+    public class FieldOutput<T extends RealFieldElement<T>> {
+
+        /** Type of the field elements. */
+        private final Field<T> field;
+
+        /** Zero for the field. */
+        private final T zero;
+
+        /** Day of year (from 1 to 365 or 366). */
+        private final int doy;
+
+        /** Seconds in day (UT scale). */
+        private final T sec;
+
+        /** Geodetic latitude (°). */
+        private final T lat;
+
+        /** Geodetic longitude (°). */
+        private final T lon;
+
+        /** Local apparent solar time (hours). */
+        private final T hl;
+
+        /** 81 day average of F10.7 flux (centered on day). */
+        private final double f107a;
+
+        /** Daily F10.7 flux for previous day. */
+        private final double f107;
+
+        /** Array containing:
+        *  <ul>
+        *  <li>0: daily Ap</li>
+        *  <li>1: 3 hr ap index for current time</li>
+        *  <li>2: 3 hr ap index for 3 hrs before current time</li>
+        *  <li>3: 3 hr ap index for 6 hrs before current time</li>
+        *  <li>4: 3 hr ap index for FOR 9 hrs before current time</li>
+        *  <li>5: average of eight 3 hr ap indices from 12 to 33 hrs prior to current time</li>
+        *  <li>6: average of eight 3 hr ap indices from 36 to 57 hrs prior to current time</li>
+        *  </ul>. */
+        private final double[] ap;
+
+        /** Gravity at latitude (cm/s2). */
+        private final T glat;
+
+        /** Effective Earth radius at latitude (km). */
+        private final T rlat;
+
+        /** N2 mixed density at alt. */
+        private T dm28;
+
+        /** Legendre polynomials. */
+        private final T[][] plg;
+
+        /** Cosinus of local solar time. */
+        private final T ctloc;
+        /** Sinus of local solar time. */
+        private final T stloc;
+        /** Square of ctloc. */
+        private final T c2tloc;
+        /** Square of stloc. */
+        private final T s2tloc;
+        /** Cube of ctloc. */
+        private final T c3tloc;
+        /** Cube of stloc. */
+        private final T s3tloc;
+
+        /** Magnetic activity based on daily ap. */
+        private double apdf;
+
+        /** Magnetic activity based on daily ap. */
+        private T apt;
+
+        /** Temperature at nodes for ZN1 scale. */
+        private final T[] meso_tn1;
+
+        /** Temperature at nodes for ZN2 scale. */
+        private final T[] meso_tn2;
+
+        /** Temperature at nodes for ZN3 scale. */
+        private final T[] meso_tn3;
+
+        /** Temperature gradients at end nodes for ZN1 scale. */
+        private final T[] meso_tgn1;
+
+        /** Temperature gradients at end nodes for ZN2 scale. */
+        private final T[] meso_tgn2;
+
+        /** Temperature gradients at end nodes for ZN3 scale. */
+        private final T[] meso_tgn3;
+
+        /** Densities. */
+        private final T[] densities;
+
+        /** Temperatures. */
+        private final T[] temperatures;
+
+        /** Simple constructor.
+         *  @param doy day of year (from 1 to 365 or 366)
+         *  @param sec seconds in day (UT scale)
+         *  @param lat geodetic latitude (°)
+         *  @param lon geodetic longitude (°)
+         *  @param hl local apparent solar time (hours)
+         *  @param f107a 81 day average of F10.7 flux (centered on day)
+         *  @param f107 daily F10.7 flux for previous day
+         *  @param ap array containing:
+         *  <ul>
+         *  <li>0: daily Ap</li>
+         *  <li>1: 3 hr ap index for current time</li>
+         *  <li>2: 3 hr ap index for 3 hrs before current time</li>
+         *  <li>3: 3 hr ap index for 6 hrs before current time</li>
+         *  <li>4: 3 hr ap index for FOR 9 hrs before current time</li>
+         *  <li>5: average of eight 3 hr ap indices from 12 to 33 hrs prior to current time</li>
+         *  <li>6: average of eight 3 hr ap indices from 36 to 57 hrs prior to current time</li>
+         *  </ul>
+         */
+        FieldOutput(final int doy, final T sec,
+                    final T lat, final T lon, final T hl,
+                    final double f107a, final double f107, final double[] ap) {
+
+            this.field = sec.getField();
+            this.zero = field.getZero();
+
+            this.doy   = doy;
+            this.sec   = sec;
+            this.lat   = lat;
+            this.lon   = lon;
+            this.hl    = hl;
+            this.f107a = f107a;
+            this.f107  = f107;
+            this.ap    = ap.clone();
+
+            this.plg       = MathArrays.buildArray(field, 4, 8);
+
+            this.meso_tn1  = MathArrays.buildArray(field, ZN1.length);
+            this.meso_tn2  = MathArrays.buildArray(field, ZN2.length);
+            this.meso_tn3  = MathArrays.buildArray(field, ZN3.length);
+            this.meso_tgn1 = MathArrays.buildArray(field, 2);
+            this.meso_tgn2 = MathArrays.buildArray(field, 2);
+            this.meso_tgn3 = MathArrays.buildArray(field, 2);
+
+            densities       = MathArrays.buildArray(field, 9);
+            temperatures    = MathArrays.buildArray(field, 2);
+
+            // Calculates latitude variable gravity and effective radius
+            final T xlat = (sw[2] == 0) ? zero.add(LAT_REF) : lat;
+            final T c2   = xlat.multiply(2 * DEG_TO_RAD).cos();
+            glat = c2.multiply(-0.0026373).add(1).multiply(G_REF);
+            rlat = glat.multiply(2).divide(c2.multiply(2.27e-9).add(3.085462e-6)).multiply(1.e-5);
+
+            // Convert latitude into radians
+            final T latr = lat.multiply(DEG_TO_RAD);
+
+            // Calculate legendre polynomials
+            final T c = latr.sin();
+            final T s = latr.cos();
+
+            plg[0][1] = c;
+            plg[0][2] = c.multiply( 3.0).multiply(plg[0][1]).subtract(1.0).divide(2.0);
+            plg[0][3] = c.multiply( 5.0).multiply(plg[0][2]).subtract(plg[0][1].multiply(2.0)).divide(3.0);
+            plg[0][4] = c.multiply( 7.0).multiply(plg[0][3]).subtract(plg[0][2].multiply(3.0)).divide(4.0);
+            plg[0][5] = c.multiply( 9.0).multiply(plg[0][4]).subtract(plg[0][3].multiply(4.0)).divide(5.0);
+            plg[0][6] = c.multiply(11.0).multiply(plg[0][5]).subtract(plg[0][4].multiply(5.0)).divide(6.0);
+
+            plg[1][1] = s;
+            plg[1][2] = c.multiply( 3.0).multiply(plg[1][1]);
+            plg[1][3] = c.multiply( 5.0).multiply(plg[1][2]).subtract(plg[1][1].multiply(3.0)).divide(2.0);
+            plg[1][4] = c.multiply( 7.0).multiply(plg[1][3]).subtract(plg[1][2].multiply(4.0)).divide(3.0);
+            plg[1][5] = c.multiply( 9.0).multiply(plg[1][4]).subtract(plg[1][3].multiply(5.0)).divide(4.0);
+            plg[1][6] = c.multiply(11.0).multiply(plg[1][5]).subtract(plg[1][4].multiply(6.0)).divide(5.0);
+
+            plg[2][2] = s.multiply( 3.0).multiply(plg[1][1]);
+            plg[2][3] = c.multiply( 5.0).multiply(plg[2][2]);
+            plg[2][4] = c.multiply( 7.0).multiply(plg[2][3]).subtract(plg[2][2].multiply(5.0)).divide(2.0);
+            plg[2][5] = c.multiply( 9.0).multiply(plg[2][4]).subtract(plg[2][3].multiply(6.0)).divide(3.0);
+            plg[2][6] = c.multiply(11.0).multiply(plg[2][5]).subtract(plg[2][4].multiply(7.0)).divide(4.0);
+            plg[2][7] = c.multiply(13.0).multiply(plg[2][6]).subtract(plg[2][5].multiply(8.0)).divide(5.0);
+
+            plg[3][3] = s.multiply( 5.0).multiply(plg[2][2]);
+            plg[3][4] = c.multiply( 7.0).multiply(plg[3][3]);
+            plg[3][5] = c.multiply( 9.0).multiply(plg[3][4]).subtract(plg[3][3].multiply(7.0)).divide(2.0);
+            plg[3][6] = c.multiply(11.0).multiply(plg[3][5]).subtract(plg[3][4].multiply(8.0)).divide(3.0);
+
+            // Calculate additional data
+            if (!(sw[7] == 0 && sw[8] == 0 && sw[14] == 0)) {
+                final T tloc = hl.multiply(HOUR_TO_RAD);
+                final T tlx2 = tloc.add(tloc);
+                final T tlx3 = tloc.add(tlx2);
+                stloc  = tloc.sin();
+                ctloc  = tloc.cos();
+                s2tloc = tlx2.sin();
+                c2tloc = tlx2.cos();
+                s3tloc = tlx3.sin();
+                c3tloc = tlx3.cos();
+            } else {
+                stloc  = zero;
+                ctloc  = zero;
+                s2tloc = zero;
+                c2tloc = zero;
+                s3tloc = zero;
+                c3tloc = zero;
+            }
+
+        }
+
+        /** Calculate temperatures and densities not including anomalous oxygen.
+         *  <p>
+         *  This method is the thermospheric portion of NRLMSISE-00 for alt > 72.5 km.
+         *  </p>
+         *  <p>NOTES ON INPUT VARIABLES:<br>
+         *  Seconds, Local Time, and Longitude are used independently in the
+         *  model and are not of equal importance for every situation.<br>
+         *  For the most physically realistic calculation these three
+         *  variables should be consistent (lst=sec/3600 + lon/15).<br>
+         *  The Equation of Time departures from the above formula
+         *  for apparent local time can be included if available but
+         *  are of minor importance.<br><br>
+         *
+         *  f107 and f107A values used to generate the model correspond
+         *  to the 10.7 cm radio flux at the actual distance of the Earth
+         *  from the Sun rather than the radio flux at 1 AU. The following
+         *  site provides both classes of values:<br>
+         *  ftp://ftp.ngdc.noaa.gov/STP/SOLAR_DATA/SOLAR_RADIO/FLUX/<br><br>
+         *
+         *  f107, f107A, and ap effects are neither large nor well established below 80 km
+         *  and these parameters should be set to 150., 150., and 4. respectively.
+         *  </p>
+         *  @param alt altitude (km)
+         */
+        void gts7(final T alt) {
+
+            // Thermal diffusion coefficients for species
+            final double[] alpha = {-0.38, 0.0, 0.0, 0.0, 0.17, 0.0, -0.38, 0.0, 0.0};
+            // Altitude limits for net density computation for species
+            final double[] altl  = {200.0, 300.0, 160.0, 250.0, 240.0, 450.0, 320.0, 450.0};
+            // N2 mixed density
+            final double xmm = PDM[2][4];
+
+            /**** Exospheric temperature ****/
+            T tinf = zero.add(PTM[0] * PT[0]);
+            // Tinf variations not important below ZA or ZN[0]
+            if (alt.getReal() > ZN1[0]) {
+                tinf = tinf.multiply(globe7(PT).multiply(sw[16]).add(1));
+            }
+            setTemperature(EXOSPHERIC, tinf);
+
+            // Gradient variations not important below ZN[4]
+            T g0 = zero.add(PTM[3] * PS[0]);
+            if (alt.getReal() > ZN1[4]) {
+                g0 = g0.multiply(globe7(PS).multiply(sw[19]).add(1));
+            }
+
+            // Temperature at lower boundary
+            T tlb = zero.add(PTM[1] * PD[3][0]);
+            tlb = tlb.multiply(globe7(PD[3]).multiply(sw[17]).add(1));
+
+            // Slope
+            final T s = g0.divide(tinf.subtract(tlb));
+
+            // Lower thermosphere temp variations not significant for density above 300 km
+            meso_tn1[1]  = zero.add(PTM[6] * PTL[0][0]);
+            meso_tn1[2]  = zero.add(PTM[2] * PTL[1][0]);
+            meso_tn1[3]  = zero.add(PTM[7] * PTL[2][0]);
+            meso_tn1[4]  = zero.add(PTM[4] * PTL[3][0]);
+            meso_tgn1[1] = zero.add(PTM[8] * PMA[8][0]);
+            if (alt.getReal() < 300.0) {
+                final double r = PTM[4] * PTL[3][0];
+                meso_tn1[1]  =  meso_tn1[1].divide(glob7s(PTL[0]).multiply(sw[18]         ).negate().add(1));
+                meso_tn1[2]  =  meso_tn1[2].divide(glob7s(PTL[1]).multiply(sw[18]         ).negate().add(1));
+                meso_tn1[3]  =  meso_tn1[3].divide(glob7s(PTL[2]).multiply(sw[18]         ).negate().add(1));
+                meso_tn1[4]  =  meso_tn1[4].divide(glob7s(PTL[3]).multiply(sw[18] * sw[20]).negate().add(1));
+                meso_tgn1[1] =  meso_tgn1[1].multiply(glob7s(PMA[8]).multiply(sw[18] * sw[20]).add(1));
+                meso_tgn1[1] =  meso_tgn1[1].multiply(meso_tn1[4].multiply(meso_tn1[4]).divide(r * r));
+            }
+
+            /**** Temperature at altitude ****/
+            setTemperature(ALTITUDE, densu(alt, zero.add(1.0), tinf, tlb, 0, 0, PTM[5], s));
+
+            /**** N2 density ****/
+            /*   Density variation factor at Zlb */
+            final T g28 = globe7(PD[2]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db28 = g28.exp().multiply(PDM[2][0] * PD[2][0]);
+            /* Diffusive density at Alt */
+            T diffusiveDensity = densu(alt, db28, tinf, tlb, N2_MASS, alpha[2], PTM[5], s);
+            setDensity(MOLECULAR_NITROGEN, diffusiveDensity);
+            // Variation of turbopause height
+            final T zhf = lat.multiply(DEG_TO_RAD).sin().
+                            multiply(sw[5] * PDL[0][24] * FastMath.cos(DAY_TO_RAD * (doy - PT[13]))).
+                            add(1).
+                            multiply(PDL[1][24]);
+            /* Turbopause */
+            final T zh28  = zhf.multiply(PDM[2][2]);
+            final double zhm28 = PDM[2][3] * PDL[1][5];
+            /* Mixed density at Zlb */
+            final T b28 = densu(zh28, db28, tinf, tlb, N2_MASS - xmm, alpha[2] - 1.0, PTM[5], s);
+            if (sw[15] != 0 && alt.getReal() <= altl[2]) {
+                /*  Mixed density at Alt */
+                dm28 = densu(alt, b28, tinf, tlb, xmm, alpha[2], PTM[5], s);
+                /*  Net density at Alt */
+                setDensity(MOLECULAR_NITROGEN, dnet(diffusiveDensity, dm28, zhm28, xmm, N2_MASS));
+            } else {
+                dm28 = zero;
+            }
+
+            /**** He density ****/
+            /*   Density variation factor at Zlb */
+            final T g4 = globe7(PD[0]).multiply(sw[21]);
+            /*  Diffusive density at Zlb */
+            final T db04 = g4.exp().multiply(PDM[0][0] * PD[0][0]);
+            /*  Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db04, tinf, tlb, HE_MASS, alpha[0], PTM[5], s);
+            setDensity(HELIUM, diffusiveDensity);
+            if (sw[15] != 0 && alt.getReal() < altl[0]) {
+                /*  Turbopause */
+                final double zh04 = PDM[0][2];
+                /*  Mixed density at Zlb */
+                final T b04 = densu(zero.add(zh04), db04, tinf, tlb, HE_MASS - xmm, alpha[0] - 1., PTM[5], s);
+                /*  Mixed density at Alt */
+                final T dm04 = densu(alt, b04, tinf, tlb, xmm, 0., PTM[5], s);
+                final double zhm04 = zhm28;
+                /*  Net density at Alt */
+                diffusiveDensity = dnet(diffusiveDensity, dm04, zhm04, xmm, HE_MASS);
+                /*  Correction to specified mixing ratio at ground */
+                final T rl = b28.multiply(PDM[0][1]).divide(b04).log();
+                final double zc04 = PDM[0][4] * PDL[1][0];
+                final double hc04 = PDM[0][5] * PDL[1][1];
+                /*  Net density corrected at Alt */
+                setDensity(HELIUM, diffusiveDensity.multiply(ccor(alt, rl, hc04, zc04)));
+            }
+
+            /**** O density ****/
+            /* Density variation factor at Zlb */
+            final T g16 = globe7(PD[1]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db16 = g16.exp().multiply(PDM[1][0] * PD[1][0]);
+            /* Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db16, tinf, tlb, O_MASS, alpha[1], PTM[5], s);
+            setDensity(ATOMIC_OXYGEN, diffusiveDensity);
+            if (sw[15] != 0 && alt.getReal() < altl[1]) {
+                /* Turbopause */
+                final double zh16 = PDM[1][2];
+                /* Mixed density at Zlb */
+                final T b16 = densu(zero.add(zh16), db16, tinf, tlb, O_MASS - xmm, alpha[1] - 1.0, PTM[5], s);
+                /* Mixed density at Alt */
+                final T dm16 = densu(alt, b16, tinf, tlb, xmm, 0., PTM[5], s);
+                final double zhm16 = zhm28;
+                /* Net density at Alt */
+                diffusiveDensity = dnet(diffusiveDensity, dm16, zhm16, xmm, O_MASS);
+                final double rl = PDM[1][1] * PDL[1][16] * (1.0 + sw[1] * PDL[0][23] * (f107a - FLUX_REF));
+                final double hc16 = PDM[1][5] * PDL[1][3];
+                final double zc16 = PDM[1][4] * PDL[1][2];
+                final double hc216 = PDM[1][5] * PDL[1][4];
+                diffusiveDensity = diffusiveDensity.multiply(ccor2(alt, rl, hc16, zc16, hc216));
+                /* Chemistry correction */
+                final double hcc16 = PDM[1][7] * PDL[1][13];
+                final double zcc16 = PDM[1][6] * PDL[1][12];
+                final double rc16  = PDM[1][3] * PDL[1][14];
+                /* Net density corrected at Alt */
+                setDensity(ATOMIC_OXYGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc16), hcc16, zcc16)));
+            }
+
+            /**** O2 density ****/
+            /* Density variation factor at Zlb */
+            final T g32 = globe7(PD[4]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db32 = g32.exp().multiply(PDM[3][0] * PD[4][0]);
+            /* Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db32, tinf, tlb, O2_MASS, alpha[3], PTM[5], s);
+            setDensity(MOLECULAR_OXYGEN, diffusiveDensity);
+            if (sw[15] != 0) {
+                if (alt.getReal() <= altl[3]) {
+                    /* Turbopause */
+                    final double zh32 = PDM[3][2];
+                    /* Mixed density at Zlb */
+                    final T b32 = densu(zero.add(zh32), db32, tinf, tlb, O2_MASS - xmm, alpha[3] - 1., PTM[5], s);
+                    /* Mixed density at Alt */
+                    final T dm32 = densu(alt, b32, tinf, tlb, xmm, 0., PTM[5], s);
+                    final double zhm32 = zhm28;
+                    /* Net density at Alt */
+                    diffusiveDensity = dnet(diffusiveDensity, dm32, zhm32, xmm, O2_MASS);
+                    /* Correction to specified mixing ratio at ground */
+                    final T rl = b28.multiply(PDM[3][1]).divide(b32).log();
+                    final double hc32 = PDM[3][5] * PDL[1][7];
+                    final double zc32 = PDM[3][4] * PDL[1][6];
+                    diffusiveDensity = diffusiveDensity.multiply(ccor(alt, rl, hc32, zc32));
+                }
+                /* Correction for general departure from diffusive equilibrium above Zlb */
+                final double hcc32  = PDM[3][7] * PDL[1][22];
+                final double hcc232 = PDM[3][7] * PDL[0][22];
+                final double zcc32  = PDM[3][6] * PDL[1][21];
+                final double rc32   = PDM[3][3] * PDL[1][23] * (1. + sw[1] * PDL[0][23] * (f107a - FLUX_REF));
+                /* Net density corrected at Alt */
+                setDensity(MOLECULAR_OXYGEN, diffusiveDensity.multiply(ccor2(alt, rc32, hcc32, zcc32, hcc232)));
+            }
+
+            /**** Ar density ****/
+            /* Density variation factor at Zlb */
+            final T g40 = globe7(PD[5]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db40 = g40.exp().multiply(PDM[4][0] * PD[5][0]);
+            /* Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db40, tinf, tlb, AR_MASS, alpha[4], PTM[5], s);
+            setDensity(ARGON, diffusiveDensity);
+            if (sw[15] != 0 && alt.getReal() <= altl[4]) {
+                /* Turbopause */
+                final double zh40 = PDM[4][2];
+                /* Mixed density at Zlb */
+                final T b40 = densu(zero.add(zh40), db40, tinf, tlb, AR_MASS - xmm, alpha[4] - 1., PTM[5], s);
+                /* Mixed density at Alt */
+                final T dm40 = densu(alt, b40, tinf, tlb, xmm, 0., PTM[5], s);
+                final double zhm40 = zhm28;
+                /* Net density at Alt */
+                diffusiveDensity = dnet(diffusiveDensity, dm40, zhm40, xmm, AR_MASS);
+                /* Correction to specified mixing ratio at ground */
+                final T rl = b28.multiply(PDM[4][1]).divide(b40).log();
+                final double hc40 = PDM[4][5] * PDL[1][9];
+                final double zc40 = PDM[4][4] * PDL[1][8];
+                /* Net density corrected at Alt */
+                setDensity(ARGON, diffusiveDensity.multiply(ccor(alt, rl, hc40, zc40)));
+            }
+
+            /**** H density ****/
+            /* Density variation factor at Zlb */
+            final T g1 = globe7(PD[6]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db01 = g1.exp().multiply(PDM[5][0] * PD[6][0]);
+            /* Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db01, tinf, tlb, H_MASS, alpha[6], PTM[5], s);
+            setDensity(HYDROGEN, diffusiveDensity);
+            if (sw[15] != 0 && alt.getReal() <= altl[6]) {
+                /* Turbopause */
+                final double zh01 = PDM[5][2];
+                /* Mixed density at Zlb */
+                final T b01 = densu(zero.add(zh01), db01, tinf, tlb, H_MASS - xmm, alpha[6] - 1., PTM[5], s);
+                /* Mixed density at Alt */
+                final T dm01 = densu(alt, b01, tinf, tlb, xmm, 0., PTM[5], s);
+                final double zhm01 = zhm28;
+                /* Net density at Alt */
+                diffusiveDensity = dnet(diffusiveDensity, dm01, zhm01, xmm, H_MASS);
+                /* Correction to specified mixing ratio at ground */
+                final T rl = b28.multiply(PDM[5][1] * FastMath.sqrt(PDL[1][17] * PDL[1][17])).divide(b01).log();
+                final double hc01 = PDM[5][5] * PDL[1][11];
+                final double zc01 = PDM[5][4] * PDL[1][10];
+                diffusiveDensity = diffusiveDensity.multiply(ccor(alt, rl, hc01, zc01));
+                /* Chemistry correction */
+                final double hcc01 = PDM[5][7] * PDL[1][19];
+                final double zcc01 = PDM[5][6] * PDL[1][18];
+                final double rc01 = PDM[5][3] * PDL[1][20];
+                /* Net density corrected at Alt */
+                setDensity(HYDROGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc01), hcc01, zcc01)));
+            }
+
+            /**** N density ****/
+            /* Density variation factor at Zlb */
+            final T g14 = globe7(PD[7]).multiply(sw[21]);
+            /* Diffusive density at Zlb */
+            final T db14 = g14.exp().multiply(PDM[6][0] * PD[7][0]);
+            /* Diffusive density at Alt */
+            diffusiveDensity = densu(alt, db14, tinf, tlb, N_MASS, alpha[7], PTM[5], s);
+            setDensity(ATOMIC_NITROGEN, diffusiveDensity);
+            if (sw[15] != 0 && alt.getReal() <= altl[7]) {
+                /* Turbopause */
+                final double zh14 = PDM[6][2];
+                /* Mixed density at Zlb */
+                final T b14 = densu(zero.add(zh14), db14, tinf, tlb, N_MASS - xmm, alpha[7] - 1., PTM[5], s);
+                /* Mixed density at Alt */
+                final T dm14 = densu(alt, b14, tinf, tlb, xmm, 0., PTM[5], s);
+                final double zhm14 = zhm28;
+                /* Net density at Alt */
+                diffusiveDensity = dnet(diffusiveDensity, dm14, zhm14, xmm, N_MASS);
+                /* Correction to specified mixing ratio at ground */
+                final T rl = b28.multiply(PDM[6][1] * PDL[0][2]).divide(b14).log();
+                final double hc14 = PDM[6][5] * PDL[0][1];
+                final double zc14 = PDM[6][4] * PDL[0][0];
+                diffusiveDensity = diffusiveDensity.multiply(ccor(alt, rl, hc14, zc14));
+                /* Chemistry correction */
+                final double hcc14 = PDM[6][7] * PDL[0][4];
+                final double zcc14 = PDM[6][6] * PDL[0][3];
+                final double rc14 = PDM[6][3] * PDL[0][5];
+                /* Net density corrected at Alt */
+                setDensity(ATOMIC_NITROGEN, diffusiveDensity.multiply(ccor(alt, zero.add(rc14), hcc14, zcc14)));
+            }
+
+            /**** Anomalous O density ****/
+            final T g16h = globe7(PD[8]).multiply(sw[21]);
+            final T db16h = g16h.exp().multiply(PDM[7][0] * PD[8][0]);
+            final double tho   = PDM[7][9] * PDL[0][6];
+            diffusiveDensity = densu(alt, db16h, zero.add(tho), zero.add(tho), O_MASS, alpha[8], PTM[5], s);
+            final double zsht = PDM[7][5];
+            final double zmho = PDM[7][4];
+            final T zsho = scalh(zmho, O_MASS, tho);
+            diffusiveDensity = diffusiveDensity.multiply(alt.negate().add(zmho).divide(zsht).exp().subtract(1).multiply(-zsht).divide(zsho).exp());
+            setDensity(ANOMALOUS_OXYGEN, diffusiveDensity);
+
+            // Convert densities from cm-3 to m-3
+            for (int i = 0; i < 9; i++) {
+                setDensity(i, getDensity(i).multiply(1.0e+06));
+            }
+
+            /**** Total mass density ****/
+            final T tmd =     getDensity(HELIUM)            .multiply(HE_MASS).
+                          add(getDensity(ATOMIC_OXYGEN)     .multiply( O_MASS)).
+                          add(getDensity(MOLECULAR_NITROGEN).multiply(N2_MASS)).
+                          add(getDensity(MOLECULAR_OXYGEN)  .multiply(O2_MASS)).
+                          add(getDensity(ARGON)             .multiply(AR_MASS)).
+                          add(getDensity(HYDROGEN)          .multiply( H_MASS)).
+                          add(getDensity(ATOMIC_NITROGEN)   .multiply( N_MASS)).
+                          multiply(AMU);
+            setDensity(TOTAL_MASS, tmd);
+
+        }
+
+        /** Calculate temperatures and densities not including anomalous oxygen.
+         *  <p>NOTES ON INPUT VARIABLES:<br>
+         *  Seconds, Local Time, and Longitude are used independently in the
+         *  model and are not of equal importance for every situation.<br>
+         *  For the most physically realistic calculation these three
+         *  variables should be consistent (lst=sec/3600 + lon/15).<br>
+         *  The Equation of Time departures from the above formula
+         *  for apparent local time can be included if available but
+         *  are of minor importance.<br><br>
+         *
+         *  f107 and f107A values used to generate the model correspond
+         *  to the 10.7 cm radio flux at the actual distance of the Earth
+         *  from the Sun rather than the radio flux at 1 AU. The following
+         *  site provides both classes of values:<br>
+         *  ftp://ftp.ngdc.noaa.gov/STP/SOLAR_DATA/SOLAR_RADIO/FLUX/<br><br>
+         *
+         *  f107, f107A, and ap effects are neither large nor well established below 80 km
+         *  and these parameters should be set to 150., 150., and 4. respectively.
+         *  </p>
+         *  @param alt altitude (km)
+         */
+        void gtd7(final T alt) {
+
+            // Calculates for thermosphere/mesosphere (above ZN2[0])
+            final T altt = (alt.getReal() > ZN2[0]) ? alt : zero.add(ZN2[0]);
+            gts7(altt);
+            if (alt.getReal() >= ZN2[0]) {
+                return;
+            }
+
+            // Calculates for lower mesosphere/upper stratosphere (between ZN2[0] and ZN3[0]):
+            // Temperature at nodes and gradients at end nodes
+            // Inverse temperature a linear function of spherical harmonics
+            final double r = PMA[2][0] * PAVGM[2];
+            meso_tgn2[0] = meso_tgn1[1];
+            meso_tn2[0]  = meso_tn1[4];
+            meso_tn2[1]  = glob7s(PMA[0]).multiply(sw[20]         ).negate().add(1).reciprocal().multiply(PMA[0][0] * PAVGM[0]);
+            meso_tn2[2]  = glob7s(PMA[1]).multiply(sw[20]         ).negate().add(1).reciprocal().multiply(PMA[1][0] * PAVGM[1]);
+            meso_tn2[3]  = glob7s(PMA[2]).multiply(sw[20] * sw[22]).negate().add(1).reciprocal().multiply(PMA[2][0] * PAVGM[2]);
+            meso_tgn2[1] = glob7s(PMA[9]).multiply(sw[20] * sw[22]).add(1).multiply(PMA[9][0] * PAVGM[8]).
+                           multiply(meso_tn2[3]).multiply(meso_tn2[3]).divide(r * r);
+            meso_tn3[0]  = meso_tn2[3];
+
+            // Calculates for lower stratosphere and troposphere (below ZN3[0])
+            // Temperature at nodes and gradients at end nodes
+            // Inverse temperature a linear function of spherical harmonics
+            if (alt.getReal() < ZN3[0]) {
+                final double q = PMA[6][0] * PAVGM[6];
+                meso_tgn3[0] = meso_tgn2[1];
+                meso_tn3[1]  = glob7s(PMA[3]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[3][0] * PAVGM[3]);
+                meso_tn3[2]  = glob7s(PMA[4]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[4][0] * PAVGM[4]);
+                meso_tn3[3]  = glob7s(PMA[5]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[5][0] * PAVGM[5]);
+                meso_tn3[4]  = glob7s(PMA[6]).multiply(sw[22]).negate().add(1).reciprocal().multiply(PMA[6][0] * PAVGM[6]);
+                meso_tgn3[1] = glob7s(PMA[7]).multiply(sw[22])         .add(1).multiply(PMA[7][0] * PAVGM[7]).
+                               multiply(meso_tn3[4]).multiply(meso_tn3[4]).divide(q * q);
+
+            }
+
+            // Linear transition to full mixing below ZN2[0]
+            final T dmc = (alt.getReal() > ZMIX) ?
+                           alt.subtract(ZN2[0]).divide(ZN2[0] - ZMIX).add(1) :
+                           zero;
+            final T dz28 = getDensity(MOLECULAR_NITROGEN);
+
+            // N2 density
+            final T dm28m = dm28.multiply(1.0e+06);
+            T dmr = dz28.divide(dm28m).subtract(1);
+            T dst = densm(alt, dm28m, PDM[2][4]).multiply(dmr.multiply(dmc).add(1));
+            setDensity(MOLECULAR_NITROGEN, dst);
+
+            // HE density
+            dmr = getDensity(HELIUM).divide(dz28.multiply(PDM[0][1])).subtract(1);
+            dst = getDensity(MOLECULAR_NITROGEN).multiply(PDM[0][1]).multiply(dmr.multiply(dmc).add(1));
+            setDensity(HELIUM, dst);
+
+            // O density
+            setDensity(ATOMIC_OXYGEN, zero);
+            setDensity(ANOMALOUS_OXYGEN, zero);
+
+            // O2 density
+            dmr = getDensity(MOLECULAR_OXYGEN).divide(dz28.multiply(PDM[3][1])).subtract(1);
+            dst = getDensity(MOLECULAR_NITROGEN).multiply(PDM[3][1]).multiply(dmr.multiply(dmc).add(1));
+            setDensity(MOLECULAR_OXYGEN, dst);
+
+            // AR density
+            dmr = getDensity(ARGON).divide(dz28.multiply(PDM[4][1])).subtract(1);
+            dst = getDensity(MOLECULAR_NITROGEN).multiply(PDM[4][1]).multiply(dmr.multiply(dmc).add(1));
+            setDensity(ARGON, dst);
+
+            // H density
+            setDensity(HYDROGEN, zero);
+
+            // N density
+            setDensity(ATOMIC_NITROGEN, zero);
+
+            // Total mass density
+            final T tmd =       getDensity(HELIUM)            .multiply(HE_MASS).
+                            add(getDensity(ATOMIC_OXYGEN)     .multiply( O_MASS)).
+                            add(getDensity(MOLECULAR_NITROGEN).multiply(N2_MASS)).
+                            add(getDensity(MOLECULAR_OXYGEN)  .multiply(O2_MASS)).
+                            add(getDensity(ARGON)             .multiply(AR_MASS)).
+                            add(getDensity(HYDROGEN)          .multiply( H_MASS)).
+                            add(getDensity(ATOMIC_NITROGEN)   .multiply( N_MASS)).
+                            multiply(AMU);
+            setDensity(TOTAL_MASS, tmd);
+
+            // Temperature at altitude
+            setTemperature(ALTITUDE, densm(alt, field.getOne(), 0));
+
+        }
+
+        /** Calculate temperatures and densities including anomalous oxygen.
+         *  <p></p>
+         *  <p>NOTES ON INPUT VARIABLES:<br>
+         *  Seconds, Local Time, and Longitude are used independently in the
+         *  model and are not of equal importance for every situation.<br>
+         *  For the most physically realistic calculation these three
+         *  variables should be consistent (lst=sec/3600 + lon/15).<br>
+         *  The Equation of Time departures from the above formula
+         *  for apparent local time can be included if available but
+         *  are of minor importance.<br>
+         *  <br>
+         *  f107 and f107A values used to generate the model correspond
+         *  to the 10.7 cm radio flux at the actual distance of the Earth
+         *  from the Sun rather than the radio flux at 1 AU. The following
+         *  site provides both classes of values:<br>
+         *  ftp://ftp.ngdc.noaa.gov/STP/SOLAR_DATA/SOLAR_RADIO/FLUX/<br>
+         *  <br>
+         *  f107, f107A, and ap effects are neither large nor well established below 80 km
+         *  and these parameters should be set to 150., 150., and 4. respectively.
+         *  </p>
+         *  @param alt altitude (km)
+         */
+        void gtd7d(final T alt) {
+
+            // Compute densities and temperatures
+            gtd7(alt);
+
+            // Update the total mass density with anomalous oxygen contribution
+            final T dTot = getDensity(TOTAL_MASS).add(getDensity(ANOMALOUS_OXYGEN).multiply( AMU * O_MASS));
+            setDensity(TOTAL_MASS, dTot);
+
+        }
+
+        /** Set one density.
+         * @param index one of the nine elements :
+         * <ul>
+         * <li>{@link #HELIUM}</li>
+         * <li>{@link #ATOMIC_OXYGEN}</li>
+         * <li>{@link #MOLECULAR_NITROGEN}</li>
+         * <li>{@link #MOLECULAR_OXYGEN}</li>
+         * <li>{@link #ARGON}</li>
+         * <li>{@link #TOTAL_MASS}</li>
+         * <li>{@link #HYDROGEN}</li>
+         * <li>{@link #ATOMIC_NITROGEN}</li>
+         * <li>{@link #ATOMIC_NITROGEN}</li>
+         * </ul>
+         * @param d the value of density to set
+         */
+        void setDensity(final int index, final T d) {
+            densities[index] = d;
+        }
+
+        /** Set one temperature.
+         * @param index one of the two elements :
+         * <ul>
+         * <li>{@link #EXOSPHERIC}</li>
+         * <li>{@link #ALTITUDE}</li>
+         * </ul>
+         * @param t the value of temperature to set
+         */
+        void setTemperature(final int index, final T t) {
+            temperatures[index] = t;
+        }
+
+        /** Get one of the stored densities.
+         * @param index one of the nine elements :
+         * <ul>
+         * <li>{@link #HELIUM}</li>
+         * <li>{@link #ATOMIC_OXYGEN}</li>
+         * <li>{@link #MOLECULAR_NITROGEN}</li>
+         * <li>{@link #MOLECULAR_OXYGEN}</li>
+         * <li>{@link #ARGON}</li>
+         * <li>{@link #TOTAL_MASS}</li>
+         * <li>{@link #HYDROGEN}</li>
+         * <li>{@link #ATOMIC_NITROGEN}</li>
+         * <li>{@link #ATOMIC_NITROGEN}</li>
+         * </ul>
+         * @return the requested density
+         */
+        public T getDensity(final int index) {
+            return densities[index];
+        }
+
+        /** Get one of the stored temperatures.
+         * @param index one of the two elements :
+         * <ul>
+         * <li>{@link #EXOSPHERIC}</li>
+         * <li>{@link #ALTITUDE}</li>
+         * </ul>
+         * @return the requested temperature
+         */
+        @SuppressWarnings("unused")
+        public T getTemperature(final int index) {
+            return temperatures[index];
+        }
+
+        /** Calculate G(L) function with upper thermosphere parameters.
+         *  @param p array of parameters
+         *  @return G(L) value
+         */
+        private T globe7(final double[] p) {
+
+            final T[] t = MathArrays.buildArray(field, 14);
+            final double cd32 = FastMath.cos(DAY_TO_RAD * (doy - p[31]));
+            final double cd18 = FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[17]));
+            final double cd14 = FastMath.cos(DAY_TO_RAD * (doy - p[13]));
+            final double cd39 = FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[38]));
+
+            // F10.7 effect
+            final double df  = f107  - f107a;
+            final double dfa = f107a - FLUX_REF;
+            t[0] = zero.add(p[19] * df * (1.0 + p[59] * dfa) +
+                            p[20] * df * df +
+                            p[21] * dfa +
+                            p[29] * dfa * dfa);
+
+            final double f1 = 1.0 + (p[47] * dfa + p[19] * df + p[20] * df * df) * swc[1];
+            final double f2 = 1.0 + (p[49] * dfa + p[19] * df + p[20] * df * df) * swc[1];
+
+            // Time independent
+            t[1] =     plg[0][2].multiply(p[ 1]).
+                   add(plg[0][4].multiply(p[ 2])).
+                   add(plg[0][6].multiply(p[22])).
+                   add(plg[0][2].multiply(p[14] * dfa * swc[1])).
+                   add(plg[0][1].multiply(p[26]));
+
+            // Symmetrical annual
+            t[2] = zero.add(p[18] * cd32);
+
+            // Symmetrical semiannual
+            t[3] = plg[0][2].multiply(p[16]).add(p[15]).multiply(cd18);
+
+            // Asymmetrical annual
+            t[4] = plg[0][1].multiply(p[9]).add(plg[0][3].multiply(p[10])).multiply(f1 * cd14);
+
+            // Asymmetrical semiannual
+            t[5] = plg[0][1].multiply(p[37] * cd39);
+
+            // Diurnal
+            if (sw[7] != 0) {
+                final T t71 = plg[1][2].multiply(p[11] * cd14 * swc[5]);
+                final T t72 = plg[1][2].multiply(p[12] * cd14 * swc[5]);
+                t[6] =      plg[1][1].multiply(p[3]).add(plg[1][3].multiply(p[4])).add(plg[1][5].multiply(p[27])).add(t71).multiply(ctloc).
+                        add(plg[1][1].multiply(p[6]).add(plg[1][3].multiply(p[7])).add(plg[1][5].multiply(p[28])).add(t72).multiply(stloc)).
+                        multiply(f2);
+            }
+
+            // Semidiurnal
+            if (sw[8] != 0) {
+                final T t81 = plg[2][3].multiply(p[23]).add(plg[2][5].multiply(p[35])).multiply(cd14 * swc[5]);
+                final T t82 = plg[2][3].multiply(p[33]).add(plg[2][5].multiply(p[36])).multiply(cd14 * swc[5]);
+                t[7] =     plg[2][2].multiply(p[5]).add(plg[2][4].multiply(p[41])).add(t81).multiply(c2tloc).
+                       add(plg[2][2].multiply(p[8]).add(plg[2][4].multiply(p[42])).add(t82).multiply(s2tloc)).
+                       multiply(f2);
+            }
+
+            // Terdiurnal
+            if (sw[14] != 0) {
+                t[13] =     plg[3][3].multiply(p[39]).add(plg[3][4].multiply(p[93]).add(plg[3][6].multiply(p[46])).multiply(cd14 * swc[5])).multiply(s3tloc).
+                        add(plg[3][3].multiply(p[40]).add(plg[3][4].multiply(p[94]).add(plg[3][6].multiply(p[48])).multiply(cd14 * swc[5])).multiply(c3tloc)).
+                        multiply(f2);
+            }
+
+            // magnetic activity based on daily ap
+            if (sw[9] == -1) {
+                if (p[51] != 0) {
+                    final T exp1 = lat.abs().negate().add(LAT_REF).multiply(p[138]).add(1).
+                                    reciprocal().multiply(-10800.0 * FastMath.abs(p[51])).
+                                    exp();
+                    final double p24 = FastMath.max(p[24], 1.0e-4);
+                    apt = sg0(min(0.99999, exp1), p24, p[25]);
+                    t[8] =      plg[0][2].multiply(p[96]).add(plg[0][4].multiply(p[54])).add(p[50]).
+                           add((plg[0][1].multiply(p[125]).add(plg[0][3].multiply(p[126])).add(plg[0][5].multiply(p[127]))).multiply(cd14 * swc[5])).
+                           add((plg[1][1].multiply(p[128]).add(plg[1][3].multiply(p[129])).add(plg[1][5].multiply(p[130]))).multiply(swc[7]).multiply(hl.subtract(p[131]).multiply(HOUR_TO_RAD).cos())).
+                           multiply(apt);
+                }
+            } else {
+                final double apd = ap[0] - 4.0;
+                final double p44 = (p[43] < 0.) ? 1.0E-5 : p[43];
+                final double p45 = p[44];
+                apdf = apd + (p45 - 1.0) * (apd + (FastMath.exp(-p44 * apd) - 1.0) / p44);
+                if (sw[9] != 0) {
+                    t[8] =      plg[0][2].multiply(p[45]).add(plg[0][4].multiply(p[34])).add(p[32]).
+                           add((plg[0][1].multiply(p[100]).add(plg[0][3].multiply(p[101])).add(plg[0][5].multiply(p[102]))).multiply(cd14 * swc[5])).
+                           add((plg[1][1].multiply(p[121]).add(plg[1][3].multiply(p[122])).add(plg[1][5].multiply(p[123]))).multiply(swc[7]).multiply(hl.subtract(p[124]).multiply(HOUR_TO_RAD).cos())).
+                           multiply(apdf);
+                }
+            }
+
+            if (sw[10] != 0) {
+                final T lonr = lon.multiply(DEG_TO_RAD);
+                // Longitudinal
+                if (sw[11] != 0) {
+                    t[10] =         plg[1][2].multiply(p[ 64]) .add(plg[1][4].multiply(p[ 65])).add(plg[1][6].multiply(p[ 66])).
+                                add(plg[1][1].multiply(p[103])).add(plg[1][3].multiply(p[104])).add(plg[1][5].multiply(p[105])).
+                                add((plg[1][1].multiply(p[109])).add(plg[1][3].multiply(p[110])).add(plg[1][5].multiply(p[111])).multiply(swc[5] * cd14)).
+                                multiply(lonr.cos()).
+                            add(    plg[1][2].multiply(p[ 90]) .add(plg[1][4].multiply(p[ 91])).add(plg[1][6].multiply(p[ 92])).
+                                add(plg[1][1].multiply(p[106])).add(plg[1][3].multiply(p[107])).add(plg[1][5].multiply(p[108])).
+                                add((plg[1][1].multiply(p[112])).add(plg[1][3].multiply(p[113])).add(plg[1][5].multiply(p[114])).multiply(swc[5] * cd14)).
+                                multiply(lonr.sin())).
+                            multiply(1.0 + p[80] * dfa * swc[1]);
+                }
+
+                // ut and mixed ut, longitude
+                if (sw[12] != 0) {
+                    t[11] =          plg[0][1].multiply(p[95]).add(1).multiply(1.0 + p[81] * dfa * swc[1]).
+                            multiply(plg[0][1].multiply(p[119] * swc[5] * cd14).add(1)).
+                            multiply(plg[0][1].multiply(p[68]).add(plg[0][3].multiply(p[69])).add(plg[0][5].multiply(p[70]))).
+                            multiply(sec.subtract(p[71]).multiply(SEC_TO_RAD).cos());
+                    t[11] = t[11].
+                            add(plg[2][3].multiply(p[76]).add(plg[2][5].multiply(p[77])).add(plg[2][7].multiply(p[78])).
+                                multiply(swc[11] * (1.0 + p[137] * dfa * swc[1])).
+                                multiply(sec.subtract(p[79]).multiply(SEC_TO_RAD).add(lonr.multiply(2)).cos()));
+                }
+
+                /* ut, longitude magnetic activity */
+                if (sw[13] != 0) {
+                    if (sw[9] == -1) {
+                        if (p[51] != 0.) {
+                            t[12] = apt.multiply(swc[11]).multiply(plg[0][1].multiply(p[132]).add(1)).
+                                    multiply(plg[1][2].multiply(p[52]).add(plg[1][4].multiply(p[98])).add(plg[1][6].multiply(p[67]))).
+                                    multiply(lon.subtract(p[97]).multiply(DEG_TO_RAD).cos()).
+                                    add(apt.multiply(swc[11] * swc[5] * cd14).
+                                        multiply(plg[1][1].multiply(p[133]).add(plg[1][3].multiply(p[134])).add(plg[1][5].multiply(p[135]))).
+                                        multiply(lon.subtract(p[136]).multiply(DEG_TO_RAD).cos())).
+                                    add(apt.multiply(swc[12]).
+                                        multiply(plg[0][1].multiply(p[55]).add(plg[0][3].multiply(p[56])).add(plg[0][5].multiply(p[57]))).
+                                        multiply(sec.subtract(p[58]).multiply(SEC_TO_RAD).cos()));
+                        }
+                    } else {
+                        t[12] = plg[0][1].multiply(p[120]).add(1).multiply(apdf * swc[11]).
+                                multiply(plg[1][2].multiply(p[60]).add(plg[1][4].multiply(p[61])).add(plg[1][6].multiply(p[62]))).
+                                multiply(lon.subtract(p[63]).multiply(DEG_TO_RAD).cos()).
+                                add(plg[1][1].multiply(p[115]).add(plg[1][3].multiply(p[116])).add(plg[1][5].multiply(p[117])).
+                                    multiply(apdf * swc[11] * swc[5] * cd14).
+                                    multiply(lon.subtract(p[118]).multiply(DEG_TO_RAD).cos())).
+                                add(plg[0][1].multiply(p[83]).add(plg[0][3].multiply(p[84])).add(plg[0][5].multiply(p[85])).
+                                    multiply(apdf * swc[12]).
+                                    multiply(sec.subtract(p[75]).multiply(SEC_TO_RAD).cos()));
+                    }
+                }
+            }
+
+            // Sum all effects (params not used: 82, 89, 99, 139-149)
+            T tinf = zero.add(p[30]);
+            for (int i = 0; i < 14; i++) {
+                tinf = tinf.add(t[i].multiply(FastMath.abs(sw[i + 1])));
+            }
+
+            // Return G(L)
+            return tinf;
+
+        }
+
+        /** Calculate G(L) function with lower atmosphere parameters.
+         *  @param p array of parameters
+         *  @return G(L) value
+         */
+        private T glob7s(final double[] p) {
+
+            final T[] t = MathArrays.buildArray(field, 14);
+            final double cd32 = FastMath.cos(DAY_TO_RAD * (doy - p[31]));
+            final double cd18 = FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[17]));
+            final double cd14 = FastMath.cos(DAY_TO_RAD * (doy - p[13]));
+            final double cd39 = FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[38]));
+
+            // F10.7 effect
+            t[0] = zero.add(p[21] * (f107a - FLUX_REF));
+
+            // Time independent
+            t[1] =     plg[0][2].multiply(p[1]).
+                   add(plg[0][4].multiply(p[2])).
+                   add(plg[0][6].multiply(p[22])).
+                   add(plg[0][1].multiply(p[26])).
+                   add(plg[0][3].multiply(p[14])).
+                   add(plg[0][5].multiply(p[59]));
+
+            // Symmetrical annual
+            t[2] = plg[0][2].multiply(p[47]).add(plg[0][4].multiply(p[29])).add(p[18]).multiply(cd32);
+
+            // Symmetrical semiannual
+            t[3] = plg[0][2].multiply(p[16]).add(plg[0][4].multiply(p[30])).add(p[15]).multiply(cd18);
+
+            // Asymmetrical annual
+            t[4] = plg[0][1].multiply(p[9]).add(plg[0][3].multiply(p[10])).add(plg[0][5].multiply(p[20])).multiply(cd14);
+
+            // Asymmetrical semiannual
+            t[5] = plg[0][1].multiply(p[37]).multiply(cd39);
+
+            // Diurnal
+            if (sw[7] != 0) {
+                final T t71 = plg[1][2].multiply(p[11]).multiply(cd14 * swc[5]);
+                final T t72 = plg[1][2].multiply(p[12]).multiply(cd14 * swc[5]);
+                t[6] =     plg[1][1].multiply(p[3]).add(plg[1][3].multiply(p[4])).add(t71).multiply(ctloc).
+                       add(plg[1][1].multiply(p[6]).add(plg[1][3].multiply(p[7])).add(t72).multiply(stloc));
+            }
+
+            // Semidiurnal
+            if (sw[8] != 0) {
+                final T t81 = plg[2][3].multiply(p[23]).add(plg[2][5].multiply(p[35])).multiply(cd14 * swc[5]);
+                final T t82 = plg[2][3].multiply(p[33]).add(plg[2][5].multiply(p[36])).multiply(cd14 * swc[5]);
+                t[7] =     plg[2][2].multiply(p[5]).add(plg[2][4].multiply(p[41])).add(t81).multiply(c2tloc).
+                       add(plg[2][2].multiply(p[8]).add(plg[2][4].multiply(p[42])).add(t82).multiply(s2tloc));
+            }
+
+            // Terdiurnal
+            if (sw[14] != 0) {
+                t[13] = plg[3][3].multiply(p[39]).multiply(s3tloc).add(plg[3][3].multiply(p[40]).multiply(c3tloc));
+            }
+
+            // Magnetic activity
+            if (sw[9] == 1) {
+                t[8] = plg[0][2].multiply(p[45] * swc[2]).add(p[32]).multiply(apdf);
+            } else if (sw[9] == -1) {
+                t[8] = plg[0][2].multiply(p[96] * swc[2]).add(p[50]).multiply(apt);
+            }
+
+            // Longitudinal
+            if (!(sw[10] == 0 || sw[11] == 0)) {
+                final T lonr = lon.multiply(DEG_TO_RAD);
+                t[10] = plg[0][1].multiply(p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
+                                           p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))).
+                       add(1.0 +
+                           p[83] * swc[3] * FastMath.cos(DAY_TO_RAD * (doy - p[84])) +
+                           p[87] * swc[4] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[88]))).
+                       multiply(    plg[1][2].multiply(p[64]).
+                                add(plg[1][4].multiply(p[65])).
+                                add(plg[1][6].multiply(p[66])).
+                                add(plg[1][1].multiply(p[74])).
+                                add(plg[1][3].multiply(p[75])).
+                                add(plg[1][5].multiply(p[76])).multiply(lonr.cos()).
+                          add(      plg[1][2].multiply(p[90]).
+                                add(plg[1][4].multiply(p[91])).
+                                add(plg[1][6].multiply(p[92])).
+                                add(plg[1][1].multiply(p[77])).
+                                add(plg[1][3].multiply(p[78])).
+                                add(plg[1][5].multiply(p[79])).multiply(lonr.sin())));
+            }
+
+            // Sum all effects
+            T gl = zero;
+            for (int i = 0; i < 14; i++) {
+                gl = gl.add(t[i].multiply(FastMath.abs(sw[i + 1])));
+            }
+
+            // Return G(L)
+            return gl;
+        }
+
+        /** Implements sg0 function (Eq. A24a).
+         * @param ex ex
+         * @param p24 abs(p[24])
+         * @param p25 p[25]
+         * @return sg0
+         */
+        private T sg0(final T ex, final double p24, final double p25) {
+            final double g01 = g0(ap[1], p24, p25);
+            final double g02 = g0(ap[2], p24, p25);
+            final double g03 = g0(ap[3], p24, p25);
+            final double g04 = g0(ap[4], p24, p25);
+            final double g05 = g0(ap[5], p24, p25);
+            final double g06 = g0(ap[6], p24, p25);
+            final T ex2      = ex.multiply(ex);
+            final T ex3      = ex.multiply(ex2);
+            final T ex4      = ex2.multiply(ex2);
+            final T ex8      = ex4.multiply(ex4);
+            final T ex12     = ex4.multiply(ex8);
+            final T g234     = ex.multiply(g02).add(ex2.multiply(g03)).add(ex3.multiply(g04));
+            final T g56      = ex4.multiply(g05).add(ex12.multiply(g06));
+            final T ex19     = ex3.multiply(ex4).multiply(ex12);
+            final T omex     = ex.negate().add(1);
+            final T sumex    = ex19.negate().add(1).divide(omex).multiply(ex.sqrt()).add(1);
+            return ex8.negate().add(1).multiply(g56).divide(omex).add(g234).add(g01).divide(sumex);
+        }
+
+        /** Implements go function (Eq. A24d).
+         * @param apI 3 hrs ap
+         * @param p24 abs(p[24])
+         * @param p25 p[25]
+         * @return go
+         */
+        private double g0(final double apI, final double p24, final double p25) {
+            final double am4 = apI - 4.0;
+            return am4 + (p25 - 1.0) * (am4 + (FastMath.exp(-p24 * am4) - 1.0) / p24);
+        }
+
+        /** Calculates chemistry/dissociation correction for MSIS models.
+         * @param alt altitude
+         * @param r target ratio
+         * @param h1 transition scale length
+         * @param zh altitude of 1/2 R
+         * @return correction
+         */
+        private T ccor(final T alt, final T r, final double h1, final double zh) {
+            final T e = alt.subtract(zh).divide(h1);
+            if (e.getReal() > 70.) {
+                return field.getOne();
+            } else if (e.getReal() < -70.) {
+                return r.exp();
+            } else {
+                return r.divide(e.exp().add(1)).exp();
+            }
+        }
+
+
+        /** Calculates O & O2 chemistry/dissociation correction for MSIS models.
+         * @param alt altitude
+         * @param r target ratio
+         * @param h1 transition scale length
+         * @param zh altitude of 1/2 R
+         * @param h2 transition scale length
+         * @return correction
+         */
+        private T ccor2(final T alt, final double r, final double h1, final double zh, final double h2) {
+            final T e1 = alt.subtract(zh).divide(h1);
+            final T e2 = alt.subtract(zh).divide(h2);
+            if ((e1.getReal() > 70.) || (e2.getReal() > 70.)) {
+                return field.getOne();
+            } else if ((e1.getReal() < -70.) && (e2.getReal() < -70.)) {
+                return zero.add(FastMath.exp(r));
+            } else {
+                final T ex1 = e1.exp();
+                final T ex2 = e2.exp();
+                return ex1.add(ex2).multiply(0.5).add(1).reciprocal().multiply(r).exp();
+            }
+        }
+
+        /** Calculates scale height.
+         * @param alt altitude
+         * @param xm species molecular weight
+         * @param temp temperature
+         * @return scale height (km)
+         */
+        private T scalh(final double alt, final double xm, final double temp) {
+            // Gravity at altitude
+            final T denom = rlat.reciprocal().multiply(alt).add(1);
+            final T galt = glat.divide(denom.multiply(denom));
+            return galt.reciprocal().multiply(R_GAS * temp / xm);
+        }
+
+        /** Calculates turbopause correction for MSIS models.
+         * @param dd diffusive density
+         * @param dm full mixed density
+         * @param zhm transition scale length
+         * @param xmm full mixed molecular weight
+         * @param xm species molecular weight
+         * @return combined density
+         */
+        private T dnet(final T dd, final T dm, final double zhm, final double xmm, final double xm) {
+            if (!(dm.getReal() > 0 && dd.getReal() > 0)) {
+                T ddd = dd;
+                if (dd.getReal() == 0 && dm.getReal() == 0) {
+                    ddd = field.getOne();
+                }
+                if (dm.getReal() == 0) {
+                    return ddd;
+                }
+                if (dd.getReal() == 0) {
+                    return dm;
+                }
+            }
+
+            final double a  = zhm / (xmm - xm);
+            final T ylog = dm.divide(dd).log().multiply(a);
+            if (ylog.getReal() < -10.) {
+                return dd;
+            } else if (ylog.getReal() > 10.) {
+                return dm;
+            } else {
+                return ylog.exp().add(1).pow(1.0 / a).multiply(dd);
+            }
+        }
+
+        /** Integrate cubic spline function from xa[0] to x.
+         * <p>ADAPTED FROM NUMERICAL RECIPES</p>
+         * @param xa array of abscissas in ascending order
+         * @param ya array of ordinates in ascending order by xa
+         * @param y2a array of second derivatives in ascending order by xa
+         * @param x abscissa end point
+         * @return integral value
+         */
+        private T splini(final T[] xa, final T[] ya, final T[] y2a, final T x) {
+            final int n = xa.length;
+            T yi = zero;
+            int klo = 0;
+            int khi = 1;
+            while (x.getReal() > xa[klo].getReal() && khi < n) {
+                T xx = x;
+                if (khi < n - 1) {
+                    xx = (x.getReal() < xa[khi].getReal()) ? x : xa[khi];
+                }
+                final T h = xa[khi].subtract(xa[klo]);
+                final T a = xa[khi].subtract(xx).divide(h);
+                final T b = xx.subtract(xa[klo]).divide(h);
+                final T a2 = a.multiply(a);
+                final T b2 = b.multiply(b);
+
+                final T z =
+                           a2.divide(2).subtract(a2.multiply(a2).add(1).divide(4)).multiply(y2a[klo]).
+                           add(b2.multiply(b2).divide(4).subtract(b2.divide(2)).multiply(y2a[khi]));
+                yi = yi.add(    a2.negate().add(1).multiply(ya[klo]).divide(2).
+                            add(b2.multiply(ya[khi]).divide(2)).
+                            add(z.multiply(h).multiply(h).divide(6)).
+                            multiply(h));
+                klo++;
+                khi++;
+            }
+            return yi;
+        }
+
+        /** Calculate cubic spline interpolated value.
+         * <p>ADAPTED FROM NUMERICAL RECIPES</p>
+         * @param xa array of abscissas in ascending order
+         * @param ya array of ordinates in ascending order by xa
+         * @param y2a array of second derivatives in ascending order by xa
+         * @param x abscissa for interpolation
+         * @return interpolated value
+         */
+        private T splint(final T[] xa, final T[] ya, final T[] y2a, final T x) {
+            final int n = xa.length;
+            int klo = 0;
+            int khi = n - 1;
+            while (khi - klo > 1) {
+                final int k = (khi + klo) >>> 1;
+                if (xa[k].getReal() > x.getReal()) {
+                    khi = k;
+                } else {
+                    klo = k;
+                }
+            }
+            final T h = xa[khi].subtract(xa[klo]);
+            final T a = xa[khi].subtract(x).divide(h);
+            final T b = x.subtract(xa[klo]).divide(h);
+            return a.multiply(ya[klo]).add(b.multiply(ya[khi])).
+                   add((    a.multiply(a).multiply(a).subtract(a).multiply(y2a[klo]).
+                        add(b.multiply(b).multiply(b).subtract(b).multiply(y2a[khi]))
+                       ).multiply(h).multiply(h).divide(6));
+        }
+
+        /** Calculate 2nd derivatives of cubic spline interpolation function.
+         * <p>ADAPTED FROM NUMERICAL RECIPES</p>
+         * @param x array of abscissas in ascending order
+         * @param y array of ordinates in ascending order by x
+         * @param yp1 derivative at x[0] (2nd derivatives null if > 1E30)
+         * @param ypn derivative at x[n-1] (2nd derivatives null if > 1E30)
+         * @return array of second derivatives
+         */
+        private T[] spline(final T[] x, final T[] y, final T yp1, final T ypn) {
+            final int n = x.length;
+            final T[] y2 = MathArrays.buildArray(field, n);
+            final T[] u  = MathArrays.buildArray(field, n);
+
+            if (yp1.getReal() < 1e+30) {
+                y2[0] = zero.add(-0.5);
+                final T dx = x[1].subtract(x[0]);
+                final T dy = y[1].subtract(y[0]);
+                u[0]  = dx.reciprocal().multiply(3.0).multiply(dy.divide(dx).subtract(yp1));
+            }
+            for (int i = 1; i < n - 1; i++) {
+                final T dx0m = x[i].subtract(x[i - 1]);
+                final T dy0m = y[i].subtract(y[i - 1]);
+                final T dxpm = x[i + 1].subtract(x[i - 1]);
+                final T dxp0 = x[i + 1].subtract(x[i]);
+                final T dyp0 = y[i + 1].subtract(y[i]);
+                final T sig = dx0m.divide(dxpm);
+                final T p = sig.multiply(y2[i - 1]).add(2.0);
+                y2[i] = sig.subtract(1.0).divide(p);
+                u[i] = dyp0.divide(dxp0).subtract(dy0m.divide(dx0m)).multiply(6).divide(dxpm).subtract(sig.multiply(u[i - 1])).divide(p);
+            }
+
+            double qn = 0;
+            T un = zero;
+            if (ypn.getReal() < 1e+30) {
+                final T dx12 = x[n - 1].subtract(x[n - 2]);
+                final T dy12 = y[n - 1].subtract(y[n - 2]);
+                qn = 0.5;
+                un = dx12.reciprocal().multiply(3.0).multiply(ypn.subtract(dy12.divide(dx12)));
+            }
+
+            y2[n - 1] = un.subtract(u[n - 2].multiply(qn)).divide(y2[n - 2].multiply(qn).add(1.0));
+            for (int k = n - 2; k >= 0; k--) {
+                y2[k] = y2[k].multiply(y2[k + 1]).add(u[k]);
+            }
+
+            return y2;
+
+        }
+
+        /** Calculate Temperature and Density Profiles for lower atmosphere.
+         * @param alt altitude
+         * @param d0 density
+         * @param xm mixed density
+         * @return temperature or density profile
+         */
+        private T densm(final T alt, final T d0, final double xm) {
+
+            T densm = d0;
+
+            // stratosphere/mesosphere temperature
+            int mn = ZN2.length;
+            T z = (alt.getReal() > ZN2[mn - 1]) ? alt : zero.add(ZN2[mn - 1]);
+
+            double z1 = ZN2[0];
+            double z2 = ZN2[mn - 1];
+            T t1 = meso_tn2[0];
+            T t2 = meso_tn2[mn - 1];
+            T zg  = zeta(z, z1);
+            T zgdif = zeta(zero.add(z2), z1);
+
+            /* set up spline nodes */
+            T[] xs = MathArrays.buildArray(field, mn);
+            T[] ys = MathArrays.buildArray(field, mn);
+            for (int k = 0; k < mn; k++) {
+                xs[k] = zeta(zero.add(ZN2[k]), z1).divide(zgdif);
+                ys[k] = meso_tn2[k].reciprocal();
+            }
+            final T qSM = rlat.add(z2).divide(rlat.add(z1));
+            T yd1 = meso_tgn2[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
+            T yd2 = meso_tgn2[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(qSM).multiply(qSM);
+
+            /* calculate spline coefficients */
+            T[] y2out = spline(xs, ys, yd1, yd2);
+            T x = zg.divide(zgdif);
+            T y = splint(xs, ys, y2out, x);
+
+            /* temperature at altitude */
+            T tz = y.reciprocal();
+
+            if (xm != 0.0) {
+                /* calculate stratosphere / mesospehere density */
+                final T glb  = galt(zero.add(z1));
+                final T gamm = glb.multiply(zgdif).multiply(xm / R_GAS);
+
+                /* Integrate temperature profile */
+                final T yi = splini(xs, ys, y2out, x);
+                final T expl = min(50., gamm.multiply(yi));
+
+                /* Density at altitude */
+                densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
+            }
+
+            if (alt.getReal() > ZN3[0]) {
+                return (xm == 0.0) ? tz : densm;
+            }
+
+            // troposhere/stratosphere temperature
+            z = alt;
+            mn = ZN3.length;
+            z1 = ZN3[0];
+            z2 = ZN3[mn - 1];
+            t1 = meso_tn3[0];
+            t2 = meso_tn3[mn - 1];
+            zg = zeta(z, z1);
+            zgdif = zeta(zero.add(z2), z1);
+
+            /* set up spline nodes */
+            xs = MathArrays.buildArray(field, mn);
+            ys = MathArrays.buildArray(field, mn);
+            for (int k = 0; k < mn; k++) {
+                xs[k] = zeta(zero.add(ZN3[k]), z1).divide(zgdif);
+                ys[k] = meso_tn3[k].reciprocal();
+            }
+            final T qTS = rlat.add(z2) .divide(rlat.add(z1));
+            yd1 = meso_tgn3[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
+            yd2 = meso_tgn3[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(qTS).multiply(qTS);
+
+            /* calculate spline coefficients */
+            y2out = spline(xs, ys, yd1, yd2);
+            x = zg.divide(zgdif);
+            y = splint(xs, ys, y2out, x);
+
+            /* temperature at altitude */
+            tz = y.reciprocal();
+
+            if (xm != 0.0) {
+                /* calculate tropospheric / stratosphere density */
+                final T glb = galt(zero.add(z1));
+                final T gamm = glb.multiply(zgdif).multiply(xm / R_GAS);
+
+                /* Integrate temperature profile */
+                final T yi = splini(xs, ys, y2out, x);
+                final T expl = min(50., gamm.multiply(yi));
+
+                /* Density at altitude */
+                densm = densm.multiply(t1.divide(tz).multiply(expl.negate().exp()));
+            }
+
+            return (xm == 0.0) ? tz : densm;
+        }
+
+        /** Calculate temperature and density profiles according to new lower thermo polynomial.
+         * @param alt altitude
+         * @param dlb density at lower boundary
+         * @param tinf exospheric temperature
+         * @param tlb temperature at lower boundary
+         * @param xm species molecular weight
+         * @param alpha thermal diffusion coefficient
+         * @param zlb altitude of the lower boundary
+         * @param s2 slope
+         * @return temperature or density profile
+         */
+        private T densu(final T alt, final T dlb, final T tinf,
+                        final T tlb, final double xm,  final double alpha,
+                        final double zlb, final T s2) {
+            /* joining altitudes of Bates and spline */
+            T z = (alt.getReal() > ZN1[0]) ? alt : zero.add(ZN1[0]);
+
+            /* geopotential altitude difference from ZLB */
+            final T zg2 = zeta(z, zlb);
+
+            /* Bates temperature */
+            final T tt = tinf.subtract(tinf.subtract(tlb).multiply(s2.negate().multiply(zg2).exp()));
+            final T ta = tt;
+            T tz = tt;
+
+            final int mn = ZN1.length;
+            final T[] xs = MathArrays.buildArray(field, mn);
+            final T[] ys = MathArrays.buildArray(field, mn);
+            T x = zero;
+            T[] y2out =  MathArrays.buildArray(field, mn);
+            T zgdif = zero;
+            if (alt.getReal() < ZN1[0]) {
+                /* calculate temperature below ZA
+                 * temperature gradient at ZA from Bates profile */
+                final T p = rlat.add(zlb).divide(rlat.add(ZN1[0]));
+                final T dta = tinf.subtract(ta).multiply(s2).multiply(p.multiply(p));
+                meso_tgn1[0] = dta;
+                meso_tn1[0] = ta;
+                final T tzn1mn1 = zero.add(ZN1[mn - 1]);
+                z = (alt.getReal() > ZN1[mn - 1]) ? alt : tzn1mn1;
+
+                final T t1 = meso_tn1[0];
+                final T t2 = meso_tn1[mn - 1];
+                /* geopotental difference from z1 */
+                final T zg = zeta(z, ZN1[0]);
+                zgdif = zeta(tzn1mn1, ZN1[0]);
+                /* set up spline nodes */
+                for (int k = 0; k < mn; k++) {
+                    xs[k] = zeta(zero.add(ZN1[k]), ZN1[0]).divide(zgdif);
+                    ys[k] =  meso_tn1[k].reciprocal();
+                }
+                /* end node derivatives */
+                final T q   = rlat.add(ZN1[mn - 1]).divide(rlat.add(ZN1[0]));
+                final T yd1 = meso_tgn1[0].negate().divide(t1.multiply(t1)).multiply(zgdif);
+                final T yd2 = meso_tgn1[1].negate().divide(t2.multiply(t2)).multiply(zgdif).multiply(q.multiply(q));
+                /* calculate spline coefficients */
+                y2out = spline(xs, ys, yd1, yd2);
+                x = zg.divide(zgdif);
+                final T y = splint(xs, ys, y2out, x);
+                /* temperature at altitude */
+                tz = y.reciprocal();
+            }
+
+            if (xm == 0) {
+                return tz;
+            }
+
+            /* calculate density above za */
+            T glb   = galt(zero.add(zlb));
+            T gamma = glb.divide(s2.multiply(tinf)).multiply(xm / R_GAS);
+            T expl = tt.getReal() <= 0 ?
+                     zero.add(50) :
+                     min(50.0, s2.negate().multiply(gamma).multiply(zg2).exp());
+            T densu = dlb.multiply(tlb.divide(tt).pow(gamma.add(alpha + 1))).multiply(expl);
+
+            /* calculate density below za */
+            if (alt.getReal() < ZN1[0]) {
+                glb   = galt(zero.add(ZN1[0]));
+                gamma = glb.multiply(zgdif).multiply(xm / R_GAS);
+                /* integrate spline temperatures */
+                expl = tz.getReal() <= 0 ?
+                       zero.add(50.0) :
+                       min(50.0, gamma.multiply(splini(xs, ys, y2out, x)));
+                /* correct density at altitude */
+                densu = densu.multiply(meso_tn1[0].divide(tz).pow(alpha + 1).multiply(expl.negate().exp()));
+            }
+
+            /* Return density at altitude */
+            return densu;
+        }
+
+        /** Compute min of two values, one double and one field element.
+         * @param d double value
+         * @param f field element
+         * @return min value
+         */
+        private T min(final double d, final T f) {
+            return (f.getReal() > d) ? zero.add(d) : f;
+        }
+
+        /** Calculate gravity at altitude.
+         * @param alt altitude (km)
+         * @return gravity at altitude (cm/s2)
+         */
+        private T galt(final T alt) {
+            final T r = alt.divide(rlat).add(1);
+            return glat.divide(r.multiply(r));
+        }
+
+        /** Calculate zeta function.
+         * @param zz zz value
+         * @param zl zl value
+         * @return value of zeta function
+         */
+        private T zeta(final T zz, final double zl) {
+            return zz.subtract(zl).multiply(rlat.add(zl)).divide(rlat.add(zz));
+        }
+
     }
 
 }
