@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Make DTM2000 thread-safe and field-aware.
+      </action>
       <action dev="luc" type="add">
         Added support for ITRF 2014.
         As of mid-2017, depending on the source of EOP, the ITRF retrieved using

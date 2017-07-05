@@ -20,6 +20,7 @@ package org.orekit.forces.drag.atmosphere;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +30,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -49,8 +49,6 @@ public class DTM2000Test {
         earth.setAngularThreshold(1e-10);
         DTM2000 atm = new DTM2000(in, sun, earth);
         double roTestCase;
-        double tzTestCase;
-        double tinfTestCase;
         double myRo;
 
         // Inputs :
@@ -70,46 +68,30 @@ public class DTM2000Test {
 
         // Outputs :
         roTestCase = 1.8710001353820e-17 * 1000;
-        tzTestCase = 1165.4839828984;
-        tinfTestCase = 1165.4919505608;
 
         // Computation and results
         myRo = atm.getDensity(185, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., day=275
 
         roTestCase=    2.8524195214905e-17* 1000;
-        tzTestCase=    1157.1872001392;
-        tinfTestCase=    1157.1933514185;
 
         myRo = atm.getDensity(275, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., day=355
 
         roTestCase=    1.7343324462212e-17* 1000;
-        tzTestCase=    1033.0277846356;
-        tinfTestCase=    1033.0282703200;
 
         myRo = atm.getDensity(355, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 2e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 //      IDEM., day=85
 
         roTestCase=    2.9983740796297e-17* 1000;
-        tzTestCase=    1169.5405086196;
-        tinfTestCase=    1169.5485768345;
 
         myRo = atm.getDensity(85, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 
 //      alt=500.
@@ -136,13 +118,9 @@ public class DTM2000Test {
         // as we don't have access to any other tests cases, we can't really decide if this is
         // the best approach. Indeed, we are able to get the same results as original fortran
         roTestCase =    1.5699108952425600E-016* 1000;
-        tzTestCase=     841.20244319707786;
-        tinfTestCase=   841.20529446301430;
 
         myRo = atm.getDensity(15, 500*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., alt=800.
 //      ro=    1.9556768571305D-18
@@ -156,12 +134,8 @@ public class DTM2000Test {
         // as we don't have access to any other tests cases, we can't really decide if this is
         // the best approach. Indeed, we are able to get the same results as original fortran
         roTestCase =    2.4123751406975562E-018* 1000;
-        tzTestCase=     841.20529391519096;
-        tinfTestCase=   841.20529446301430;
         myRo = atm.getDensity(15, 800*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
         Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
-        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
-        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
     }
 
@@ -187,6 +161,32 @@ public class DTM2000Test {
 
         //verify
         Assert.assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
+    }
+
+    @Test
+    public void testField() throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
+        SolarInputs97to05 in = SolarInputs97to05.getInstance();
+        earth.setAngularThreshold(1e-10);
+        DTM2000 atm = new DTM2000(in, sun, earth);
+
+        // Computation and results
+        for (double alti = 400; alti < 1000; alti += 50) {
+            for (double lon = 0; lon < 6; lon += 0.5) {
+                for (double lat = -1.5; lat < 1.5; lat += 0.5) {
+                    for (double hl = 0; hl < 6; hl += 0.5) {
+                        double rhoD = atm.getDensity(185, alti*1000, lon, lat, hl, 50, 150, 0, 0);
+                        Decimal64 rho64 = atm.getDensity(185, new Decimal64(alti*1000),
+                                                         new Decimal64(lon), new Decimal64(lat),
+                                                         new Decimal64(hl), 50, 150, 0, 0);
+                        Assert.assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
+                    }
+                }
+            }
+        }
+
     }
 
     @Before
