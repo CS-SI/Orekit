@@ -35,7 +35,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -94,10 +93,8 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame        frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
@@ -107,28 +104,31 @@ public class DragForce extends AbstractForceModel {
         final FieldVector3D<T> relativeVelocity = s.getPVCoordinates().getVelocity().negate().add(vAtm);
 
         // Addition of calculated acceleration to adder
-        adder.addNonKeplerianAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                      s.getMass(), rho, relativeVelocity));
+        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                           s.getMass(), rho, relativeVelocity);
+
     }
 
-    /** There are no discrete events for this model.
-     * @return an empty array
-     */
+    /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
                                                                       final FieldVector3D<DerivativeStructure> velocity,
@@ -192,6 +192,7 @@ public class DragForce extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 

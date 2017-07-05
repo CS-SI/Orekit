@@ -121,6 +121,14 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+        final T r2 = s.getPVCoordinates().getPosition().getNormSq();
+        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), s.getPVCoordinates().getPosition());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
                                                                       final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)

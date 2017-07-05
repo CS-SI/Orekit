@@ -36,7 +36,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
@@ -136,6 +135,14 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+        // delegate to underlying attraction model
+        return attractionModel.acceleration(s);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date,
                                                                       final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
@@ -163,23 +170,14 @@ public class SolidTides extends AbstractForceModel {
         return attractionModel.getEventsDetectors();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return attractionModel.getFieldEventsDetectors(field);
     }
 
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // delegate to underlying attraction model
-        attractionModel.addContribution(s, adder);
-    }
-
-
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return new ParameterDriver[0];
     }

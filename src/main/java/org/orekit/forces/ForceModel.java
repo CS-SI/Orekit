@@ -103,11 +103,13 @@ public interface ForceModel {
      * acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
-     * @param <T> extends RealFieldElement
+     * @param <T> type of the elements
      * @exception OrekitException if some specific error occurs
      */
-    <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException;
+    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addNonKeplerianAcceleration(acceleration(s));
+    }
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
@@ -115,7 +117,18 @@ public interface ForceModel {
      * @exception OrekitException if some specific error occurs
      * @since 9.0
      */
-    Vector3D acceleration(SpacecraftState s) throws OrekitException;
+    Vector3D acceleration(SpacecraftState s)
+        throws OrekitException;
+
+    /** Compute acceleration.
+     * @param s current state information: date, kinematics, attitude
+     * @return acceleration in same frame as state
+     * @param <T> type of the elements
+     * @exception OrekitException if some specific error occurs
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s)
+        throws OrekitException;
 
     /** Compute acceleration derivatives with respect to state parameters.
      * <p>

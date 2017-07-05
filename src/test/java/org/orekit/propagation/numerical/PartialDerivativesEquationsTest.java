@@ -133,6 +133,12 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+            throws OrekitException {
+            return s.getPVCoordinates().getPosition();
+        }
+
+        @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
                                                                           Frame frame,
                                                                           FieldVector3D<DerivativeStructure> position,

@@ -1505,6 +1505,13 @@ public class NumericalPropagatorTest {
             return Vector3D.ZERO;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+            throws OrekitException {
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
+
         @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(
                 AbsoluteDate date,

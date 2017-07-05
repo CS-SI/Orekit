@@ -38,7 +38,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -135,6 +134,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
     }
 
     /** {@inheritDoc} */
+    @Override
     public TideSystem getTideSystem() {
         return provider.getTideSystem();
     }
@@ -382,42 +382,9 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-        return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException {
-        return jacobianizer.accelerationDerivatives(s, paramName);
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
     @Override
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
         // get the position in body frame
         final FieldAbsoluteDate<T> date = s.getDate();
         final Field<T> field = date.getField();
@@ -659,9 +626,44 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         }
 
         // compute acceleration in inertial frame
-        final FieldVector3D<T> acceleration =
-            fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
-        adder.addNonKeplerianAcceleration(acceleration);
+        return fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
+        throws OrekitException {
+        return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+        throws OrekitException {
+        return jacobianizer.accelerationDerivatives(s, paramName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

@@ -255,15 +255,14 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        final T zero = s.getA().getField().getZero();
+        throws OrekitException {
         if (firing) {
 
             // compute thrust acceleration in inertial frame
-            adder.addNonKeplerianAcceleration(new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
-                                                                  s.getAttitude().getRotation().applyInverseTo(direction)));
+            adder.addNonKeplerianAcceleration(acceleration(s));
 
             // compute flow rate
+            final T zero = s.getA().getField().getZero();
             adder.addMassDerivative(zero.add(flowRate));
 
         }
@@ -278,6 +277,19 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                                 state.getAttitude().getRotation().applyInverseTo(direction));
         } else {
             return Vector3D.ZERO;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s) {
+        if (firing) {
+            // compute thrust acceleration in inertial frame
+            return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+                                       s.getAttitude().getRotation().applyInverseTo(direction));
+        } else {
+            // constant (and null) acceleration when not firing
+            return FieldVector3D.getZero(s.getMass().getField());
         }
     }
 

@@ -45,7 +45,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -970,9 +969,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return new value for index
      */
     private <T extends RealFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
-                                final T t, final T u, final T tOu,
-                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
-                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
+                                                                final T t, final T u, final T tOu,
+                                                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
+                                                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
 
         final T u2 = u.multiply(u);
         final T zero = u.getField().getZero();
@@ -1058,7 +1057,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
         throws OrekitException {
 
         // get the position in body frame
@@ -1068,8 +1067,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
-        adder.addNonKeplerianAcceleration(gInertial);
+        return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
+
     }
 
     /** {@inheritDoc} */

@@ -35,7 +35,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -116,6 +115,24 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+        // compute bodies separation vectors and squared norm
+        final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
+                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
+        final T                r2Central     = centralToBody.getNormSq();
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final T                r2Sat         = satToBody.getNormSq();
+
+        // compute relative acceleration
+        return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
+                                   r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
                                                                       final FieldVector3D<DerivativeStructure> velocity,
@@ -139,6 +156,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
@@ -163,35 +181,16 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         return Stream.empty();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
-    }
-
-    /**{@inheritDoc} */
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
-        final T                r2Central     = centralToBody.getNormSq();
-        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final T                r2Sat         = satToBody.getNormSq();
-
-        // compute relative acceleration
-        final FieldVector3D<T> gamma =
-            new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
-                                r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
-
-        adder.addNonKeplerianAcceleration(gamma);
     }
 
 }

@@ -36,7 +36,6 @@ import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -121,6 +120,26 @@ public class SolarRadiationPressure extends AbstractForceModel {
         // compute flux
         final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
         final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
+
+        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                        s.getMass(), flux);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+
+        final FieldAbsoluteDate<T> date         = s.getDate();
+        final Frame        frame        = s.getFrame();
+        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
+        final T     r2           = sunSatVector.getNormSq();
+
+        // compute flux
+        final T   rawP = getLightingRatio(position, frame, date).divide(r2).multiply(kRef);
+        final FieldVector3D<T> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                         s.getMass(), flux);
@@ -261,16 +280,25 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.of(new UmbraDetector(), new PenumbraDetector());
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
                                                                       final FieldVector3D<DerivativeStructure> velocity,
@@ -292,6 +320,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
@@ -486,34 +515,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
             return angle[0] - angle[1] - angle[2];
         }
 
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-
-        final FieldAbsoluteDate<T> date         = s.getDate();
-        final Frame        frame        = s.getFrame();
-        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
-        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
-        final T     r2           = sunSatVector.getNormSq();
-
-        // compute flux
-        final T   rawP = getLightingRatio(position, frame, date).divide(r2).multiply(kRef);
-        final FieldVector3D<T> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
-
-        final FieldVector3D<T> acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                               s.getMass(), flux);
-
-        // provide the perturbing acceleration to the derivatives adder
-        adder.addNonKeplerianAcceleration(acceleration);
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
 }
