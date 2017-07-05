@@ -16,6 +16,11 @@
  */
 package org.orekit.forces.drag.atmosphere;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -26,7 +31,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00.Output;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -41,7 +45,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class NRLMSISE00Test {
 
     @Test
-    public void testLegacy() throws OrekitException {
+    public void testLegacy() throws OrekitException,
+                                    NoSuchMethodException, SecurityException, InstantiationException,
+                                    IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
         // Build the model
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -60,95 +67,130 @@ public class NRLMSISE00Test {
         double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
         final boolean print = false;
 
+        Constructor<NRLMSISE00.Output> cons =
+                        NRLMSISE00.Output.class.getDeclaredConstructor(NRLMSISE00.class,
+                                                                       Integer.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       double[].class);
+        cons.setAccessible(true);
+        Method gtd7 = NRLMSISE00.Output.class.getDeclaredMethod("gtd7", Double.TYPE);
+        gtd7.setAccessible(true);
+
         // Case #1
-        final NRLMSISE00.Output out1 = atm.gtd7(doy, sec, alt, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out1 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out1, alt);
         checkLegacy(1, out1, print);
 
         // Case #2
         final int doy2 = 81;
-        final NRLMSISE00.Output out2 = atm.gtd7(doy2, sec, alt, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out2 = cons.newInstance(atm, doy2, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out2, alt);
         checkLegacy(2, out2, print);
 
         // Case #3
         final double sec3 = 75000.;
         final double alt3 = 1000.;
-        final NRLMSISE00.Output out3 = atm.gtd7(doy, sec3, alt3, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out3 = cons.newInstance(atm, doy, sec3, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out3, alt3);
         checkLegacy(3, out3, print);
 
         // Case #4
         final double alt4 = 100.;
-        final NRLMSISE00.Output out4 = atm.gtd7(doy, sec, alt4, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out4 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out4, alt4);
         checkLegacy(4, out4, print);
 
         // Case #5
         final double lat5 = 0.;
-        final NRLMSISE00.Output out5 = atm.gtd7(doy, sec, alt, lat5, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out5 = cons.newInstance(atm, doy, sec, lat5, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out5, alt);
         checkLegacy(5, out5, print);
 
         // Case #6
         final double lon6 = 0.;
-        final NRLMSISE00.Output out6 = atm.gtd7(doy, sec, alt, lat, lon6, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out6 = cons.newInstance(atm, doy, sec, lat, lon6, hl, f107a, f107, ap);
+        gtd7.invoke(out6, alt);
         checkLegacy(6, out6, print);
 
         // Case #7
         final double hl7 = 4.;
-        final NRLMSISE00.Output out7 = atm.gtd7(doy, sec, alt, lat, lon, hl7, f107a, f107, ap);
+        final NRLMSISE00.Output out7 = cons.newInstance(atm, doy, sec, lat, lon, hl7, f107a, f107, ap);
+        gtd7.invoke(out7, alt);
         checkLegacy(7, out7, print);
 
         // Case #8
         final double f107a8 = 70.;
-        final NRLMSISE00.Output out8 = atm.gtd7(doy, sec, alt, lat, lon, hl, f107a8, f107, ap);
+        final NRLMSISE00.Output out8 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a8, f107, ap);
+        gtd7.invoke(out8, alt);
         checkLegacy(8, out8, print);
 
         // Case #9
         final double f1079 = 180.;
-        final NRLMSISE00.Output out9 = atm.gtd7(doy, sec, alt, lat, lon, hl, f107a, f1079, ap);
+        final NRLMSISE00.Output out9 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f1079, ap);
+        gtd7.invoke(out9, alt);
         checkLegacy(9, out9, print);
 
         // Case #10
         ap[0] = 40.;
-        final NRLMSISE00.Output out10 = atm.gtd7(doy, sec, alt, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out10 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out10, alt);
         checkLegacy(10, out10, print);
         ap[0] = 4.;
 
         // Case #11
         final double alt11 =  0.;
-        final NRLMSISE00.Output out11 = atm.gtd7(doy, sec, alt11, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out11 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out11, alt11);
         checkLegacy(11, out11, print);
 
         // Case #12
         final double alt12 = 10.;
-        final NRLMSISE00.Output out12 = atm.gtd7(doy, sec, alt12, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out12 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out12, alt12);
         checkLegacy(12, out12, print);
 
         // Case #13
         final double alt13 = 30.;
-        final NRLMSISE00.Output out13 = atm.gtd7(doy, sec, alt13, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out13 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out13, alt13);
         checkLegacy(13, out13, print);
 
         // Case #14
         final double alt14 = 50.;
-        final NRLMSISE00.Output out14 = atm.gtd7(doy, sec, alt14, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out14 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out14, alt14);
         checkLegacy(14, out14, print);
 
         // Case #15
         final double alt15 = 70.;
-        final NRLMSISE00.Output out15 = atm.gtd7(doy, sec, alt15, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out15 = cons.newInstance(atm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out15, alt15);
         checkLegacy(15, out15, print);
 
         // Case #16
-        atm.setSwitch(9, -1);
-        final NRLMSISE00.Output out16 = atm.gtd7(doy, sec, alt, lat, lon, hl, f107a, f107, ap);
+        NRLMSISE00 otherAtm = atm.withSwitch(9, -1);
+        final NRLMSISE00.Output out16 = cons.newInstance(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out16, alt);
         checkLegacy(16, out16, print);
 
         // Case #17
         final double alt17 = 100.;
-        final NRLMSISE00.Output out17 = atm.gtd7(doy, sec, alt17, lat, lon, hl, f107a, f107, ap);
+        final NRLMSISE00.Output out17 = cons.newInstance(otherAtm, doy, sec, lat, lon, hl, f107a, f107, ap);
+        gtd7.invoke(out17, alt17);
         checkLegacy(17, out17, print);
+
     }
 
     @Test
-    public void testDensity() throws OrekitException {
+    public void testDensity() throws OrekitException,
+                              InstantiationException, IllegalAccessException,
+                              IllegalArgumentException, InvocationTargetException,
+                              NoSuchMethodException, SecurityException {
         // Build the iput params provider
         final InputParams ip = new InputParams();
         // Get Sun
@@ -158,7 +200,7 @@ public class NRLMSISE00Test {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING, itrf);
         // Build the model
-        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth);
+        final NRLMSISE00 atm = new NRLMSISE00(ip, sun, earth).withSwitch(9, -1);
         // Build the date
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 172),
                                                    new TimeComponents(29000.),
@@ -173,13 +215,55 @@ public class NRLMSISE00Test {
         final Vector3D pos = earth.transform(point);
 
         // Run
-        atm.setSwitch(9, -1);
         final double rho = atm.getDensity(date, pos, itrf);
         final double lst = 29000. / 3600. - 70. / 15.;
         final double[] ap  = {4., 100., 100., 100., 100., 100., 100.};
-        final Output out = atm.gtd7d(172, 29000., 400., 60., -70, lst, 150., 150., ap);
+
+        Constructor<NRLMSISE00.Output> cons =
+                        NRLMSISE00.Output.class.getDeclaredConstructor(NRLMSISE00.class,
+                                                                       Integer.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       Double.TYPE,
+                                                                       double[].class);
+        cons.setAccessible(true);
+        Method gtd7 = NRLMSISE00.Output.class.getDeclaredMethod("gtd7", Double.TYPE);
+        gtd7.setAccessible(true);
+
+        final NRLMSISE00.Output out = cons.newInstance(atm, 172, 29000., 60., -70, lst, 150., 150., ap);
+        out.gtd7d(400.0);
         Assert.assertEquals(rho, out.getDensity(5), rho * 1.e-3);
-   }
+
+    }
+
+    @Test
+    public void testWrongNumberLow() {
+        try {
+            new NRLMSISE00(null, null, null).withSwitch(0, 17);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assert.assertEquals( 0, oe.getParts()[0]);
+            Assert.assertEquals( 1, oe.getParts()[1]);
+            Assert.assertEquals(23, oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testWrongNumberHigh() {
+        try {
+            new NRLMSISE00(null, null, null).withSwitch(24, 17);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assert.assertEquals(24, oe.getParts()[0]);
+            Assert.assertEquals( 1, oe.getParts()[1]);
+            Assert.assertEquals(23, oe.getParts()[2]);
+        }
+    }
 
     private void checkLegacy(final int nb, final NRLMSISE00.Output out, final boolean print) {
         final double[] tInfRef = {1.250540E+03, 1.166754E+03, 1.239892E+03, 1.027318E+03,
