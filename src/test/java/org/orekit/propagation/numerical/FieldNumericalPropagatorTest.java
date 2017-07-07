@@ -35,9 +35,14 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.atmosphere.DTM2000;
+import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -1717,13 +1722,12 @@ public class FieldNumericalPropagatorTest {
         np.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
         // atmospheric drag
-        // TODO: add drag
-//        MarshallSolarActivityFutureEstimation msafe =
-//                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
-//                                                                  MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-//        DataProvidersManager.getInstance().feed(msafe.getSupportedNames(), msafe);
-//        DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
-//        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
+        MarshallSolarActivityFutureEstimation msafe =
+                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
+                                                                  MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
+        DataProvidersManager.getInstance().feed(msafe.getSupportedNames(), msafe);
+        DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
+        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
         np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
