@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove">
+        Removed Jacchia-Bowman 2006 now completely superseded by Jacchia-Bowman 2008.
+      </action>
       <action dev="luc" type="update">
         Make Jacchia-Bowman 2008 thread-safe and field-aware.
       </action>

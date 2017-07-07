@@ -76,7 +76,7 @@
       * gravity models including time-dependent like trends and pulsations
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and 2008, NRL MSISE 2000,
+      * atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000,
         Harris-Priester and simple exponential models),
         and Marshall solar Activity Future Estimation, optionally with lift component
       * third body attraction (with data for Sun, Moon and all solar systems planets)
