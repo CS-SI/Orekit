@@ -30,8 +30,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +41,9 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.StateFunction;
 
 public class RangeAnalyticTest {
 
@@ -399,7 +399,7 @@ public class RangeAnalyticTest {
 
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
-                        jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                        jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }

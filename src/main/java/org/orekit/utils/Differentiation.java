@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation;
+package org.orekit.utils;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
@@ -30,20 +30,19 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.utils.ParameterDriver;
 
-/** Utility class for orbit determination.
+/** Utility class for differentiating various kinds of functions.
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class EstimationUtils {
+public class Differentiation {
 
     /** Factory for the DerivativeStructure instances. */
     private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Private constructor for utility class.
      */
-    private EstimationUtils() {
+    private Differentiation() {
     }
 
     /** Differentiate a scalar function using finite differences.

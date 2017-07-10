@@ -31,9 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +40,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TurnAroundRangeTest {
@@ -336,7 +336,7 @@ public class TurnAroundRangeTest {
             final double[][] jacobianRef;
 
             // Compute a reference value using finite differences
-            jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+            jacobianRef = Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
@@ -502,7 +502,7 @@ public class TurnAroundRangeTest {
 
                 // Compute a reference value using finite differences
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {

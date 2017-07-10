@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation;
+package org.orekit.utils;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.propagation.SpacecraftState;
 
-/** Interface representing a scalar function depending on a {@link ParameterDriver}.
- * @see EstimationUtils#differentiate(ParameterFunction, ParameterDriver, int, double)
+/** Interface representing a vector function depending on {@link SpacecraftState}.
+ * @see Differentiation#differentiate(StateFunction, int, org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * @see StateJacobian
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface ParameterFunction {
+public interface StateFunction {
 
     /** Evaluate the function.
-     * @param parameterDriver driver for the parameter.
-     * @return scalar value of the function
+     * @param state spacecraft state as the sole free parameter of the function.
+     * @return vector value of the function
      * @throws OrekitException if evaluation cannot be performed
      */
-    double value(ParameterDriver parameterDriver) throws OrekitException;
+    double[] value(SpacecraftState state) throws OrekitException;
 
 }

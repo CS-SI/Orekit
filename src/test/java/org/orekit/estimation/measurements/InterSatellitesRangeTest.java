@@ -31,8 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -45,6 +43,8 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesRangeTest {
@@ -312,7 +312,7 @@ public class InterSatellitesRangeTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                    jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) throws OrekitException {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;

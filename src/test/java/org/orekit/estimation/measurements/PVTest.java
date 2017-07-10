@@ -25,14 +25,14 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.StateFunction;
 
 public class PVTest {
 
@@ -66,7 +66,7 @@ public class PVTest {
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                EstimationUtils.differentiate(new StateFunction() {
+                Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
