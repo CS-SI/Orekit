@@ -391,7 +391,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             final double c11 = harmonics.getUnnormalizedCnm(1, 1);
             final double s11 = harmonics.getUnnormalizedSnm(1, 1);
             T Gkj  = cosL.multiply(c11).add(sinL.multiply(s11));
-            T Hkj  = sinL.multiply(c11).add(cosL.multiply(s11));
+            T Hkj  = sinL.multiply(c11).subtract(cosL.multiply(s11));
             T Akj  = r1Onr.multiply(2).multiply(betaKminus1).subtract(zOnr.multiply(Bkminus1kminus1));
             T Dkj  = Akj.add(zOnr.multiply(Bkminus1kminus1)).multiply(0.5);
             T sum1 = Akj.multiply(Gkj);
@@ -414,7 +414,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
 
                     if (j <= (k - 2)) {
                         Bkj = aeOnr.multiply(zOnr.multiply(Bkm1j).multiply((2.0 * k + 1.0) / (k - j)).subtract(
-                                aeOnr.multiply(Bkm2j).multiply((k + j) / (k - 1 - j))));
+                                aeOnr.multiply(Bkm2j).multiply((k + j) / (k - 1.0 - j))));
                         Akj = aeOnr.multiply(Bkm1j).multiply((k + 1.0) / (k - j)).subtract(zOnr.multiply(Bkj));
                     } else if (j == (k - 1)) {
                         betaK =  aeOnr.multiply(2.0 * k - 1.0).multiply(r1Onr).multiply(betaKminus1);
@@ -441,11 +441,12 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
                 sum2 = sum2.add(innerSum2);
                 sum3 = sum3.add(innerSum3);
 
-                sinjL = sinjm1L.add(cosL).add(cosjm1L.multiply(sinL));
-                cosjL = cosjm1L.add(cosL).subtract(sinjm1L.multiply(sinL));
+                sinjL = sinjm1L.multiply(cosL).add(cosjm1L.multiply(sinL));
+                cosjL = cosjm1L.multiply(cosL).subtract(sinjm1L.multiply(sinL));
                 sinjm1L = sinjL;
                 cosjm1L = cosjL;
             }
+
             // compute the acceleration
             final T r2Onr12 = r2.divide(r1.multiply(r1));
             final T p1 = r2Onr12.multiply(xDotDotk);
@@ -455,6 +456,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             aZ = aZ.subtract(sum2.multiply(mu).divide(r2));
 
         }
+
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         return bodyToInertial.transformVector(new FieldVector3D<>(aX, aY, aZ));
 
