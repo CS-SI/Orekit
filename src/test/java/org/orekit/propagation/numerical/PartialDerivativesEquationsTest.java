@@ -132,9 +132,12 @@ public class PartialDerivativesEquationsTest {
             return s.getPVCoordinates().getPosition();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
             throws OrekitException {
+            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
             return s.getPVCoordinates().getPosition();
         }
 
@@ -146,8 +149,6 @@ public class PartialDerivativesEquationsTest {
                                                                           FieldRotation<DerivativeStructure> rotation,
                                                                           DerivativeStructure mass)
             throws OrekitException {
-            this.accelerationDerivativesPosition = position;
-            this.accelerationDerivativesVelocity = velocity;
             return position;
         }
 

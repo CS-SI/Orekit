@@ -281,7 +281,51 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianIsotropicClassical()
+    public void testLocalJacobianIsotropicClassicalVs80Implementation()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final SolarRadiationPressure forceModel =
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                           new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
+
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, false);
+
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferences()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final SolarRadiationPressure forceModel =
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                           new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
+
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, 100000.0, 3.0e-10, false);
+
+    }
+
+    @Test
+    public void testGlobalStateJacobianIsotropicClassical()
         throws OrekitException {
 
         // initialization
@@ -308,7 +352,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e6, tolerances[0], 2.0e-5);
 
     }
 

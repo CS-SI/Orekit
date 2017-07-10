@@ -56,6 +56,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -156,7 +157,61 @@ public class DragForceTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianBox()
+    public void testJacobianBoxVs80Implementation()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final DragForce forceModel =
+                new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVs80Implementation(state, forceModel, 5e-6, false);
+
+    }
+
+    @Test
+    public void testJacobianBoxVsFiniteDifferences()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final DragForce forceModel =
+                new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, 1.0, 7.0e-9, false);
+
+    }
+
+    @Test
+    public void testGlobalStateJacobianBox()
         throws OrekitException {
 
         // initialization
@@ -246,6 +301,7 @@ public class DragForceTest extends AbstractForceModelTest {
         }
 
     }
+
     /**Testing if the propagation between the FieldPropagation and the propagation
      * is equivalent.
      * Also testing if propagating X+dX with the propagation is equivalent to

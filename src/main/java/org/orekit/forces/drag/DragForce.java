@@ -96,14 +96,13 @@ public class DragForce extends AbstractForceModel {
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
         throws OrekitException {
         final FieldAbsoluteDate<T> date     = s.getDate();
-        final Frame        frame    = s.getFrame();
+        final Frame                frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
 
         final T rho    = atmosphere.getDensity(date, position, frame);
         final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
-        final FieldVector3D<T> relativeVelocity = s.getPVCoordinates().getVelocity().negate().add(vAtm);
+        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
-        // Addition of calculated acceleration to adder
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                            s.getMass(), rho, relativeVelocity);
 

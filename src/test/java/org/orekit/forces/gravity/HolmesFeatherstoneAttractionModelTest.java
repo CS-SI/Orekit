@@ -954,6 +954,58 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                            50000, tolerances[0], 7.8e-6);
     }
 
+    @Test
+    public void testStateJacobianVs80Implementation()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVs80Implementation(state, hfModel, 2.0e-15, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVsFiniteDifferences()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVsFiniteDifferences(state, hfModel, 10.0, 2.0e-10, false);
+
+    }
+
     @Before
     public void setUp() {
         itrf   = null;
