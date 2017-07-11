@@ -25,8 +25,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.Assert;
-import org.junit.Test;
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
@@ -60,7 +58,6 @@ public class testCaseRotatingEarth {
     /**
      * @param args
      */
-    @Test
     public static void main(String[] args) {
         try {
 
@@ -198,8 +195,6 @@ public class testCaseRotatingEarth {
             System.out.print("Errors of trajectory 2 wrt trajectory 1 [m]\n");
             System.out.print(diff + "\n"
                     + "   norm: "+ diff.getNorm() + "\n");
-
-            Assert.assertEquals(0.0, Vector3D.distance(pos1, pos2), 1.56e-3);
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
