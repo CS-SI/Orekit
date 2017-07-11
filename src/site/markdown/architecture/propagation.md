@@ -15,7 +15,7 @@
 # Propagation
 
 This package provides tools to propagate orbital states with different methods.
-	
+
 ## Overview
 
 Propagation is the prediction of the evolution of a system from an initial state.
@@ -214,7 +214,7 @@ The following class diagram shows the available propagators
 
 The `KeplerianPropagator` is based on Keplerian-only motion. It depends only on µ.
 
-### Eckstein-Hechler propagation	
+### Eckstein-Hechler propagation
 
 This analytical model is suited for near-circular orbits and inclination neither 
 equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
@@ -256,7 +256,7 @@ to a pre-computed ephemeris or reference orbit which does not take these maneuve
 into account. The additive maneuvers can take both the direct effect (Keplerian part)
 and the induced effect due for example to J2 which changes ascending node rate when
 a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite.
-	
+
 ## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.

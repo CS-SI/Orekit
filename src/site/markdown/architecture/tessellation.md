@@ -15,7 +15,7 @@
 # Tessellation
 
 This package provides tools to discretize geographical zones defined over an ellipsoid.
-	
+
 ## Overview
 
 Earth observation missions often need to evaluate some properties globally over

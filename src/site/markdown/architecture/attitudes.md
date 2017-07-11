@@ -15,7 +15,7 @@
 # Attitudes
 
 The `org.orekit.attitudes` package provides classes to represent simple attitudes.
-	
+
 ## Attitudes Presentation
  
 Some force models, such as the atmospheric drag for maneuvers, need to
