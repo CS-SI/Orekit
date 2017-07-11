@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,20 @@ package org.orekit.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.sampling.FixedStepHandler;
-import org.apache.commons.math3.ode.sampling.StepNormalizer;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.ODEState;
+import org.hipparchus.ode.ODEStateAndDerivative;
+import org.hipparchus.ode.OrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.sampling.ODEFixedStepHandler;
+import org.hipparchus.ode.sampling.StepNormalizer;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -52,6 +55,30 @@ public class TimeStampedAngularCoordinatesTest {
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
+    }
+
+    @Test
+    public void testOnePair() throws OrekitException, java.io.IOException {
+        RandomGenerator random = new Well1024a(0xed7dd911a44c5197l);
+
+        for (int i = 0; i < 20; ++i) {
+
+            Rotation r = randomRotation(random);
+            Vector3D o = randomVector(random, 1.0e-2);
+            Vector3D a = randomVector(random, 1.0e-2);
+            TimeStampedAngularCoordinates reference = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, a);
+
+            PVCoordinates u = randomPVCoordinates(random, 1000, 1.0, 0.001);
+            PVCoordinates v = reference.applyTo(u);
+            TimeStampedAngularCoordinates ac =
+                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u, v);
+
+            Assert.assertEquals(0, Vector3D.distance(v.getPosition().normalize(), ac.applyTo(u).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v.getVelocity().normalize(), ac.applyTo(u).getVelocity().normalize()), 4.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v.getAcceleration().normalize(), ac.applyTo(u).getAcceleration().normalize()), 1.0e-14);
+
+        }
+
     }
 
     @Test
@@ -178,9 +205,9 @@ public class TimeStampedAngularCoordinatesTest {
     @Test
     public void testNoCommute() {
         TimeStampedAngularCoordinates ac1 =
-	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
+        new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
         TimeStampedAngularCoordinates ac2 =
-	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO, Vector3D.ZERO);
+        new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO, Vector3D.ZERO);
 
         TimeStampedAngularCoordinates add12 = ac1.addOffset(ac2);
         TimeStampedAngularCoordinates add21 = ac2.addOffset(ac1);
@@ -225,7 +252,9 @@ public class TimeStampedAngularCoordinatesTest {
         // add angular coordinates at t0: 179.999 degrees rotation along X axis
         AbsoluteDate t0 = new AbsoluteDate("2012-01-01T00:00:00.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac0 = new TimeStampedAngularCoordinates(t0,
-                                                                              new Rotation(Vector3D.PLUS_I, FastMath.toRadians(179.999)),
+                                                                              new Rotation(Vector3D.PLUS_I,
+                                                                                           FastMath.toRadians(179.999),
+                                                                                           RotationConvention.VECTOR_OPERATOR),
                                                                               new Vector3D(FastMath.toRadians(0), 0, 0),
                                                                               Vector3D.ZERO);
         sample.add(ac0);
@@ -233,7 +262,9 @@ public class TimeStampedAngularCoordinatesTest {
         // add angular coordinates at t1: -179.999 degrees rotation (= 180.001 degrees) along X axis
         AbsoluteDate t1 = new AbsoluteDate("2012-01-01T00:00:02.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac1 = new TimeStampedAngularCoordinates(t1,
-                                                                              new Rotation(Vector3D.PLUS_I, FastMath.toRadians(-179.999)),
+                                                                              new Rotation(Vector3D.PLUS_I,
+                                                                                           FastMath.toRadians(-179.999),
+                                                                                           RotationConvention.VECTOR_OPERATOR),
                                                                               new Vector3D(FastMath.toRadians(0), 0, 0),
                                                                               Vector3D.ZERO);
         sample.add(ac1);
@@ -254,11 +285,12 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.05  * FastMath.PI;
         final TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
         double[] errors = interpolationErrors(reference, 1.0);
-        Assert.assertEquals(0.0, errors[0], 1.0e-15);
+        Assert.assertEquals(0.0, errors[0], 1.4e-15);
         Assert.assertEquals(0.0, errors[1], 3.0e-15);
         Assert.assertEquals(0.0, errors[2], 3.0e-14);
     }
@@ -271,7 +303,8 @@ public class TimeStampedAngularCoordinatesTest {
         double eta    = 0.005 * FastMath.PI;
         final TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   new Vector3D(eta,   Vector3D.PLUS_J));
         double[] errors = interpolationErrors(reference, 1.0);
@@ -283,41 +316,43 @@ public class TimeStampedAngularCoordinatesTest {
     private double[] interpolationErrors(final TimeStampedAngularCoordinates reference, double dt)
         throws OrekitException {
 
-        final FirstOrderDifferentialEquations ode = new FirstOrderDifferentialEquations() {
+        final OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
             public int getDimension() {
                 return 4;
             }
-            public void computeDerivatives(final double t, final double[] q, final double[] qDot) {
+            public double[] computeDerivatives(final double t, final double[] q) {
                 final double omegaX = reference.getRotationRate().getX() + t * reference.getRotationAcceleration().getX();
                 final double omegaY = reference.getRotationRate().getY() + t * reference.getRotationAcceleration().getY();
                 final double omegaZ = reference.getRotationRate().getZ() + t * reference.getRotationAcceleration().getZ();
-                qDot[0] = 0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ);
-                qDot[1] = 0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ);
-                qDot[2] = 0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ);
-                qDot[3] = 0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ);
+                return new double[] {
+                    0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ),
+                    0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ)
+                };
             }
         };
         final List<TimeStampedAngularCoordinates> complete = new ArrayList<TimeStampedAngularCoordinates>();
-        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
-        integrator.addStepHandler(new StepNormalizer(dt / 2000, new FixedStepHandler() {
-            public void init(double t0, double[] y0, double t) {
-            }
-            public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
+        ODEIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / 2000, new ODEFixedStepHandler() {
+            public void handleStep(ODEStateAndDerivative state, boolean isLast) {
+                final double   t = state.getTime();
+                final double[] q = state.getPrimaryState();
                 complete.add(new TimeStampedAngularCoordinates(reference.getDate().shiftedBy(t),
-                                                           new Rotation(y[0], y[1], y[2], y[3], true),
-                                                           new Vector3D(1, reference.getRotationRate(),
-                                                                        t, reference.getRotationAcceleration()),
-                                                                        reference.getRotationAcceleration()));
+                                                               new Rotation(q[0], q[1], q[2], q[3], true),
+                                                               new Vector3D(1, reference.getRotationRate(),
+                                                                            t, reference.getRotationAcceleration()),
+                                                               reference.getRotationAcceleration()));
             }
         }));
 
         double[] y = new double[] {
-            reference.getRotation().getQ0(), 
-            reference.getRotation().getQ1(), 
-            reference.getRotation().getQ2(), 
+            reference.getRotation().getQ0(),
+            reference.getRotation().getQ1(),
+            reference.getRotation().getQ2(),
             reference.getRotation().getQ3()
         };
-        integrator.integrate(ode, 0, y, dt, y);
+        integrator.integrate(ode, new ODEState(0, y), dt);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         sample.add(complete.get(0));
@@ -339,7 +374,7 @@ public class TimeStampedAngularCoordinatesTest {
         }
 
         return new double[] {
-          maxRotationError, maxRateError, maxAccelerationError  
+          maxRotationError, maxRateError, maxAccelerationError
         };
 
     }
@@ -380,7 +415,8 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.5 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 
@@ -408,7 +444,8 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.5 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 

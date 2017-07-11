@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,8 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Greenwich Mean Sidereal Time.
@@ -34,22 +35,22 @@ public class GMSTScale implements TimeScale {
     private static final long serialVersionUID = 20131209L;
 
     /** Duration of one julian day. */
-    private static double FULL_DAY = Constants.JULIAN_DAY;
+    private static final double FULL_DAY = Constants.JULIAN_DAY;
 
     /** Duration of an half julian day. */
-    private static double HALF_DAY = Constants.JULIAN_DAY / 2.0;
+    private static final double HALF_DAY = Constants.JULIAN_DAY / 2.0;
 
     /** Coefficient for degree 0. */
-    private static double C0 = 24110.54841;
+    private static final double C0 = 24110.54841;
 
     /** Coefficient for degree 1. */
-    private static double C1 = 8640184.812866;
+    private static final double C1 = 8640184.812866;
 
     /** Coefficient for degree 2. */
-    private static double C2 = 0.093104;
+    private static final double C2 = 0.093104;
 
     /** Coefficient for degree 3. */
-    private static double C3 = -0.0000062;
+    private static final double C3 = -0.0000062;
 
     /** Universal Time 1 time scale. */
     private final UT1Scale     ut1;
@@ -69,6 +70,7 @@ public class GMSTScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
 
         // julian seconds since reference date
@@ -89,13 +91,24 @@ public class GMSTScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 8; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+
+        // julian seconds since reference date
+        final T ts = date.durationFrom(referenceDate);
+
+        // julian centuries since reference date
+        final T tc = ts.divide(Constants.JULIAN_CENTURY);
+
+        // GMST at 0h00 UT1 in seconds = offset with respect to UT1
+        final T gmst0h = tc.multiply(C3).add(C2).multiply(tc).add(C1).multiply(tc).add(C0);
+
+        // offset with respect to TAI
+        final T offset = gmst0h.add(ut1.offsetFromTAI(date));
+
+        // normalize offset between -43200 and +43200 seconds
+        return offset.subtract(FULL_DAY * FastMath.floor((offset.getReal() + HALF_DAY) / FULL_DAY));
+
     }
 
     /** {@inheritDoc} */

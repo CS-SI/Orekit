@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math3.fitting.AbstractCurveFitter;
-import org.apache.commons.math3.fitting.PolynomialCurveFitter;
-import org.apache.commons.math3.fitting.WeightedObservedPoint;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.ParametricUnivariateFunction;
+import org.hipparchus.fitting.AbstractCurveFitter;
+import org.hipparchus.fitting.PolynomialCurveFitter;
+import org.hipparchus.fitting.WeightedObservedPoint;
+import org.hipparchus.linear.DiagonalMatrix;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Class for fitting evolution of osculating orbital parameters.
@@ -58,7 +58,7 @@ public class SecularAndHarmonic {
      * @param secularDegree degree of polynomial secular part
      * @param pulsations pulsations of harmonic part
      */
-    public SecularAndHarmonic(final int secularDegree, final double ... pulsations) {
+    public SecularAndHarmonic(final int secularDegree, final double... pulsations) {
         this.secularDegree  = secularDegree;
         this.pulsations     = pulsations.clone();
         this.observedPoints = new ArrayList<WeightedObservedPoint>();
@@ -69,7 +69,7 @@ public class SecularAndHarmonic {
      * @param initialGuess initial guess for the parameters
      * @see #getReferenceDate()
      */
-    public void resetFitting(final AbsoluteDate date, final double ... initialGuess) {
+    public void resetFitting(final AbsoluteDate date, final double... initialGuess) {
         reference = date;
         fitted    = initialGuess.clone();
         observedPoints.clear();
@@ -281,7 +281,7 @@ public class SecularAndHarmonic {
      * @return truncated value
      */
     private double truncatedValue(final int degree, final int harmonics,
-                                  final double time, final double ... parameters) {
+                                  final double time, final double... parameters) {
 
         double value = 0;
 
@@ -311,7 +311,7 @@ public class SecularAndHarmonic {
      * @return truncated derivative
      */
     private double truncatedDerivative(final int degree, final int harmonics,
-                                       final double time, final double ... parameters) {
+                                       final double time, final double... parameters) {
 
         double derivative = 0;
 
@@ -341,7 +341,7 @@ public class SecularAndHarmonic {
      * @return truncated second derivative
      */
     private double truncatedSecondDerivative(final int degree, final int harmonics,
-                                             final double time, final double ... parameters) {
+                                             final double time, final double... parameters) {
 
         double d2 = 0;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
  */
-class DeepSDP4 extends SDP4 {
+public class DeepSDP4 extends SDP4 {
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -80,9 +80,6 @@ class DeepSDP4 extends SDP4 {
 
     /** Integration step (seconds). */
     private static final double SECULAR_INTEGRATION_STEP  = 720.0;
-
-    /** Integration order. */
-    private static final int    SECULAR_INTEGRATION_ORDER = 2;
 
     /** Intermediate values. */
     private double thgr;
@@ -174,7 +171,7 @@ class DeepSDP4 extends SDP4 {
      * @param mass spacecraft mass (kg)
      * @exception OrekitException if some specific error occurs
      */
-    protected DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+    public DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                        final double mass) throws OrekitException {
         super(initialTLE, attitudeProvider, mass);
     }
@@ -372,12 +369,12 @@ class DeepSDP4 extends SDP4 {
                                          6.56250012 * (1 + 2 * cosi0 - 3 * theta2));
             final double f542 = 29.53125 * sini0 * (2 - 8 * cosi0 + theta2 * (-12 + 8 * cosi0 + 10 * theta2));
             final double f543 = 29.53125 * sini0 * (-2 - 8 * cosi0 + theta2 * (12 + 8 * cosi0 - 10 * theta2));
-            double g211;
-            double g310;
-            double g322;
-            double g410;
-            double g422;
-            double g520;
+            final double g211;
+            final double g310;
+            final double g322;
+            final double g410;
+            final double g422;
+            final double g520;
 
             resonant = true;       // it is resonant...
             synchronous = false;     // but it's not synchronous
@@ -403,9 +400,9 @@ class DeepSDP4 extends SDP4 {
                 }
             }
 
-            double g533;
-            double g521;
-            double g532;
+            final double g533;
+            final double g521;
+            final double g532;
             if (tle.getE() < 0.7) {
                 g533 = -919.2277  + 4988.61   * tle.getE() - 9064.77   * e0sq + 5542.21  * eoc;
                 g521 = -822.71072 + 4568.6173 * tle.getE() - 8491.4146 * e0sq + 5337.524 * eoc;
@@ -474,7 +471,7 @@ class DeepSDP4 extends SDP4 {
             xni   = xnq;
             atime = 0;
         }
-        derivs = new double[SECULAR_INTEGRATION_ORDER];
+        derivs = new double[2];
     }
 
     /** Computes secular terms from current coordinates and epoch.
@@ -523,13 +520,11 @@ class DeepSDP4 extends SDP4 {
                 xli += delt * xldot;
                 xni += delt * derivs[0];
                 double delt_factor = delt;
-                for (int j = 2; j <= SECULAR_INTEGRATION_ORDER; ++j) {
-                    xlpow *= xldot;
-                    derivs[j - 1] *= xlpow;
-                    delt_factor *= delt / (double) j;
-                    xli += delt_factor * derivs[j - 2];
-                    xni += delt_factor * derivs[j - 1];
-                }
+                xlpow *= xldot;
+                derivs[1] *= xlpow;
+                delt_factor *= delt / 2;
+                xli += delt_factor * derivs[0];
+                xni += delt_factor * derivs[1];
                 atime += delt;
             }
             xn = xni;
@@ -626,25 +621,14 @@ class DeepSDP4 extends SDP4 {
         if (synchronous)  {
             final double sin_3li = sin_2li * cos_li + cos_2li * sin_li;
             final double cos_3li = cos_2li * cos_li - sin_2li * sin_li;
-            double term1a = del1 * (sin_li  * C_FASX2  - cos_li  * S_FASX2);
-            double term2a = del2 * (sin_2li * C_2FASX4 - cos_2li * S_2FASX4);
-            double term3a = del3 * (sin_3li * C_3FASX6 - cos_3li * S_3FASX6);
-            double term1b = del1 * (cos_li  * C_FASX2  + sin_li  * S_FASX2);
-            double term2b = 2.0 * del2 * (cos_2li * C_2FASX4 + sin_2li * S_2FASX4);
-            double term3b = 3.0 * del3 * (cos_3li * C_3FASX6 + sin_3li * S_3FASX6);
-
-            for (int j = 0; j < SECULAR_INTEGRATION_ORDER; j += 2)  {
-                derivs[j]     = term1a + term2a + term3a;
-                derivs[j + 1] = term1b + term2b + term3b;
-                if ((j + 2) < SECULAR_INTEGRATION_ORDER) {
-                    term1a  = -term1a;
-                    term2a *= -4.0;
-                    term3a *= -9.0;
-                    term1b = -term1b;
-                    term2b *= -4.0;
-                    term3b *= -9.0;
-                }
-            }
+            final double term1a = del1 * (sin_li  * C_FASX2  - cos_li  * S_FASX2);
+            final double term2a = del2 * (sin_2li * C_2FASX4 - cos_2li * S_2FASX4);
+            final double term3a = del3 * (sin_3li * C_3FASX6 - cos_3li * S_3FASX6);
+            final double term1b = del1 * (cos_li  * C_FASX2  + sin_li  * S_FASX2);
+            final double term2b = 2.0 * del2 * (cos_2li * C_2FASX4 + sin_2li * S_2FASX4);
+            final double term3b = 3.0 * del3 * (cos_3li * C_3FASX6 + sin_3li * S_3FASX6);
+            derivs[0] = term1a + term2a + term3a;
+            derivs[1] = term1b + term2b + term3b;
         } else {
             // orbit is a 12-hour resonant one
             final double xomi = omegaq + omgdot * atime;
@@ -664,37 +648,30 @@ class DeepSDP4 extends SDP4 {
             final double cos_2li_p_2omi = cos_2li * cos_2omi - sin_2omi * sin_2li;
             final double sin_2omi_p_li = sin_li * cos_2omi + sin_2omi * cos_li;
             final double cos_2omi_p_li = cos_li * cos_2omi - sin_2omi * sin_li;
-            double term1a = d2201 * (sin_2omi_p_li * C_G22 - cos_2omi_p_li * S_G22) +
-                            d2211 * (sin_li * C_G22 - cos_li * S_G22) +
-                            d3210 * (sin_li_p_omi * C_G32 - cos_li_p_omi * S_G32) +
-                            d3222 * (sin_li_m_omi * C_G32 - cos_li_m_omi * S_G32) +
-                            d5220 * (sin_li_p_omi * C_G52 - cos_li_p_omi * S_G52) +
-                            d5232 * (sin_li_m_omi * C_G52 - cos_li_m_omi * S_G52);
-            double term2a = d4410 * (sin_2li_p_2omi * C_G44 - cos_2li_p_2omi * S_G44) +
-                            d4422 * (sin_2li * C_G44 - cos_2li * S_G44) +
-                            d5421 * (sin_2li_p_omi * C_G54 - cos_2li_p_omi * S_G54) +
-                            d5433 * (sin_2li_m_omi * C_G54 - cos_2li_m_omi * S_G54);
-            double term1b = d2201 * (cos_2omi_p_li * C_G22 + sin_2omi_p_li * S_G22) +
-                            d2211 * (cos_li * C_G22 + sin_li * S_G22) +
-                            d3210 * (cos_li_p_omi * C_G32 + sin_li_p_omi * S_G32) +
-                            d3222 * (cos_li_m_omi * C_G32 + sin_li_m_omi * S_G32) +
-                            d5220 * (cos_li_p_omi * C_G52 + sin_li_p_omi * S_G52) +
-                            d5232 * (cos_li_m_omi * C_G52 + sin_li_m_omi * S_G52);
-            double term2b = 2.0 * (d4410 * (cos_2li_p_2omi * C_G44 + sin_2li_p_2omi * S_G44) +
-                                   d4422 * (cos_2li * C_G44 + sin_2li * S_G44) +
-                                   d5421 * (cos_2li_p_omi * C_G54 + sin_2li_p_omi * S_G54) +
-                                   d5433 * (cos_2li_m_omi * C_G54 + sin_2li_m_omi * S_G54));
+            final double term1a = d2201 * (sin_2omi_p_li * C_G22 - cos_2omi_p_li * S_G22) +
+                                  d2211 * (sin_li * C_G22 - cos_li * S_G22) +
+                                  d3210 * (sin_li_p_omi * C_G32 - cos_li_p_omi * S_G32) +
+                                  d3222 * (sin_li_m_omi * C_G32 - cos_li_m_omi * S_G32) +
+                                  d5220 * (sin_li_p_omi * C_G52 - cos_li_p_omi * S_G52) +
+                                  d5232 * (sin_li_m_omi * C_G52 - cos_li_m_omi * S_G52);
+            final double term2a = d4410 * (sin_2li_p_2omi * C_G44 - cos_2li_p_2omi * S_G44) +
+                                  d4422 * (sin_2li * C_G44 - cos_2li * S_G44) +
+                                  d5421 * (sin_2li_p_omi * C_G54 - cos_2li_p_omi * S_G54) +
+                                  d5433 * (sin_2li_m_omi * C_G54 - cos_2li_m_omi * S_G54);
+            final double term1b = d2201 * (cos_2omi_p_li * C_G22 + sin_2omi_p_li * S_G22) +
+                                  d2211 * (cos_li * C_G22 + sin_li * S_G22) +
+                                  d3210 * (cos_li_p_omi * C_G32 + sin_li_p_omi * S_G32) +
+                                  d3222 * (cos_li_m_omi * C_G32 + sin_li_m_omi * S_G32) +
+                                  d5220 * (cos_li_p_omi * C_G52 + sin_li_p_omi * S_G52) +
+                                  d5232 * (cos_li_m_omi * C_G52 + sin_li_m_omi * S_G52);
+            final double term2b = 2.0 * (d4410 * (cos_2li_p_2omi * C_G44 + sin_2li_p_2omi * S_G44) +
+                                         d4422 * (cos_2li * C_G44 + sin_2li * S_G44) +
+                                         d5421 * (cos_2li_p_omi * C_G54 + sin_2li_p_omi * S_G54) +
+                                         d5433 * (cos_2li_m_omi * C_G54 + sin_2li_m_omi * S_G54));
 
-            for (int j = 0; j < SECULAR_INTEGRATION_ORDER; j += 2) {
-                derivs[j]     = term1a + term2a;
-                derivs[j + 1] = term1b + term2b;
-                if ((j + 2) < SECULAR_INTEGRATION_ORDER)  {
-                    term1a  = -term1a;
-                    term2a *= -4.0;
-                    term1b  = -term1b;
-                    term2b *= -4.0;
-                }
-            }
+            derivs[0] = term1a + term2a;
+            derivs[1] = term1b + term2b;
+
         }
     }
 

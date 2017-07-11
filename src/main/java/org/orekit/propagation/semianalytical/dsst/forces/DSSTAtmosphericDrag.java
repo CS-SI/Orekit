@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.utils.Constants;
@@ -60,8 +60,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
             final double area) {
-        this(atmosphere, new SphericalSpacecraft(
-                area, cd, 0.0, 0.0));
+        this(atmosphere, new IsotropicDrag(area, cd));
     }
 
     /** Simple constructor with custom spacecraft.
@@ -71,7 +70,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super(GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
 
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;

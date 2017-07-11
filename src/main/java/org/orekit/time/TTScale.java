@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** Terrestrial Time as defined by IAU(1991) recommendation IV.
  * <p>Coordinate time at the surface of the Earth. IT is the
  * successor of Ephemeris Time TE.</p>
@@ -30,19 +32,30 @@ public class TTScale implements TimeScale {
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
 
+    /** Offset from TAI. */
+    private static final double OFFSET = 32.184;
+
     /** Package private constructor for the factory.
      */
     TTScale() {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return 32.184;
+        return OFFSET;
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero().add(OFFSET);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -32.184;
+        return -OFFSET;
     }
 
     /** {@inheritDoc} */

@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 /**
+ * <h1> Propagation </h1>
  *
  * This package provides tools to propagate orbital states with different methods.
  *
@@ -31,32 +32,33 @@
  * farthest dates, several full-featured propagators are available to propagate
  * the state.
  * </p>
- * <p>
- * <h5> Keplerian propagation </h5>
- * The {@link org.orekit.propagation.analytical.KeplerianPropagator}
+ *
+ * <h2> Keplerian propagation </h2>
+ *
+ * <p> The {@link org.orekit.propagation.analytical.KeplerianPropagator}
  * implements the {@link org.orekit.propagation.Propagator}
  * interface, which ensures that we can obtain a propagated SpacecraftState
  * at any time once the instance is initialized with an initial state.
  * This extrapolation is not a problem with a simple
  * {@link org.orekit.orbits.EquinoctialOrbit}
  * representation: only the mean anomaly value changes.
- * </p>
- * <p>
- * <h5> Eckstein-Hechler propagation </h5>
- * This analytical model is suited for near circular orbits and inclination
+ *
+ * <h2> Eckstein-Hechler propagation </h2>
+ *
+ * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
  * coefficients correctors, and uses mean parameters to compute the new
- * position. As the keplerian propagator, it implements the
+ * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
- * </p>
- * <p>
- * <h5> Numerical propagation </h5>
- * It is the most important part of the OREKIT project. Based on commons-math
+ *
+ * <h2> Numerical propagation </h2>
+ *
+ * <p> It is the most important part of the OREKIT project. Based on Hipparchus
  * integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}
  * class realizes the interface between space mechanics and mathematical
  * resolutions. If its utilization seems difficult on first sight, it is in
  * fact quite clear and intuitive.
- * </p>
+ *
  * <p>
  * The mathematical problem to integrate is a seven dimension time derivative
  * equations system. The six first equations are given by the Gauss equations
@@ -69,8 +71,8 @@
  * the perturbing acceleration.
  * </p>
  * <p>
- * The {@link org.apache.commons.math3.ode.FirstOrderIntegrator integrators}
- * provided by commons-math need the state vector at t0, the state vector first
+ * The {@link org.hipparchus.ode.ODEIntegrator integrators}
+ * provided by Hipparchus need the state vector at t0, the state vector first
  * time derivate at t0, and then calculates the next step state vector, and ask
  * for the next first time derivative, etc. until it reaches the final asked date.
  * </p>

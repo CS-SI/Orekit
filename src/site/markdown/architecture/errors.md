@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Errors
-======
+# Errors
 
 The `org.orekit.errors` package provides classes to generate and handle errors, based on
 the classical mechanism of exceptions.

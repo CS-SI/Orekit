@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,18 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -34,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * includes translation, velocity, rotation, rotation rate and scale factor.
  * The scale factor is useful for coordinates near Earth surface, but it
  * cannot be extended to outer space as it would correspond to a non-unitary
- * transform. Therefore, the scale factor is <em>not</em> used here.<p>
+ * transform. Therefore, the scale factor is <em>not</em> used here.
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
@@ -48,6 +54,99 @@ public class HelmertTransformation implements TransformProvider {
 
     /** Enumerate for predefined Helmert transformations. */
     public enum Predefined {
+
+        // see http://itrf.ign.fr/doc_ITRF/Transfo-ITRF2014_ITRFs.txt
+        // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
+        // UNITS----------> mm       mm       mm       ppb       .001"     .001"     .001"
+        //                  .        .        .         .        .         .         .
+        //        RATES     Tx       Ty       Tz        D        Rx        Ry        Rz
+        // UNITS----------> mm/y     mm/y     mm/y     ppb/y    .001"/y   .001"/y   .001"/y
+        // -----------------------------------------------------------------------------------------
+        //   ITRF2008        1.6      1.9      2.4     -0.02      0.00      0.00      0.00    2010.0
+        //        rates      0.0      0.0     -0.1      0.03      0.00      0.00      0.00
+        //   ITRF2005        2.6      1.0     -2.3      0.92      0.00      0.00      0.00    2010.0
+        //        rates      0.3      0.0     -0.1      0.03      0.00      0.00      0.00
+        //   ITRF2000        0.7      1.2    -26.1      2.12      0.00      0.00      0.00    2010.0
+        //        rates      0.1      0.1     -1.9      0.11      0.00      0.00      0.00
+        //   ITRF97          7.4     -0.5    -62.8      3.80      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF96          7.4     -0.5    -62.8      3.80      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF94          7.4     -0.5    -62.8      3.80      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF93        -50.4      3.3    -60.2      4.29     -2.81     -3.38      0.40    2010.0
+        //        rates     -2.8     -0.1     -2.5      0.12     -0.11     -0.19      0.07
+        //   ITRF92         15.4      1.5    -70.8      3.09      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF91         27.4     15.5    -76.8      4.49      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF90         25.4     11.5    -92.8      4.79      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF89         30.4     35.5   -130.8      8.19      0.00      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        //   ITRF88         25.4     -0.5   -154.8     11.29      0.10      0.00      0.26    2010.0
+        //        rates      0.1     -0.5     -3.3      0.12      0.00      0.00      0.02
+        // _________________________________________________________________________________________
+
+        /** Transformation from ITRF 2014 To ITRF 2008. */
+        ITRF_2014_TO_ITRF_2008(2010,
+                                1.6, 1.9,     2.4, 0.00, 0.00, 0.00,
+                                0.0, 0.0,    -0.1, 0.00, 0.00, 0.00),
+
+        /** Transformation from ITRF 2014 To ITRF 2005. */
+        ITRF_2014_TO_ITRF_2005(2010,
+                                2.6, 1.0,    -2.3, 0.00, 0.00, 0.00,
+                                0.3, 0.0,    -0.1, 0.00, 0.00, 0.00),
+
+        /** Transformation from ITRF 2014 To ITRF 2000. */
+        ITRF_2014_TO_ITRF_2000(2010,
+                                0.7, 1.2,   -26.1, 0.00, 0.00, 0.00,
+                                0.1, 0.1,    -1.9, 0.00, 0.00, 0.00),
+
+        /** Transformation from ITRF 2014 To ITRF 97. */
+        ITRF_2014_TO_ITRF_97  (2010,
+                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 96. */
+        ITRF_2014_TO_ITRF_96  (2010,
+                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,  -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 94. */
+        ITRF_2014_TO_ITRF_94  (2010,
+                                7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 93. */
+        ITRF_2014_TO_ITRF_93  (2010,
+                              -50.4,  3.3,  -60.2, -2.81, -3.38, 0.40,
+                               -2.8, -0.1,   -2.5, -0.11, -0.19, 0.07),
+
+        /** Transformation from ITRF 2014 To ITRF 92. */
+        ITRF_2014_TO_ITRF_92  (2010,
+                               15.4,  1.5,  -70.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 91. */
+        ITRF_2014_TO_ITRF_91  (2010,
+                               27.4, 15.5,  -76.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 90. */
+        ITRF_2014_TO_ITRF_90  (2010,
+                               25.4, 11.5,  -92.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 89. */
+        ITRF_2014_TO_ITRF_89  (2010,
+                               30.4, 35.5, -130.8, 0.00, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
+
+        /** Transformation from ITRF 2014 To ITRF 88. */
+        ITRF_2014_TO_ITRF_88  (2010,
+                               25.4, -0.5, -154.8, 0.10, 0.00, 0.26,
+                                0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
         // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
@@ -82,58 +181,58 @@ public class HelmertTransformation implements TransformProvider {
 
         /** Transformation from ITRF 2008 To ITRF 2005. */
         ITRF_2008_TO_ITRF_2005(2000,
-                                -2.0, -0.9,   -4.7,  0.00,  0.00,  0.00,
-                                 0.3,  0.0,    0.0,  0.00,  0.00,  0.00),
+                               -2.0, -0.9,   -4.7,  0.00,  0.00,  0.00,
+                                0.3,  0.0,    0.0,  0.00,  0.00,  0.00),
 
         /** Transformation from ITRF 2008 To ITRF 2000. */
         ITRF_2008_TO_ITRF_2000(2000,
-                                -1.9, -1.7,  -10.5,  0.00,  0.00,  0.00,
-                                 0.1,  0.1,   -1.8,  0.00,  0.00,  0.00),
+                               -1.9, -1.7,  -10.5,  0.00,  0.00,  0.00,
+                                0.1,  0.1,   -1.8,  0.00,  0.00,  0.00),
 
         /** Transformation from ITRF 2008 To ITRF 97. */
         ITRF_2008_TO_ITRF_97  (2000,
-                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 96. */
         ITRF_2008_TO_ITRF_96  (2000,
-                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 94. */
         ITRF_2008_TO_ITRF_94  (2000,
-                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                                4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 93. */
         ITRF_2008_TO_ITRF_93  (2000,
-                               -24.0,  2.4,  -38.6, -1.71, -1.48, -0.30,
-                                -2.8, -0.1,   -2.4, -0.11, -0.19,  0.07),
+                              -24.0,  2.4,  -38.6, -1.71, -1.48, -0.30,
+                               -2.8, -0.1,   -2.4, -0.11, -0.19,  0.07),
 
         /** Transformation from ITRF 2008 To ITRF 92. */
         ITRF_2008_TO_ITRF_92  (2000,
-                                12.8,  4.6,  -41.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               12.8,  4.6,  -41.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 91. */
         ITRF_2008_TO_ITRF_91  (2000,
-                                24.8, 18.6,  -47.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               24.8, 18.6,  -47.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 90. */
         ITRF_2008_TO_ITRF_90  (2000,
-                                22.8, 14.6,  -63.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               22.8, 14.6,  -63.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 89. */
         ITRF_2008_TO_ITRF_89  (2000,
-                                27.8, 38.6, -101.2,  0.00,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
+                               27.8, 38.6, -101.2,  0.00,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 88. */
         ITRF_2008_TO_ITRF_88  (2000,
-                                22.8,  2.6, -125.2,  0.10,  0.00,  0.06,
-                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02);
+                               22.8,  2.6, -125.2,  0.10,  0.00,  0.06,
+                                0.1, -0.5,   -3.2,  0.00,  0.00,  0.02);
 
         /** Transformation. */
         private final HelmertTransformation transformation;
@@ -234,10 +333,8 @@ public class HelmertTransformation implements TransformProvider {
         return epoch;
     }
 
-    /** Compute the transform at some date.
-     * @param date date at which the transform is desired
-     * @return computed transform at specified date
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) {
 
         // compute parameters evolution since reference epoch
@@ -251,11 +348,41 @@ public class HelmertTransformation implements TransformProvider {
         final double angle = dR.getNorm();
         final Transform rotationTransform =
                 new Transform(date,
-                              (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
-                                                           rotationRate);
+                              (angle < Precision.SAFE_MIN) ?
+                              Rotation.IDENTITY :
+                              new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR),
+                              rotationRate);
 
         // combine both parts
         return new Transform(date, translationTransform, rotationTransform);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute parameters evolution since reference epoch
+        final T dt = date.durationFrom(epoch);
+        final FieldVector3D<T> dR = new FieldVector3D<>(date.getField().getOne(), rotationVector,
+                                                        dt, rotationRate);
+
+        // build translation part
+        final FieldTransform<T> translationTransform =
+                        new FieldTransform<>(date,
+                                             new FieldPVCoordinates<>(date.getField(), cartesian).shiftedBy(dt));
+
+        // build rotation part
+        final T angle = dR.getNorm();
+        final FieldTransform<T> rotationTransform =
+                new FieldTransform<>(date,
+                                    (angle.getReal() < Precision.SAFE_MIN) ?
+                                     FieldRotation.getIdentity(date.getField()) :
+                                    new FieldRotation<>(dR, angle, RotationConvention.VECTOR_OPERATOR),
+                                    new FieldVector3D<>(date.getField(), rotationRate));
+
+        // combine both parts
+        return new FieldTransform<>(date, translationTransform, rotationTransform);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.errors;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** Extension of {@link java.lang.Runtime} with localized message for internal errors only.
  * @since 7.1

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,10 @@
 package org.orekit.propagation.analytical.tle;
 
 
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -46,14 +45,14 @@ public class TLEPropagatorTest {
 
     private TLE tle;
     private double period;
-    
+
     @Test
     public void testSlaveMode() throws OrekitException {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
-        
+
         // Simulate a full period of a GPS satellite
         // -----------------------------------------
         SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(period));
@@ -73,22 +72,22 @@ public class TLEPropagatorTest {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         propagator.setEphemerisMode();
-        
+
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
-        
+
         // Simulate a full period of a GPS satellite
         // -----------------------------------------
         AbsoluteDate endDate = initDate.shiftedBy(period);
         propagator.propagate(endDate);
-        
-        // get the ephemeris 
+
+        // get the ephemeris
         BoundedPropagator boundedProp = propagator.getGeneratedEphemeris();
 
         // get the initial state from the ephemeris and check if it is the same as
         // the initial state from the TLE
         SpacecraftState boundedState = boundedProp.propagate(initDate);
-        
+
         // Check results
         Assert.assertEquals(initialState.getA(), boundedState.getA(), 0.);
         Assert.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
@@ -156,41 +155,35 @@ public class TLEPropagatorTest {
             return maxDistance;
         }
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
+        public void init(SpacecraftState s0, AbsoluteDate t, double step) {
             minDistance = Double.POSITIVE_INFINITY;
             maxDistance = Double.NEGATIVE_INFINITY;
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
-            try {
-                // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
-                Rotation rotSat = currentState.getAttitude().getRotation();
+            throws OrekitException {
+            // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
+            Rotation rotSat = currentState.getAttitude().getRotation();
 
-                // Transform Z axis from satellite frame to inertial frame
-                Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
+            // Transform Z axis from satellite frame to inertial frame
+            Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
 
-                // Transform Z axis from inertial frame to ITRF
-                Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
-                Vector3D zSatITRF = transform.transformVector(zSat);
+            // Transform Z axis from inertial frame to ITRF
+            Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+            Vector3D zSatITRF = transform.transformVector(zSat);
 
-                // Transform satellite position/velocity from inertial frame to ITRF
-                PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+            // Transform satellite position/velocity from inertial frame to ITRF
+            PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
 
-                // Line containing satellite point and following pointing direction
-                Line pointingLine = new Line(pvSatITRF.getPosition(),
-                                             pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                         zSatITRF),
-                                             1.0e-10);
+            // Line containing satellite point and following pointing direction
+            Line pointingLine = new Line(pvSatITRF.getPosition(),
+                                         pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                     zSatITRF),
+                                         1.0e-10);
 
-                double distance = pointingLine.distance(Vector3D.ZERO);
-                minDistance = FastMath.min(minDistance, distance);
-                maxDistance = FastMath.max(maxDistance, distance);
-                
-
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            }
+            double distance = pointingLine.distance(Vector3D.ZERO);
+            minDistance = FastMath.min(minDistance, distance);
+            maxDistance = FastMath.max(maxDistance, distance);
         }
 
     }
@@ -198,13 +191,13 @@ public class TLEPropagatorTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        
+
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
-        
+
         tle = new TLE(line1, line2);
-        
+
         // the period of the GPS satellite
         period = 717.97 * 60.0;
     }

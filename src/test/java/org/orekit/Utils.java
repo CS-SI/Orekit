@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,16 @@ import java.util.SortedSet;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldCircularOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
@@ -60,23 +63,27 @@ public class Utils {
     public static final double mu =  3.986004415e+14;
 
     public static void clearFactories() {
-        Utils.clearFactoryMaps(CelestialBodyFactory.class);
+        clearFactoryMaps(CelestialBodyFactory.class);
         CelestialBodyFactory.clearCelestialBodyLoaders();
-        Utils.clearFactoryMaps(FramesFactory.class);
-        Utils.clearFactoryMaps(TimeScalesFactory.class);
-        Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
-        Utils.clearFactoryMaps(JacobiPolynomials.class);
-        Utils.clearFactoryMaps(NewcombOperators.class);
+        clearFactoryMaps(FramesFactory.class);
+        clearFactoryMaps(TimeScalesFactory.class);
+        clearFactory(TimeScalesFactory.class, TimeScale.class);
+        clearFactoryMaps(FieldCartesianOrbit.class);
+        clearFactoryMaps(FieldKeplerianOrbit.class);
+        clearFactoryMaps(FieldCircularOrbit.class);
+        clearFactoryMaps(FieldEquinoctialOrbit.class);
+        clearFactoryMaps(JacobiPolynomials.class);
+        clearFactoryMaps(NewcombOperators.class);
         for (final Class<?> c : NewcombOperators.class.getDeclaredClasses()) {
             if (c.getName().endsWith("PolynomialsGenerator")) {
-                Utils.clearFactoryMaps(c);
+                clearFactoryMaps(c);
             }
         }
+        FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();
-        Utils.clearJPLEphemeridesConstants();
         GravityFieldFactory.clearPotentialCoefficientsReaders();
-        GravityFieldFactory.clearOceanTidesReaders();        
+        GravityFieldFactory.clearOceanTidesReaders();
         DataProvidersManager.getInstance().clearProviders();
         DataProvidersManager.getInstance().clearLoadedDataNames();
     }
@@ -120,20 +127,6 @@ public class Utils {
                         cachedFieldsClass.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
                     field.set(null, null);
-                }
-            }
-        } catch (IllegalAccessException iae) {
-            Assert.fail(iae.getMessage());
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void clearJPLEphemeridesConstants() {
-        try {
-            for (Field field : JPLEphemeridesLoader.class.getDeclaredFields()) {
-                if (field.getName().equals("CONSTANTS")) {
-                    field.setAccessible(true);
-                    ((Map<String, Double>) field.get(null)).clear();
                 }
             }
         } catch (IllegalAccessException iae) {
@@ -185,8 +178,8 @@ public class Utils {
 
     public static void setLoaders(final IERSConventions conventions, final List<EOPEntry> eop) {
 
-        Utils.clearFactoryMaps(FramesFactory.class);
-        Utils.clearFactoryMaps(TimeScalesFactory.class);
+        clearFactoryMaps(FramesFactory.class);
+        clearFactoryMaps(TimeScalesFactory.class);
 
         FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
             public void fillHistory(IERSConventions.NutationCorrectionConverter converter,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.forces.gravity;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
@@ -26,7 +26,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeVectorFunction;
 
 /** Gravity field corresponding to ocean tides.
  * <p>
@@ -66,7 +66,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     private final FundamentalNutationArguments arguments;
 
     /** Function computing pole tide terms (ΔC₂₁, ΔS₂₁). */
-    private final TimeFunction<double[]> poleTideFunction;
+    private final TimeVectorFunction poleTideFunction;
 
     /** Simple constructor.
      * @param ae central body reference radius
@@ -80,7 +80,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     OceanTidesField(final double ae, final double mu,
                            final List<OceanTidesWave> waves,
                            final FundamentalNutationArguments arguments,
-                           final TimeFunction<double[]> poleTideFunction)
+                           final TimeVectorFunction poleTideFunction)
         throws OrekitException {
 
         // store mode parameters

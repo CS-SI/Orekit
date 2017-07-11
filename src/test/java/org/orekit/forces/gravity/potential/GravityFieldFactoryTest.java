@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,9 @@ package org.orekit.forces.gravity.potential;
 import java.io.File;
 import java.util.Set;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -103,7 +103,7 @@ public class GravityFieldFactoryTest {
                 if (j > 0) {
                     ref *= FastMath.sqrt(2);
                 }
-                Assert.assertEquals(ref, factors[i][j], 2.0e-15);
+                Assert.assertEquals(ref, factors[i][j], 8.0e-15);
             }
         }
     }

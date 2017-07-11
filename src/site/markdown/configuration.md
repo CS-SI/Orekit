@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Configuration
-=============
+# Configuration
 
 The Orekit library relies on some external data for physical models. Typical
 data are the Earth Orientation Parameters and the leap seconds history, both being
@@ -24,8 +23,7 @@ provided.
 
 Orekit must be configured appropriately to find and use such data.
 
-Data sets
----------
+## Data sets
 
 For user convenience, data that is only a few tens of kilobytes and can be assumed to
 never change like precession-nutation models are already embedded in the core library.
@@ -45,8 +43,7 @@ publishes new Earth Orientation Parameter files covering new time ranges whereas
 ephemerides represent megabytes-sized files. These data sets must be provided by users and
 Orekit must be configured to find and read them at run time.
 
-Data formats
-------------
+## Data formats
 
 In order to simplify data updates for users and to avoid transformations errors, Orekit
 uses each supported data set in the native format in which it is publicly available. So
@@ -60,8 +57,7 @@ If a data set format changes or a new data set should be supported, a modificati
 reading classes inside Orekit would be needed. This design choice has been selected because
 format changes remain rare (except IERS EOP data perhaps ...).
 
-Data storage
-------------
+## Data storage
 
 Data sets must be stored at locations where the Orekit library will find them. This may
 be simply a directories tree on a disk, but may be almost anything else as this simple
@@ -115,8 +111,7 @@ in the library itself.
     is not trusted). The sandbox prevents access to the user disk. Data must be embedded
     within the application jar file, in the internal classpath.
 
-Data handling in Orekit
------------------------
+## Data handling in Orekit
 
 The following diagram shows data handling in Orekit.
   
@@ -145,8 +140,7 @@ depending on the use case and perhaps configuration data (environment variables,
 properties, users preferences ...). If the manager is not configured, a default configuration
 is set up.
 
-Default configuration
----------------------
+## Default configuration
 
 The default configuration is based on a single Java property named `orekit.data.path`.
 This property should be set to a list of directories trees or zip/jar archives containing the
@@ -207,8 +201,7 @@ class can be used. If the property is set up by the application, it must be done
 feature is called, since some data are initialized very early (mainly frame and time related data
 like leap seconds for UTC).
 
-Setting up a customized configuration
--------------------------------------
+## Setting up a customized configuration
 
 If the default configuration doesn't suit users needs, a custom configuration must be set up.
 This happens for example if data must be embedded within the application and loaded from
@@ -233,29 +226,27 @@ defined implementations are providers fetching data from a relational database o
 providers fetching data using an external library. This corresponds to the plugin feature
 announced above.
 
-Quick setup using default data
-------------------------------
+## Quick setup using default data
 
 For convenience, a zip file containing some default data is available for
 download on orekit forge:
 [https://www.orekit.org/forge/projects/orekit/files](https://www.orekit.org/forge/projects/orekit/files).
-Setting the `orekit.data.path` property to the location of this file on a local computer is enough to
-use Orekit efficiently, but the preferred setup is to expand the zip file in the user
-home folder so that new IERS files can be added easily when they become available. In this
-case, data is loaded by putting the following code in the main application:
+For a start, the simplest configuration is to download the orekit-data.zip file from the download page,
+to unzip it anywhere you want, note the path of the orekit-data folder that will be created and add the
+following lines at the start of your program:
 
-    final File home = new File(System.getProperty("user.home"));
-    final File orekitDir = new File(home, "orekit-data");
-    final DataProvider provider = new DirectoryCrawler(orekitDir);
-    DataProvidersManager.getInstance().addProvider(provider);
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataProvidersManager.getInstance();
+    manager.addProvider(new DirectoryCrawler(orekitData));
 
-This zip file contains JPL DE 406 ephemerides from 1962 to 2029, IERS Earth orientation
-parameters from 1973 to end 2012 with predicted date to mid-2013 (both IAU-1980
-and IAU-2000), UTC-TAI history from 1972 to end of 2013, Marshall Solar Activity Future
-Estimation from 1999 to 2013 and the Eigen 06S gravity field.
+This zip file contains JPL DE 430 ephemerides from 1990
+to 2069, IERS Earth orientation parameters from 1973
+to June 2016 with predicted date to fall 2016 (both IAU-1980
+and IAU-2000), UTC-TAI history from 1972 to end of 2016,
+Marshall Solar Activity Futur Estimation from 1999 to mid 2016,
+the Eigen 06S gravity field and the FES 2004 ocean tides model.
 
-Supported data types
---------------------
+## Supported data types
 
 The data types supported by Orekit are described in the following table, where the `#`
 character represents any digit, `(m/p)` represents either the m character or the p
@@ -264,7 +255,7 @@ naming patterns means that an optional `.gz` suffix can be appended, in which ca
 data are considered to be compressed with gzip.
 
 Earth Orientation Parameters are provided by observatories in many different formats
-(Bulletin A, several different formats of Bulletin B, EOP 08 C04, finals file combining
+(Bulletin A, several different formats of Bulletin B, EOP C04, finals file combining
 both Bulletin A and Bulletin B information ...). They are also provided for different
 precession-nutation models (IAU-1980 and IAU-2006/2000A). Orekit supports all of these
 formats and supports both precession-nutation models. Two different
@@ -279,8 +270,10 @@ the XML format and the columns format.
 | UTC-TAI.history[.gz]                     |  IERS history      | leap seconds introduction history                                                        | [http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history](http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)                                   |
 | bulletina-xxxx-\#\#\#.txt[.gz]           |  IERS Bulletin A   | weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | [ftp://ftp.iers.org/products/eop/rapid/bulletina/](ftp://ftp.iers.org/products/eop/rapid/bulletina/)                                             |
 | bulletinb.\#\#\#[.gz]                    |  IERS Bulletin B   | monthly Earth Orientation Parameters model IAU 2006/2000A, final values                  | [ftp://ftp.iers.org/products/eop/bulletinb/format_2009/](ftp://ftp.iers.org/products/eop/bulletinb/format_2009/)                                 |
-| eopc04\_08\_IAU2000.\#\#[.gz]            |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 2006/2000A                                 | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau2000/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau2000/)                          |
-| eopc04\_08.\#\#[.gz]                     |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 1980                                       | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau1980/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau1980/)                          |
+| eopc04\_08\_IAU2000.\#\#[.gz]            |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 2006/2000A for ITRF 2008                   | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau2000/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau2000/)                          |
+| eopc04\_08.\#\#[.gz]                     |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 1980 for ITRF 2008                         | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau1980/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau1980/)                          |
+| eopc04\_14\_IAU2000.\#\#[.gz]            |  IERS EOP 14 C04   | yearly Earth Orientation Parameters model IAU 2006/2000A for ITRF 2014                   | [ftp://ftp.iers.org/products/eop/long-term/c04\_14/iau2000/](ftp://ftp.iers.org/products/eop/long-term/c04_14/iau2000/)                          |
+| eopc04\_14.\#\#[.gz]                     |  IERS EOP 14 C04   | yearly Earth Orientation Parameters model IAU 1980 for ITRF 2014                         | [ftp://ftp.iers.org/products/eop/long-term/c04\_14/iau1980/](ftp://ftp.iers.org/products/eop/long-term/c04_14/iau1980/)                          |
 | finals2000A.\*.[.gz]                     |  IERS standard EOP | Earth Orientation Parameters model IAU 2006/2000A                                        | [ftp://ftp.iers.org/products/eop/rapid/standard/finals2000A.all](ftp://ftp.iers.org/products/eop/rapid/standard/finals2000A.all)                 |
 | finals.\*.[.gz]                          |  IERS standard EOP | Earth Orientation Parameters  model IAU 1980                                             | [ftp://ftp.iers.org/products/eop/rapid/standard/finals.all](ftp://ftp.iers.org/products/eop/rapid/standard/finals.all)                           |
 | finals2000A.\*.xml[.gz]                  |  IERS standard EOP | Earth Orientation Parameters model IAU 2006/2000A                                        | [ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.all.xml](ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.all.xml) |
@@ -291,4 +284,5 @@ the XML format and the columns format.
 | \*.gfc, g\#\#\#\_eigen\_\*\_coef         |  ICGEM format      | gravity fields from International Centre for Global Earth Models                         | [http://icgem.gfz-potsdam.de/ICGEM/modelstab.html](http://icgem.gfz-potsdam.de/ICGEM/modelstab.html)                                             |
 | egm\#\#\_to\#\*                          |  EGM format        | EGM gravity field                                                                        | [ftp://cddis.gsfc.nasa.gov/pub/egm96/general\_info](ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info)                                            |
 | Jan\#\#\#\#F10.txt to Dec\#\#\#\#F10.txt |  MSAFE format      | Marshall Solar Activity Future Estimation                                                | [http://sail.msfc.nasa.gov/archive\_index.htm](http://sail.msfc.nasa.gov/archive_index.htm)                                                      |
+| CGIM\#\#\#0.\#\#N                        |  Bern Astronomical Institute format | Klobuchar coefficients                                                  | [ftp://ftp.unibe.ch/aiub/CODE/](ftp://ftp.unibe.ch/aiub/CODE/)                                                      |
 Supported data types

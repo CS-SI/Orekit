@@ -1,9 +1,26 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 
 /**
  * Unit tests for {@link ImmutableTimeStampedCache}.
- * 
+ *
  * @author Evan Ward
  */
 public class ImmutableTimeStampedCacheTest {
@@ -99,7 +116,7 @@ public class ImmutableTimeStampedCacheTest {
     /**
      * check {@link ImmutableTimeStampedCache#getNeighbors(AbsoluteDate)} at a
      * series of different dates designed to test all logic paths.
-     * 
+     *
      * @throws TimeStampedCacheException
      */
     @Test
@@ -182,7 +199,7 @@ public class ImmutableTimeStampedCacheTest {
     /**
      * check that the cache is immutable by changing the data passed in the
      * constructor and returned from methods.
-     * 
+     *
      * @throws TimeStampedCacheException
      */
     @Test
@@ -209,12 +226,7 @@ public class ImmutableTimeStampedCacheTest {
         Assert.assertArrayEquals(cache.getAll().toArray(), expecteds.toArray());
 
         // check getNeighbors
-        actuals = cache.getNeighbors(date);
-        try {
-            actuals.set(0, different);
-        } catch (UnsupportedOperationException e) {
-            // exception ok
-        }
+        actuals = cache.getNeighbors(date).collect(Collectors.toList());
         Assert.assertArrayEquals(cache.getAll().toArray(), expecteds.toArray());
     }
 

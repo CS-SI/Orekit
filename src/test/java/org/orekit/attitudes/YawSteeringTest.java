@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,10 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -58,7 +59,7 @@ public class YawSteeringTest {
     // Computation date
     private AbsoluteDate date;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame itrf;
 
     // Satellite position
@@ -92,6 +93,7 @@ public class YawSteeringTest {
         Assert.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
         Assert.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
         Assert.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
+        Assert.assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
 
     }
 
@@ -112,7 +114,7 @@ public class YawSteeringTest {
         Vector3D sunEME2000 = sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition();
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
-        // Check sun is in (X,Z) plane
+        // Check sun is in (X, Z) plane
         Assert.assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
 
     }
@@ -134,8 +136,8 @@ public class YawSteeringTest {
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
 
         // Compose rotations composition
-        Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
-        Vector3D yawAxis = compoRot.getAxis();
+        Rotation compoRot = rotYaw.compose(rotNoYaw.revert(), RotationConvention.VECTOR_OPERATOR);
+        Vector3D yawAxis = compoRot.getAxis(RotationConvention.VECTOR_OPERATOR);
 
         // Check axis
         Assert.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
@@ -200,7 +202,7 @@ public class YawSteeringTest {
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
- 
+
         // check spin is consistent with attitude evolution
         double errorAngleMinus     = Rotation.distance(sMinus.shiftedBy(h).getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
@@ -218,7 +220,7 @@ public class YawSteeringTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 4.0e-13);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 5.0e-13);
 
     }
 
@@ -235,7 +237,7 @@ public class YawSteeringTest {
             // Body mu
             final double mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             //  Satellite position
@@ -244,7 +246,7 @@ public class YawSteeringTest {
                                        FastMath.toRadians(5.300), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
-            // Elliptic earth shape */
+            // Elliptic earth shape
             earthShape =
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 

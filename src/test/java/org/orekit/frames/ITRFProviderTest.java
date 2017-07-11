@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,10 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -238,14 +238,14 @@ public class ITRFProviderTest {
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
         Assert.assertEquals(0.50075444444444,
-                            date.getComponents(tt).getTime().getSecondsInDay() / Constants.JULIAN_DAY,
+                            date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
         Assert.assertEquals(0.499999165813831,
-                            date.getComponents(ut1).getTime().getSecondsInDay() / Constants.JULIAN_DAY,
+                            date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check
-        double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date).getValue();
+        double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date);
         Assert.assertEquals(13.318492966097 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(era, 0)),
                             0.0022);

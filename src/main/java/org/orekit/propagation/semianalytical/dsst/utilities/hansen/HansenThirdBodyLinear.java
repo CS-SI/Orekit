@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
 
 /**
- * Hansen coefficients K(t,n,s) for t=0 and n > 0.
+ * Hansen coefficients K(t,n,s) for t=0 and n &gt; 0.
  * <p>
  * Implements Collins 4-254 or Danielson 2.7.3-(7) for Hansen Coefficients and
  * Danielson 3.2-(3) for derivatives. The recursions are transformed into

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Attitudes
-=========
+# Attitudes
 
 The `org.orekit.attitudes` package provides classes to represent simple attitudes.
 	
-Attitudes Presentation
-----------------------
+## Attitudes Presentation
  
 Some force models, such as the atmospheric drag for maneuvers, need to
 know the spacecraft orientation in an inertial frame. Orekit uses a simple
@@ -37,8 +35,7 @@ under an abstract class called "GroundPointing".
 Finally, there exist attitude laws that wrap a "base" attitude law, and add to this 
 base attitude law a complementary rotation in order to fulfill specific mission constraints.
 
-Description of attitudes providers
-----------------------------------
+## Description of attitudes providers
 
 ### Basic attitude laws
 
@@ -59,9 +56,13 @@ Description of attitudes providers
 * LofOffset, defined as a given angular offset around three axes from local orbital 
   frame at given date.
 
-* TabulatedProvider, defined by interpolating within a user-provided ephemerides,
-  using any number of interpolation points and either using or ignoring the
-  tabulated rotation rates.
+* TabulatedLofOffset, defined by interpolating within a user-provided ephemerides
+  with resepct to a local orbital frame,  using any number of interpolation points and
+  either using or ignoring the tabulated rotation rates.
+
+* TabulatedProvider, defined by interpolating within a user-provided ephemerides
+  with respect to an inertial frame,  using any number of interpolation points and
+  either using or ignoring the tabulated rotation rates.
 
 ### Ground pointing laws
 

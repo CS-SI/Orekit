@@ -1,29 +1,54 @@
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.sampling;
 
-import static org.junit.Assert.*;
-
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FactoryManagedFrame;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+
+import static org.junit.Assert.*;
 
 public class OrekitStepHandlerTest {
 
@@ -59,17 +84,8 @@ public class OrekitStepHandlerTest {
         final Propagator kepler = new KeplerianPropagator(initialOrbit);
 
         kepler.setMasterMode(fixedStepSize, new OrekitFixedStepHandler() {
-
             @Override
-            public void init(SpacecraftState s0, AbsoluteDate t)
-                throws PropagationException {
-            }
-
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
-                // System.out.println("Step stopped at: " +
-                // currentState.getDate());;
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
             }
         });
 
@@ -84,7 +100,7 @@ public class OrekitStepHandlerTest {
                 .submit(new Callable<SpacecraftState>() {
 
                     public SpacecraftState call()
-                        throws PropagationException {
+                        throws OrekitException {
                         return kepler.propagate(initialDate.shiftedBy(dt));
                     }
                 });
@@ -94,6 +110,43 @@ public class OrekitStepHandlerTest {
             SpacecraftState finalState = stateFuture.get();
             assertNotNull(finalState);
         }
+    }
+
+    /**
+     * Check {@link OrekitStepInterpolator#isPreviousStateInterpolated()} and {@link
+     * OrekitStepInterpolator#isCurrentStateInterpolated()}.
+     *
+     * @throws OrekitException on error.
+     */
+    @Test
+    public void testIsInterpolated() throws OrekitException {
+        // setup
+        NumericalPropagator propagator =
+                new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60));
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame eci = FramesFactory.getGCRF();
+        SpacecraftState ic = new SpacecraftState(new KeplerianOrbit(
+                6378137 + 500e3, 1e-3, 0, 0, 0, 0,
+                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU));
+        propagator.setInitialState(ic);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        // detector triggers half way through second step
+        DateDetector detector =
+                new DateDetector(date.shiftedBy(90)).withHandler(new ContinueOnEvent<>());
+        propagator.addEventDetector(detector);
+
+        // action and verify
+        Queue<Boolean> expected =
+                new ArrayDeque<>(Arrays.asList(false, false, false, true, true, false));
+        propagator.setMasterMode(new OrekitStepHandler() {
+            @Override
+            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
+                assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
+                assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
+            }
+        });
+        final AbsoluteDate end = date.shiftedBy(120);
+        assertEquals(end, propagator.propagate(end).getDate());
     }
 
     @Before

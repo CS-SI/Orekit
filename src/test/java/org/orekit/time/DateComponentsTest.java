@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -397,6 +397,38 @@ public class DateComponentsTest {
         Assert.assertEquals(0, DateComponents.MODIFIED_JULIAN_EPOCH.getMJD());
         Assert.assertEquals(37665, new DateComponents(1962, 1,  1).getMJD());
         Assert.assertEquals(54600, new DateComponents(2008, 5, 14).getMJD());
+    }
+
+    @Test
+    public void testMaxDate() {
+        Assert.assertEquals(5881610,           DateComponents.MAX_EPOCH.getYear());
+        Assert.assertEquals(      7,           DateComponents.MAX_EPOCH.getMonth());
+        Assert.assertEquals(     11,           DateComponents.MAX_EPOCH.getDay());
+        Assert.assertEquals(Integer.MAX_VALUE, DateComponents.MAX_EPOCH.getJ2000Day());
+        Assert.assertEquals(5881610,           new DateComponents(5881610, 7, 11).getYear());
+        Assert.assertEquals(      7,           new DateComponents(5881610, 7, 11).getMonth());
+        Assert.assertEquals(     11,           new DateComponents(5881610, 7, 11).getDay());
+        Assert.assertEquals(Integer.MAX_VALUE, new DateComponents(5881610, 7, 11).getJ2000Day());
+        Assert.assertEquals(5881610,           new DateComponents(Integer.MAX_VALUE).getYear());
+        Assert.assertEquals(      7,           new DateComponents(Integer.MAX_VALUE).getMonth());
+        Assert.assertEquals(     11,           new DateComponents(Integer.MAX_VALUE).getDay());
+        Assert.assertEquals(Integer.MAX_VALUE, new DateComponents(Integer.MAX_VALUE).getJ2000Day());
+    }
+
+    @Test
+    public void testMinDate() {
+        Assert.assertEquals(-5877490,          DateComponents.MIN_EPOCH.getYear());
+        Assert.assertEquals(       3,          DateComponents.MIN_EPOCH.getMonth());
+        Assert.assertEquals(       3,          DateComponents.MIN_EPOCH.getDay());
+        Assert.assertEquals(Integer.MIN_VALUE, DateComponents.MIN_EPOCH.getJ2000Day());
+        Assert.assertEquals(-5877490,          new DateComponents(-5877490, 3, 3).getYear());
+        Assert.assertEquals(       3,          new DateComponents(-5877490, 3, 3).getMonth());
+        Assert.assertEquals(       3,          new DateComponents(-5877490, 3, 3).getDay());
+        Assert.assertEquals(Integer.MIN_VALUE, new DateComponents(-5877490, 3, 3).getJ2000Day());
+        Assert.assertEquals(-5877490,          new DateComponents(Integer.MIN_VALUE).getYear());
+        Assert.assertEquals(       3,          new DateComponents(Integer.MIN_VALUE).getMonth());
+        Assert.assertEquals(       3,          new DateComponents(Integer.MIN_VALUE).getDay());
+        Assert.assertEquals(Integer.MIN_VALUE, new DateComponents(Integer.MIN_VALUE).getJ2000Day());
     }
 
 }

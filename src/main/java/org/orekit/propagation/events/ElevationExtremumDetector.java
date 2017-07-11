@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -32,9 +32,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * As in most cases only the elevation maximum is needed and the
  * minimum is often irrelevant, this detector is often wrapped into
- * an {@link EventFilter event filter} configured with
+ * an {@link EventSlopeFilter event slope filter} configured with
  * {@link FilterType#TRIGGER_ONLY_DECREASING_EVENTS} (i.e. when the
- * elevation derivative decreases from positive vaules to negative values,
+ * elevation derivative decreases from positive values to negative values,
  * which correspond to a maximum). Setting up this filter saves some computation
  * time as the elevation minimum occurrences are not even looked at. It is
  * however still often necessary to do an additional filtering
@@ -84,7 +84,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param topo topocentric frame centered on ground point
      */
     private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler<ElevationExtremumDetector> handler,
+                                      final int maxIter, final EventHandler<? super ElevationExtremumDetector> handler,
                                       final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
@@ -94,7 +94,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     @Override
     protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<ElevationExtremumDetector> newHandler) {
+                                              final EventHandler<? super ElevationExtremumDetector> newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 

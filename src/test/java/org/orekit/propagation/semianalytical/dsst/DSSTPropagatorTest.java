@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,29 +20,40 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.Atmosphere;
-import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.BoxAndSolarArraySpacecraft;
+import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.forces.drag.atmosphere.HarrisPriester;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
@@ -52,6 +63,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
@@ -61,23 +73,56 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
+
+    @Test
+    public void testHighDegreesSetting() throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        int earthDegree = 36;
+        int earthOrder  = 36;
+        int eccPower    = 4;
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
+        final org.orekit.frames.Frame earthFrame =
+                FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
+        final DSSTForceModel force =
+                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                 earthDegree, earthOrder, eccPower, earthDegree + eccPower,
+                                 earthDegree, earthOrder, eccPower);
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(force);
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
+        Frame eci = FramesFactory.getGCRF();
+        KeplerianOrbit orbit = new KeplerianOrbit(
+                7120000.0, 1.0e-3, FastMath.toRadians(60.0),
+                FastMath.toRadians(120.0), FastMath.toRadians(47.0),
+                FastMath.toRadians(12.0),
+                PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+        SpacecraftState oscuState = DSSTPropagator.computeOsculatingState(new SpacecraftState(orbit), null, forces);
+        Assert.assertEquals(7119927.097122, oscuState.getA(), 0.001);
+    }
 
     @Test
     public void testEphemerisDates() throws OrekitException {
@@ -120,7 +165,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testNoExtrapolation() throws OrekitException {
-        SpacecraftState state = getLEOrbit();
+        SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
         // Propagation of the initial state at the initial date
@@ -145,7 +190,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testKepler() throws OrekitException {
-        SpacecraftState state = getLEOrbit();
+        SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
         // Propagation of the initial state at t + dt
@@ -165,7 +210,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testEphemeris() throws OrekitException {
-        SpacecraftState state = getGEOrbit();
+        SpacecraftState state = getGEOState();
         setDSSTProp(state);
 
         // Set ephemeris mode
@@ -220,8 +265,6 @@ public class DSSTPropagatorTest {
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 4);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
 
         // GPS Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
@@ -239,7 +282,10 @@ public class DSSTPropagatorTest {
 
         // Set propagator with state and force model
         setDSSTProp(new SpacecraftState(orbit));
-        dsstProp.addForceModel(force);
+        dsstProp.addForceModel(new DSSTZonal(provider, 4, 3, 9));
+        dsstProp.addForceModel(new DSSTTesseral(earthFrame,
+                                                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                4, 4, 4, 8, 4, 4, 2));
 
         // 5 days propagation
         final SpacecraftState state = dsstProp.propagate(initDate.shiftedBy(5. * 86400.));
@@ -268,11 +314,12 @@ public class DSSTPropagatorTest {
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel centralBody = new DSSTCentralBody(earthFrame,
-                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                         provider);
+        DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
-        // Third Bodies Force Model (Moon + Sun) */
+        // Third Bodies Force Model (Moon + Sun)
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
         DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
 
@@ -292,7 +339,8 @@ public class DSSTPropagatorTest {
 
         // Set propagator with state and force model
         setDSSTProp(new SpacecraftState(orbit));
-        dsstProp.addForceModel(centralBody);
+        dsstProp.addForceModel(zonal);
+        dsstProp.addForceModel(tesseral);
         dsstProp.addForceModel(moon);
         dsstProp.addForceModel(sun);
 
@@ -316,6 +364,21 @@ public class DSSTPropagatorTest {
                             3.e-2);
     }
 
+    @Test(expected=OrekitException.class)
+    public void testTooSmallMaxDegree() throws OrekitException {
+        new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testTooLargeMaxDegree() throws OrekitException {
+        new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testWrongMaxPower() throws OrekitException {
+        new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4);
+    }
+
     @Test
     public void testPropagationWithDrag() throws OrekitException {
 
@@ -323,9 +386,10 @@ public class DSSTPropagatorTest {
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel centralBody = new DSSTCentralBody(earthFrame,
-                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                         provider);
+        DSSTForceModel zonal    = new DSSTZonal(provider, 2, 0, 5);
+        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         // Drag Force Model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
@@ -353,7 +417,8 @@ public class DSSTPropagatorTest {
 
         // Set propagator with state and force model
         setDSSTProp(new SpacecraftState(orbit));
-        dsstProp.addForceModel(centralBody);
+        dsstProp.addForceModel(zonal);
+        dsstProp.addForceModel(tesseral);
         dsstProp.addForceModel(drag);
 
         // 5 days propagation
@@ -379,7 +444,7 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
 
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
-        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 1e-9);
     }
 
     @Test
@@ -387,8 +452,10 @@ public class DSSTPropagatorTest {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
-        DSSTForceModel centralBody = new DSSTCentralBody(CelestialBodyFactory.getEarth().getBodyOrientedFrame(),
-                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        DSSTForceModel tesseral = new DSSTTesseral(CelestialBodyFactory.getEarth().getBodyOrientedFrame(),
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
@@ -411,7 +478,8 @@ public class DSSTPropagatorTest {
         // Set propagator with state and force model
         dsstProp = new DSSTPropagator(new ClassicalRungeKuttaIntegrator(86400.));
         dsstProp.setInitialState(new SpacecraftState(orbit), false);
-        dsstProp.addForceModel(centralBody);
+        dsstProp.addForceModel(zonal);
+        dsstProp.addForceModel(tesseral);
         dsstProp.addForceModel(srp);
 
         // 10 days propagation
@@ -436,7 +504,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testStopEvent() throws OrekitException {
-        SpacecraftState state = getLEOrbit();
+        SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
         final AbsoluteDate stopDate = state.getDate().shiftedBy(1000);
@@ -450,7 +518,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testContinueEvent() throws OrekitException {
-        SpacecraftState state = getLEOrbit();
+        SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
         final AbsoluteDate resetDate = state.getDate().shiftedBy(1000);
@@ -489,70 +557,89 @@ public class DSSTPropagatorTest {
                                                       FramesFactory.getGTOD(false));
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody moon = CelestialBodyFactory.getMoon();
-        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTZonal(nshp, 8, 7, 17));
+        propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
+                                                  Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                  nshp, 8, 8, 4, 12, 8, 8, 4));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
 
-        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
-        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
-        Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 10.0);
+
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), true);
+        SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        // the following comparison is in fact meaningless
+        // the initial orbit is osculating the final orbit is a mean orbit
+        // and they are not considered at the same epoch
+        // we keep it only as is was an historical test
+        Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 1.0);
+
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        // the following comparison is realistic
+        // both the initial orbit and final orbit are mean orbits
+        Assert.assertEquals(1478.05, orbit.getA() - finalState.getA(), 1.0);
 
     }
 
     @Test
-    public void testDSSTrestart() throws OrekitException {
-
-        DSSTPropagator dsstProp;
-
-
-        // build force model geopotential 8x8
+    public void testEphemerisGeneration() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
-        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getUnnormalizedProvider(8, 8);
-        final Frame rotatingFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel gravityForceModel = new DSSTCentralBody(rotatingFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider);
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
+        double period = orbit.getKeplerianPeriod();
+        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(10 * period);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, false);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+        propagator.addForceModel(new DSSTZonal(nshp, 8, 7, 17));
+        propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
+                                                  Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                  nshp, 8, 8, 4, 12, 8, 8, 4));
+        propagator.addForceModel(new DSSTThirdBody(sun));
+        propagator.addForceModel(new DSSTThirdBody(moon));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+        propagator.setInterpolationGridToMaxTimeGap(0.5 * Constants.JULIAN_DAY);
 
-        // build initial state
-        final AbsoluteDate epochDate = new AbsoluteDate(2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
-        final KeplerianOrbit initialOrbit = new KeplerianOrbit( 26562000.0, 0.72, FastMath.toRadians(63.435),
-                FastMath.toRadians(270.0), 0.0, 0.0, PositionAngle.MEAN, FramesFactory.getEME2000(), epochDate, gravityProvider.getMu());
-        final SpacecraftState initialState = new SpacecraftState(new EquinoctialOrbit(initialOrbit));
+        // direct generation of states
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        propagator.setMasterMode(
+                600,
+                (currentState, isLast) -> states.add(currentState));
+        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
-        // build integrator
-        final double minStep = initialState.getKeplerianPeriod() * 0.1;
-        final double maxStep = initialState.getKeplerianPeriod() * 10.0;
-        final double[][] tol = DSSTPropagator.tolerances(0.1, initialState.getOrbit());
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-        dsstProp = new DSSTPropagator(integrator);
+        // ephemeris generation
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        propagator.setEphemerisMode();
+        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
 
-        // add force model
-        dsstProp.addForceModel(gravityForceModel);
-
-        // DSST Propagation (first propagation without timing, for warm-up purposes)
-        dsstProp.setInitialState(initialState, false);
-        dsstProp.propagate(epochDate.shiftedBy(100.0 * 86400.0));
-        double refExecTime = 0;
-
-        for (int i = 0; i < 5; i++) {
-            dsstProp.setInitialState(initialState, false);
-            long propStart = System.currentTimeMillis();
-            dsstProp.propagate(epochDate.shiftedBy(100.0 * 86400.0));
-            long propEnd = System.currentTimeMillis();
-            double execTime = 0.001 * (propEnd - propStart);
-
-            if (refExecTime <= 0) {
-                refExecTime = execTime;
-            } else {
-                Assert.assertTrue(execTime <= refExecTime * 1.5);
-            }
+        double maxError = 0;
+        for (final SpacecraftState state : states) {
+            final SpacecraftState fromEphemeris = ephemeris.propagate(state.getDate());
+            final double error = Vector3D.distance(state.getPVCoordinates().getPosition(),
+                                                   fromEphemeris.getPVCoordinates().getPosition());
+            maxError = FastMath.max(maxError, error);
         }
+        Assert.assertEquals(0.0, maxError, 1.0e-10);
     }
 
     @Test
     public void testGetInitialOsculatingState() throws IllegalArgumentException, OrekitException {
-        final SpacecraftState initialState = getGEOrbit();
+        final SpacecraftState initialState = getGEOState();
 
         // build integrator
         final double minStep = initialState.getKeplerianPeriod() * 0.1;
@@ -560,60 +647,254 @@ public class DSSTPropagatorTest {
         final double[][] tol = DSSTPropagator.tolerances(0.1, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
 
-        DSSTPropagator prop = new DSSTPropagator(integrator, false);
+        // build the propagator for the propagation of the mean elements
+        DSSTPropagator prop = new DSSTPropagator(integrator, true);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        prop.addForceModel(force);
+        DSSTForceModel zonal    = new DSSTZonal(provider, 4, 3, 9);
+        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 4, 0, 4, 8, 4, 0, 2);
+        prop.addForceModel(zonal);
+        prop.addForceModel(tesseral);
 
+        // Set the initial state as osculating
         prop.setInitialState(initialState, false);
-        prop.getInitialState();
+        // Check the stored initial state is the osculating one
+        Assert.assertEquals(initialState, prop.getInitialState());
+        // Check that no propagation, i.e. propagation to the initial date, provides the initial
+        // osculating state although the propagator is configured to propagate mean elements !!!
+        Assert.assertEquals(initialState, prop.propagate(initialState.getDate()));
     }
 
     @Test
     public void testMeanToOsculatingState() throws IllegalArgumentException, OrekitException {
-        final SpacecraftState leoMeanState = getLEOrbit();
-        final SpacecraftState geoMeanState = getGEOrbit();
+        final SpacecraftState meanState = getGEOState();
 
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-
-        final DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                         provider, 2, 0, 0, 2, 2, 0, 0);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(force);
+        forces.add(zonal);
+        forces.add(tesseral);
 
-        DSSTPropagator.computeOsculatingState(leoMeanState, forces);
-        DSSTPropagator.computeOsculatingState(geoMeanState, forces);
+        final SpacecraftState osculatingState = DSSTPropagator.computeOsculatingState(meanState, null, forces);
+        Assert.assertEquals(1559.1,
+                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                              osculatingState.getPVCoordinates().getPosition()),
+                            1.0);
     }
 
     @Test
     public void testOsculatingToMeanState() throws IllegalArgumentException, OrekitException {
-        final SpacecraftState leoMeanState = getLEOrbit();
+        final SpacecraftState meanState = getGEOState();
 
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
-        final DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(force);
+        forces.add(zonal);
+        forces.add(tesseral);
 
-        final EquinoctialOrbit osculatingLEOOrbit = (EquinoctialOrbit) DSSTPropagator.
-                computeOsculatingState(leoMeanState, forces).getOrbit();
-        final SpacecraftState leoOsculatingState = new SpacecraftState(osculatingLEOOrbit);
+        final SpacecraftState osculatingState = DSSTPropagator.computeOsculatingState(meanState, null, forces);
 
-        final SpacecraftState leoComputedMeanState = DSSTPropagator.computeMeanState(leoOsculatingState, forces);
+        // there are no Gaussian force models, we don't need an attitude provider
+        final SpacecraftState computedMeanState = DSSTPropagator.computeMeanState(osculatingState, null, forces);
 
-        Assert.assertEquals(leoMeanState.getA(), leoComputedMeanState.getA(), 1.);
+        Assert.assertEquals(meanState.getA(), computedMeanState.getA(), 2.0e-8);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                             computedMeanState.getPVCoordinates().getPosition()),
+                            2.0e-8);
     }
 
-    private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
+    @Test
+    public void testShortPeriodCoefficients() throws OrekitException {
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
+        double period = orbit.getKeplerianPeriod();
+        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(10 * period);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, false);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+        propagator.addForceModel(new DSSTZonal(nshp, 4, 3, 9));
+        propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
+                                                  Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                  nshp, 4, 4, 4, 8, 4, 4, 2));
+        propagator.addForceModel(new DSSTThirdBody(sun));
+        propagator.addForceModel(new DSSTThirdBody(moon));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+
+        final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
+        Assert.assertEquals(0, stateNoConfig.getAdditionalStates().size());
+
+        propagator.setSelectedCoefficients(new HashSet<String>());
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
+        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStates().size());
+
+        final Set<String> selected = new HashSet<String>();
+        selected.add("DSST-3rd-body-Moon-s[7]");
+        selected.add("DSST-central-body-tesseral-c[-2][3]");
+        propagator.setSelectedCoefficients(selected);
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
+        Assert.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStates().size());
+
+        propagator.setSelectedCoefficients(null);
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
+        Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
+
+    }
+
+    @Test
+    public void testIssueMeanInclination() throws OrekitException {
+
+        final double earthAe = 6378137.0;
+        final double earthMu = 3.9860044E14;
+        final double earthJ2 = 0.0010826;
+
+        // Initialize the DSST propagator with only J2 perturbation
+        Orbit orb = new KeplerianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate("1992-10-08T15:20:38.821",
+                                                                                     TimeScalesFactory.getUTC()),
+                                                                    new Vector3D(5392808.809823, -4187618.3357927715, -44206.638015847195),
+                                                                    new Vector3D(2337.4472786270794, 2474.0146611860464, 6778.507766114648)),
+                                       FramesFactory.getTOD(false), earthMu);
+        final SpacecraftState ss = new SpacecraftState(orb);
+        final UnnormalizedSphericalHarmonicsProvider provider =
+              GravityFieldFactory.getUnnormalizedProvider(earthAe, earthMu, TideSystem.UNKNOWN,
+                                                          new double[][] { { 0.0 }, { 0.0 }, { -earthJ2 } },
+                                                          new double[][] { { 0.0 }, { 0.0 }, { 0.0 } });
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(zonal);
+        forces.add(tesseral);
+        // Computes J2 mean elements using the DSST osculating to mean converter
+        final Orbit meanOrb = DSSTPropagator.computeMeanState(ss, null, forces).getOrbit();
+        Assert.assertEquals(0.0164196, FastMath.toDegrees(orb.getI() - meanOrb.getI()), 1.0e-7);
+    }
+
+    @Test
+    public void testIssue257() throws OrekitException {
+        final SpacecraftState meanState = getGEOState();
+
+        // Third Bodies Force Model (Moon + Sun)
+        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
+        final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
+
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(moon);
+        forces.add(sun);
+
+        final SpacecraftState osculatingState = DSSTPropagator.computeOsculatingState(meanState, null, forces);
+        Assert.assertEquals(734.3,
+                            Vector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                              osculatingState.getPVCoordinates().getPosition()),
+                            1.0);
+
+        final SpacecraftState computedMeanState = DSSTPropagator.computeMeanState(osculatingState, null, forces);
+        Assert.assertEquals(734.3,
+                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                              computedMeanState.getPVCoordinates().getPosition()),
+                            1.0);
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(computedMeanState.getPVCoordinates().getPosition(),
+                                              meanState.getPVCoordinates().getPosition()),
+                            5.0e-6);
+
+    }
+
+    @Test
+    public void testIssue339() throws OrekitException {
+
+        final SpacecraftState osculatingState = getLEOState();
+
+        final CelestialBody    sun   = CelestialBodyFactory.getSun();
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                                  true));
+        final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0,
+                                                                                     sun,
+                                                                                     50.0, Vector3D.PLUS_J,
+                                                                                     2.0, 0.1,
+                                                                                     0.2, 0.6);
+        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
+        final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(),
+                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                0.0, 0.0, 0.0);
+
+        // Surface force models that require an attitude provider
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(new DSSTSolarRadiationPressure(sun,
+                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                  boxAndWing));
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing));
+
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
+        Assert.assertEquals(0.522,
+                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                              meanState.getPVCoordinates().getPosition()),
+                            0.001);
+
+        final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(osculatingState.getPVCoordinates().getPosition(),
+                                              computedOsculatingState.getPVCoordinates().getPosition()),
+                            5.0e-6);
+
+    }
+
+    @Test
+    public void testIssue339WithAccelerations() throws OrekitException {
+        final SpacecraftState osculatingState = getLEOStatePropagatedBy30Minutes();
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0, sun, 50.0, Vector3D.PLUS_J, 2.0, 0.1, 0.2, 0.6);
+        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
+        final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.VVLH, RotationOrder.XYZ, 0.0, 0.0, 0.0);
+        // Surface force models that require an attitude provider
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing));
+        final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
+        final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
+        Assert.assertEquals(0.0, Vector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()),
+                            5.0e-6);
+    }
+
+    private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                        TimeScalesFactory.getUTC());
@@ -629,7 +910,7 @@ public class DSSTPropagatorTest {
         return new SpacecraftState(orbit);
     }
 
-    private SpacecraftState getLEOrbit() throws IllegalArgumentException, OrekitException {
+    private SpacecraftState getLEOState() throws IllegalArgumentException, OrekitException {
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         // Spring equinoxe 21st mars 2003 1h00m
@@ -648,7 +929,6 @@ public class DSSTPropagatorTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         dsstProp = new DSSTPropagator(integrator);
         dsstProp.setInitialState(initialState, false);
-
     }
 
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
@@ -671,12 +951,6 @@ public class DSSTPropagatorTest {
             return actionOnEvent;
         }
 
-        @Override
-        public SpacecraftState resetState(T detector, SpacecraftState oldState)
-            throws OrekitException {
-            return oldState;
-        }
-
     }
 
     @Before
@@ -687,6 +961,33 @@ public class DSSTPropagatorTest {
     @After
     public void tearDown() {
         dsstProp = null;
+    }
+
+    private SpacecraftState getLEOStatePropagatedBy30Minutes() throws IllegalArgumentException, OrekitException {
+
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+        final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+        // Spring equinoxe 21st mars 2003 1h00m
+        final AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final CartesianOrbit osculatingOrbit = new CartesianOrbit(new PVCoordinates(position, velocity), FramesFactory.getTOD(IERSConventions.IERS_1996, false),
+                                                                  initialDate, Constants.WGS84_EARTH_MU);
+        // Adaptive step integrator
+        // with a minimum step of 0.001 and a maximum step of 1000
+        double minStep = 0.001;
+        double maxstep = 1000.0;
+        double positionTolerance = 10.0;
+        OrbitType propagationType = OrbitType.EQUINOCTIAL;
+        double[][] tolerances = NumericalPropagator.tolerances(positionTolerance, osculatingOrbit, propagationType);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(propagationType);
+
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        propagator.addForceModel(holmesFeatherstone);
+        propagator.setInitialState(new SpacecraftState(osculatingOrbit));
+
+        return propagator.propagate(new AbsoluteDate(initialDate, 1800.));
     }
 
 }

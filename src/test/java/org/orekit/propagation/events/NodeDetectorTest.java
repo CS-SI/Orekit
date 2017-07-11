@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class NodeDetectorTest {
 
         // Define 2 instances of NodeDetector:
         EventDetector rawDetector =
-                new NodeDetector(1e-6,initialState.getOrbit(), initialState.getFrame()).
+                new NodeDetector(1e-6, initialState.getOrbit(), initialState.getFrame()).
                 withHandler(new ContinueOnEvent<NodeDetector>());
 
         EventsLogger logger1 = new EventsLogger();
@@ -109,7 +109,7 @@ public class NodeDetectorTest {
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
         Assert.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
-        
+
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
                 new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
@@ -117,7 +117,7 @@ public class NodeDetectorTest {
         double t2 = orbit2.getKeplerianPeriod();
         Assert.assertEquals(t1, t2, t1 / 10000);
         Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
-        
+
     }
 
     @Before

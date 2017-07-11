@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.time;
+
+import org.hipparchus.RealFieldElement;
 
 /** International Atomic Time.
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
@@ -33,11 +35,19 @@ public class TAIScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate taiTime) {
         return 0;
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         return 0;
     }

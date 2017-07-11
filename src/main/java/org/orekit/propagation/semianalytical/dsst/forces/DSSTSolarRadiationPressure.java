@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
@@ -131,8 +131,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         // the conversion is:
         // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
         // with kA arbitrary sets to 0
-        this(dRef, pRef, sun, equatorialRadius, new SphericalSpacecraft(
-                area, 0.0, 0.0, 3.25 - 2.25 * cr));
+        this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr));
     }
 
     /**
@@ -155,8 +154,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final RadiationSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
-        super(GAUSS_THRESHOLD, new SolarRadiationPressure(
-                dRef, pRef, sun, equatorialRadius, spacecraft));
+        super("DSST-SRP-", GAUSS_THRESHOLD,
+              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft));
 
         this.sun  = sun;
         this.ae   = equatorialRadius;

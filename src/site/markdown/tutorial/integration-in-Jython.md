@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,25 +12,23 @@
   limitations under the License.
 -->
 
-Integration in Jython
-=====================
+# Integration in Jython
 
 Jython is a Java-based implementation of the Python language, and interfaces well to
 Java libraries. The number of Jython modules available for plotting is limited, but
 Java libraries can be used.
 
-It is important that the orekit jar file and common-math are in the Java CLASSPATH.
+It is important that the orekit jar file and Hipparchus jars are in the Java CLASSPATH.
 This can be set manually at the command prompt, or by using an IDE such as Eclipse
 with PyDev. The file `orekit-data.zip` should be in the current directory, the same
 as your Jython files.
 
-Example SlaveMode
------------------
+## Example SlaveMode
 
 This example is a translation of the SlaveMode.java example to Jython, showing a stepped
 Keplerian propagation.
 
-    /* Copyright 2002-2015 CS Systèmes d'Information
+    /* Copyright 2002-2017 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -47,7 +45,7 @@ Keplerian propagation.
      * limitations under the License.
      */
 
-    # orekit.jar,orekit-data.zip and commons-maths in CLASSPATH through eclipse project
+    # orekit.jar,orekit-data.zip and Hipparchus jars in CLASSPATH through eclipse project
     import java, os
 
     from org.orekit.errors import OrekitException
@@ -55,6 +53,7 @@ Keplerian propagation.
     from org.orekit.frames import FramesFactory
     from org.orekit.orbits import KeplerianOrbit
     from org.orekit.orbits import Orbit
+    from org.orekit.orbits import PositionAngle
     from org.orekit.propagation import SpacecraftState
     from org.orekit.propagation.analytical import KeplerianPropagator
     from org.orekit.data import DataProvidersManager
@@ -90,7 +89,7 @@ Keplerian propagation.
 
     #Orbit construction as Keplerian
     initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM,
-                                  KeplerianOrbit.MEAN_ANOMALY,
+                                  PositionAngle.MEAN,
                                   inertialFrame, initialDate, mu)
 
     #Simple extrapolation with Keplerian motion
@@ -118,13 +117,12 @@ Keplerian propagation.
         cpt=cpt+1
 
 
-Example: VisibilityCheck
-------------------------
+## Example: VisibilityCheck
 
 This example is based on the VisiblityCheck.java, translated into Jython. It includes an
 example of subclassing of a Java object into a jython object.
 
-    /* Copyright 2002-2015 CS Systèmes d'Information
+    /* Copyright 2002-2017 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -141,12 +139,12 @@ example of subclassing of a Java object into a jython object.
      * limitations under the License.
      */
 
-    # orekit and common maths in CLASSPATH through eclipse project
+    # Orekit and Hipparchus in CLASSPATH through eclipse project
     import java, os
 
     from org.orekit.data import DataProvidersManager
     from org.orekit.data import ZipJarCrawler
-    from org.apache.commons.math.geometry import Vector3D
+    from org.hipparchus.geometry import Vector3D
     from org.orekit.bodies import BodyShape
     from org.orekit.bodies import GeodeticPoint
     from org.orekit.bodies import OneAxisEllipsoid
@@ -164,6 +162,7 @@ example of subclassing of a Java object into a jython object.
     from org.orekit.time import AbsoluteDate
     from org.orekit.time import TimeScalesFactory
     from org.orekit.utils import PVCoordinates
+    from org.orekit.utils import IERSConventions
 
     from math import degrees, radians, pi
 
@@ -182,14 +181,14 @@ example of subclassing of a Java object into a jython object.
     pvCoordinates = PVCoordinates(position, velocity)
     initialOrbit = KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu)
 
-    # Propagator : consider a simple keplerian motion (could be more elaborate)
+    # Propagator : consider a simple Keplerian motion (could be more elaborate)
     kepler = KeplerianPropagator(initialOrbit)
 
     #Earth and frame
     ae =  6378137.0 # // equatorial radius in meter
     f  =  1.0 / 298.257223563 #; // flattening
-    ITRF2005 = FramesFactory.getITRF2005() #; // terrestrial frame at an arbitrary date
-    earth = OneAxisEllipsoid(ae, f, ITRF2005)
+    itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, True) #; // terrestrial frame at an arbitrary date
+    earth = OneAxisEllipsoid(ae, f, itrf)
 
     # Station
     longitude = radians(45.0)
@@ -211,7 +210,7 @@ example of subclassing of a Java object into a jython object.
 
         def eventOccurred(self, s, increasing):
             if (increasing):
-                print "Visibility on", self.topocentricFrame.getName(),"begins at" , s.getDate()
+                print "Visibility on", self.topocentricFrame.getName(), "begins at" , s.getDate()
             else:
                 print "Visibility on",  self.topocentricFrame.getName(), "ends at" , s.getDate()
             return self.CONTINUE

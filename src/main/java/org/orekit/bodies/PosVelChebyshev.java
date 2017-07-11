@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,14 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -34,7 +38,10 @@ import org.orekit.utils.PVCoordinates;
 class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2220448511466595393L;
+    private static final long serialVersionUID = 20151023L;
+
+    /** Time scale in which the ephemeris is defined. */
+    private final TimeScale timeScale;
 
     /** Start of the validity range of the instance. */
     private final AbsoluteDate start;
@@ -53,6 +60,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Simple constructor.
      * @param start start of the validity range of the instance
+     * @param timeScale time scale in which the ephemeris is defined
      * @param duration duration of the validity range of the instance
      * @param xCoeffs Chebyshev polynomials coefficients for the X component
      * (a reference to the array will be stored in the instance)
@@ -61,14 +69,14 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @param zCoeffs Chebyshev polynomials coefficients for the Z component
      * (a reference to the array will be stored in the instance)
      */
-    PosVelChebyshev(final AbsoluteDate start, final double duration,
-                           final double[] xCoeffs, final double[] yCoeffs,
-                           final double[] zCoeffs) {
-        this.start    = start;
-        this.duration = duration;
-        this.xCoeffs  = xCoeffs;
-        this.yCoeffs  = yCoeffs;
-        this.zCoeffs  = zCoeffs;
+    PosVelChebyshev(final AbsoluteDate start, final TimeScale timeScale, final double duration,
+                    final double[] xCoeffs, final double[] yCoeffs, final double[] zCoeffs) {
+        this.start     = start;
+        this.timeScale = timeScale;
+        this.duration  = duration;
+        this.xCoeffs   = xCoeffs;
+        this.yCoeffs   = yCoeffs;
+        this.zCoeffs   = zCoeffs;
     }
 
     /** {@inheritDoc} */
@@ -76,31 +84,12 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return start;
     }
 
-    /** Get model validity duration.
-     * @return model validity duration in seconds
-     */
-    public double getValidityDuration() {
-        return duration;
-    }
-
-    /** Check if the instance is the exact successor of another model.
-     * <p>The instance is the successor of another model if its start
-     * date is within a 1ms tolerance interval of the end date of the
-     * other model.</p>
-     * @param predecessor model to check instance against
-     * @return true if the instance is the successor of the predecessor model
-     */
-    public boolean isSuccessorOf(final PosVelChebyshev predecessor) {
-        final double gap = start.durationFrom(predecessor.start) - predecessor.duration;
-        return FastMath.abs(gap) < 0.001;
-    }
-
     /** Check if a date is in validity range.
      * @param date date to check
      * @return true if date is in validity range
      */
     public boolean inRange(final AbsoluteDate date) {
-        final double dt = date.durationFrom(start);
+        final double dt = date.offsetFrom(start, timeScale);
         return (dt >= -0.001) && (dt <= duration + 0.001);
     }
 
@@ -111,7 +100,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
     public PVCoordinates getPositionVelocityAcceleration(final AbsoluteDate date) {
 
         // normalize date
-        final double t = (2 * date.durationFrom(start) - duration) / duration;
+        final double t = (2 * date.offsetFrom(start, timeScale) - duration) / duration;
         final double twoT = 2 * t;
 
         // initialize Chebyshev polynomials recursion
@@ -175,6 +164,84 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return new PVCoordinates(new Vector3D(xP, yP, zP),
                                  new Vector3D(xV * vScale, yV * vScale, zV * vScale),
                                  new Vector3D(xA * aScale, yA * aScale, zA * aScale));
+
+    }
+
+    /** Get the position-velocity-acceleration at a specified date.
+     * @param date date at which position-velocity-acceleration is requested
+     * @param <T> type fo the field elements
+     * @return position-velocity-acceleration at specified date
+     */
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
+
+        final T zero = date.getField().getZero();
+        final T one  = date.getField().getOne();
+
+        // normalize date
+        final T t = date.offsetFrom(new FieldAbsoluteDate<>(date.getField(), start), timeScale).multiply(2).subtract(duration).divide(duration);
+        final T twoT = t.add(t);
+
+        // initialize Chebyshev polynomials recursion
+        T pKm1 = one;
+        T pK   = t;
+        T xP   = zero.add(xCoeffs[0]);
+        T yP   = zero.add(yCoeffs[0]);
+        T zP   = zero.add(zCoeffs[0]);
+
+        // initialize Chebyshev polynomials derivatives recursion
+        T qKm1 = zero;
+        T qK   = one;
+        T xV   = zero;
+        T yV   = zero;
+        T zV   = zero;
+
+        // initialize Chebyshev polynomials second derivatives recursion
+        T rKm1 = zero;
+        T rK   = zero;
+        T xA   = zero;
+        T yA   = zero;
+        T zA   = zero;
+
+        // combine polynomials by applying coefficients
+        for (int k = 1; k < xCoeffs.length; ++k) {
+
+            // consider last computed polynomials on position
+            xP = xP.add(pK.multiply(xCoeffs[k]));
+            yP = yP.add(pK.multiply(yCoeffs[k]));
+            zP = zP.add(pK.multiply(zCoeffs[k]));
+
+            // consider last computed polynomials on velocity
+            xV = xV.add(qK.multiply(xCoeffs[k]));
+            yV = yV.add(qK.multiply(yCoeffs[k]));
+            zV = zV.add(qK.multiply(zCoeffs[k]));
+
+            // consider last computed polynomials on acceleration
+            xA = xA.add(rK.multiply(xCoeffs[k]));
+            yA = yA.add(rK.multiply(yCoeffs[k]));
+            zA = zA.add(rK.multiply(zCoeffs[k]));
+
+            // compute next Chebyshev polynomial value
+            final T pKm2 = pKm1;
+            pKm1 = pK;
+            pK   = twoT.multiply(pKm1).subtract(pKm2);
+
+            // compute next Chebyshev polynomial derivative
+            final T qKm2 = qKm1;
+            qKm1 = qK;
+            qK   = twoT.multiply(qKm1).add(pKm1.multiply(2)).subtract(qKm2);
+
+            // compute next Chebyshev polynomial second derivative
+            final T rKm2 = rKm1;
+            rKm1 = rK;
+            rK   = twoT.multiply(rKm1).add(qKm1.multiply(4)).subtract(rKm2);
+
+        }
+
+        final double vScale = 2 / duration;
+        final double aScale = vScale * vScale;
+        return new FieldPVCoordinates<>(new FieldVector3D<>(xP, yP, zP),
+                                        new FieldVector3D<>(xV.multiply(vScale), yV.multiply(vScale), zV.multiply(vScale)),
+                                        new FieldVector3D<>(xA.multiply(aScale), yA.multiply(aScale), zA.multiply(aScale)));
 
     }
 

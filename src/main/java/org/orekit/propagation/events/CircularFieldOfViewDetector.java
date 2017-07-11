@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @see DihedralFieldOfViewDetector
+ * @see FieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
@@ -82,7 +82,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      * @since 6.1
      */
     private CircularFieldOfViewDetector(final double maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler<CircularFieldOfViewDetector> handler,
+                                        final int maxIter, final EventHandler<? super CircularFieldOfViewDetector> handler,
                                         final PVCoordinatesProvider pvTarget,
                                         final Vector3D center,
                                         final double halfAperture) {
@@ -95,7 +95,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
     /** {@inheritDoc} */
     @Override
     protected CircularFieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
-                                                 final int newMaxIter, final EventHandler<CircularFieldOfViewDetector> newHandler) {
+                                                 final int newMaxIter, final EventHandler<? super CircularFieldOfViewDetector> newHandler) {
         return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                targetPVProvider, center, halfAperture);
     }
@@ -130,7 +130,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      */
     public double g(final SpacecraftState s) throws OrekitException {
 
-        // Compute target position/velocity at date in spacecraft frame */
+        // Compute target position/velocity at date in spacecraft frame
         final Vector3D targetPosInert = new Vector3D(1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                            -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);

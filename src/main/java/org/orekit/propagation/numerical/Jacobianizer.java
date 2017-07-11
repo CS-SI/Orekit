@@ -16,20 +16,15 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -38,6 +33,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Class helping implementation of partial derivatives in {@link ForceModel force models} implementations.
  * <p>
@@ -59,35 +55,25 @@ public class Jacobianizer {
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
 
-    /** Step used for finite difference computation with respect to parameters value. */
-    private final Map<String, Double> hParam;
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
 
     /** Simple constructor.
+     * <p>
+     * The step size used for partial derivatives with respect to parameters is
+     * the {@link ParameterDriver#getScale() scale} of the corresponding
+     * {@link ParameterDriver}.
+     * </p>
      * @param forceModel force model instance to wrap
      * @param mu central attraction coefficient (m³/s²)
-     * @param paramsAndSteps collection of parameters and their associated steps
      * @param hPos step used for finite difference computation with respect to spacecraft position (m)
      */
-    public Jacobianizer(final ForceModel forceModel, final double mu,
-                        final Collection<ParameterConfiguration> paramsAndSteps, final double hPos) {
+    public Jacobianizer(final ForceModel forceModel, final double mu, final double hPos) {
 
         this.forceModel = forceModel;
         this.mu         = mu;
-        this.hParam     = new HashMap<String, Double>();
         this.hPos       = hPos;
-
-        // set up parameters for jacobian computation
-        for (final ParameterConfiguration param : paramsAndSteps) {
-            final String name = param.getParameterName();
-            if (forceModel.isSupported(name)) {
-                double step = param.getHP();
-                if (Double.isNaN(step)) {
-                    step = FastMath.max(1.0, FastMath.abs(forceModel.getParameter(name))) *
-                           FastMath.sqrt(Precision.EPSILON);
-                }
-                hParam.put(name, step);
-            }
-        }
+        this.factory    = new DSFactory(1, 1);
 
     }
 
@@ -131,9 +117,6 @@ public class Jacobianizer {
                                                                       final DerivativeStructure mass)
         throws OrekitException {
 
-        final int parameters = mass.getFreeParameters();
-        final int order      = mass.getOrder();
-
         // estimate the scalar velocity step, assuming energy conservation
         // and hence differentiating equation V = sqrt(mu (2/r - 1/a))
         final Vector3D      p0    = position.toVector3D();
@@ -169,7 +152,7 @@ public class Jacobianizer {
         final double[] derVz = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
 
         final double[] derM;
-        if (parameters < 7) {
+        if (mass.getFreeParameters() < 7) {
             derM = null;
         } else {
             // shift mass by hMass
@@ -177,7 +160,7 @@ public class Jacobianizer {
             derM = new Vector3D(1 / hMass, shifted.getAcceleration(), -1 / hMass, nominal.getAcceleration()).toArray();
 
         }
-        final double[] derivatives = new double[1 + parameters];
+        final double[] derivatives = new double[1 + mass.getFreeParameters()];
         final DerivativeStructure[] accDer = new DerivativeStructure[3];
         for (int i = 0; i < 3; ++i) {
 
@@ -198,11 +181,11 @@ public class Jacobianizer {
                 derivatives[7] = derM[i];
             }
 
-            accDer[i] = new DerivativeStructure(parameters, order, derivatives);
+            accDer[i] = mass.getFactory().build(derivatives);
 
         }
 
-        return new FieldVector3D<DerivativeStructure>(accDer);
+        return new FieldVector3D<>(accDer);
 
 
     }
@@ -260,22 +243,7 @@ public class Jacobianizer {
                                                                       final String paramName)
         throws OrekitException {
 
-        if (!hParam.containsKey(paramName)) {
-
-            // build the list of supported parameters
-            final StringBuilder builder = new StringBuilder();
-            for (final String available : hParam.keySet()) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
-                }
-                builder.append(available);
-            }
-
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      paramName, builder.toString());
-
-        }
-        final double hP = hParam.get(paramName);
+        final double hP = forceModel.getParameterDriver(paramName).getScale();
 
         final AccelerationRetriever nominal = new AccelerationRetriever();
         nominal.setOrbit(s.getOrbit());
@@ -284,8 +252,15 @@ public class Jacobianizer {
         final double ny = nominal.getAcceleration().getY();
         final double nz = nominal.getAcceleration().getZ();
 
-        final double paramValue = forceModel.getParameter(paramName);
-        forceModel.setParameter(paramName,  paramValue + hP);
+        ParameterDriver driver = null;
+        for (final ParameterDriver pd : forceModel.getParametersDrivers()) {
+            if (pd.getName().equals(paramName)) {
+                driver = pd;
+            }
+        }
+        final double paramValue = driver.getValue();
+        driver.setValue(paramValue + hP);
+        final double realhP = driver.getValue() - paramValue;
         final AccelerationRetriever shifted = new AccelerationRetriever();
         shifted.setOrbit(s.getOrbit());
         forceModel.addContribution(s, shifted);
@@ -293,11 +268,11 @@ public class Jacobianizer {
         final double sy = shifted.getAcceleration().getY();
         final double sz = shifted.getAcceleration().getZ();
 
-        forceModel.setParameter(paramName,  paramValue);
+        driver.setValue(paramValue);
 
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, nx, (sx - nx) / hP),
-                              new DerivativeStructure(1, 1, ny, (sy - ny) / hP),
-                              new DerivativeStructure(1, 1, nz, (sz - nz) / hP));
+        return new FieldVector3D<>(factory.build(nx, (sx - nx) / realhP),
+                                   factory.build(ny, (sy - ny) / realhP),
+                                   factory.build(nz, (sz - nz) / realhP));
 
     }
 

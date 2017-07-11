@@ -16,8 +16,8 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -293,10 +293,10 @@ public class GeoMagneticField {
         }
 
         final double factor = (year - epoch) / (otherModel.epoch - epoch);
-        final int maxNCommon = Math.min(maxN, otherModel.maxN);
+        final int maxNCommon = FastMath.min(maxN, otherModel.maxN);
         final int maxNCommonIndex = maxNCommon * (maxNCommon + 1) / 2 + maxNCommon;
 
-        final int newMaxN = Math.max(maxN, otherModel.maxN);
+        final int newMaxN = FastMath.max(maxN, otherModel.maxN);
 
         final GeoMagneticField transformed = new GeoMagneticField(modelName, year, newMaxN, 0,
                                                                   validityStart, validityEnd);

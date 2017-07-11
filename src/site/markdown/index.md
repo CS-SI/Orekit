@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Overview
-========
+# Overview
 
   OREKIT (ORbits Extrapolation KIT) is a free low-level space dynamics library
   written in Java.
@@ -22,20 +21,19 @@ Overview
   various algorithms to handle them (conversions, analytical and numerical
   propagation, pointing ...).
 
-Features
---------
+## Features
 
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)
     * transparent handling of leap seconds
 
   * Geometry
 
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
-    * predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008
+    * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, tnw and qsw
       local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
@@ -48,10 +46,12 @@ Features
     * composite transforms reduction and caching for efficiency
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
     * Cartesian and geodesic coordinates, kinematics
+    * Computation of Dilution Of Precision (DOP) with respect to GNSS constellations
 
   * Spacecraft state
 
-    * Cartesian, elliptical Keplerian, circular and equinoctial parameters
+    * Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+      derivatives if available
     * Two-Line Elements
     * transparent conversion between all parameters
     * automatic binding with frames
@@ -65,7 +65,7 @@ Features
 
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
-    *continuous maneuvers for numerical propagator type
+    * continuous maneuvers for numerical propagator type
 
   * Propagation
 
@@ -76,8 +76,9 @@ Features
       * gravity models including time-dependent like trends and pulsations
         (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
         EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
-        and Marshall solar Activity Future Estimation
+      * atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000,
+        Harris-Priester and simple exponential models),
+        and Marshall solar Activity Future Estimation, optionally with lift component
       * third body attraction (with data for Sun, Moon and all solar systems planets)
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide
@@ -95,6 +96,11 @@ Features
       * file based
       * memory based
       * integration based
+    * specialized GPS propagation, using SEM or YUMA files
+    * Taylor-algebra (or any other real field) version of most of the above propagators,
+        with all force models, events detection, orbits types, coordinates types and frames
+        allowing high order uncertainties and derivatives computation or very fast Monte-Carlo
+        analyzes
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
     * all propagators can be used in several different modes
@@ -115,23 +121,30 @@ Features
       * apogee and perigee crossing
       * alignment with some body in the orbital plane
         (with customizable threshold angle)
+      * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+        as seen from an observer (typically a ground station)
       * raising/setting with respect to a ground location
-        (with customizable triggering elevation)
-      * date
+        (with customizable triggering elevation and ground mask, optionally considering refraction)
+      * date and on-the-fly resetting countdown
       * latitude, longitude, altitude crossing
       * latitude, longitude extremum
       * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * target detection in sensor field of view (circular or dihedral)
+      * moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)
+      * spacecraft detection in ground based Field Of View (any shape)
+      * sensor Field Of View (any shape) overlapping complex geographic zone
       * complex geographic zones traversal
       * impulse maneuvers occurrence
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
-    * possibility of filtering events based on their direction (for example to detect
+    * events filtering based on their direction (for example to detect
       only eclipse entries and not eclipse exits)
-    * possibility of filtering events based on an external enabling function (for
+    * events filtering  based on an external enabling function (for
       example to detect events only during selected orbits and not others)
+    * events combination with boolean operators
+    * ability to run several propagators in parallel and manage their states
+       simultaneously throughout propagation
 
   * Attitude
 
@@ -140,16 +153,47 @@ Features
       * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
-      * tabulated attitudes
+      * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
+
+  * Orbit determination
+  
+    * batch least squares fitting
+      * orbital parameters estimation (or only a subset if desired)
+      * force model parameters estimation (drag coefficients, radiation pressure coefficients,
+        central attraction, maneuver thrust or flow rate)
+      * measurements parameters estimation (biases, station position, pole motion and rate,
+        prime meridian correction and rate)
+    * multi-satellites orbit determination
+    * several predefined measurements
+      * range
+      * range rate (one way and two way)
+      * turn-around range
+      * azimuth/elevation
+      * right ascension/declination
+      * position-velocity
+      * inter-satellites range (one way and two way)
+    * possibility to add custom measurements
+    * several predefined modifiers
+      * tropospheric effects
+      * ionospheric effects
+      * station offsets
+      * biases
+      * delays
+    * possibility to add custom measurement modifiers (even for predefined events)
+    * possibility to parse CCSDS Tracking Data Message files
 
   * Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading of SEM and YUMA files for GPS constellation
+    * exporting of ephemeris in CCSDS OEM file format
 
   * Earth models
   
     * tropospheric delay (modified Saastamoinen)
+    * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
+    * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * tessellation of zones of interest as tiles
@@ -166,6 +210,7 @@ Features
 
   * Localized in several languages
 
+    * Danish
     * English
     * French
     * Galician
@@ -180,8 +225,7 @@ Features
 
 ![Orekit top packages](./images/design/top-packages.png)
 
-Free software
--------------
+## Free software
 
 Orekit is freely available both in source and binary formats, with all related
 documentation and tests.
@@ -193,11 +237,16 @@ any application, free or not. There are no strings attached to your own code.
 Everybody is encouraged to use Orekit as a common low level layer to improve
 interoperability in space systems.
 
-Maintained library
-------------------
+## Maintained library
 
 Orekit has been in development since 2002 inside [CS Systèmes
-d'Information](http://www.c-s.fr/) and is still used and maintained by its space dynamics experts.
+d'Information](http://www.c-s.fr/) and is still used and maintained by its
+experts and an open community. It is ruled by a meritocratic governance
+model and the Project Management Committee involves actors from
+industry (CS, Thales Alenia Space, Applied Defense Solutions), research
+(Naval Research Laboratory), agencies (European Space Operations Centre,
+European Space Research and Technology Centre) and academics (University
+at Buffalo, Institut National Supérieur de l'Aéronautique et de l'Espace - Sup'Aéro).
 
 Orekit has already been successfully used during the real time monitoring of the rendez-vous
 phase between the Automated Transfer Vehicle (ATV) and the International Space Station (ISS)

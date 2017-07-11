@@ -1,4 +1,4 @@
-' Copyright 2002-2015 CS Systèmes d'Information
+' Copyright 2002-2017 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -39,8 +39,7 @@
   participant DifferentialEquations
   participant OrbitType
   participant TimesDerivative
-  participant "Force Model 1" as F1
-  participant "Force Model 2" as F2
+  participant "Force Model i" as Fi
   participant NewtonianAttraction
 
   activate M
@@ -54,23 +53,20 @@
       deactivate TimesDerivative
     Propagator -> Integrator : integrate
       activate Integrator
+      loop #DDEBD8 for n steps
       Integrator -> DifferentialEquations : computeDerivatives
         activate DifferentialEquations
         DifferentialEquations -> OrbitType : mapArrayToOrbit
           activate OrbitType
           deactivate OrbitType
-        DifferentialEquations -> F1 : addContribution
-          activate F1
-          F1 -> TimesDerivative : addAcceleration
+      loop #ECEBD8 for all perturbation force models
+        DifferentialEquations -> Fi : addContribution
+          activate Fi
+          Fi -> TimesDerivative : addAcceleration
             activate TimesDerivative
             deactivate TimesDerivative
-          deactivate F1
-        DifferentialEquations -> F2 : addContribution
-          activate F2
-          F2 -> TimesDerivative : addAcceleration
-            activate TimesDerivative
-            deactivate TimesDerivative
-          deactivate F2
+          deactivate Fi
+       end
         DifferentialEquations -> NewtonianAttraction : addContribution
           activate NewtonianAttraction
           NewtonianAttraction -> TimesDerivative : addKeplerContribution
@@ -78,28 +74,7 @@
             deactivate TimesDerivative
           deactivate NewtonianAttraction
         deactivate DifferentialEquations
-      Integrator -> DifferentialEquations : computeDerivatives
-        activate DifferentialEquations
-        DifferentialEquations -> F1 : addContribution
-          activate F1
-          F1 -> TimesDerivative : addAcceleration
-            activate TimesDerivative
-            deactivate TimesDerivative
-          deactivate F1
-        DifferentialEquations -> F2 : addContribution
-          activate F2
-          F2 -> TimesDerivative : addAcceleration
-            activate TimesDerivative
-            deactivate TimesDerivative
-          deactivate F2
-        DifferentialEquations -> NewtonianAttraction : addContribution
-          activate NewtonianAttraction
-          NewtonianAttraction -> TimesDerivative : addKeplerContribution
-            activate TimesDerivative
-            deactivate TimesDerivative
-          deactivate NewtonianAttraction
-        DifferentialEquations --> Integrator : final state
-        deactivate DifferentialEquations
+      end
       Integrator --> Propagator : final state
       deactivate Integrator
     Propagator --> M : final state

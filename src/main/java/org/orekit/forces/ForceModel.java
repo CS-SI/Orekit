@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,23 @@
  */
 package org.orekit.forces;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.ode.ParameterizedODE;
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -33,11 +40,11 @@ import org.orekit.time.AbsoluteDate;
  * Objects implementing this interface are intended to be added to a
  * {@link org.orekit.propagation.numerical.NumericalPropagator numerical propagator}
  * before the propagation is started.
- * <p>
+ *
  * <p>
  * The propagator will call at each step the {@link #addContribution(SpacecraftState,
  * TimeDerivativesEquations)} method. The force model instance will extract all the
- * state data it needs (date,position, velocity, frame, attitude, mass) from the first
+ * state data it needs (date, position, velocity, frame, attitude, mass) from the first
  * parameter. From these state data, it will compute the perturbing acceleration. It
  * will then add this acceleration to the second parameter which will take thins
  * contribution into account and will use the Gauss equations to evaluate its impact
@@ -56,7 +63,25 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface ForceModel extends ParameterizedODE {
+public interface ForceModel {
+
+    /**
+     * Initialize the force model at the start of propagation. This method will be called
+     * before any calls to {@link #addContribution(SpacecraftState,
+     * TimeDerivativesEquations)} or {@link #accelerationDerivatives(AbsoluteDate, Frame,
+     * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)} or {@link
+     * #accelerationDerivatives(SpacecraftState, String)}.
+     *
+     * <p> The default implementation of this method does nothing.
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @throws OrekitException if an implementing class overrides the default behavior and
+     *                         takes some action that throws an {@link OrekitException}.
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate target)
+            throws OrekitException {
+    }
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
@@ -65,6 +90,16 @@ public interface ForceModel extends ParameterizedODE {
      * @exception OrekitException if some specific error occurs
      */
     void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
+        throws OrekitException;
+
+    /** Compute the contribution of the force model to the perturbing
+     * acceleration.
+     * @param s current state information: date, kinematics, attitude
+     * @param adder object where the contribution should be added
+     * @param <T> extends RealFieldElement
+     * @exception OrekitException if some specific error occurs
+     */
+    <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
         throws OrekitException;
 
     /** Compute acceleration derivatives with respect to state parameters.
@@ -104,9 +139,37 @@ public interface ForceModel extends ParameterizedODE {
         throws OrekitException;
 
     /** Get the discrete events related to the model.
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
+     * @return stream of events detectors
      */
-    EventDetector[] getEventsDetectors();
+    Stream<EventDetector> getEventsDetectors();
+
+    /** Get the discrete events related to the model.
+     * @param field field to which the state belongs
+     * @param <T> extends RealFieldElement<T>
+     * @return stream of events detectors
+     */
+    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
+
+    /** Get the drivers for force model parameters.
+     * @return drivers for force model parameters
+     * @since 8.0
+     */
+    ParameterDriver[] getParametersDrivers();
+
+    /** Get parameter value from its name.
+     * @param name parameter name
+     * @return parameter value
+     * @exception OrekitException if parameter is not supported
+     * @since 8.0
+     */
+    ParameterDriver getParameterDriver(String name) throws OrekitException;
+
+    /** Check if a parameter is supported.
+     * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>
+     * @param name parameter name to check
+     * @return true if the parameter is supported
+     * @see #getParametersDrivers()
+     */
+    boolean isSupported(String name);
 
 }

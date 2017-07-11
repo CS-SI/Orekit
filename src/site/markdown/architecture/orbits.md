@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,19 +12,17 @@
   limitations under the License.
 -->
 
-Orbits
-======
+# Orbits
 
 The `org.orekit.orbits` package provides classes to represent orbits.
 
 This package is the basis for all of the other space mechanics tools. 
 It provides an abstract class, Orbit, extended in four different ways 
 corresponding to the different possible representations of orbital parameters.
-Since version 3.0, keplerian, circular, equinoctial and cartesian representations 
+Since version 3.0, Keplerian, circular, equinoctial and Cartesian representations 
 are supported.
 
-Design History
---------------
+## Design History
 
 Early designs for the orbit package were much more complex than the current design.
 Looking back at these designs, they tried to do far too much in a single class and
@@ -49,8 +47,7 @@ it, we have followed Antoine de Saint Exupéry's saying:
 The current design is not perfect, of course, but it is easy to understand, easy to use,
 easy to maintain and reusable.
 
-Current state versus evolving state
------------------------------------
+## Current state versus evolving state
 
 From the early design, the various orbit classes retained only the kinematical
 notions at a single time. They basically represent the current state, and
@@ -94,8 +91,7 @@ For orbit evolution computation, this package is not sufficient. There is a
 need to include notions of dynamics, forces models, propagation algorithms ...
 The entry point for this is the Propagator interface.
 
-Existing orbit representations
-------------------------------
+## Existing orbit representations
 
 Available orbit representations are :
   
@@ -137,8 +133,7 @@ because TLE are in fact a merge between orbital state and a propagation model. T
 is _only_ meaningful with respect to the associated SGP4/SDP4 propagation model, and cannot
 be used in any other model.
 
-Representations Conversions
----------------------------
+## Representations Conversions
 
 All representations can be converted into all other ones. No error is triggered
 if some conversion is ambiguous (like converting a perfectly circular orbit from
@@ -159,7 +154,7 @@ the right result.
 We therefore consider it the responsibility of the user to be aware of the correct
 definition of the different representations and of the singularities relative to each
 one of them. If the user really needs to do some conversion (for example to provide
-an orbit as Two-Line Elements later on, remembering that TLEs do use keplerian-like
+an orbit as Two-Line Elements later on, remembering that TLEs do use Keplerian-like
 parameters), then he can do so.
 
 The way conversion is handled in Orekit is very simple and allows easy and transparent
@@ -177,7 +172,6 @@ terms of circular orbit only. So there is an implicit conversion done at propaga
 initialization or reset state time, using internally a code similar to the example
 above.
 
-Package organization
---------------------
+## Package organization
  
 ![orbits class diagram](../images/design/orbits-class-diagram.png)

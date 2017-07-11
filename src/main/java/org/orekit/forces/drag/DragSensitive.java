@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,17 @@
  */
 package org.orekit.forces.drag;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
@@ -33,8 +36,26 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface DragSensitive {
 
-    /** Parameter name for drag coefficient enabling jacobian processing. */
+    /** Parameter name for drag coefficient enabling Jacobian processing. */
     String DRAG_COEFFICIENT = "drag coefficient";
+
+    /** Parameter name for lift ration enabling Jacobian processing.
+     * <p>
+     * The lift ratio is the proportion of atmosphere modecules that will
+     * experience specular reflection when hitting spacecraft instead
+     * of experiencing diffuse reflection. The ratio is between 0 and 1,
+     * 0 meaning there are no specular reflection, only diffuse reflection,
+     * and hence no lift effect.
+     * </p>
+     * @since 9.0
+     */
+    String LIFT_RATIO = "lift ratio";
+
+    /** Get the drivers for supported parameters.
+     * @return parameters drivers
+     * @since 8.0
+     */
+    ParameterDriver[] getDragParametersDrivers();
 
     /** Compute the acceleration due to drag.
      * <p>
@@ -57,6 +78,28 @@ public interface DragSensitive {
                               double density, Vector3D relativeVelocity)
         throws OrekitException;
 
+    /** Compute the acceleration due to drag.
+     * <p>
+     * The computation includes all spacecraft specific characteristics
+     * like shape, area and coefficients.
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass current mass
+     * @param density atmospheric density at spacecraft position
+     * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
+     * in the same inertial frame as spacecraft orbit (m/s)
+     * @param <T> instance of a RealFieldElement
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @throws OrekitException if acceleration cannot be computed
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
+                                                                      FieldVector3D<T> position,
+                                                                      FieldRotation<T> rotation, T mass,
+                                                                      T density, FieldVector3D<T> relativeVelocity)
+        throws OrekitException;
     /** Compute the acceleration due to drag, with state derivatives.
      * <p>
      * The computation includes all spacecraft specific characteristics
@@ -75,7 +118,7 @@ public interface DragSensitive {
      */
     FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
                                                         FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
-                                                        double density, FieldVector3D<DerivativeStructure> relativeVelocity)
+                                                        DerivativeStructure density, FieldVector3D<DerivativeStructure> relativeVelocity)
         throws OrekitException;
 
     /** Compute acceleration due to drag, with parameters derivatives.
@@ -95,15 +138,5 @@ public interface DragSensitive {
                                 Rotation rotation, double mass,
                                 double density, Vector3D relativeVelocity, String paramName)
         throws OrekitException;
-
-    /** Set the drag coefficient.
-     *  @param value drag coefficient
-     */
-    void setDragCoefficient(double value);
-
-    /** Get the drag coefficient.
-     * @return drag coefficient
-     */
-    double getDragCoefficient();
 
 }

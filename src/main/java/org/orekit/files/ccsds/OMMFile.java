@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -82,7 +81,7 @@ public class OMMFile extends OGMFile {
     /** Create a new OMM file object. */
     OMMFile() {
         metaData = new OMMMetaData(this);
-    };
+    }
 
     /** Get the meta data.
      * @return meta data
@@ -232,19 +231,7 @@ public class OMMFile extends OGMFile {
         dataTleRelatedParametersComment = new ArrayList<String>(comment);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getCoordinateSystem() {
-        return metaData.getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return metaData.getTimeSystem();
-    }
-
-    /** Generate a {@link KeplerianOrbit} based on the OMM mean keplerian elements.
+    /** Generate a {@link KeplerianOrbit} based on the OMM mean Keplerian elements.
      * If the reference frame is not pseudo-inertial, an exception is raised.
      * @return the {@link KeplerianOrbit} generated from the OMM information
      * @exception OrekitException if the reference frame is not pseudo-inertial or if the central body

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 
 /**
  * Parser for polynomials in IERS tables.
@@ -231,7 +231,7 @@ public class PolynomialParser {
      * @param markers markers to quote
      * @return quoted markers
      */
-    private String[] quote(final String ... markers) {
+    private String[] quote(final String... markers) {
         final String[] quoted = new String[markers.length];
         for (int i = 0; i < markers.length; ++i) {
             quoted[i] = "\\Q" + markers[i] + "\\E";
@@ -253,7 +253,7 @@ public class PolynomialParser {
      * @return regular expression recognizing one marker from the list
      * (the result is a non-capturing group)
      */
-    private String either(final CharSequence ... markers) {
+    private String either(final CharSequence... markers) {
         final StringBuilder builder = new StringBuilder();
         for (final CharSequence marker : markers) {
             if (builder.length() > 0) {
@@ -269,7 +269,7 @@ public class PolynomialParser {
      * @return regular expression recognizing any number of markers from the list
      * (the result is a capturing group)
      */
-    private String any(final CharSequence ... markers) {
+    private String any(final CharSequence... markers) {
         return group(either(markers) + "*", true);
     }
 

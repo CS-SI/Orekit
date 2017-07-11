@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.propagation.analytical.tle;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-
+@Deprecated
 public class TLESeriesTest {
 
     @Test(expected=OrekitException.class)
@@ -71,7 +71,7 @@ public class TLESeriesTest {
             Assert.assertTrue(available.contains(ref));
         }
     }
-    
+
 
     @Test
     public void testDefaultSearchAndLoad() throws IOException, OrekitException {
@@ -79,16 +79,16 @@ public class TLESeriesTest {
         Assert.assertNotNull(series);
         Set<Integer> available = series.getAvailableSatelliteNumbers();
         Assert.assertNotNull(available);
-        
+
         int expectedSatId = 27421;
         Assert.assertTrue(available.contains(expectedSatId));
-        
+
         //test what happens if already loaded...
         available = series.getAvailableSatelliteNumbers();
         Assert.assertNotNull(available);
         Assert.assertTrue(available.contains(expectedSatId));
 
-    }    
+    }
 
     @Test
     public void testSpot5Available() throws IOException, OrekitException {
@@ -206,8 +206,8 @@ public class TLESeriesTest {
 
         AbsoluteDate oneYearAfter = new AbsoluteDate(2003, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
         Assert.assertTrue(series.getClosestTLE(oneYearAfter).getDate().equals(series.getLastDate()));
-        
-        
+
+
         series.loadTLEData(2002, 21, null);
         TLE currentTle = series.getFirst();
         Assert.assertEquals(27421, currentTle.getSatelliteNumber());

@@ -1,14 +1,30 @@
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.random.MersenneTwister;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -60,23 +76,19 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void testVmns() throws OrekitException {
-        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0,   1, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1,   2, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2,  24, 2), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1,  24, 6), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3, 720, 6), eps0);
-        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2,  24, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
+        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
+        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
         final double vmnsp = getVmns2(12, 26, 20);
         Assert.assertEquals(vmnsp,
-                            CoefficientsFactory.getVmns(12, 26, 20,
-                                                        CombinatoricsUtils.factorialDouble(26 + 20),
-                                                        CombinatoricsUtils.factorialDouble(26 - 12)),
-                            Math.abs(eps12 * vmnsp));
+                            CoefficientsFactory.getVmns(12, 26, 20),
+                            FastMath.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
         Assert.assertEquals(vmnsm,
-                            CoefficientsFactory.getVmns(12, 27, -21,
-                                                        CombinatoricsUtils.factorialDouble(27 + 21),
-                                                        CombinatoricsUtils.factorialDouble(27 - 12)),
+                            CoefficientsFactory.getVmns(12, 27, -21),
                             Math.abs(eps12 * vmnsm));
     }
 
@@ -84,7 +96,7 @@ public class CoefficientFactoryTest {
     @Test(expected = OrekitException.class)
     public void testVmnsError() throws OrekitException {
         // if m > n
-        CoefficientsFactory.getVmns(3, 2, 1, 0, 0);
+        CoefficientsFactory.getVmns(3, 2, 1);
     }
 
     /**
@@ -105,7 +117,7 @@ public class CoefficientFactoryTest {
                 final int sdim = FastMath.min(smax + 2, n);
                 for (int s = 0; s <= sdim; s++) {
                     final double qp = getQnsPolynomialValue(gamma, n, s);
-                    Assert.assertEquals(qns[n][s], qp, Math.abs(eps10 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], qp, FastMath.abs(eps10 * qns[n][s]));
                 }
             }
         }
@@ -126,15 +138,15 @@ public class CoefficientFactoryTest {
             final double[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s);
             for (int j = 1; j < s; j++) {
                 final double[] GsHs = getGsHs(k, h, a, b, j);
-                Assert.assertEquals(GsHs[0], GH[0][j], Math.abs(eps12 * GsHs[0]));
-                Assert.assertEquals(GsHs[1], GH[1][j], Math.abs(eps12 * GsHs[1]));
+                Assert.assertEquals(GsHs[0], GH[0][j], FastMath.abs(eps12 * GsHs[0]));
+                Assert.assertEquals(GsHs[1], GH[1][j], FastMath.abs(eps12 * GsHs[1]));
             }
         }
     }
 
     /**
      * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
-     * 
+     *
      * @throws OrekitException
      */
     private static double getVmns2(final int m,
@@ -142,7 +154,7 @@ public class CoefficientFactoryTest {
                                    final int s) throws OrekitException {
         double vmsn = 0d;
         if ((n - s) % 2 == 0) {
-            final int coef = (s > 0 || s % 2 == 0) ? 1 : -1; 
+            final int coef = (s > 0 || s % 2 == 0) ? 1 : -1;
             final int ss = (s > 0) ? s : -s;
             final double num = FastMath.pow(-1, (n - ss) / 2) *
                                CombinatoricsUtils.factorialDouble(n + ss) *
@@ -174,7 +186,7 @@ public class CoefficientFactoryTest {
             final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
             derivative = legendre;
             for (int i = 0; i < s; i++) {
-                derivative = (PolynomialFunction) derivative.derivative();
+                derivative = (PolynomialFunction) derivative.polynomialDerivative();
             }
             QNS_MAP.put(new NSKey(n, s), derivative);
         }

@@ -16,12 +16,12 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
+import org.hipparchus.analysis.BivariateFunction;
+import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 import org.orekit.utils.InterpolationTableLoader;
 
 /** A static tropospheric model that interpolates the actual tropospheric delay
@@ -29,7 +29,7 @@ import org.orekit.utils.InterpolationTableLoader;
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-public class FixedTroposphericDelay implements TroposphericDelayModel {
+public class FixedTroposphericDelay implements TroposphericModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -92320711761929077L;
@@ -74,6 +74,9 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
         if (!loader.stillAcceptsData()) {
             xArr = loader.getAbscissaGrid();
             yArr = loader.getOrdinateGrid();
+            for (int i = 0; i < yArr.length; ++i) {
+                yArr[i] = FastMath.toRadians(yArr[i]);
+            }
             fArr = loader.getValuesSamples();
             delayFunction = new PiecewiseBicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
         } else {
@@ -96,20 +99,15 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
     }
 
     /** {@inheritDoc} */
-    public double calculatePathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height) {
         // limit the height to 5000 m
-        final double h = Math.min(Math.max(0, height), 5000);
-        // limit the elevation to 0 - 180 degree
-        final double ele = Math.min(180d, Math.max(0d, elevation));
-        // mirror elevation at the right angle of 90 degree
-        final double e = ele > 90d ? 180d - ele : ele;
+        final double h = FastMath.min(FastMath.max(0, height), 5000);
+        // limit the elevation to 0 - π
+        final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, elevation));
+        // mirror elevation at the right angle of π/2
+        final double e = ele > 0.5 * FastMath.PI ? FastMath.PI - ele : ele;
 
         return delayFunction.value(h, e);
-    }
-
-    /** {@inheritDoc} */
-    public double calculateSignalDelay(final double elevation, final double height) {
-        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
     }
 
     /** Make sure the unserializable bivariate interpolation function is properly rebuilt.

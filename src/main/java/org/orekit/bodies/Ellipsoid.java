@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,14 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 
 /**
@@ -87,12 +91,27 @@ public class Ellipsoid implements Serializable {
         return frame;
     }
 
+    /** Check if a point is inside the ellipsoid.
+     * @param point point to check, in the ellipsoid frame
+     * @return true if the point is inside the ellipsoid
+     * (or exactly on ellipsoid surface)
+     * @since 7.1
+     */
+    public boolean isInside(final Vector3D point) {
+        final double scaledX = point.getX() / a;
+        final double scaledY = point.getY() / b;
+        final double scaledZ = point.getZ() / c;
+        return scaledX * scaledX + scaledY * scaledY + scaledZ * scaledZ <= 1.0;
+    }
+
     /** Compute the 2D ellipse at the intersection of the 3D ellipsoid and a plane.
      * @param planePoint point belonging to the plane, in the ellipsoid frame
      * @param planeNormal normal of the plane, in the ellipsoid frame
      * @return plane section or null if there are no intersections
+     * @exception MathRuntimeException if the norm of planeNormal is null
      */
-    public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
+    public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal)
+        throws MathRuntimeException {
 
         // we define the points Q in the plane using two free variables τ and υ as:
         // Q = P + τ u + υ v
@@ -213,6 +232,67 @@ public class Ellipsoid implements Serializable {
                                new Vector3D(cos, u,  sin, v),
                                m, l, frame);
         }
+
+    }
+
+    /** Find a point on ellipsoid limb, as seen by an external observer.
+     * @param observer observer position in ellipsoid frame
+     * @param outside point outside ellipsoid in ellipsoid frame, defining the phase around limb
+     * @return point on ellipsoid limb
+     * @exception OrekitException if the observer is inside the ellipsoid
+     * @exception MathRuntimeException if ellipsoid center, observer and outside
+     * points are aligned
+     * @since 7.1
+     */
+    public Vector3D pointOnLimb(final Vector3D observer, final Vector3D outside)
+        throws OrekitException, MathRuntimeException {
+
+        // there is no limb if we are inside the ellipsoid
+        if (isInside(observer)) {
+            throw new OrekitException(OrekitMessages.POINT_INSIDE_ELLIPSOID);
+        }
+        // cut the ellipsoid, to find an elliptical plane section
+        final Vector3D normal  = Vector3D.crossProduct(observer, outside);
+        final Ellipse  section = getPlaneSection(Vector3D.ZERO, normal);
+        final double   a2      = section.getA() * section.getA();
+        final double   b2      = section.getB() * section.getB();
+
+        // the point on limb is tangential to the ellipse
+        // if T(xt, yt) is an ellipse point at which the tangent is drawn
+        // if O(xo, yo) is a point outside of the ellipse belonging to the tangent at T,
+        // then the two following equations holds:
+        //  a² yt²   + b² xt²   = a² b²  (T belongs to the ellipse)
+        //  a² yt yo + b² xt xo = a² b²  (TP is tangent to the ellipse)
+        // using the second equation to eliminate yt from the first equation, we get
+        // b² (a² - xt xo)² + a² xt² yo² = a⁴ yo²
+        // (a² yo² + b² xo²) xt² - 2 a² b² xo xt + a⁴ (b² - yo²) = 0
+        // which can easily be solved for xt
+        final Vector2D observer2D = section.toPlane(observer);
+        final double   xo         = observer2D.getX();
+        final double   yo         = observer2D.getY();
+        final double   xo2        = xo * xo;
+        final double   yo2        = yo * yo;
+        final double   alpha      = a2 * yo2 + b2 * xo2;
+        final double   beta       = a2 * b2 * xo;
+        final double   gamma      = a2 * a2 * (b2 - yo2);
+        // we know there are two solutions as we already checked the point is outside ellipsoid
+        final double   sqrt       = FastMath.sqrt(beta * beta - alpha * gamma);
+        final double   xt1;
+        final double   xt2;
+        if (beta > 0) {
+            final double s = beta + sqrt;
+            xt1 = s / alpha;
+            xt2 = gamma / s;
+        } else {
+            final double s = beta - sqrt;
+            xt1 = gamma / s;
+            xt2 = s / alpha;
+        }
+
+        // we return the limb point in the direction of the outside point
+        final Vector3D t1 = section.toSpace(new Vector2D(xt1, b2 * (a2 - xt1 * xo) / (a2 * yo)));
+        final Vector3D t2 = section.toSpace(new Vector2D(xt2, b2 * (a2 - xt2 * xo) / (a2 * yo)));
+        return Vector3D.distance(t1, outside) <= Vector3D.distance(t2, outside) ? t1 : t2;
 
     }
 

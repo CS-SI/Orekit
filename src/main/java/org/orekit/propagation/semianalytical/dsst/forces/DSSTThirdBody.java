@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,24 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -39,6 +45,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterp
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Third body attraction perturbation to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -46,22 +53,37 @@ import org.orekit.time.AbsoluteDate;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody  implements DSSTForceModel {
+public class DSSTThirdBody implements DSSTForceModel {
 
     /** Max power for summation. */
-    private static final int       MAX_POWER = 22;
+    private static final int    MAX_POWER = 22;
 
     /** Truncation tolerance for big, eccentric  orbits. */
-    private static final double    BIG_TRUNCATION_TOLERANCE = 1.e-1;
+    private static final double BIG_TRUNCATION_TOLERANCE = 1.e-1;
 
     /** Truncation tolerance for small orbits. */
-    private static final double    SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
+    private static final double SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
 
     /** Number of points for interpolation. */
-    private static final int        INTERPOLATION_POINTS = 3;
+    private static final int    INTERPOLATION_POINTS = 3;
 
     /** Maximum power for eccentricity used in short periodic computation. */
-    private static final int        MAX_ECCPOWER_SP = 4;
+    private static final int    MAX_ECCPOWER_SP = 4;
+
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas.
+     *  </p>
+     */
+    private static final int    I = 1;
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
@@ -77,6 +99,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
+
+    /** Short period terms. */
+    private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
     // Equinoctial elements (according to DSST notation)
     /** a. */
@@ -133,9 +158,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** B / A(1 + B). */
     private double BoABpo;
 
-    /** Retrograde factor. */
-    private int    I;
-
     /** Max power for a/R3 in the serie expansion. */
     private int    maxAR3Pow;
 
@@ -151,12 +173,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** An array that contains the objects needed to build the Hansen coefficients. <br/>
      * The index is s */
     private final HansenThirdBodyLinear[] hansenObjects;
-
-    /** Central body attraction coefficient. */
-    private double mu;
-
-    /** The frame used to describe the orbits. */
-    private Frame frame;
 
     /** The current value of the U function. <br/>
      * Needed for the short periodic contribution */
@@ -177,8 +193,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** k * &Chi;³. */
     private double kXXX;
 
-    /** The coefficients for the short periodic contribution. */
-    private ThirdBodyShortPeriodicCoefficients cjsjCoeficients;
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
@@ -207,6 +223,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
             this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
         }
 
+        this.factory = new DSFactory(1, 1);
+
     }
 
     /** Get third body.
@@ -228,13 +246,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         // Initializes specific parameters.
         initializeStep(aux);
-        this.mu = aux.getMu();
-        this.frame = aux.getFrame();
 
         // Truncation tolerance.
         final double aor = a / R3;
@@ -299,16 +315,19 @@ public class DSSTThirdBody  implements DSSTForceModel {
         // allocate the array aoR3Pow
         aoR3Pow = new double[maxAR3Pow + 1];
 
-        //if the short periodic coefficients are required create the corresponding classes
-        if (!meanOnly) {
-            // Compute maxFreqF
-            // J = N + 1
-            maxFreqF = maxAR3Pow + 1;
-            // S = 4
-            maxEccPowShort = MAX_ECCPOWER_SP;
+        maxFreqF = maxAR3Pow + 1;
+        maxEccPowShort = MAX_ECCPOWER_SP;
 
-            cjsjCoeficients = new ThirdBodyShortPeriodicCoefficients(maxFreqF, maxAR3Pow, maxEccPowShort, INTERPOLATION_POINTS);
-        }
+        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
+        final int jMax = maxAR3Pow + 1;
+        shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
+                                                              maxFreqF, body.getName(),
+                                                              new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
+
+        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        list.add(shortPeriods);
+        return list;
+
     }
 
     /** {@inheritDoc} */
@@ -321,9 +340,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
         h = aux.getH();
         q = aux.getQ();
         p = aux.getP();
-
-        // Retrograde factor
-        I = aux.getRetrogradeFactor();
 
         // Eccentricity
         ecc = aux.getEcc();
@@ -378,7 +394,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState currentState) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState currentState) {
 
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
@@ -420,38 +436,96 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                               final double[] meanElements) throws OrekitException {
-        // Build an Orbit object from the mean elements
-        final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(
-                meanElements, PositionAngle.MEAN, date, this.mu, this.frame);
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
+        throws OrekitException {
 
+        final Slot slot = shortPeriods.createSlot(meanStates);
 
-        // the current eccentric longitude
-        final double F = meanOrbit.getLE();
+        for (final SpacecraftState meanState : meanStates) {
 
-        final double[] shortPeriodic = new double[6];
+            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
 
-        //initialize the short periodic contribution with the corresponding C⁰ coeficient
-        for (int i = 0; i < 6; i++) {
-            shortPeriodic[i] = cjsjCoeficients.getCij(i, 0, date);
-        }
+            // a / R3 up to power maxAR3Pow
+            final double aoR3 = a / R3;
+            aoR3Pow[0] = 1.;
+            for (int i = 1; i <= maxAR3Pow; i++) {
+                aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
+            }
 
-        // Add the cos and sin dependent terms
-        for (int j = 1; j <= maxFreqF; j++) {
-            //compute cos and sin
-            final double cosjF = FastMath.cos(j * F);
-            final double sinjF = FastMath.sin(j * F);
+            // Qns coefficients
+            Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
+            final GeneratingFunctionCoefficients gfCoefs =
+                            new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, maxAR3Pow + 1);
 
-            for (int i = 0; i < 6; i++) {
-                shortPeriodic[i] += cjsjCoeficients.getCij(i, j, date) * cosjF +
-                                    cjsjCoeficients.getSij(i, j, date) * sinjF;
+            //Compute additional quantities
+            // 2 * a / An
+            final double ax2oAn  = -m2aoA / meanMotion;
+            // B / An
+            final double BoAn  = BoA / meanMotion;
+            // 1 / ABn
+            final double ooABn = ooAB / meanMotion;
+            // C / 2ABn
+            final double Co2ABn = -mCo2AB / meanMotion;
+            // B / (A * (1 + B) * n)
+            final double BoABpon = BoABpo / meanMotion;
+            // -3 / n²a² = -3 / nA
+            final double m3onA = -3 / (A * meanMotion);
+
+            //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
+            for (int j = 1; j < slot.cij.length; j++) {
+                // First compute the C<sub>i</sub><sup>j</sup> coefficients
+                final double[] currentCij = new double[6];
+
+                // Compute the cross derivatives operator :
+                final double SAlphaGammaCj   = alpha * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdalphaCj(j);
+                final double SAlphaBetaCj    = alpha * gfCoefs.getdSdbetaCj(j)  - beta  * gfCoefs.getdSdalphaCj(j);
+                final double SBetaGammaCj    =  beta * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdbetaCj(j);
+                final double ShkCj           =     h * gfCoefs.getdSdkCj(j)     -  k    * gfCoefs.getdSdhCj(j);
+                final double pSagmIqSbgoABnCj = (p * SAlphaGammaCj - I * q * SBetaGammaCj) * ooABn;
+                final double ShkmSabmdSdlCj  =  ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
+
+                currentCij[0] =  ax2oAn * gfCoefs.getdSdlambdaCj(j);
+                currentCij[1] =  -(BoAn * gfCoefs.getdSdhCj(j) + h * pSagmIqSbgoABnCj + k * BoABpon * gfCoefs.getdSdlambdaCj(j));
+                currentCij[2] =    BoAn * gfCoefs.getdSdkCj(j) + k * pSagmIqSbgoABnCj - h * BoABpon * gfCoefs.getdSdlambdaCj(j);
+                currentCij[3] =  Co2ABn * (q * ShkmSabmdSdlCj - I * SAlphaGammaCj);
+                currentCij[4] =  Co2ABn * (p * ShkmSabmdSdlCj - SBetaGammaCj);
+                currentCij[5] = -ax2oAn * gfCoefs.getdSdaCj(j) + BoABpon * (h * gfCoefs.getdSdhCj(j) + k * gfCoefs.getdSdkCj(j)) + pSagmIqSbgoABnCj + m3onA * gfCoefs.getSCj(j);
+
+                // add the computed coefficients to the interpolators
+                slot.cij[j].addGridPoint(meanState.getDate(), currentCij);
+
+                // Compute the S<sub>i</sub><sup>j</sup> coefficients
+                final double[] currentSij = new double[6];
+
+                // Compute the cross derivatives operator :
+                final double SAlphaGammaSj   = alpha * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdalphaSj(j);
+                final double SAlphaBetaSj    = alpha * gfCoefs.getdSdbetaSj(j)  - beta  * gfCoefs.getdSdalphaSj(j);
+                final double SBetaGammaSj    =  beta * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdbetaSj(j);
+                final double ShkSj           =     h * gfCoefs.getdSdkSj(j)     -  k    * gfCoefs.getdSdhSj(j);
+                final double pSagmIqSbgoABnSj = (p * SAlphaGammaSj - I * q * SBetaGammaSj) * ooABn;
+                final double ShkmSabmdSdlSj  =  ShkSj - SAlphaBetaSj - gfCoefs.getdSdlambdaSj(j);
+
+                currentSij[0] =  ax2oAn * gfCoefs.getdSdlambdaSj(j);
+                currentSij[1] =  -(BoAn * gfCoefs.getdSdhSj(j) + h * pSagmIqSbgoABnSj + k * BoABpon * gfCoefs.getdSdlambdaSj(j));
+                currentSij[2] =    BoAn * gfCoefs.getdSdkSj(j) + k * pSagmIqSbgoABnSj - h * BoABpon * gfCoefs.getdSdlambdaSj(j);
+                currentSij[3] =  Co2ABn * (q * ShkmSabmdSdlSj - I * SAlphaGammaSj);
+                currentSij[4] =  Co2ABn * (p * ShkmSabmdSdlSj - SBetaGammaSj);
+                currentSij[5] = -ax2oAn * gfCoefs.getdSdaSj(j) + BoABpon * (h * gfCoefs.getdSdhSj(j) + k * gfCoefs.getdSdkSj(j)) + pSagmIqSbgoABnSj + m3onA * gfCoefs.getSSj(j);
+
+                // add the computed coefficients to the interpolators
+                slot.sij[j].addGridPoint(meanState.getDate(), currentSij);
+
+                if (j == 1) {
+                    //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
+                    final double[] value = new double[6];
+                    for (int i = 0; i < 6; ++i) {
+                        value[i] = currentCij[i] * k / 2. + currentSij[i] * h / 2.;
+                    }
+                    slot.cij[0].addGridPoint(meanState.getDate(), value);
+                }
             }
         }
-
-        return shortPeriodic;
     }
-
 
     /** {@inheritDoc} */
     @Override
@@ -459,26 +533,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
         return null;
     }
 
-    /** {@inheritDoc} */
-    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
-        // Qns coefficients
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-        // a / R3 up to power maxAR3Pow
-        final double aoR3 = a / R3;
-        aoR3Pow[0] = 1.;
-        for (int i = 1; i <= maxAR3Pow; i++) {
-            aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
-        }
-
-        //Compute the coefficients
-        cjsjCoeficients.computeCoefficients(state.getDate());
-    }
-
     /** Compute potential derivatives.
      *  @return derivatives of the potential with respect to orbital parameters
-     *  @throws OrekitException if Hansen coefficients cannot be computed
      */
-    private double[] computeUDerivatives() throws OrekitException {
+    private double[] computeUDerivatives() {
 
         // Gs and Hs coefficients
         final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
@@ -572,13 +630,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude
-    }
-
-    @Override
-    public void resetShortPeriodicsCoefficients() {
-        if (cjsjCoeficients != null) {
-            cjsjCoeficients.resetCoefficients();
-        }
     }
 
     /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)
@@ -1080,11 +1131,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
             final int absJpS = FastMath.abs(j + s);
 
             //The lower index of P. Also the power of (1 - c²)
-            int l;
+            final int l;
             // the factorial ratio coefficient or 1. if |s| <= |j|
-            double factCoef;
+            final double factCoef;
             if (absS > absJ) {
-                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact [n - j]);
+                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
                 l = n - absS;
             } else {
                 factCoef = 1.;
@@ -1099,7 +1150,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS , absJpS, new DerivativeStructure(1, 1, 0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, X));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);
@@ -1557,9 +1608,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @param nMax maximum value of n index
          * @param sMax maximum value of s index
          * @param jMax maximum value of j index
-         * @throws OrekitException in case of an exception
          */
-        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax) throws OrekitException {
+        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax) {
             this.jMax = jMax;
             this.cjsjFourier = new FourierCjSjCoefficients(nMax, sMax, jMax);
             this.cjCoefs = new double[8][jMax + 1];
@@ -1570,9 +1620,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         /**
          * Compute the coefficients for the generating function S and its derivatives.
-         * @throws OrekitException in case of an exception.
          */
-        private void computeGeneratingFunctionCoefficients() throws OrekitException {
+        private void computeGeneratingFunctionCoefficients() {
 
             // Compute potential U and derivatives
             final double[] dU  = computeUDerivatives();
@@ -1800,16 +1849,236 @@ public class DSSTThirdBody  implements DSSTForceModel {
      * </p>
      * @author Lucian Barbulescu
      */
-    private class ThirdBodyShortPeriodicCoefficients {
+    private static class ThirdBodyShortPeriodicCoefficients implements ShortPeriodTerms {
 
-        /** N maximum. */
-        private final int nMax;
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151119L;
 
-        /** S maximum. */
-        private final int sMax;
-
-        /** J maximum. */
+        /** Maximal value for j. */
         private final int jMax;
+
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
+
+        /** Max frequency of F. */
+        private final int    maxFreqF;
+
+        /** Coefficients prefix. */
+        private final String prefix;
+
+        /** All coefficients slots. */
+        private final transient TimeSpanMap<Slot> slots;
+
+        /**
+         * Standard constructor.
+         *  @param interpolationPoints number of points used in the interpolation process
+         * @param jMax maximal value for j
+         * @param maxFreqF Max frequency of F
+         * @param bodyName third body name
+         * @param slots all coefficients slots
+         */
+        ThirdBodyShortPeriodicCoefficients(final int jMax, final int interpolationPoints,
+                                           final int maxFreqF, final String bodyName,
+                                           final TimeSpanMap<Slot> slots) {
+            this.jMax                = jMax;
+            this.interpolationPoints = interpolationPoints;
+            this.maxFreqF            = maxFreqF;
+            this.prefix              = "DSST-3rd-body-" + bodyName + "-";
+            this.slots               = slots;
+        }
+
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        public Slot createSlot(final SpacecraftState... meanStates) {
+            final Slot         slot  = new Slot(jMax, interpolationPoints);
+            final AbsoluteDate first = meanStates[0].getDate();
+            final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] value(final Orbit meanOrbit) {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(meanOrbit.getDate());
+
+            // the current eccentric longitude
+            final double F = meanOrbit.getLE();
+
+            //initialize the short periodic contribution with the corresponding C⁰ coeficient
+            final double[] shortPeriodic = slot.cij[0].value(meanOrbit.getDate());
+
+            // Add the cos and sin dependent terms
+            for (int j = 1; j <= maxFreqF; j++) {
+                //compute cos and sin
+                final double cosjF = FastMath.cos(j * F);
+                final double sinjF = FastMath.sin(j * F);
+
+                final double[] c = slot.cij[j].value(meanOrbit.getDate());
+                final double[] s = slot.sij[j].value(meanOrbit.getDate());
+                for (int i = 0; i < 6; i++) {
+                    shortPeriodic[i] += c[i] * cosjF + s[i] * sinjF;
+                }
+            }
+
+            return shortPeriodic;
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getCoefficientsKeyPrefix() {
+            return prefix;
+        }
+
+        /** {@inheritDoc}
+         * <p>
+         * For third body attraction forces,there are maxFreqF + 1 cj coefficients,
+         * maxFreqF sj coefficients where maxFreqF depends on the orbit.
+         * The j index is the integer multiplier for the eccentric longitude argument
+         * in the cj and sj coefficients.
+         * </p>
+         */
+        @Override
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
+            throws OrekitException {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(date);
+
+            final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxFreqF + 1);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "c", 0);
+            for (int j = 1; j <= maxFreqF; j++) {
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
+            }
+            return coefficients;
+
+        }
+
+        /** Put a coefficient in a map if selected.
+         * @param map map to populate
+         * @param selected set of coefficients that should be put in the map
+         * (empty set means all coefficients are selected)
+         * @param value coefficient value
+         * @param id coefficient identifier
+         * @param indices list of coefficient indices
+         */
+        private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
+                                     final double[] value, final String id, final int... indices) {
+            final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+            keyBuilder.append(id);
+            for (int index : indices) {
+                keyBuilder.append('[').append(index).append(']');
+            }
+            final String key = keyBuilder.toString();
+            if (selected.isEmpty() || selected.contains(key)) {
+                map.put(key, value);
+            }
+        }
+
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if an additional state provider is not serializable
+         */
+        private Object writeReplace() throws NotSerializableException {
+
+            // slots transitions
+            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
+            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
+            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
+            int i = 0;
+            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
+                if (i == 0) {
+                    // slot before the first transition
+                    allSlots[i] = transition.getBefore();
+                }
+                if (i < transitionDates.length) {
+                    transitionDates[i] = transition.getDate();
+                    allSlots[++i]      = transition.getAfter();
+                }
+            }
+
+            return new DataTransferObject(jMax, interpolationPoints, maxFreqF, prefix,
+                                          transitionDates, allSlots);
+
+        }
+
+
+        /** Internal class used only for serialization. */
+        private static class DataTransferObject implements Serializable {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 20160319L;
+
+            /** Maximum value for j index. */
+            private final int jMax;
+
+            /** Number of points used in the interpolation process. */
+            private final int interpolationPoints;
+
+            /** Max frequency of F. */
+            private final int    maxFreqF;
+
+            /** Coefficients prefix. */
+            private final String prefix;
+
+            /** Transitions dates. */
+            private final AbsoluteDate[] transitionDates;
+
+            /** All slots. */
+            private final Slot[] allSlots;
+
+            /** Simple constructor.
+             * @param jMax maximum value for j index
+             * @param interpolationPoints number of points used in the interpolation process
+             * @param maxFreqF max frequency of F
+             * @param prefix prefix for coefficients keys
+             * @param transitionDates transitions dates
+             * @param allSlots all slots
+             */
+            DataTransferObject(final int jMax, final int interpolationPoints,
+                               final int maxFreqF, final String prefix,
+                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
+                this.jMax                  = jMax;
+                this.interpolationPoints   = interpolationPoints;
+                this.maxFreqF              = maxFreqF;
+                this.prefix                = prefix;
+                this.transitionDates       = transitionDates;
+                this.allSlots              = allSlots;
+            }
+
+            /** Replace the deserialized data transfer object with a {@link ThirdBodyShortPeriodicCoefficients}.
+             * @return replacement {@link ThirdBodyShortPeriodicCoefficients}
+             */
+            private Object readResolve() {
+
+                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
+                for (int i = 0; i < transitionDates.length; ++i) {
+                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
+                }
+
+                return new ThirdBodyShortPeriodicCoefficients(jMax, interpolationPoints, maxFreqF, prefix, slots);
+
+            }
+
+        }
+
+    }
+
+    /** Coefficients valid for one time slot. */
+    private static class Slot implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160319L;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1823,7 +2092,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] cij;
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
 
         /** The coefficients S<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1837,153 +2106,23 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] sij;
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
 
-        /**
-         * Standard constructor.
-         *
-         * @param jMax maximum possible value for j
-         * @param nMax maximum possible value for n
-         * @param sMax maximum possible value for s
-         * @param interpolationPoints number of points used in the interpolation process
+        /** Simple constructor.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
          */
-        ThirdBodyShortPeriodicCoefficients(final int jMax, final int nMax, final int sMax, final int interpolationPoints) {
-            //initialise fields
-            this.nMax = nMax;
-            this.sMax = sMax;
-            this.jMax = jMax;
-
-            // allocate iterpolator for the coefficients
-            final int rows = jMax + 1;
-            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
-            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
-
+        Slot(final int jMax, final int interpolationPoints) {
+            // allocate the coefficients arrays
+            cij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            sij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
             for (int j = 0; j <= jMax; j++) {
-                for (int i = 0; i < 6; i++) {
-                    this.cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                    this.sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                }
+                cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
             }
-        }
 
-        /** Compute the short periodic coefficients.
-        *
-        * @param date current date
-        * @throws OrekitException if an error occurs
-        */
-        public void computeCoefficients(final AbsoluteDate date)
-            throws OrekitException {
-            // Compute the generating function coefficients
-            final GeneratingFunctionCoefficients gfCoefs = new GeneratingFunctionCoefficients(nMax, sMax, jMax);
 
-            //Compute additional quantities
-            // 2 * a / An
-            final double ax2oAn  = -m2aoA / meanMotion;
-            // B / An
-            final double BoAn  = BoA / meanMotion;
-            // 1 / ABn
-            final double ooABn = ooAB / meanMotion;
-            // C / 2ABn
-            final double Co2ABn = -mCo2AB / meanMotion;
-            // B / (A * (1 + B) * n)
-            final double BoABpon = BoABpo / meanMotion;
-            // -3 / n²a² = -3 / nA
-            final double m3onA = -3 / (A * meanMotion);
-
-            //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
-            for (int j = 1; j <= jMax; j++) {
-                // First compute the C<sub>i</sub><sup>j</sup> coefficients
-                final double[] currentCij = new double[6];
-
-                // Compute the cross derivatives operator :
-                final double SAlphaGammaCj   = alpha * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdalphaCj(j);
-                final double SAlphaBetaCj    = alpha * gfCoefs.getdSdbetaCj(j)  - beta  * gfCoefs.getdSdalphaCj(j);
-                final double SBetaGammaCj    =  beta * gfCoefs.getdSdgammaCj(j) - gamma * gfCoefs.getdSdbetaCj(j);
-                final double ShkCj           =     h * gfCoefs.getdSdkCj(j)     -  k    * gfCoefs.getdSdhCj(j);
-                final double pSagmIqSbgoABnCj = (p * SAlphaGammaCj - I * q * SBetaGammaCj) * ooABn;
-                final double ShkmSabmdSdlCj  =  ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
-
-                currentCij[0] =  ax2oAn * gfCoefs.getdSdlambdaCj(j);
-                currentCij[1] =  -(BoAn * gfCoefs.getdSdhCj(j) + h * pSagmIqSbgoABnCj + k * BoABpon * gfCoefs.getdSdlambdaCj(j));
-                currentCij[2] =    BoAn * gfCoefs.getdSdkCj(j) + k * pSagmIqSbgoABnCj - h * BoABpon * gfCoefs.getdSdlambdaCj(j);
-                currentCij[3] =  Co2ABn * (q * ShkmSabmdSdlCj - I * SAlphaGammaCj);
-                currentCij[4] =  Co2ABn * (p * ShkmSabmdSdlCj - SBetaGammaCj);
-                currentCij[5] = -ax2oAn * gfCoefs.getdSdaCj(j) + BoABpon * (h * gfCoefs.getdSdhCj(j) + k * gfCoefs.getdSdkCj(j)) + pSagmIqSbgoABnCj + m3onA * gfCoefs.getSCj(j);
-
-                // add the computed coefficients to the interpolators
-                for (int i = 0; i < 6; i++) {
-                    cij[j][i].addGridPoint(date, currentCij[i]);
-                }
-
-                // Compute the S<sub>i</sub><sup>j</sup> coefficients
-                final double[] currentSij = new double[6];
-
-                // Compute the cross derivatives operator :
-                final double SAlphaGammaSj   = alpha * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdalphaSj(j);
-                final double SAlphaBetaSj    = alpha * gfCoefs.getdSdbetaSj(j)  - beta  * gfCoefs.getdSdalphaSj(j);
-                final double SBetaGammaSj    =  beta * gfCoefs.getdSdgammaSj(j) - gamma * gfCoefs.getdSdbetaSj(j);
-                final double ShkSj           =     h * gfCoefs.getdSdkSj(j)     -  k    * gfCoefs.getdSdhSj(j);
-                final double pSagmIqSbgoABnSj = (p * SAlphaGammaSj - I * q * SBetaGammaSj) * ooABn;
-                final double ShkmSabmdSdlSj  =  ShkSj - SAlphaBetaSj - gfCoefs.getdSdlambdaSj(j);
-
-                currentSij[0] =  ax2oAn * gfCoefs.getdSdlambdaSj(j);
-                currentSij[1] =  -(BoAn * gfCoefs.getdSdhSj(j) + h * pSagmIqSbgoABnSj + k * BoABpon * gfCoefs.getdSdlambdaSj(j));
-                currentSij[2] =    BoAn * gfCoefs.getdSdkSj(j) + k * pSagmIqSbgoABnSj - h * BoABpon * gfCoefs.getdSdlambdaSj(j);
-                currentSij[3] =  Co2ABn * (q * ShkmSabmdSdlSj - I * SAlphaGammaSj);
-                currentSij[4] =  Co2ABn * (p * ShkmSabmdSdlSj - SBetaGammaSj);
-                currentSij[5] = -ax2oAn * gfCoefs.getdSdaSj(j) + BoABpon * (h * gfCoefs.getdSdhSj(j) + k * gfCoefs.getdSdkSj(j)) + pSagmIqSbgoABnSj + m3onA * gfCoefs.getSSj(j);
-
-                // add the computed coefficients to the interpolators
-                for (int i = 0; i < 6; i++) {
-                    sij[j][i].addGridPoint(date, currentSij[i]);
-                }
-
-                if (j == 1) {
-                    //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
-                    for (int i = 0; i < 6; i++) {
-                        cij[0][i].addGridPoint(date, currentCij[i] * k / 2. + currentSij[i] * h / 2.);
-                    }
-                }
-            }
-        }
-
-        /** Reset the coefficients.
-         * <p>
-         * For each coefficient, clear history of computed points
-         * </p>
-         */
-        public void resetCoefficients() {
-
-            for (int j = 0; j <= jMax; j++) {
-                for (int i = 0; i < 6; i++) {
-                    this.cij[j][i].clearHistory();
-                    if (j != 0) {
-                        this.sij[j][i].clearHistory();
-                    }
-                }
-            }
-        }
-
-       /** Get C<sub>i</sub><sup>j</sup>.
-        *
-        * @param i i index
-        * @param j j index
-        * @param date the date
-        * @return C<sub>i</sub><sup>j</sup>
-        */
-        public double getCij(final int i, final int j, final AbsoluteDate date) {
-            return cij[j][i].value(date);
-        }
-
-       /** Get S<sub>i</sub><sup>j</sup>.
-        *
-        * @param i i index
-        * @param j j index
-        * @param date the date
-        * @return S<sub>i</sub><sup>j</sup>
-        */
-        public double getSij(final int i, final int j, final AbsoluteDate date) {
-            return sij[j][i].value(date);
         }
     }
+
 }

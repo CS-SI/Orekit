@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,12 @@ package org.orekit.frames;
 
 import java.io.IOException;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,7 +53,7 @@ public class TopocentricFrameTest {
     // Computation date
     private AbsoluteDate date;
 
-    // Reference frame = ITRF 2005
+    // Reference frame = ITRF
     private Frame itrf;
 
     // Earth shape
@@ -86,7 +86,7 @@ public class TopocentricFrameTest {
 
         // Check that frame directions are aligned
         final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
-        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_I.negate());
+        final double yDiff = Vector3D.dotProduct(topoFrame.getSouth(), Vector3D.PLUS_I);
         final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_K);
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
@@ -161,6 +161,10 @@ public class TopocentricFrameTest {
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
         Assert.assertEquals(-1., zDiff, Utils.epsilonTest);
+
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getNadir(), topoFrame2.getZenith()), Utils.epsilonTest);
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getNadir()), Utils.epsilonTest);
+
     }
 
     @Test
@@ -430,11 +434,11 @@ public class TopocentricFrameTest {
 
     @Test
     public void testIssue145() throws OrekitException {
-        Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               itrf2005);
-        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0,0.0,0.0), "test");
+                                               itrf);
+        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "test");
         GeodeticPoint gp = staFrame.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS+600000,
                                                                 0.0, FastMath.toRadians(5.0));
         Assert.assertEquals(0.0, gp.getLongitude(), 1.0e-15);
@@ -449,7 +453,7 @@ public class TopocentricFrameTest {
 
             Utils.setDataRoot("regular-data");
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,9 +37,8 @@ import org.orekit.errors.OrekitMessages;
  * This class is the single point of access for all data loading features. It
  * is used for example to load Earth Orientation Parameters used by IERS frames,
  * to load UTC leap seconds used by time scales, to load planetary ephemerides ...
- * <p>
  *
- * </p>
+ * <p>
  * It is user-customizable: users can add their own data providers at will. This
  * allows them for example to use a database or an existing data loading library
  * in order to embed an Orekit enabled application in a global system with its

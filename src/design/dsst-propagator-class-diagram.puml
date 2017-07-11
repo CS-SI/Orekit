@@ -1,4 +1,4 @@
-' Copyright 2002-2015 CS Systèmes d'Information
+' Copyright 2002-2017 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -26,9 +26,9 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.apache.commons.math3.ode #DDEBD8 {
+  package org.hipparchus.ode #DDEBD8 {
 
-    interface FirstOrderIntegrator
+    interface ODEIntegrator
 
   }
 
@@ -46,7 +46,7 @@
       +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
     }
 
-    FirstOrderIntegrator <--* "1" DSSTPropagator
+    ODEIntegrator <--* "1" DSSTPropagator
 
     package forces #ECEBD8 {
 
@@ -56,22 +56,18 @@
         +void initialize(AuxiliaryElements auxiliary)
         +void initializeStep(AuxiliaryElements auxiliary)
         +double[] getMeanElementRate(SpacecraftState state)
-        +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
+        +void updateShortPeriodTerms(SpacecraftState ... meanStates)
       }
 
       DSSTForceModel -right->  AuxiliaryElements
-      DSSTForceModel <|-- DSSTCentralBody
-      DSSTForceModel <|-- ZonalContribution
-      DSSTForceModel <|-- TesseralContribution
+      DSSTForceModel <|-- DSSTZonal
+      DSSTForceModel <|-- DSSTTesseral
       DSSTForceModel <|-- DSSTThirdBody
       DSSTForceModel <|-- AbstractGaussianContribution
 
       AbstractGaussianContribution <|-- DSSTAtmosphericDrag
       AbstractGaussianContribution <|-- DSSTSolarRadiationPressure
       AbstractGaussianContribution o--> "1" ForceModel : acceleration provider
-
-      DSSTCentralBody *--> ZonalContribution
-      DSSTCentralBody *--> TesseralContribution
 
     }
 

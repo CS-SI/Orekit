@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,10 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for Transform providers.
  * <p>The transform provider interface is mainly used to define the
@@ -36,5 +38,14 @@ public interface TransformProvider extends Serializable {
      * @exception OrekitException if transform cannot be computed at given date
      */
     Transform getTransform(AbsoluteDate date) throws OrekitException;
+
+    /** Get the {@link FieldTransform} corresponding to specified date.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return transform at specified date
+     * @exception OrekitException if transform cannot be computed at given date
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date) throws OrekitException;
 
 }

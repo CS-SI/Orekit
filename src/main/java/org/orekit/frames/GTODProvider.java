@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,17 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
@@ -53,7 +57,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** GAST function. */
-    private final transient TimeFunction<DerivativeStructure> gastFunction;
+    private final transient TimeScalarFunction gastFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to use
@@ -81,17 +85,12 @@ public class GTODProvider implements EOPBasedTransformProvider {
         return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from TOD at specified date.
-     * <p>The update considers the Earth rotation from IERS data.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute Greenwich apparent sidereal time, in radians
-        final double gast = gastFunction.value(date).getValue();
+        final double gast = gastFunction.value(date);
 
         // compute true angular rotation of Earth, in rad/s
         final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
@@ -99,7 +98,29 @@ public class GTODProvider implements EOPBasedTransformProvider {
         final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
         // set up the transform from parent TOD
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate);
+        return new Transform(date, new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM), rotationRate);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute Greenwich apparent sidereal time, in radians
+        final T gast = gastFunction.value(date);
+
+        // compute true angular rotation of Earth, in rad/s
+        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
+        final T omp = lod.multiply(-1.0 / Constants.JULIAN_DAY).add(1).multiply(AVE);
+        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero(),
+                                                                  date.getField().getZero(),
+                                                                  date.getField().getZero().add(omp));
+
+        // set up the transform from parent TOD
+        return new FieldTransform<>(date,
+                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
+                                                        gast, RotationConvention.FRAME_TRANSFORM),
+                                    rotationRate);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,29 +16,36 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Collections;
+import java.util.stream.Stream;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
-import org.orekit.propagation.numerical.ParameterConfiguration;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -57,12 +64,10 @@ import org.orekit.time.AbsoluteDate;
  * Holmes-Featherstone model} rather than this class.
  * </p>
  * <p>
- * As this class uses finite differences to compute derivatives, the steps for
- * finite differences <strong>must</strong> be initialized by calling {@link
- * #setSteps(double, double)} prior to use derivatives, otherwise an exception
- * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame, FieldVector3D,
- * FieldVector3D, FieldRotation, DerivativeStructure)} and by {@link
- * #accelerationDerivatives(SpacecraftState, String)}.
+ * This class uses finite differences to compute derivatives and the steps for
+ * finite differences are initialized in the {@link
+ * #DrozinerAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider,
+ * double) constructor}
  * </p>
  *
  * @see HolmesFeatherstoneAttractionModel
@@ -72,8 +77,18 @@ import org.orekit.time.AbsoluteDate;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class DrozinerAttractionModel
-    extends AbstractParameterizable implements ForceModel, TideSystemProvider {
+public class DrozinerAttractionModel extends AbstractForceModel implements TideSystemProvider {
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** Provider for the spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -87,32 +102,37 @@ public class DrozinerAttractionModel
     /** Helper class computing acceleration derivatives. */
     private Jacobianizer jacobianizer;
 
-   /** Creates a new instance.
-   * @param centralBodyFrame rotating body frame
-   * @param provider provider for spherical harmonics
-   * @since 6.0
-   */
+    /** Creates a new instance.
+     * @param centralBodyFrame rotating body frame
+     * @param provider provider for spherical harmonics
+     * @param hPosition step used for finite difference computation
+     * with respect to spacecraft position (m)
+     */
     public DrozinerAttractionModel(final Frame centralBodyFrame,
-                                   final UnnormalizedSphericalHarmonicsProvider provider) {
-        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+                                   final UnnormalizedSphericalHarmonicsProvider provider,
+                                   final double hPosition) {
+
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                       provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    DrozinerAttractionModel.this.mu = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        }
 
         this.provider         = provider;
         this.mu               = provider.getMu();
         this.centralBodyFrame = centralBodyFrame;
-        this.jacobianizer     = null;
+        this.jacobianizer     = new Jacobianizer(this, mu, hPosition);
 
-    }
-
-    /** Set the step for finite differences with respect to spacecraft position.
-     * @param hPosition step used for finite difference computation
-     * with respect to spacecraft position (m)
-     * @param hMu step used for finite difference computation
-     * with respect to central attraction coefficient (m³/s²)
-     */
-    public void setSteps(final double hPosition, final double hMu) {
-        final ParameterConfiguration muConfig =
-                new ParameterConfiguration(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, hMu);
-        jacobianizer = new Jacobianizer(this, mu, Collections.singletonList(muConfig), hPosition);
     }
 
     /** {@inheritDoc} */
@@ -273,7 +293,6 @@ public class DrozinerAttractionModel
             aZ -= mu * sum2 / r2;
 
         }
-
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         final Vector3D accInInert =
             bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
@@ -288,38 +307,193 @@ public class DrozinerAttractionModel
                                                                       final FieldRotation<DerivativeStructure> rotation,
                                                                       final DerivativeStructure mass)
         throws OrekitException {
-        if (jacobianizer == null) {
-            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
-        }
         return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
     }
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
-        if (jacobianizer == null) {
-            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
-        }
         return jacobianizer.accelerationDerivatives(s, paramName);
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
     }
 
+    @Override
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return mu;
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
+
     /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        mu = value;
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+
+     // Get the position in body frame
+        final FieldAbsoluteDate<T> date = s.getDate();
+        final Field<T> field = date.getField();
+        final T zero = field.getZero();
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
+        final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
+        final FieldVector3D<T> posInBody =
+            bodyToInertial.getInverse().transformVector(s.getPVCoordinates().getPosition());
+        final T xBody = posInBody.getX();
+        final T yBody = posInBody.getY();
+        final T zBody = posInBody.getZ();
+
+        // Computation of intermediate variables
+        final T r12 = xBody.multiply(xBody).add(yBody.multiply(yBody));
+        final T r1 = r12.sqrt();
+        if (r1.getReal() <= 10e-2) {
+            throw new OrekitException(OrekitMessages.POLAR_TRAJECTORY, r1);
+        }
+        final T r2 = r12.add(zBody.multiply(zBody));
+        final T r  = r2.sqrt();
+        final double equatorialRadius = provider.getAe();
+        if (r.getReal() <= equatorialRadius) {
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
+        }
+        final T r3    = r2.multiply(r);
+        final T aeOnr = r.reciprocal().multiply(equatorialRadius);
+        final T zOnr  = zBody.divide(r);
+        final T r1Onr = r1.divide(r);
+
+        // Definition of the first acceleration terms
+        final T mMuOnr3  = r3.reciprocal().multiply(-mu);
+        final T xDotDotk = xBody.multiply(mMuOnr3);
+        final T yDotDotk = yBody.multiply(mMuOnr3);
+
+        // Zonal part of acceleration
+        T sumA = zero;
+        T sumB = zero;
+        T bk1 = zOnr;
+        T bk0 = aeOnr.multiply(bk1.multiply(3).multiply(bk1).subtract(1.0));
+        double jk = -harmonics.getUnnormalizedCnm(1, 0);
+
+        // first zonal term
+        sumA = sumA.add(aeOnr.multiply(2).multiply(bk1).subtract(zOnr.multiply(bk0)).multiply(jk));
+        sumB = sumB.add(bk0.multiply(jk));
+
+        // other terms
+        for (int k = 2; k <= provider.getMaxDegree(); k++) {
+            final T bk2 = bk1;
+            bk1 = bk0;
+            final double p = (1.0 + k) / k;
+            bk0 = aeOnr.multiply(zOnr.multiply(1 + p).multiply(bk1).subtract(aeOnr.multiply(k).multiply(bk2).divide(k - 1)));
+            final T ak0 = aeOnr.multiply(p).multiply(bk1).subtract(zOnr.multiply(bk0));
+            jk = -harmonics.getUnnormalizedCnm(k, 0);
+            sumA = sumA.add(ak0.multiply(jk));
+            sumB = sumB.add(bk0.multiply(jk));
+        }
+
+        // calculate the acceleration
+        final T p = sumA.negate().divide(r1Onr.multiply(r1Onr));
+        T aX = xDotDotk.multiply(p);
+        T aY = yDotDotk.multiply(p);
+        T aZ = sumB.multiply(mu).divide(r2);
+
+
+        // Tessereal-sectorial part of acceleration
+        if (provider.getMaxOrder() > 0) {
+            // latitude and longitude in body frame
+            final T cosL = xBody.divide(r1);
+            final T sinL = yBody.divide(r1);
+            // intermediate variables
+            T betaKminus1 = aeOnr;
+
+            T cosjm1L = cosL;
+            T sinjm1L = sinL;
+
+            T sinjL = sinL;
+            T cosjL = cosL;
+            T betaK = zero;
+            T Bkj = zero;
+            T Bkm1j = betaKminus1.multiply(3).multiply(zOnr).multiply(r1Onr);
+            T Bkm2j = zero;
+            T Bkminus1kminus1 = Bkm1j;
+
+            // first terms
+            final double c11 = harmonics.getUnnormalizedCnm(1, 1);
+            final double s11 = harmonics.getUnnormalizedSnm(1, 1);
+            T Gkj  = cosL.multiply(c11).add(sinL.multiply(s11));
+            T Hkj  = sinL.multiply(c11).add(cosL.multiply(s11));
+            T Akj  = r1Onr.multiply(2).multiply(betaKminus1).subtract(zOnr.multiply(Bkminus1kminus1));
+            T Dkj  = Akj.add(zOnr.multiply(Bkminus1kminus1)).multiply(0.5);
+            T sum1 = Akj.multiply(Gkj);
+            T sum2 = Bkminus1kminus1.multiply(Gkj);
+            T sum3 = Dkj.multiply(Hkj);
+
+            // the other terms
+            for (int j = 1; j <= provider.getMaxOrder(); ++j) {
+
+                T innerSum1 = zero;
+                T innerSum2 = zero;
+                T innerSum3 = zero;
+
+                for (int k = FastMath.max(2, j); k <= provider.getMaxDegree(); ++k) {
+
+                    final double ckj = harmonics.getUnnormalizedCnm(k, j);
+                    final double skj = harmonics.getUnnormalizedSnm(k, j);
+                    Gkj = cosjL.multiply(ckj).add(sinjL.multiply(skj));
+                    Hkj = sinjL.multiply(ckj).subtract(cosjL.multiply(skj));
+
+                    if (j <= (k - 2)) {
+                        Bkj = aeOnr.multiply(zOnr.multiply(Bkm1j).multiply((2.0 * k + 1.0) / (k - j)).subtract(
+                                aeOnr.multiply(Bkm2j).multiply((k + j) / (k - 1 - j))));
+                        Akj = aeOnr.multiply(Bkm1j).multiply((k + 1.0) / (k - j)).subtract(zOnr.multiply(Bkj));
+                    } else if (j == (k - 1)) {
+                        betaK =  aeOnr.multiply(2.0 * k - 1.0).multiply(r1Onr).multiply(betaKminus1);
+                        Bkj = aeOnr.multiply(2.0 * k + 1.0).multiply(zOnr).multiply(Bkm1j).subtract(betaK);
+                        Akj = aeOnr.multiply(k + 1.0).multiply(Bkm1j).subtract(zOnr.multiply(Bkj));
+                        betaKminus1 = betaK;
+                    } else if (j == k) {
+                        Bkj = aeOnr.multiply(2 * k + 1).multiply(r1Onr).multiply(Bkminus1kminus1);
+                        Akj = r1Onr.multiply(k + 1).multiply(betaK).subtract(zOnr.multiply(Bkj));
+                        Bkminus1kminus1 = Bkj;
+                    }
+
+                    Dkj =  Akj.add(zOnr.multiply(Bkj)).multiply(j / (k + 1.0));
+
+                    Bkm2j = Bkm1j;
+                    Bkm1j = Bkj;
+
+                    innerSum1 = innerSum1.add(Akj.multiply(Gkj));
+                    innerSum2 = innerSum2.add(Bkj.multiply(Gkj));
+                    innerSum3 = innerSum3.add(Dkj.multiply(Hkj));
+                }
+
+                sum1 = sum1.add(innerSum1);
+                sum2 = sum2.add(innerSum2);
+                sum3 = sum3.add(innerSum3);
+
+                sinjL = sinjm1L.add(cosL).add(cosjm1L.multiply(sinL));
+                cosjL = cosjm1L.add(cosL).subtract(sinjm1L.multiply(sinL));
+                sinjm1L = sinjL;
+                cosjm1L = cosjL;
+            }
+            // compute the acceleration
+            final T r2Onr12 = r2.divide(r1.multiply(r1));
+            final T p1 = r2Onr12.multiply(xDotDotk);
+            final T p2 = r2Onr12.multiply(yDotDotk);
+            aX = aX.add(p1.multiply(sum1).subtract(p2.multiply(sum3)));
+            aY = aY.add(p2.multiply(sum1).add(p1.multiply(sum3)));
+            aZ = aZ.subtract(sum2.multiply(mu).divide(r2));
+
+        }
+        // provide the perturbing acceleration to the derivatives adder in inertial frame
+        final FieldVector3D<T> accInInert =
+            bodyToInertial.transformVector(new FieldVector3D<>(aX, aY, aZ));
+        adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
     }
 
 }

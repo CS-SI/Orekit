@@ -1,28 +1,49 @@
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.orekit.utils.ParameterDriver;
 
 /** Unit tests for {@link PartialDerivativesEquations}. */
 public class PartialDerivativesEquationsTest {
@@ -61,7 +82,7 @@ public class PartialDerivativesEquationsTest {
         pv = new PVCoordinates(p, v);
         state = new SpacecraftState(new CartesianOrbit(pv, eci, date, gm))
                 .addAdditionalState("pde", new double[2 * 3 * 6]);
-        pde.setInitialJacobians(state, 6, 0);
+        pde.setInitialJacobians(state, 6);
 
     }
 
@@ -86,7 +107,7 @@ public class PartialDerivativesEquationsTest {
     }
 
     /** Mock {@link ForceModel}. */
-    private static class MockForceModel implements ForceModel {
+    private static class MockForceModel extends AbstractForceModel {
 
         /**
          * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
@@ -101,11 +122,22 @@ public class PartialDerivativesEquationsTest {
 
         @Override
         public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) throws OrekitException {
-
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity, FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass) throws OrekitException {
+        public <T extends RealFieldElement<T>> void
+            addContribution(FieldSpacecraftState<T> s,
+                            FieldTimeDerivativesEquations<T> adder) {
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
+                                                                          Frame frame,
+                                                                          FieldVector3D<DerivativeStructure> position,
+                                                                          FieldVector3D<DerivativeStructure> velocity,
+                                                                          FieldRotation<DerivativeStructure> rotation,
+                                                                          DerivativeStructure mass)
+            throws OrekitException {
             this.accelerationDerivativesPosition = position;
             this.accelerationDerivativesVelocity = velocity;
             return position;
@@ -117,29 +149,20 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public EventDetector[] getEventsDetectors() {
-            return new EventDetector[0];
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
         }
 
         @Override
-        public double getParameter(String name) throws UnknownParameterException {
-            return 0;
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
         }
 
         @Override
-        public void setParameter(String name, double value) throws UnknownParameterException {
-
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
         }
 
-        @Override
-        public Collection<String> getParametersNames() {
-            return null;
-        }
-
-        @Override
-        public boolean isSupported(String name) {
-            return false;
-        }
     }
 
 }

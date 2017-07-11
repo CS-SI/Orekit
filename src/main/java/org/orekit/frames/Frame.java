@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,17 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 /** Tridimensional references frames class.
  *
- * <h5> Frame Presentation </h5>
+ * <h1> Frame Presentation </h1>
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with some specific frame chosen as the root of the tree.
  * Each frame is defined by {@link Transform transforms} combining any number
@@ -37,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link
- * Transform#transformVector(org.apache.commons.math3.geometry.euclidean.threed.Vector3D)
+ * Transform#transformVector(org.hipparchus.geometry.euclidean.threed.Vector3D)
  * t.transformVector(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying, depending on the implementation of
  * the {@link TransformProvider transform provider} used to define the frame. For simple
@@ -266,6 +268,43 @@ public class Frame implements Serializable {
 
         // transform from instance to destination via common
         return new Transform(date, commonToInstance.getInverse(), commonToDestination);
+
+    }
+
+    /** Get the transform from the instance to another frame.
+     * @param destination destination frame to which we want to transform vectors
+     * @param date the date (can be null if it is sure than no date dependent frame is used)
+     * @param <T> the type of the field elements
+     * @return transform from the instance to the destination frame
+     * @exception OrekitException if some frame specific error occurs
+     */
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        if (this == destination) {
+            // shortcut for special case that may be frequent
+            return FieldTransform.getIdentity(date.getField());
+        }
+
+        // common ancestor to both frames in the frames tree
+        final Frame common = findCommon(this, destination);
+
+        // transform from common to instance
+        FieldTransform<T> commonToInstance = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = this; frame != common; frame = frame.parent) {
+            commonToInstance =
+                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToInstance);
+        }
+
+        // transform from destination up to common
+        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = destination; frame != common; frame = frame.parent) {
+            commonToDestination =
+                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToDestination);
+        }
+
+        // transform from instance to destination via common
+        return new FieldTransform<>(date, commonToInstance.getInverse(), commonToDestination);
 
     }
 

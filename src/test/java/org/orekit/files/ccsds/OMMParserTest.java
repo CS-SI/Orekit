@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +29,8 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -56,7 +56,7 @@ public class OMMParserTest {
                 new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
+        final OMMFile file = parser.parse(inEntry);
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -74,8 +74,10 @@ public class OMMParserTest {
         Assert.assertEquals(file.getMetaData().getCenterBody(),
                             CelestialBodyFactory.getEarth());
         Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
-        Assert.assertEquals(file.getTimeSystem(), TimeSystem.UTC);
+        Assert.assertEquals(file.getMetaData().getTimeSystem(), CcsdsTimeScale.UTC);
         Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
+        Assert.assertEquals("TEME", file.getMetaData().getFrame().toString());
+        Assert.assertTrue(file.getTLERelatedParametersComment().isEmpty());
 
         // Check Mean Keplerian elements data block;
 
@@ -130,6 +132,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withConventions(IERSConventions.IERS_1996).
+                                 withSimpleEOP(true).
                                  withInternationalDesignator(1998, 1, "a");
 
         final OMMFile file = parser.parse(name);
@@ -139,6 +142,7 @@ public class OMMParserTest {
         Assert.assertEquals(5, file.getSolarRadArea(), 1e-10);
         Assert.assertEquals(0.001, file.getSolarRadCoeff(), 1e-10);
         Assert.assertEquals(null, file.getCovRefFrame());
+        Assert.assertEquals(LOFType.TNW, file.getCovRefLofType());
         file.getCovarianceMatrix();
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
         userDefinedParameters.put("USER_DEFINED_EARTH_MODEL", "WGS-84");
@@ -170,6 +174,25 @@ public class OMMParserTest {
     }
 
     @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OMM-wrong-keyword.txt").toURI().getPath();
+        final OMMParser parser = new OMMParser().
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withConventions(IERSConventions.IERS_1996);
+        try {
+            parser.parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
     public void testOrbitFileInterface() throws OrekitException {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String ex = "/ccsds/OMMExample.txt";
@@ -183,26 +206,8 @@ public class OMMParserTest {
         final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
 
         final String satId = "1995-025A";
-        Assert.assertEquals(1, file.getSatelliteCount());
-        Assert.assertTrue(file.containsSatellite(satId));
-        Assert.assertFalse(file.containsSatellite("1995-025B"));
-        Assert.assertNotNull(file.getSatellite(satId));
-        Assert.assertEquals(1, file.getSatellites().size());
-        Assert.assertEquals(satId, file.getSatellite(satId).getSatelliteId());
-        Assert.assertEquals(0, file.getSatelliteCoordinates(satId).size());
+        Assert.assertEquals(satId, file.getMetaData().getObjectID());
 
-        try {
-            file.getEpochInterval();
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-        try {
-            file.getNumberOfEpochs();
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
     }
 
     @Test

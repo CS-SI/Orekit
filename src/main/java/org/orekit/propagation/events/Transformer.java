@@ -17,13 +17,13 @@
 
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 
 
 /** Transformer for {@link EventHandler#g(double, double[]) g functions}.
  * <p>This class is heavily based on the class with the same name from the
- * Apache Commons Math library. The changes performed consist in replacing
+ * Hipparchus library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  * @see EventSlopeFilter

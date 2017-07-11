@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
@@ -69,22 +71,22 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private final T rawDetector;
 
     /** Enabling predicate function. */
-    private final EnablingPredicate<T> enabler;
+    private final transient EnablingPredicate<T> enabler;
 
     /** Transformers of the g function. */
-    private final Transformer[] transformers;
+    private final transient Transformer[] transformers;
 
     /** Update time of the transformers. */
-    private final AbsoluteDate[] updates;
+    private final transient AbsoluteDate[] updates;
 
     /** Indicator for forward integration. */
-    private boolean forward;
+    private transient boolean forward;
 
     /** Extreme time encountered so far. */
-    private AbsoluteDate extremeT;
+    private transient AbsoluteDate extremeT;
 
     /** Detector function value at extremeT. */
-    private double extremeG;
+    private transient double extremeG;
 
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
@@ -110,7 +112,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      * @param enabler event enabling function to use
      */
     private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
-                                         final int maxIter, final EventHandler<EventEnablingPredicateFilter<T>> handler,
+                                         final int maxIter, final EventHandler<? super EventEnablingPredicateFilter<T>> handler,
                                          final T rawDetector, final EnablingPredicate<T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -123,7 +125,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     @Override
     protected EventEnablingPredicateFilter<T> create(final double newMaxCheck, final double newThreshold,
                                                      final int newMaxIter,
-                                                     final EventHandler<EventEnablingPredicateFilter<T>> newHandler) {
+                                                     final EventHandler<? super EventEnablingPredicateFilter<T>> newHandler) {
         return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
     }
 
@@ -274,6 +276,19 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
         }
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if the {@link EnablingPredicate
+     * enabling predicate} is not serializable
+     */
+    private Object writeReplace() throws NotSerializableException {
+        if (enabler instanceof Serializable) {
+            return new DataTransferObject(rawDetector, (Serializable) enabler);
+        } else {
+            throw new NotSerializableException(enabler.getClass().getName());
+        }
+    }
+
     /** Local handler. */
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
 
@@ -289,6 +304,38 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
         public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState)
             throws OrekitException {
             return ef.rawDetector.resetState(oldState);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160321L;
+
+        /** Wrapped event detector. */
+        private final EventDetector rawDetector;
+
+        /** Enabling predicate function. */
+        private final Serializable enabler;
+
+        /** Simple constructor.
+         * @param rawDetector wrapped event detector
+         * @param enabler enabling predicate function
+         */
+        DataTransferObject(final EventDetector rawDetector, final Serializable enabler) {
+            this.rawDetector = rawDetector;
+            this.enabler     = enabler;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EventEnablingPredicateFilter}.
+         * @return replacement {@link EventEnablingPredicateFilter}
+         */
+        @SuppressWarnings("unchecked")
+        private Object readResolve() {
+            return new EventEnablingPredicateFilter<EventDetector>(rawDetector,
+                            (EnablingPredicate<EventDetector>) enabler);
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,11 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -57,7 +54,7 @@ public class OPMFile extends OGMFile {
     OPMFile() {
         metaData  = new ODMMetaData(this);
         maneuvers = new ArrayList<Maneuver>();
-    };
+    }
 
     /** Get the meta data.
      * @return meta data
@@ -138,40 +135,11 @@ public class OPMFile extends OGMFile {
         return metaData.getComment();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        if (getMetaData().getObjectID().equals(satId)) {
-            return Arrays.asList(new SatelliteTimeCoordinate(getEpoch(), getPVCoordinates()));
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    /** Get the {@link SatelliteTimeCoordinate} of the OPM.
-     * @return the {@link SatelliteTimeCoordinate}
-     */
-    public SatelliteTimeCoordinate getSatelliteCoordinatesOPM() {
-        return new SatelliteTimeCoordinate(getEpoch(), getPVCoordinates());
-    }
-
     /** Get the position/velocity coordinates contained in the OPM.
      * @return the position/velocity coordinates contained in the OPM
      */
     public PVCoordinates getPVCoordinates() {
         return new PVCoordinates(getPosition(), getVelocity());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoordinateSystem() {
-        return metaData.getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return metaData.getTimeSystem();
     }
 
     /**
@@ -187,7 +155,7 @@ public class OPMFile extends OGMFile {
         return new CartesianOrbit(getPVCoordinates(), metaData.getFrame(), getEpoch(), getMuUsed());
     }
 
-    /** Generate a {@link KeplerianOrbit} from the OPM keplerian elements if hasKeplerianElements is true,
+    /** Generate a {@link KeplerianOrbit} from the OPM Keplerian elements if hasKeplerianElements is true,
      * or from the state vector data otherwise.
      * If the reference frame is not pseudo-inertial, an exception is raised.
      * @return the {@link KeplerianOrbit} generated from the OPM information
@@ -304,15 +272,15 @@ public class OPMFile extends OGMFile {
             this.duration = duration;
         }
 
-        /** Get mass change during maneuver (value is < 0).
-         * @return mass change during maneuver (value is < 0)
+        /** Get mass change during maneuver (value is &lt; 0).
+         * @return mass change during maneuver (value is &lt; 0)
          */
         public double getDeltaMass() {
             return deltaMass;
         }
 
-        /** Set mass change during maneuver (value is < 0).
-         * @param deltaMass mass change during maneuver (value is < 0)
+        /** Set mass change during maneuver (value is &lt; 0).
+         * @param deltaMass mass change during maneuver (value is &lt; 0)
          */
         public void setDeltaMass(final double deltaMass) {
             this.deltaMass = deltaMass;

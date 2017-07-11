@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitInternalError;
 
 /** Enumerate for {@link EventSlopeFilter filtering events}.
  * <p>This class is heavily based on the class with the same name from the
- * Apache Commons Math library. The changes performed consist in package
+ * Hipparchus library. The changes performed consist in package
  * name and error handling.</p>
  * @since 6.0
  */
@@ -44,7 +44,7 @@ public enum FilterType {
 
         /** {@inheritDoc}
          * <p>
-         * states scheduling for computing h(t,y) as an altered version of g(t, y)
+         * states scheduling for computing h(t, y) as an altered version of g(t, y)
          * <ul>
          * <li>0 are triggered events for which a zero is produced (here decreasing events)</li>
          * <li>X are ignored events for which zero is masked (here increasing events)</li>
@@ -53,12 +53,12 @@ public enum FilterType {
          * <p>
          * Several expressions are used to compute h, depending on the current state:
          * <ul>
-         *   <li>h = max(+s,-g,+g)</li>
+         *   <li>h = max(+s, -g, +g)</li>
          *   <li>h = +g</li>
-         *   <li>h = min(-s,-g,+g)</li>
+         *   <li>h = min(-s, -g, +g)</li>
          *   <li>h = -g</li>
          * </ul>
-         * where s is a tiny positive value: {@link org.apache.commons.math3.util.Precision#SAFE_MIN}.
+         * where s is a tiny positive value: {@link org.hipparchus.util.Precision#SAFE_MIN}.
          * </p>
          */
         protected  Transformer selectTransformer(final Transformer previous,
@@ -194,7 +194,7 @@ public enum FilterType {
 
         /** {@inheritDoc}
          * <p>
-         * states scheduling for computing h(t,y) as an altered version of g(t, y)
+         * states scheduling for computing h(t, y) as an altered version of g(t, y)
          * <ul>
          * <li>0 are triggered events for which a zero is produced (here increasing events)</li>
          * <li>X are ignored events for which zero is masked (here decreasing events)</li>
@@ -203,12 +203,12 @@ public enum FilterType {
          * <p>
          * Several expressions are used to compute h, depending on the current state:
          * <ul>
-         *   <li>h = max(+s,-g,+g)</li>
+         *   <li>h = max(+s, -g, +g)</li>
          *   <li>h = +g</li>
-         *   <li>h = min(-s,-g,+g)</li>
+         *   <li>h = min(-s, -g, +g)</li>
          *   <li>h = -g</li>
          * </ul>
-         * where s is a tiny positive value: {@link org.apache.commons.math3.util.Precision#SAFE_MIN}.
+         * where s is a tiny positive value: {@link org.hipparchus.util.Precision#SAFE_MIN}.
          * </p>
          */
         protected  Transformer selectTransformer(final Transformer previous,

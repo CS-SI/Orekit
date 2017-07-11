@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step handler.
  *
  * <p>It mirrors the <code>StepHandler</code> interface from <a
- * href="http://commons.apache.org/math/"> commons-math</a> but
+ * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
@@ -35,18 +35,23 @@ public interface OrekitStepHandler {
      * may be used by the step handler to initialize some internal data
      * if needed.
      * </p>
+     * <p>
+     * The default method does nothing
+     * </p>
      * @param s0 initial state
      * @param t target time for the integration
-     * @exception PropagationException if step handler cannot be initialized
+     * @exception OrekitException if step handler cannot be initialized
      */
-    void init(SpacecraftState s0, AbsoluteDate t) throws PropagationException;
+    default void init(SpacecraftState s0, AbsoluteDate t) throws OrekitException {
+        // nothing by default
+    }
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
      * @param isLast if true, this is the last integration step
-     * @exception PropagationException if step cannot be handled
+     * @exception OrekitException if step cannot be handled
      */
     void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-        throws PropagationException;
+        throws OrekitException;
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,18 +18,21 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldLine;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -48,11 +51,17 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Serializable UID. */
     private static final long serialVersionUID = 20130518L;
 
+    /** Threshold for polar and equatorial points detection. */
+    private static final double ANGULAR_THRESHOLD = 1.0e-4;
+
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
 
     /** Equatorial radius power 2. */
     private final double ae2;
+
+    /** Polar radius power 2. */
+    private final double ap2;
 
     /** Flattening. */
     private final double f;
@@ -72,6 +81,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
      * <table border="1" cellpadding="5">
+     * <caption>Ellipsoid Models</caption>
      * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
      * <tr><td bgcolor="#eeeeff">GRS 80</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_EQUATORIAL_RADIUS Constants.GRS80_EARTH_EQUATORIAL_RADIUS}</td>
@@ -88,11 +98,12 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public OneAxisEllipsoid(final double ae, final double f,
                             final Frame bodyFrame) {
         super(bodyFrame, ae, ae, ae * (1.0 - f));
-        this.f = f;
-        this.ae2 = ae * ae;
-        this.e2 = f * (2.0 - f);
-        this.g = 1.0 - f;
-        this.g2 = g * g;
+        this.f    = f;
+        this.ae2  = ae * ae;
+        this.e2   = f * (2.0 - f);
+        this.g    = 1.0 - f;
+        this.g2   = g * g;
+        this.ap2  = ae2 * g2;
         setAngularThreshold(1.0e-12);
         this.bodyFrame = bodyFrame;
     }
@@ -138,7 +149,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
         final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final double closeAbscissa = lineInBodyFrame.toSubSpace(closeInBodyFrame).getX();
+        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
@@ -171,7 +182,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // select the right point
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
-        final Vector3D intersection = lineInBodyFrame.toSpace(new Vector1D(k));
+        final Vector3D intersection = lineInBodyFrame.pointAt(k);
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
@@ -179,6 +190,75 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double lambda = FastMath.atan2(iy, ix);
         final double phi    = FastMath.atan2(iz, g2 * FastMath.sqrt(ix * ix + iy * iy));
         return new GeodeticPoint(phi, lambda, 0.0);
+
+    }
+
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @exception OrekitException if line cannot be converted to body frame
+     * @param <T> the type of the field elements
+     */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+                                                                                      final FieldVector3D<T> close,
+                                                                                      final Frame frame,
+                                                                                      final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // transform line and close to body frame
+        final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
+        final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
+        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
+
+        // compute some miscellaneous variables outside of the loop
+        final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
+        final T x  = point.getX();
+        final T y  = point.getY();
+        final T z  = point.getZ();
+        final T z2 = z.multiply(z);
+        final T r2 = x.multiply(x).add(y.multiply(y));
+
+        final FieldVector3D<T> direction = lineInBodyFrame.getDirection();
+        final T dx  = direction.getX();
+        final T dy  = direction.getY();
+        final T dz  = direction.getZ();
+        final T cz2 = dx.multiply(dx).add(dy.multiply(dy));
+
+        // abscissa of the intersection as a root of a 2nd degree polynomial :
+        // a k^2 - 2 b k + c = 0
+        final T a  = cz2.multiply(e2).subtract(1.0).negate();
+        final T b  = x.multiply(dx).add(y.multiply(dy)).multiply(g2).add(z.multiply(dz)).negate();
+        final T c  = r2.subtract(ae2).multiply(g2).add(z2);
+        final T b2 = b.multiply(b);
+        final T ac = a.multiply(c);
+        if (b2.getReal() < ac.getReal()) {
+            return null;
+        }
+        final T s  = b2.subtract(ac).sqrt();
+        final T k1 = (b.getReal() < 0) ? b.subtract(s).divide(a) : c.divide(b.add(s));
+        final T k2 = c.divide(a.multiply(k1));
+
+        // select the right point
+        final T k = (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ?
+                    k1 : k2;
+        final FieldVector3D<T> intersection = lineInBodyFrame.pointAt(k);
+        final T ix = intersection.getX();
+        final T iy = intersection.getY();
+        final T iz = intersection.getZ();
+
+        final T lambda = iy.atan2(ix);
+        final T phi    = iz.atan2(ix.multiply(ix).add(iy.multiply(iy)).sqrt().multiply(g2));
+        return new FieldGeodeticPoint<>(phi, lambda, phi.getField().getZero());
 
     }
 
@@ -199,23 +279,24 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point, using time as the single derivation parameter
      * @return point at the same location but as a Cartesian point including derivatives
+     * @param <T> the type of the field elements
      */
-    public PVCoordinates transform(final FieldGeodeticPoint<DerivativeStructure> point) {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
 
-        final DerivativeStructure latitude  = point.getLatitude();
-        final DerivativeStructure longitude = point.getLongitude();
-        final DerivativeStructure altitude  = point.getAltitude();
+        final T latitude  = point.getLatitude();
+        final T longitude = point.getLongitude();
+        final T altitude  = point.getAltitude();
 
-        final DerivativeStructure cLambda = longitude.cos();
-        final DerivativeStructure sLambda = longitude.sin();
-        final DerivativeStructure cPhi    = latitude.cos();
-        final DerivativeStructure sPhi    = latitude.sin();
-        final DerivativeStructure n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
-        final DerivativeStructure r       = n.add(altitude).multiply(cPhi);
+        final T cLambda = longitude.cos();
+        final T sLambda = longitude.sin();
+        final T cPhi    = latitude.cos();
+        final T sPhi    = latitude.sin();
+        final T n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
+        final T r       = n.add(altitude).multiply(cPhi);
 
-        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(r.multiply(cLambda),
-                                                                        r.multiply(sLambda),
-                                                                        sPhi.multiply(altitude.add(n.multiply(g2)))));
+        return new FieldVector3D<>(r.multiply(cLambda),
+                                   r.multiply(sLambda),
+                                   sPhi.multiply(altitude.add(n.multiply(g2))));
     }
 
     /** {@inheritDoc} */
@@ -285,7 +366,22 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * This method is based on Toshio Fukushima's algorithm which uses Halley's method.
+     * <a href="https://www.researchgate.net/publication/227215135_Transformation_from_Cartesian_to_Geodetic_Coordinates_Accelerated_by_Halley's_Method">
+     * transformation from Cartesian to Geodetic Coordinates Accelerated by Halley's Method</a>,
+     * Toshio Fukushima, Journal of Geodesy 9(12):689-693, February 2006
+     * </p>
+     * <p>
+     * Some changes have been added to the original method:
+     * <ul>
+     *   <li>in order to handle more accurately corner cases near the pole</li>
+     *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
+     *   <li>in order to handle very flat ellipsoids</li>
+     * </ul>
+     * </p>
+     */
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
@@ -296,23 +392,221 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double   r                = FastMath.sqrt(r2);
         final double   z                = pointInBodyFrame.getZ();
 
-        // set up the 2D meridian ellipse
-        final Ellipse meridian = new Ellipse(Vector3D.ZERO,
-                                             new Vector3D(pointInBodyFrame.getX() / r, pointInBodyFrame.getY() / r, 0),
-                                             Vector3D.PLUS_K,
-                                             getA(), getC(), bodyFrame);
+        final double   lambda           = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
 
-        // project point on the 2D meridian ellipse
-        final Vector2D ellipsePoint = meridian.projectToEllipse(new Vector2D(r, z));
+        double h;
+        double phi;
+        if (r <= ANGULAR_THRESHOLD * FastMath.abs(z)) {
+            // the point is almost on the polar axis, approximate the ellipsoid with
+            // the osculating sphere whose center is at evolute cusp along polar axis
+            final double osculatingRadius = ae2 / getC();
+            final double evoluteCuspZ     = FastMath.copySign(getA() * e2 / g, -z);
+            final double deltaZ           = z - evoluteCuspZ;
+            // we use π/2 - atan(r/Δz) instead of atan(Δz/r) for accuracy purposes, as r is much smaller than Δz
+            phi = FastMath.copySign(0.5 * FastMath.PI - FastMath.atan(r / FastMath.abs(deltaZ)), deltaZ);
+            h   = FastMath.hypot(deltaZ, r) - osculatingRadius;
+        } else if (FastMath.abs(z) <= ANGULAR_THRESHOLD * r) {
+            // the point is almost on the major axis
 
-        // relative position of test point with respect to its ellipse sub-point
-        final double dr = r - ellipsePoint.getX();
-        final double dz = z - ellipsePoint.getY();
-        final double insideIfNegative = g2 * (r2 - ae2) + z * z;
+            final double osculatingRadius = ap2 / getA();
+            final double evoluteCuspR     = getA() * e2;
+            final double deltaR           = r - evoluteCuspR;
+            if (deltaR >= 0) {
+                // the point is outside of the ellipse evolute, approximate the ellipse
+                // with the osculating circle whose center is at evolute cusp along major axis
+                phi = (deltaR == 0) ? 0.0 : FastMath.atan(z / deltaR);
+                h   = FastMath.hypot(deltaR, z) - osculatingRadius;
+            } else {
+                // the point is on the part of the major axis within ellipse evolute
+                // we can compute the closest ellipse point analytically, and it is NOT near the equator
+                final double rClose = r / e2;
+                final double zClose = FastMath.copySign(g * FastMath.sqrt(ae2 - rClose * rClose), z);
+                phi = FastMath.atan((zClose - z) / (rClose - r));
+                h   = -FastMath.hypot(r - rClose, z - zClose);
+            }
 
-        return new GeodeticPoint(FastMath.atan2(ellipsePoint.getY(), g2 * ellipsePoint.getX()),
-                                 FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX()),
-                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
+        } else {
+            // use Toshio Fukushima method, with several iterations
+            final double epsPhi = 1.0e-15;
+            final double epsH   = 1.0e-14 * getA();
+            final double c     = getA() * e2;
+            final double absZ  = FastMath.abs(z);
+            final double zc    = g * absZ;
+            double sn  = absZ;
+            double sn2 = sn * sn;
+            double cn  = g * r;
+            double cn2 = cn * cn;
+            double an2 = cn2 + sn2;
+            double an  = FastMath.sqrt(an2);
+            double bn  = 0;
+            phi = Double.POSITIVE_INFINITY;
+            h   = Double.POSITIVE_INFINITY;
+            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+                final double oldSn  = sn;
+                final double oldCn  = cn;
+                final double oldPhi = phi;
+                final double oldH   = h;
+                final double an3    = an2 * an;
+                final double csncn  = c * sn * cn;
+                bn    = 1.5 * csncn * ((r * sn - zc * cn) * an - csncn);
+                sn    = (zc * an3 + c * sn2 * sn) * an3 - bn * sn;
+                cn    = (r  * an3 - c * cn2 * cn) * an3 - bn * cn;
+                if (sn * oldSn < 0 || cn < 0) {
+                    // the Halley iteration went too far, we restrict it and iterate again
+                    while (sn * oldSn < 0 || cn < 0) {
+                        sn = (sn + oldSn) / 2;
+                        cn = (cn + oldCn) / 2;
+                    }
+                } else {
+
+                    // rescale components to avoid overflow when several iterations are used
+                    final int exp = (FastMath.getExponent(sn) + FastMath.getExponent(cn)) / 2;
+                    sn = FastMath.scalb(sn, -exp);
+                    cn = FastMath.scalb(cn, -exp);
+
+                    sn2 = sn * sn;
+                    cn2 = cn * cn;
+                    an2 = cn2 + sn2;
+                    an  = FastMath.sqrt(an2);
+
+                    final double cc = g * cn;
+                    h = (r * cc + absZ * sn - getA() * g * an) / FastMath.sqrt(an2 - e2 * cn2);
+                    if (FastMath.abs(oldH   - h)   < epsH) {
+                        phi = FastMath.copySign(FastMath.atan(sn / cc), z);
+                        if (FastMath.abs(oldPhi - phi) < epsPhi) {
+                            break;
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        return new GeodeticPoint(phi, lambda, h);
+
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * This method is based on Toshio Fukushima's algorithm which uses Halley's method.
+     * <a href="https://www.researchgate.net/publication/227215135_Transformation_from_Cartesian_to_Geodetic_Coordinates_Accelerated_by_Halley's_Method">
+     * transformation from Cartesian to Geodetic Coordinates Accelerated by Halley's Method</a>,
+     * Toshio Fukushima, Journal of Geodesy 9(12):689-693, February 2006
+     * </p>
+     * <p>
+     * Some changes have been added to the original method:
+     * <ul>
+     *   <li>in order to handle more accurately corner cases near the pole</li>
+     *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
+     *   <li>in order to handle very flat ellipsoids</li>
+     * </ul>
+     * </p>
+     */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
+                                                                           final Frame frame,
+                                                                           final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // transform point to body frame
+        final FieldVector3D<T> pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final T   r2                            = pointInBodyFrame.getX().multiply(pointInBodyFrame.getX()).
+                                              add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
+        final T   r                             = r2.sqrt();
+        final T   z                             = pointInBodyFrame.getZ();
+
+        final T   lambda                        = pointInBodyFrame.getY().atan2(pointInBodyFrame.getX());
+
+        T h;
+        T phi;
+        if (r.getReal() <= ANGULAR_THRESHOLD * FastMath.abs(z.getReal())) {
+            // the point is almost on the polar axis, approximate the ellipsoid with
+            // the osculating sphere whose center is at evolute cusp along polar axis
+            final double osculatingRadius = ae2 / getC();
+            final double evoluteCuspZ     = FastMath.copySign(getA() * e2 / g, -z.getReal());
+            final T      deltaZ           = z.subtract(evoluteCuspZ);
+            // we use π/2 - atan(r/Δz) instead of atan(Δz/r) for accuracy purposes, as r is much smaller than Δz
+            phi = r.divide(deltaZ.abs()).atan().negate().add(0.5 * FastMath.PI).copySign(deltaZ);
+            h   = deltaZ.hypot(r).subtract(osculatingRadius);
+        } else if (FastMath.abs(z.getReal()) <= ANGULAR_THRESHOLD * r.getReal()) {
+            // the point is almost on the major axis
+
+            final double osculatingRadius = ap2 / getA();
+            final double evoluteCuspR     = getA() * e2;
+            final T      deltaR           = r.subtract(evoluteCuspR);
+            if (deltaR.getReal() >= 0) {
+                // the point is outside of the ellipse evolute, approximate the ellipse
+                // with the osculating circle whose center is at evolute cusp along major axis
+                phi = (deltaR.getReal() == 0) ? z.getField().getZero() : z.divide(deltaR).atan();
+                h   = deltaR.hypot(z).subtract(osculatingRadius);
+            } else {
+                // the point is on the part of the major axis within ellipse evolute
+                // we can compute the closest ellipse point analytically, and it is NOT near the equator
+                final T rClose = r.divide(e2);
+                final T zClose = rClose.multiply(rClose).negate().add(ae2).sqrt().multiply(g).copySign(z);
+                phi = zClose.subtract(z).divide(rClose.subtract(r)).atan();
+                h   = r.subtract(rClose).hypot(z.subtract(zClose)).negate();
+            }
+
+        } else {
+            // use Toshio Fukushima method, with several iterations
+            final double epsPhi = 1.0e-15;
+            final double epsH   = 1.0e-14 * getA();
+            final double c      = getA() * e2;
+            final T      absZ   = z.abs();
+            final T      zc     = absZ.multiply(g);
+            T            sn     = absZ;
+            T            sn2    = sn.multiply(sn);
+            T            cn     = r.multiply(g);
+            T            cn2    = cn.multiply(cn);
+            T            an2    = cn2.add(sn2);
+            T            an     = an2.sqrt();
+            T            bn     = an.getField().getZero();
+            phi = an.getField().getZero().add(Double.POSITIVE_INFINITY);
+            h   = an.getField().getZero().add(Double.POSITIVE_INFINITY);
+            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+                final T oldSn  = sn;
+                final T oldCn  = cn;
+                final T oldPhi = phi;
+                final T oldH   = h;
+                final T an3    = an2.multiply(an);
+                final T csncn  = sn.multiply(cn).multiply(c);
+                bn    = csncn.multiply(1.5).multiply((r.multiply(sn).subtract(zc.multiply(cn))).multiply(an).subtract(csncn));
+                sn    = zc.multiply(an3).add(sn2.multiply(sn).multiply(c)).multiply(an3).subtract(bn.multiply(sn));
+                cn    = r.multiply(an3).subtract(cn2.multiply(cn).multiply(c)).multiply(an3).subtract(bn.multiply(cn));
+                if (sn.getReal() * oldSn.getReal() < 0 || cn.getReal() < 0) {
+                    // the Halley iteration went too far, we restrict it and iterate again
+                    while (sn.getReal() * oldSn.getReal() < 0 || cn.getReal() < 0) {
+                        sn = sn.add(oldSn).multiply(0.5);
+                        cn = cn.add(oldCn).multiply(0.5);
+                    }
+                } else {
+
+                    // rescale components to avoid overflow when several iterations are used
+                    final int exp = (FastMath.getExponent(sn.getReal()) + FastMath.getExponent(cn.getReal())) / 2;
+                    sn = sn.scalb(-exp);
+                    cn = cn.scalb(-exp);
+
+                    sn2 = sn.multiply(sn);
+                    cn2 = cn.multiply(cn);
+                    an2 = cn2.add(sn2);
+                    an  = an2.sqrt();
+
+                    final T cc = cn.multiply(g);
+                    h = r.multiply(cc).add(absZ.multiply(sn)).subtract(an.multiply(getA() * g)).divide(an2.subtract(cn2.multiply(e2)).sqrt());
+                    if (FastMath.abs(oldH.getReal()  - h.getReal())   < epsH) {
+                        phi = sn.divide(cc).atan().copySign(z);
+                        if (FastMath.abs(oldPhi.getReal() - phi.getReal()) < epsPhi) {
+                            break;
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        return new FieldGeodeticPoint<>(phi, lambda, h);
 
     }
 
@@ -349,9 +643,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final DerivativeStructure dz  = pz.subtract(gpz);
         final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
 
-        return new FieldGeodeticPoint<DerivativeStructure>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
-                                                           DerivativeStructure.atan2(p.getY(), p.getX()),
-                                                           DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+        return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
+                                                                  DerivativeStructure.atan2(p.getY(), p.getX()),
+                                                                  DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
     }
 
     /** Replace the instance with a data transfer object for serialization.

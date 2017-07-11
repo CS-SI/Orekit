@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,22 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** Veis 1950 Frame.
- * <p>Its parent frame is the {@link GTODProvider} without EOP correction application.<p>
+ * <p>Its parent frame is the {@link GTODProvider} without EOP correction application.
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
  * @author Pascal Parraud
  */
@@ -53,11 +58,8 @@ class VEISProvider implements TransformProvider {
     VEISProvider() {
     }
 
-    /** Get the transform from GTOD at specified date.
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if data embedded in the library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // offset from FIFTIES epoch (UT1 scale)
@@ -76,7 +78,38 @@ class VEISProvider implements TransformProvider {
         final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
         // set up the transform from parent GTOD
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate);
+        return new Transform(date,
+                             new Rotation(Vector3D.PLUS_K, vst, RotationConvention.VECTOR_OPERATOR),
+                             rotationRate);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // offset from FIFTIES epoch (UT1 scale)
+        final T dtai = date.durationFrom(VST_REFERENCE);
+        final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date.toAbsoluteDate());
+        final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
+
+        final T tut1 = dtai.add(dutc + dut1);
+        final T ttd  = tut1.divide(Constants.JULIAN_DAY);
+        final T rdtt = ttd.subtract((int) ttd.getReal());
+
+        // compute Veis sidereal time, in radians
+        final T vst = ttd.multiply(VST1).add(rdtt.multiply(MathUtils.TWO_PI)).add(VST0).remainder(MathUtils.TWO_PI);
+
+        // compute angular rotation of Earth, in rad/s
+        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero().add(-VSTD),
+                                                                  Vector3D.PLUS_K);
+
+        // set up the transform from parent GTOD
+        return new FieldTransform<>(date,
+                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), vst,
+                                                        RotationConvention.VECTOR_OPERATOR),
+                                    rotationRate);
 
     }
 

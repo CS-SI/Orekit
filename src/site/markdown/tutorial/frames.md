@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Frames
-======
+# Frames
 
-Basic use
----------
+## Basic use
 
 ### The problem to be solved
 
@@ -50,14 +48,10 @@ of the library architecture documentation.
     Orbit initialOrbit =
         new CartesianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 
-As a propagator, we consider a simple `KeplerianPropagator`.
+As a propagator, we consider a simple `KeplerianPropagator` that will propagate orbit in the inertial
+frame in which the initial orbit was defined (here EME2000).
 
     Propagator kepler = new KeplerianPropagator(initialOrbit);
-
-So, the LOF is all defined, assuming its type to be QSW.
-
-    LocalOrbitalFrame lof =
-        new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
 On the other hand, let's define the ground station by its coordinates as a `GeodeticPoint` 
 in its own `TopocentricFrame` related to a `BodyShape` in some terrestrial frame.
@@ -83,16 +77,17 @@ Finally, we can get the Doppler measurement in a simple propagation loop
  
     AbsoluteDate extrapDate = initialDate;
     while (extrapDate.compareTo(finalDate) <= 0)  {
-    
-        // We can simply get the position and velocity of station in LOF frame at any time
-        PVCoordinates pv = staF.getTransformTo(lof, extrapDate).transformPVCoordinates(PVCoordinates.ZERO);
-    
+
+        // We can simply get the position and velocity of spacecraft in station frame at any time
+        PVCoordinates pvInert   = kepler.propagate(extrapDate).getPVCoordinates();
+        PVCoordinates pvStation = inertialFrame.getTransformTo(staF, extrapDate).transformPVCoordinates(pvInert);
+
         // And then calculate the doppler signal
-        double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+        double doppler = Vector3D.dotProduct(pvStation.getPosition(), pvStation.getVelocity()) / pvStation.getPosition().getNorm();
     
         System.out.format(Locale.US, "%s   %9.3f%n", extrapDate, doppler);
     
-        extrapDate = new AbsoluteDate(extrapDate, 600, utc);
+        extrapDate = extrapDate.shiftedBy(600);
     
     }
 
@@ -116,8 +111,7 @@ Here are the results displayed by this program:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/frames/Frames1.java`.
 
-Advanced use
-------------
+## Advanced use
 
 ### The problem to be solved
 
@@ -225,8 +219,7 @@ As a result, we can compare the GPS measurements to the computed values:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/frames/Frames2.java`.
 
-Direct use of transforms : coordinates with respect to spacecraft frame
------------------------------------------------------------------------
+## Direct use of transforms : coordinates with respect to spacecraft frame
 
 ### The problem to be solved
 
@@ -240,7 +233,7 @@ master propagation mode and has been deprecated as of 6.0, so we won't use it.
 First, an initial orbit for the spacecraft is defined as follows:
 
     Frame eme2000 = FramesFactory.getEME2000();
-    AbsoluteDate initialDate = new AbsoluteDate(1970, 04, 07, 0, 0, 00.000,
+    AbsoluteDate initialDate = new AbsoluteDate(2003, 4, 7, 10, 55, 21.575,
                                                 TimeScalesFactory.getUTC());
     double mu =  3.986004415e+14;
     Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,
@@ -259,7 +252,7 @@ Then the attitude law for the spacecraft is constructed:
 * we first define a nadir pointing law towards the Earth under the spacecraft,
 * then a yaw steering law is added
 
-The yaw steering law wraos the nadir point law in order to give maximal lightning
+The yaw steering law wraps the nadir point law in order to give maximal lighting
 to the solar arrays, which rotation axis is Y in spacecraft frame:
 
     Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -301,7 +294,7 @@ the desired data in spacecraft frame using the current spacecraft state
         }
                     
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
+            throws OrekitException {
     
             Transform inertToSpacecraft = currentState.toTransform();
             Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();

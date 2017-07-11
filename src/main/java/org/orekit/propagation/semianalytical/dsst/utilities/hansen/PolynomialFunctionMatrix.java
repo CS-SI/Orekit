@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 
 /**
  * A quadratic matrix of
- * {@link org.apache.commons.math3.analysis.polynomials.PolynomialFunction}.
+ * {@link org.hipparchus.analysis.polynomials.PolynomialFunction}.
  *
  * @author Petre Bazavan
  * @author Lucian Barbulescu

@@ -1,3 +1,19 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.frames;
 
 import java.io.ByteArrayInputStream;
@@ -6,7 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -118,21 +134,23 @@ public class EclipticProviderTest {
 
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
-        Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2010);
-        
+        TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(frame);
+        oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 100);
-        Assert.assertTrue(bos.size() < 150);
+        Assert.assertTrue(bos.size() > 200);
+        Assert.assertTrue(bos.size() < 250);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
-        Frame deserialized  = (Frame) ois.readObject();
+        TransformProvider deserialized  = (TransformProvider) ois.readObject();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-            Transform expectedIdentity = frame.getTransformTo(deserialized, date);
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));
             Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
             Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }

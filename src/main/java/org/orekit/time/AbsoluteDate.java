@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,12 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.TimeZone;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
@@ -220,7 +222,8 @@ public class AbsoluteDate
         final long   dl       = (long) FastMath.floor(sum);
 
         offset = (sum - dl) + residual;
-        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l + time.getMinute() - 720l) + dl;
+        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                        time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
 
     }
 
@@ -622,13 +625,36 @@ public class AbsoluteDate
      * @param secondsInDay seconds in the day
      * @param timeScale time scale in which the seconds in day are defined
      * @return a new instant
+     * @exception OrekitIllegalArgumentException if seconds number is out of range
      */
     public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
-                                             final TimeScale timeScale) {
-        return new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                new TimeComponents(secondsInDay),
-                                timeScale);
+                                             final TimeScale timeScale)
+        throws OrekitIllegalArgumentException {
+        final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+        final TimeComponents tc;
+        if (secondsInDay >= Constants.JULIAN_DAY) {
+            // check we are really allowed to use this number of seconds
+            final int    secondsA = 86399; // 23:59:59, i.e. 59s in the last minute of the day
+            final double secondsB = secondsInDay - secondsA;
+            final TimeComponents safeTC = new TimeComponents(secondsA, 0.0);
+            final AbsoluteDate safeDate = new AbsoluteDate(dc, safeTC, timeScale);
+            if (timeScale.minuteDuration(safeDate) > 59 + secondsB) {
+                // we are within the last minute of the day, the number of seconds is OK
+                return safeDate.shiftedBy(secondsB);
+            } else {
+                // let TimeComponents trigger an OrekitIllegalArgumentException
+                // for the wrong number of seconds
+                tc = new TimeComponents(secondsA, secondsB);
+            }
+        } else {
+            tc = new TimeComponents(secondsInDay);
+        }
+
+        // create the date
+        return new AbsoluteDate(dc, tc, timeScale);
+
     }
+
 
     /** Build an instance corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
@@ -790,6 +816,16 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
+        if (Double.isInfinite(offset)) {
+            // special handling for past and future infinity
+            if (offset < 0) {
+                return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
+            } else {
+                return new DateTimeComponents(DateComponents.MAX_EPOCH,
+                                              new TimeComponents(23, 59, 59.999));
+            }
+        }
+
         // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
         // using Møller-Knuth TwoSum algorithm without branching
         // the following statements must NOT be simplified, they rely on floating point
@@ -823,18 +859,71 @@ public class AbsoluteDate
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale instanceof UTCScale) {
-            final UTCScale utc = (UTCScale) timeScale;
-            if (utc.insideLeap(this)) {
-                // fix the seconds number to take the leap into account
-                timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                    timeComponents.getSecond() + utc.getLeap(this));
-            }
+        if (timeScale.insideLeap(this)) {
+            // fix the seconds number to take the leap into account
+            timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
+                                                timeComponents.getSecond() + timeScale.getLeap(this));
         }
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
 
+    }
+
+    /** Split the instance into date/time components for a local time.
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     * negative Westward UTC)
+     * @return date/time components
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public DateTimeComponents getComponents(final int minutesFromUTC)
+        throws OrekitException {
+
+        final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
+
+        // shift the date according to UTC offset, but WITHOUT touching the seconds,
+        // as they may exceed 60.0 during a leap seconds introduction,
+        // and we want to preserve these special cases
+        final double seconds = utcComponents.getTime().getSecond();
+
+        int minute = utcComponents.getTime().getMinute() + minutesFromUTC;
+        final int hourShift;
+        if (minute < 0) {
+            hourShift = (minute - 59) / 60;
+        } else if (minute > 59) {
+            hourShift = minute / 60;
+        } else {
+            hourShift = 0;
+        }
+        minute -= 60 * hourShift;
+
+        int hour = utcComponents.getTime().getHour() + hourShift;
+        final int dayShift;
+        if (hour < 0) {
+            dayShift = (hour - 23) / 24;
+        } else if (hour > 23) {
+            dayShift = hour / 24;
+        } else {
+            dayShift = 0;
+        }
+        hour -= 24 * dayShift;
+
+        return new DateTimeComponents(new DateComponents(utcComponents.getDate(), dayShift),
+                                      new TimeComponents(hour, minute, seconds, minutesFromUTC));
+
+    }
+
+    /** Split the instance into date/time components for a time zone.
+     * @param timeZone time zone
+     * @return date/time components
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public DateTimeComponents getComponents(final TimeZone timeZone)
+        throws OrekitException {
+        final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
+        return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
 
     /** Compare the instance with another date.
@@ -896,7 +985,34 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString();
+        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
+    }
+
+    /** Get a String representation of the instant location for a local time.
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     * negative Westward UTC).
+     * @return string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public String toString(final int minutesFromUTC)
+        throws OrekitException {
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(minutesFromUTC).toString(minuteDuration);
+    }
+
+    /** Get a String representation of the instant location for a time zone.
+     * @param timeZone time zone
+     * @return string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public String toString(final TimeZone timeZone)
+        throws OrekitException {
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(timeZone).toString(minuteDuration);
     }
 
 }

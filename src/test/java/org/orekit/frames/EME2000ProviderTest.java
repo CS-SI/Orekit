@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,8 +86,8 @@ public class EME2000ProviderTest {
         checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGCRFiau2000A), 5.8e-5, 6.4e-7);
 
         PVCoordinates pvGCRFiau2000B =
-            new PVCoordinates(new Vector3D(-40588150.3617,-11462167.0397, 27143.2125),
-                              new Vector3D(834.787458,-2958.305691,-1.172999));
+            new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.2125),
+                              new Vector3D(834.787458, -2958.305691, -1.172999));
         PVCoordinates pvEME2000EqB =
             new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
                               new Vector3D(834.787667, -2958.305632, -1.172968));
@@ -102,7 +102,7 @@ public class EME2000ProviderTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, rb[3][3], rp[3][3], rbp[3][3];
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -170,7 +170,7 @@ public class EME2000ProviderTest {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 Assert.assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
-                
+
             }
         }
     }

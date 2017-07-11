@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,9 +23,9 @@
  * It provides an abstract class, {@link org.orekit.orbits.Orbit}, extended
  * in four different ways corresponding to the different possible representations
  * of orbital parameters. As of version 3.0, {@link org.orekit.orbits.KeplerianOrbit
- * keplerian}, {@link org.orekit.orbits.CircularOrbit circular}, {@link
+ * Keplerian}, {@link org.orekit.orbits.CircularOrbit circular}, {@link
  * org.orekit.orbits.EquinoctialOrbit equinoctial} and {@link
- * org.orekit.orbits.CartesianOrbit cartesian} representations are supported.
+ * org.orekit.orbits.CartesianOrbit Cartesian} representations are supported.
  * </p>
  *
  * <h3>Design History</h3>
@@ -35,13 +35,12 @@
  * resulted in huge systems which were both difficult to understand, difficult to
  * use, difficult to maintain and difficult to reuse. They mixed several different notions:
  * <ul>
- *   <li>representation (keplerian, cartesian ...)</li>
+ *   <li>representation (Keplerian, Cartesian ...)</li>
  *   <li>kinematics (parameters) and dynamics (propagation)</li>
  *   <li>physical models (complete or simplified force models, often implicitly assumed with no real reference)</li>
  *   <li>filtering (osculating and centered or mean parameters, related to some models)</li>
  * </ul>
- * They also often forgot all frames issues.
- * </p>
+ * <p> They also often forgot all frames issues.
  *
  * <p>
  * The current design has been reached by progressively removing spurious layers and
@@ -78,11 +77,11 @@
  * <p>
  * It is important to note that some parameters are available even if they seem
  * out of place with regard to the representation. For example the semi-major axis is
- * available even in cartesian representation and the position/velocity even in
- * non-cartesian representation. This choice is a pragmatic one. These parameters
+ * available even in Cartesian representation and the position/velocity even in
+ * non-Cartesian representation. This choice is a pragmatic one. These parameters
  * are really used in many places in algorithms, for computation related to
  * period (setting a convergence threshold or a search interval) or geometry
- * (computing swath or lightning). A side-effect of this choice is that all orbits
+ * (computing swath or lighting). A side-effect of this choice is that all orbits
  * do include a value for μ, the acceleration coefficient of the central body.
  * This value is only used for the representation of the parameters and for conversion
  * purposes, it is <em>not</em> always the same as the value used for propagation (but
@@ -119,7 +118,7 @@
  * <p>
  * All representations can be converted into all other ones. No error is triggered
  * if some conversion is ambiguous (like converting a perfectly circular orbit from
- * cartesian representation to keplerian representation, with an ambiguity on the
+ * Cartesian representation to Keplerian representation, with an ambiguity on the
  * perigee argument). This design choice is the result of <strong>many</strong>
  * different attempts and pragmatic considerations. The rationale is that from a
  * physical point of view, there is no singularity. The singularity is only introduced
@@ -138,7 +137,7 @@
  * We therefore consider it is the responsibility of the user to be aware of the correct
  * definition of the different representations and of the singularities relative to each
  * one of them. If the user really needs to do some conversion (for example to provide
- * an orbit as Two-Lines Elements later on, remembering than TLE do use keplerian-like
+ * an orbit as Two-Lines Elements later on, remembering than TLE do use Keplerian-like
  * parameters), then he can do so.
  * </p>
  *

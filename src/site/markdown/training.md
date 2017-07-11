@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Training
-========
+# Training
 
-Overview
---------
+## Overview
 
 You can get the most from Orekit by attending the training sessions
 organized by CS Systèmes d'Information. The instructors are
@@ -30,8 +28,7 @@ to this strong orientation towards numerical computation and its focus on
 practical problems encountered in this field, such as reliability, numerical
 robustness and performance.
 
-Training programs
------------------
+## Training programs
 
 The complete set is split in three sessions
 
@@ -79,7 +76,7 @@ At the end of this session, trainees will know the syntax of the Java language a
 gained an initial development experience that equips them to read and understand existing
 Java source and to develop small standalone Java applications.
 
-### Developing numerical applications in the Java language - using Apache Commons Math and Orekit
+### Developing numerical applications in the Java language - using Hipparchus and Orekit
 
 This session is also oriented towards trainees who are not computer science experts
 but rather space flight dynamics engineers and numerical analysts. It adds the necessary
@@ -88,8 +85,8 @@ development, especially in mathematics and space flight dynamics fields. The fol
 topics are covered:
 
    * Setting up the Eclipse integrated development environment
-   * Setting up the free software libraries Apache Commons Math and Orekit
-   * Tour of all high level packages of Apache Commons Math and Orekit
+   * Setting up the free software libraries Hipparchus and Orekit
+   * Tour of all high level packages of Hipparchus and Orekit
    * Design patterns for development of robust and high performance numerical computation applications
    * Development of a complete standalone space flight dynamics application using existing Orekit
      library objects
@@ -103,30 +100,18 @@ session 3
 At the end of this session, trainees will have a pragmatic knowledge of the benefits of
 object-oriented paradigm for the development of scientific algorithms. They will understand
 some common pitfalls and know how to avoid them in developing robust and high performance code.
-They will know the available concepts and algorithms in the Apache Commons Math and Orekit
+They will know the available concepts and algorithms in the Hipparchus and Orekit
 libraries. They have their first development experience of space flight dynamics applications
 in an integrated development environment with these libraries.
 
-Training sessions organization
-------------------------------
+## Training sessions organization
 
-The training sessions can be organized both at your premises anywhere in the world or at CS
-premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training
-sessions at CS premises are shown in the following table:
-
-|                                    session                                                               | industry, commercial companies | academics, research laboratories |  students  |
-|----------------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
-|  Object oriented technology for numerical computing (session 1)                                          |      600 €                     |      300 €                       | 150 €      |
-|  Object oriented concepts and the Java language (session 2)                                              |     2400 €                     |     1200 €                       | 600 €      |
-|  Developing numerical applications in the Java language using Apache commons-math and Orekit (session 3) |     1800 €                     |      900 €                       | 450 €      |
-prices for training sessions at CS premises
-
-The prices above include training fees, a USB stick containing lecture material and exercises,
-and lunches. They include neither travel nor hotel fees.
-
-For information about scheduled sessions or if you want to set up a session at your premises,
-please use the general orekit email address: [orekit@c-s.fr](mailto:orekit@c-s.fr) or ask
-CS space flight dynamics department at the following address:
+The training sessions can be organized both at your premises anywhere in the
+world or at CS premises in Toulouse (France). All sessions are limited to
+8 students. For information about scheduled sessions or if you want to set up
+a session at your premises, please use the general orekit email address:
+[orekit@c-s.fr](mailto:orekit@c-s.fr) or ask CS space flight dynamics
+department at the following address:
 
     CS Systèmes d'Information
     BU E-space & Geoinformation

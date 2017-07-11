@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math3.util.FastMath;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -178,6 +182,30 @@ public class PolynomialParserTest {
         Assert.assertEquals(FastMath.toRadians(-198620.54 / 3600000000.0), coefficients[3], 1.0e-14);
         Assert.assertEquals(FastMath.toRadians(-46.05 / 3600000000.0), coefficients[4], 1.0e-14);
         Assert.assertEquals(FastMath.toRadians(5.98 / 3600000000.0), coefficients[5], 1.0e-14);
+    }
+
+    @Test
+    public void testEnum() throws NoSuchMethodException, SecurityException,
+                                  IllegalAccessException, IllegalArgumentException,
+                                  InvocationTargetException {
+        Class<?> e = null;
+        for (final Class<?> c : PolynomialParser.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("Unit")) {
+                e = c;
+            }
+        }
+        Method m = e.getDeclaredMethod("valueOf", String.class);
+        m.setAccessible(true);
+        for (String n : Arrays.asList("RADIANS", "DEGREES", "ARC_SECONDS",
+                                      "MILLI_ARC_SECONDS", "MICRO_ARC_SECONDS", "NO_UNITS")) {
+            Assert.assertEquals(n, m.invoke(null, n).toString());
+        }
+        try {
+            m.invoke(null, "inexistent");
+            Assert.fail("an exception should have been thrown");
+        } catch (InvocationTargetException ite) {
+            Assert.assertTrue(ite.getCause() instanceof IllegalArgumentException);
+        }
     }
 
 }

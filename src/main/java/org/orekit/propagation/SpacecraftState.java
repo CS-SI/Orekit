@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,22 +18,24 @@ package org.orekit.propagation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -59,7 +61,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple keplerian model for orbit, a linear extrapolation for attitude
+ * a simple Keplerian model for orbit, a linear extrapolation for attitude
  * taking the spin rate into account and no mass change. It is <em>not</em>
  * intended as a replacement for proper orbit and attitude propagation but
  * should be sufficient for either small time shifts or coarse accuracy.
@@ -352,7 +354,7 @@ public class SpacecraftState
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
-    public SpacecraftState addAdditionalState(final String name, final double ... value) {
+    public SpacecraftState addAdditionalState(final String name, final double... value) {
         final Map<String, double[]> newMap = new HashMap<String, double[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
@@ -419,34 +421,35 @@ public class SpacecraftState
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model for orbit, a Taylor expansion for absolute
-     * position-velocity-acceleration, a linear extrapolation for attitude
-     * taking the spin rate into account and neither mass nor additional states
-     * changes. It is <em>not</em> intended as a replacement for proper orbit
+     * simple models. For orbits, the model is a Keplerian one if no derivatives
+     * are available in the orbit, or Keplerian plus quadratic effect of the
+     * non-Keplerian acceleration if derivatives are available. For attitude,
+     * a polynomial model is used. Neither mass nor additional states change.
+     * Shifting is <em>not</em> intended as a replacement for proper orbit
      * and attitude propagation but should be sufficient for small time shifts
      * or coarse accuracy.
      * </p>
      * <p>
-     * As a rough order of magnitude, the following table shows the interpolation
+     * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
-     * propagator} for an 800km altitude nearly circular polar Earth orbit with
-     * {@link org.orekit.attitudes.BodyCenterPointing body center pointing}. Beware
-     * that these results may be different for other orbits.
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
+     * <caption>Extrapolation Error</caption>
      * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
-     * <th>position error (m)</th><th>velocity error (m/s)</th>
-     * <th>attitude error (&deg;)</th></tr>
-     * <tr><td bgcolor="#eeeeff"> 60</td><td>  20</td><td>1</td><td>0.001</td></tr>
-     * <tr><td bgcolor="#eeeeff">120</td><td> 100</td><td>2</td><td>0.002</td></tr>
-     * <tr><td bgcolor="#eeeeff">300</td><td> 600</td><td>4</td><td>0.005</td></tr>
-     * <tr><td bgcolor="#eeeeff">600</td><td>2000</td><td>6</td><td>0.008</td></tr>
-     * <tr><td bgcolor="#eeeeff">900</td><td>4000</td><td>6</td><td>0.010</td></tr>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
      * </table>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
-     * except for the mass which stay unchanged
+     * except for the mass and additional states which stay unchanged
      */
     public SpacecraftState shiftedBy(final double dt) {
         if (absPva == null)
@@ -480,20 +483,20 @@ public class SpacecraftState
      * similar trajectory data
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Collection<SpacecraftState> sample)
-        throws OrekitException, OrekitIllegalStateException {
+                                       final Stream<SpacecraftState> sample)
+            throws OrekitException {
 
         // prepare interpolators
         final List<Orbit> orbits;
         final List<AbsolutePVCoordinates> absPvas;
         if (isOrbitDefined()) {
-            orbits  = new ArrayList<Orbit>(sample.size());
+            orbits  = new ArrayList<Orbit>();
             absPvas = null;
         } else {
             orbits  = null;
-            absPvas = new ArrayList<AbsolutePVCoordinates>(sample.size());
+            absPvas = new ArrayList<AbsolutePVCoordinates>();
         }
-        final List<Attitude> attitudes = new ArrayList<Attitude>(sample.size());
+        final List<Attitude> attitudes = new ArrayList<Attitude>();
         final HermiteInterpolator massInterpolator = new HermiteInterpolator();
         final Map<String, HermiteInterpolator> additionalInterpolators =
                 new HashMap<String, HermiteInterpolator>(additional.size());
@@ -502,21 +505,29 @@ public class SpacecraftState
         }
 
         // extract sample data
-        for (final SpacecraftState state : sample) {
-            final double deltaT = state.getDate().durationFrom(date);
-            if (isOrbitDefined()) {
-                orbits.add(state.getOrbit());
-            } else {
-                absPvas.add(state.getAbsPVA());
-            }
-            attitudes.add(state.getAttitude());
-            massInterpolator.addSamplePoint(deltaT,
-                                            new double[] {
-                                                state.getMass()
-                                            });
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
+        try {
+            sample.forEach(state -> {
+                try {
+                    final double deltaT = state.getDate().durationFrom(date);
+                    if (isOrbitDefined()) {
+                        orbits.add(state.getOrbit());
+                    } else {
+                        absPvas.add(state.getAbsPVA());
+                    }
+                    attitudes.add(state.getAttitude());
+                    massInterpolator.addSamplePoint(deltaT,
+                                                    new double[] {
+                                                         state.getMass()
+                                                    });
+                    for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+                    }
+                } catch (OrekitException oe) {
+                    throw new OrekitExceptionWrapper(oe);
+                }
+            });
+        } catch (OrekitExceptionWrapper oew) {
+            throw oew.getException();
         }
 
         // perform interpolations
@@ -624,11 +635,11 @@ public class SpacecraftState
      * @param state state to compare to instance
      * @exception OrekitException if either instance or state supports an additional
      * state not supported by the other one
-     * @exception DimensionMismatchException if an additional state does not have
+     * @exception MathIllegalStateException if an additional state does not have
      * the same dimension in both states
      */
     public void ensureCompatibleAdditionalStates(final SpacecraftState state)
-        throws OrekitException, DimensionMismatchException {
+        throws OrekitException, MathIllegalStateException {
 
         // check instance additional states is a subset of the other one
         for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
@@ -638,7 +649,8 @@ public class SpacecraftState
                                           entry.getKey());
             }
             if (other.length != entry.getValue().length) {
-                throw new DimensionMismatchException(other.length, entry.getValue().length);
+                throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                    other.length, entry.getValue().length);
             }
         }
 
@@ -700,8 +712,8 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getMu() : Double.NaN;
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
      * @return keplerian period in seconds, or {code Double.NaN} if the
      * state is contains an absolute position-velocity-acceleration rather
@@ -711,8 +723,8 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getKeplerianPeriod() : Double.NaN;
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
      * @return keplerian mean motion in radians per second, or {code Double.NaN} if the
      * state is contains an absolute position-velocity-acceleration rather
@@ -826,7 +838,14 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getI() : Double.NaN;
     }
 
-    /** Get the {@link TimeStampedPVCoordinates} in state definition frame.
+    /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
+     * <p>
+     * Compute the position and velocity of the satellite. This method caches its
+     * results, and recompute them only when the method is called with a new value
+     * for mu. The result is provided as a reference to the internally cached
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
+     * </p>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
@@ -834,6 +853,13 @@ public class SpacecraftState
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.
+     * <p>
+     * Compute the position and velocity of the satellite. This method caches its
+     * results, and recompute them only when the method is called with a new value
+     * for mu. The result is provided as a reference to the internally cached
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
+     * </p>
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed

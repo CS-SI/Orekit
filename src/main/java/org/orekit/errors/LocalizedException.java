@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.errors;
 
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** This interface specified methods implemented by localized exception classes.
  * @author Luc Maisonobe
@@ -27,11 +27,11 @@ import org.apache.commons.math3.exception.util.Localizable;
 
 public interface LocalizedException {
 
-/** Gets the message in a specified locale.
+    /** Gets the message in a specified locale.
      * @param locale Locale in which the message should be translated
      * @return localized message
      */
-    String getMessage(final Locale locale);
+    String getMessage(Locale locale);
 
     /** Get the localizable specifier of the error message.
      * @return localizable specifier of the error message

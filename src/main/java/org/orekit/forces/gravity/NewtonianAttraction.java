@@ -16,37 +16,78 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.util.FastMath;
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
  */
-public class NewtonianAttraction extends AbstractParameterizable implements ForceModel {
+public class NewtonianAttraction extends AbstractForceModel {
 
     /** Name of the single parameter of this model: the central attraction coefficient. */
     public static final String CENTRAL_ATTRACTION_COEFFICIENT = "central attraction coefficient";
 
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
+
     /** Central attraction coefficient (m^3/s^2). */
     private double mu;
+
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
 
    /** Simple constructor.
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public NewtonianAttraction(final double mu) {
-        super(CENTRAL_ATTRACTION_COEFFICIENT);
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                       mu, MU_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    NewtonianAttraction.this.mu = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        }
+
         this.mu = mu;
+        this.factory = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -56,7 +97,7 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
         throws OrekitException {
 
         final DerivativeStructure r2 = position.getNormSq();
-        return new FieldVector3D<DerivativeStructure>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
+        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
 
     }
 
@@ -68,8 +109,8 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
 
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
-        final DerivativeStructure muds     = new DerivativeStructure(1, 1, 0, mu);
-        return new FieldVector3D<DerivativeStructure>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
+        final DerivativeStructure muds     = factory.variable(0, mu);
+        return new FieldVector3D<>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
 
     }
 
@@ -81,28 +122,31 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return mu;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        this.mu = value;
-    }
-
-    /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
         adder.addKeplerContribution(mu);
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

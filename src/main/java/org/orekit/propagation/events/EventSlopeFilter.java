@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 /** Wrapper used to detect only increasing or decreasing events.
  *
  * <p>This class is heavily based on the class EventFilter from the
- * Apache Commons Math library. The changes performed consist in replacing
+ * Hipparchus library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  *
@@ -54,9 +54,9 @@ import org.orekit.time.AbsoluteDate;
  * EventDetector#g(SpacecraftState) g function} and to the {@link
  * EventDetector#eventOccurred(SpacecraftState, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
- * wrapped regular {@link EventDetector event detector} will the see only
+ * wrapped regular {@link EventDetector event detector} will then see only
  * the interesting events, i.e. either only {@code increasing} events or
- * {@code decreasing} events. the number of calls to the {@link
+ * only {@code decreasing} events. The number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
  * @see EventEnablingPredicateFilter
  */
@@ -112,7 +112,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @since 6.1
      */
     private EventSlopeFilter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<EventSlopeFilter<T>> handler,
+                             final int maxIter, final EventHandler<? super EventSlopeFilter<T>> handler,
                              final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -124,7 +124,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     /** {@inheritDoc} */
     @Override
     protected EventSlopeFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                         final int newMaxIter, final EventHandler<EventSlopeFilter<T>> newHandler) {
+                                         final int newMaxIter, final EventHandler<? super EventSlopeFilter<T>> newHandler) {
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 

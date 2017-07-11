@@ -1,5 +1,5 @@
 OREKIT
-Copyright 2002-2015 CS Systèmes d'Information
+Copyright 2002-2017 CS Systèmes d'Information
 
 This product includes software developed by
 CS Systèmes d'Information (http://www.c-s.fr/)
@@ -30,3 +30,12 @@ The Apache Software Foundation (http://www.apache.org/)
 
 This product depends on software developed by
 The Apache Software Foundation (http://www.apache.org/)
+
+This product depends on software developed by
+The Hipparchus project (https://hipparchus.org/)
+
+This product includes software translated from original work developed by
+M. Picone, A.E. Hedin, D. Drob (Naval Research Laboratory)
+
+This product includes software translated from original work developed by
+Dominik Brodowski

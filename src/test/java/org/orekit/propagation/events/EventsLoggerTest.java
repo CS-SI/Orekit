@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.propagation.events;
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +51,12 @@ public class EventsLoggerTest {
     @Test
     public void testLogUmbra() throws OrekitException {
         EventsLogger logger = new EventsLogger();
-        propagator.addEventDetector(logger.monitorDetector(umbraDetector));
+        @SuppressWarnings("unchecked")
+        EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
+                withMaxIter(200);
+        Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
+        Assert.assertEquals(200, monitored.getMaxIterationCount());
+        propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
@@ -171,10 +176,6 @@ public class EventsLoggerTest {
             public Action eventOccurred(SpacecraftState s, EclipseDetector detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
-            }
-
-            public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                return oldState;
             }
 
         });

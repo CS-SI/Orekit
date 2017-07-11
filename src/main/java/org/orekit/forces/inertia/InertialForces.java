@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,29 @@
  */
 package org.orekit.forces.inertia;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.ode.UnknownParameterException;
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Inertial force model.
  *
@@ -58,6 +65,7 @@ public class InertialForces extends AbstractParameterizable implements ForceMode
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addContribution(final SpacecraftState s,
                                 final TimeDerivativesEquations adder)
         throws OrekitException {
@@ -105,39 +113,57 @@ public class InertialForces extends AbstractParameterizable implements ForceMode
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
                                                                       final FieldVector3D<DerivativeStructure> velocity,
                                                                       final FieldRotation<DerivativeStructure> rotation,
                                                                       final DerivativeStructure mass) throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO implement this method
+        throw new UnsupportedOperationException();
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
                                                                       final String paramName)
         throws OrekitException {
-        // TODO Auto-generated method stub
+        // this method will be removed some time
         return null;
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        // TODO Auto-generated method stub
-        return new EventDetector[0];
-    }
-
     @Override
-    public double getParameter(final String name) throws UnknownParameterException {
-        // TODO Auto-generated method stub
-        return 0;
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void setParameter(final String name, final double value)
-            throws UnknownParameterException {
-        // TODO Auto-generated method stub
-
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        // TODO implement this method
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>>
+        getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver getParameterDriver(final String name)
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, "<none>");
+    }
+
 }

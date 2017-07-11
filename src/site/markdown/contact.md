@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Contacts
-========
+# Contacts
 
-Mailing lists
--------------
+## Mailing lists
 
 Most discussions should occur on the public mailing lists.
 
@@ -30,16 +28,14 @@ Please register to these mailing lists before attempting to post!
 
 We're preventing unregistered members from posting in order to prevent spam. Thank you.
 
-Technical contact
------------------
+## Technical contact
 
 If for some reason you cannot use the public lists, you can reach the CS
 Systèmes d'Information Orekit team for any question (either technically
 oriented or administrative) at the following email address:
 [orekit@c-s.fr](mailto:orekit@c-s.fr)
 
-Administrative contact
-----------------------
+## Administrative contact
 
 If you want to discuss with the space division staff at CS Systèmes d'Information,
 please use the following address:

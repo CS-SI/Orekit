@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,6 @@
  *   <li>{@link org.orekit.time.AbsoluteDate#PAST_INFINITY Past infinity}: at infinity in the past,</li>
  *   <li>{@link org.orekit.time.AbsoluteDate#FUTURE_INFINITY Future infinity}: at infinity in the future.</li>
  * </ul>
- * </p>
  *
  * <p>
  * The second definition, which could be the source of some confusion if not used with care,
@@ -85,7 +84,6 @@
  *       The Greenwich Mean Sidereal Time is the hour angle between the meridian
  *       of Greenwich and mean equinox of date at 0h UT1.</li>
  * </ul>
- * </p>
  *
  * <p>
  * Once it is built, an {@link org.orekit.time.AbsoluteDate} can be compared to

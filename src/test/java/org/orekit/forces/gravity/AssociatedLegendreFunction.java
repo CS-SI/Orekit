@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.dfp.Dfp;
-import org.apache.commons.math3.dfp.DfpField;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
 
 /** Implementation of associated Legendre functions from defining formulas.
  * <p>
@@ -35,7 +35,7 @@ import org.apache.commons.math3.dfp.DfpField;
  */
 class AssociatedLegendreFunction {
 
-    static final Map<Integer,List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<Integer, List<Dfp[]>>();
+    static final Map<Integer, List<Dfp[]>> LEGENDRE_POLYNOMIALS = new HashMap<Integer, List<Dfp[]>>();
     final int m;
     final Dfp[] polynomial;
     final Dfp normalization;

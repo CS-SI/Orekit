@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Propagation
-===========
+# Propagation
 
 This package provides tools to propagate orbital states with different methods.
 	
-Overview
---------
+## Overview
 
 Propagation is the prediction of the evolution of a system from an initial state.
 In Orekit, this initial state is represented by a `SpacecraftState`, which is a 
@@ -32,8 +30,7 @@ the `PVCoordinatesProvider` interface) and several implementations.
 ![propagation class diagram](../images/design/propagation-class-diagram.png)
 
 
-Propagation modes
------------------
+## Propagation modes
 
 Depending on the needs of the calling application, all propagators can be used in
 different modes:
@@ -88,8 +85,7 @@ phase using the generated ephemeris.
 
 ![ephemeris generation mode class diagram](../images/design/ephemeris-generation-mode-sequence-diagram.png)
 
-Events management
------------------
+## Events management
 
 All propagators, including analytical ones, support discrete events handling during
 propagation. This feature is activated by registering events detectors as defined by
@@ -132,10 +128,17 @@ There are also several predefined events detectors already available, amongst wh
   elevation with respect to a ground point,
 * an `AltitudeDetector` which is triggered when satellite crosses a predefined altitude limit
   and can be used to compute easily operational forecasts, 
-* a `CircularFieldOfViewDetector` and a `DihedralFieldOfViewDetector`, which are triggered
-  when some target enters or exits a satellite sensor field of view, 
-* a `GeographicZoneDetector`, which are triggered the spacecraft enters or leave a
+* a `FieldOfViewDetector` which is triggered when some target enters or exits a satellite
+  sensor Field Of View (any shape), 
+* a `CircularFieldOfViewDetector` which is triggered when some target enters or exits a satellite
+  sensor Field Of View (circular shape), 
+* a `FootprintOverlapDetector` which is triggered when a sensor Field Of View (any shape,
+  even split in non-connected parts or containing holes) overlaps a geographic zone, which
+  can be non-convex, split in different sub-zones, have holes, contain the pole,
+* a `GeographicZoneDetector`, which is triggered when the spacecraft enters or leave a
   zone, which can be non-convex, split in different sub-zones, have holes, contain the pole, 
+* a `GroundFieldOfViewDetector`, which is triggered when the spacecraft enters or leave
+  a ground based Field Of View, which can be non-convex, split in different sub-zones, have holes, 
 * an `EclipseDetector`, which is triggered when some body enters or exits the umbra or the
   penumbra of another occulting body,
 * an `ApsideDetector`, which is triggered at apogee and perigee,
@@ -147,7 +150,10 @@ There are also several predefined events detectors already available, amongst wh
   `LongitudeExtremumDetector`, which are triggered when satellite position with respect
   to central body reaches some predefined values, 
 * an `AlignmentDetector`, which is triggered when satellite and some body are aligned
-  in the orbital plane...
+  in the orbital plane,
+* an `AngularSeparationDetector`, which is triggered when angular separation between satellite and
+  some beacon as seen by an observer goes below a threshold. The beacon is typically the Sun, the
+  observer is typically a ground station
 
 An `EventShifter` is also provided in order to slightly shift the events occurrences times.
 A typical use case is for handling operational delays before or after some physical event
@@ -171,8 +177,7 @@ an accurate search for events that will ultimately be ignored.
 
 Event occurring can be automatically logged using the `EventsLogger` class.
 
-Additional states
------------------
+## Additional states
 
 All propagators can be used to propagate user additional states on top of regular
 orbit attitude and mass state. These additional states will be available throughout
@@ -196,16 +201,14 @@ The first two cases correspond to additional states managed by the propagator, t
 last case not being considered as managed. The list of states managed by the propagator
 is available using the `getManagedAdditionalStates` and `isAdditionalStateManaged`. 
 
-Available propagators
----------------------
+## Available propagators
 
 The following class diagram shows the available propagators
 
 ![available propagators class diagram](../images/design/available-propagators-class-diagram.png)
 
 
-Analytical propagation
-----------------------
+## Analytical propagation
 
 ### Keplerian propagation
 
@@ -254,11 +257,10 @@ into account. The additive maneuvers can take both the direct effect (Keplerian 
 and the induced effect due for example to J2 which changes ascending node rate when
 a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite.
 	
-Numerical propagation
----------------------
+## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.
-Based on Apache Commons Math ordinary differential equations integrators, the
+Based on Hipparchus ordinary differential equations integrators, the
 `NumericalPropagator` class realizes the interface between  space mechanics and
 mathematical resolutions. Despite its utilization seems daunting on first sight,
 it is in fact quite straigthforward to use.
@@ -278,7 +280,7 @@ during maneuvers. The user only needs to register the various force models neede
 the simulation. Various force models are already available in the library and specialized
 ones can be added by users easily for specific needs.
  
-The integrators (_first order integrators_) provided by Apache Commons Math need 
+The integrators (_first order integrators_) provided by Hipparchus need 
 the state vector at t0, the state vector first time derivative at t0,
 and then calculates the next step state vector, and asks for the next first 
 time derivative, etc. until it reaches the final asked date. These underlying numerical
@@ -344,12 +346,11 @@ radiation pressure implement this interface by themselves. Some more complex for
 implement the interface and will be automatically wrapped inside a Jacobianizer class which will
 use finite differences to compute the local Jacobians.
 
-Semianalytical propagation
---------------------------
+## Semianalytical propagation
 
 Semianalytical propagation is an intermediate between analytical and numerical propagation.
 It retains the best of both worlds, speed from analytical models and accuracy from numerical models.
 Semianalytical propagation is implemented using Draper Semianalytical Satellite Theory (DSST).
 
-Since version 7.0, both mean elements equations of motion modelsand short periodic terms
+Since version 7.0, both mean elements equations of motion models and short periodic terms
 have been implemented and validated.

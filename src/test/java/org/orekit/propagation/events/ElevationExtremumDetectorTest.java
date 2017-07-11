@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +51,9 @@ public class ElevationExtremumDetectorTest {
 
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), FastMath.toRadians(66.6), 300.0);
         final ElevationExtremumDetector raw =
-                new ElevationExtremumDetector(60.0, 1.e-6, new TopocentricFrame(earth, gp, "test")).
+                new ElevationExtremumDetector(new TopocentricFrame(earth, gp, "test")).
+                withMaxCheck(60).
+                withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
                 new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
@@ -59,6 +61,7 @@ public class ElevationExtremumDetectorTest {
         Assert.assertEquals(60.0, raw.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
+        Assert.assertEquals("test", raw.getTopocentricFrame().getName());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class TLETest {
         Assert.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
         Assert.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
-        Assert.assertEquals(tle.getElementNumber(), 2 ,0);
+        Assert.assertEquals(tle.getElementNumber(), 2 , 0);
 
         line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
@@ -358,7 +358,7 @@ public class TLETest {
                             double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
                             cumulated += normDifPos;
-                            Assert.assertEquals(0, normDifPos, 2e-3);;
+                            Assert.assertEquals(0, normDifPos, 2e-3);
                             Assert.assertEquals(0, normDifVel, 1e-5);
 
 
@@ -386,6 +386,24 @@ public class TLETest {
         PVCoordinates pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
         Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm(), 1.0e-3);
         Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm(), 1.0e-6);
+    }
+
+    @Test
+    public void testSymmetryAfterLeapSecondIntroduction() throws OrekitException {
+        checkSymmetry("1 34602U 09013A   12187.35117436  .00002472  18981-5  42406-5 0  9995",
+                      "2 34602  96.5991 210.0210 0006808 112.8142 247.3865 16.06008103193411");
+    }
+
+    @Test
+    public void testOldTLE() throws OrekitException {
+        String line1 = "1 15427U          85091.94293084 0.00000051  00000+0  32913-4 0   179";
+        String line2 = "2 15427  98.9385  46.0219 0015502 321.4354  38.5705 14.11363211 15580";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+        TLE tle = new TLE(line1, line2);
+        Assert.assertEquals(15427, tle.getSatelliteNumber());
+        Assert.assertEquals(0.00000051,
+                            tle.getMeanMotionFirstDerivative() * Constants.JULIAN_DAY * Constants.JULIAN_DAY / (4 * FastMath.PI),
+                            1.0e-15);
     }
 
     @Before

@@ -18,6 +18,59 @@
 ## Physical data are read from the src/tutorial/resources/tutorial-orekit-data
 ## directory.
 
+### Frames definition
+# body, choose one from the list (default is CIO/2010-based ITRF simple EOP)
+# The "accurate EOP" ones are not really adapted for this
+# program, they are more related to geodesy when ground accuracy
+# below 20mm is needed
+# body.frame              = CIO/1996-based ITRF simple EOP
+# body.frame              = CIO/1996-based ITRF accurate EOP
+# body.frame              = CIO/2003-based ITRF simple EOP
+# body.frame              = CIO/2003-based ITRF accurate EOP
+body.frame              = CIO/2010-based ITRF simple EOP
+# body.frame              = CIO/2010-based ITRF accurate EOP
+# body.frame              = Equinox/1996-based ITRF simple EOP
+# body.frame              = Equinox/1996-based ITRF accurate EOP
+# body.frame              = Equinox/2003-based ITRF simple EOP
+# body.frame              = Equinox/2003-based ITRF accurate EOP
+# body.frame              = Equinox/2010-based ITRF simple EOP
+# body.frame              = Equinox/2010-based ITRF accurate EOP
+# body.frame              = TIRF simple EOP
+# body.frame              = TIRF accurate EOP
+# body.frame              = TIRF simple EOP
+# body.frame              = TIRF accurate EOP
+# body.frame              = TIRF simple EOP
+# body.frame              = TIRF accurate EOP
+# body.frame              = GTOD/1996 simple EOP
+# body.frame              = GTOD/1996 accurate EOP
+# body.frame              = GTOD/2003 simple EOP
+# body.frame              = GTOD/2003 accurate EOP
+# body.frame              = GTOD/2010 simple EOP
+# body.frame              = GTOD/2010 accurate EOP
+
+# Inertial frame, choose one from the list (default is EME2000).
+# The "accurate EOP" ones are not really adapted for this
+# program, they are more related to geodesy when ground accuracy
+# below 20mm is needed
+# inertial.frame = GCRF
+# inertial.frame = TOD/1996 simple EOP
+# inertial.frame = TOD/1996 accurate EOP
+# inertial.frame = TOD/2003 simple EOP
+# inertial.frame = TOD/2003 accurate EOP
+# inertial.frame = TOD/2010 simple EOP
+# inertial.frame = TOD/2010 accurate EOP
+# inertial.frame = MOD/1996
+# inertial.frame = MOD/2003
+# inertial.frame = MOD/2010
+inertial.frame = EME2000
+# inertial.frame = CIRF/1996 simple EOP
+# inertial.frame = CIRF/1996 accurate EOP
+# inertial.frame = CIRF/2003 simple EOP
+# inertial.frame = CIRF/2003 accurate EOP
+# inertial.frame = CIRF/2010 simple EOP
+# inertial.frame = CIRF/2010 accurate EOP
+# inertial.frame = VEIS1950
+
 ### Orbit definition
 ## date of the orbital parameters (UTC)
 orbit.date = 2011-12-12T11:57:20.000
@@ -81,18 +134,47 @@ orbit.angle.type = MEAN
 ## Velocity along Z in inertial frame (km/s)
 # orbit.cartesian.vz = 0.0
 
-### Do we consider orbital elements as osculating ? (true/false) [false]
-orbit.is.osculating = false
+### Do we consider initial orbital elements as osculating? (true/false) [false]
+initial.orbit.is.osculating = false
+
+### Do we output osculating orbital elements? (true/false) [inherited from initial.orbit.is.osculating by default]
+output.orbit.is.osculating = false
 
 ### Force models
 
 ## Spacecraft mass (kg) [1000.]
 # mass = 1000.
 
+## Central body rotation rate (beware, it is in rad/s because it is the traditional unit for this) [7.292115e-5]
+#  the default value (7.292115e-5 rad/s) corresponds to WGS84 standard
+central.body.rotation.rate = 7.292115e-5
 ## Central body gravity potential degree
-central.body.degree = 36
+central.body.degree = 6
 ## Central body gravity potential order
-central.body.order  =  0
+central.body.order  =  6
+## short period limits
+max.degree.zonal.short.periods                          =  6
+
+# typically min(max.degree.zonal.short.periods - 1, 4)
+max.eccentricity.power.zonal.short.periods              =  4
+
+# typically 2 * max.degree.zonal.short.periods + 1
+max.frequency.true.longitude.zonal.short.periods        = 13
+
+max.degree.tesseral.short.periods                       =  6
+max.order.tesseral.short.periods                        =  6
+
+# typically min(max.degree.tesseral.short.periods - 1, 4)
+max.eccentricity.power.tesseral.short.periods           =  4
+
+# typically min(max.degree.tesseral.short.periods + max.eccentricity.power.tesseral.short.periods, 12)
+max.frequency.mean.longitude.tesseral.short.periods     = 10
+
+max.degree.tesseral.m.dailies.short.periods             =  6
+max.order.tesseral.m.dailies.short.periods              =  6
+
+# typically min(max.degree.tesseral.short.periods - 2, 4)
+max.eccentricity.power.tesseral.m.dailies.short.periods =  4
 
 ## 3rd body Moon (true/false) [false]
 third.body.moon = false
@@ -125,11 +207,44 @@ duration.in.days = 365.0
 ## Time step between printed elements (seconds)
 output.step = 86400.0
 
+### Output parameters
+## Output Keplerian parameters in output file (true/false) [true]
+output.Keplerian = true
+## Output equinoctial parameters in output file (true/false) [true]
+output.equinoctial = true
+## Output Cartesian parameters in output file (true/false) [true]
+output.Cartesian = true
+## Short period coefficients to output (comma separated list of coefficients names, or "none", or "all") [none]
+## in order to get the list of available coefficients names, one should perform a first
+## run with a value set to all and then look at the output file header. Note that the
+## (a), (h), (k), (p), (q) and (L) parts do not belong to the coefficient names, they
+## describe the 6 columns that correspond to one coefficient.
+## Beware that the list is huge ...
+output.short.period.coefficients = none
+
 ## Fixed integration step size for propagation (seconds) [-1.]
 ## If fixed.integration.step > 0, the ClassicalRungeKutta integrator
 ## will be used with the given value for the step size, otherwise
 ## the adaptative step size integrator DormandPrince853 will be used
 # fixed.integration.step = 43200.
+## If integration step is not fixed, three parameters are used to
+## configure the DormandPrince853 integrator, min and max steps in
+## seconds, and a position tolerance in meters (beware, it is not
+## really the global error, it correspond to a local estimated error,
+## at each step, often difficult to relate to final global error)
+min.variable.integration.step                =  6000.0
+max.variable.integration.step                = 86400.0
+position.tolerance.variable.integration.step =     1.0
+
+## interpolation grid specification
+## only one of the two following options can be set: either fixed number
+## of points or maximum gap. If both options are specified, an error
+## will be generated.
+## if neither option is set, a fixed number of 3 points will be used
+# fixed number of interpolation points at each mean elements integration step
+# fixed.number.of.interpolation.points = 3
+# maximum gap between interpolation points
+max.time.gap.between.interpolation.points = 86400
 
 ## Do we want to compare the DSST with the numerical propagator ? [false]
 numerical.comparison = false

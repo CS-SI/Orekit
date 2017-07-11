@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,12 +18,13 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -34,6 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -43,7 +45,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * For user convenience, both the Cartesian and the equinoctial elements
  * are provided by this class, regardless of the canonical representation
- * implemented in the derived class (which may be classical keplerian
+ * implemented in the derived class (which may be classical Keplerian
  * elements for example).
  * </p>
  * <p>
@@ -155,6 +157,32 @@ public abstract class Orbit
         this.frame = frame;
     }
 
+    /** Check if Cartesian coordinates include non-Keplerian acceleration.
+     * @param pva Cartesian coordinates
+     * @param mu central attraction coefficient
+     * @return true if Cartesian coordinates include non-Keplerian acceleration
+     */
+    protected static boolean hasNonKeplerianAcceleration(final PVCoordinates pva, final double mu) {
+
+        final Vector3D a = pva.getAcceleration();
+        if (a == null) {
+            return false;
+        }
+
+        final Vector3D p = pva.getPosition();
+        final double r2 = p.getNormSq();
+        final double r  = FastMath.sqrt(r2);
+        final Vector3D keplerianAcceleration = new Vector3D(-mu / (r * r2), p);
+        if (a.getNorm() > 1.0e-9 * keplerianAcceleration.getNorm()) {
+            // we have a relevant acceleration, we can compute derivatives
+            return true;
+        } else {
+            // the provided acceleration is either too small to be reliable (probably even 0), or NaN
+            return false;
+        }
+
+    }
+
     /** Get the orbit type.
      * @return orbit type
      */
@@ -186,40 +214,121 @@ public abstract class Orbit
      */
     public abstract double getA();
 
-    /** Get the first component of the equinoctial eccentricity vector.
-     * @return first component of the equinoctial eccentricity vector
+    /** Get the semi-major axis derivative.
+     * <p>Note that the semi-major axis is considered negative for hyperbolic orbits.</p>
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return semi-major axis  derivative (m/s)
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getADot();
+
+    /** Get the first component of the equinoctial eccentricity vector derivative.
+     * @return first component of the equinoctial eccentricity vector derivative
      */
     public abstract double getEquinoctialEx();
 
-    /** Get the second component of the equinoctial eccentricity vector.
-     * @return second component of the equinoctial eccentricity vector
+    /** Get the first component of the equinoctial eccentricity vector.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return first component of the equinoctial eccentricity vector
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getEquinoctialExDot();
+
+    /** Get the second component of the equinoctial eccentricity vector derivative.
+     * @return second component of the equinoctial eccentricity vector derivative
      */
     public abstract double getEquinoctialEy();
+
+    /** Get the second component of the equinoctial eccentricity vector.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return second component of the equinoctial eccentricity vector
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getEquinoctialEyDot();
 
     /** Get the first component of the inclination vector.
      * @return first component of the inclination vector
      */
     public abstract double getHx();
 
+    /** Get the first component of the inclination vector derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return first component of the inclination vector derivative
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getHxDot();
+
     /** Get the second component of the inclination vector.
      * @return second component of the inclination vector
      */
     public abstract double getHy();
+
+    /** Get the second component of the inclination vector derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return second component of the inclination vector derivative
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getHyDot();
 
     /** Get the eccentric longitude argument.
      * @return E + ω + Ω eccentric longitude argument (rad)
      */
     public abstract double getLE();
 
+    /** Get the eccentric longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getLEDot();
+
     /** Get the true longitude argument.
      * @return v + ω + Ω true longitude argument (rad)
      */
     public abstract double getLv();
 
+    /** Get the true longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getLvDot();
+
     /** Get the mean longitude argument.
      * @return M + ω + Ω mean longitude argument (rad)
      */
     public abstract double getLM();
+
+    /** Get the mean longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getLMDot();
 
     // Additional orbital elements
 
@@ -228,10 +337,48 @@ public abstract class Orbit
      */
     public abstract double getE();
 
+    /** Get the eccentricity derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return eccentricity derivative
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getEDot();
+
     /** Get the inclination.
      * @return inclination (rad)
      */
     public abstract double getI();
+
+    /** Get the inclination derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
+     * </p>
+     * @return inclination derivative (rad/s)
+     * @see #hasDerivatives()
+     * @since 9.0
+     */
+    public abstract double getIDot();
+
+    /** Check if orbit includes derivatives.
+     * @return true if orbit includes derivatives
+     * @see #getADot()
+     * @see #getEquinoctialExDot()
+     * @see #getEquinoctialEyDot()
+     * @see #getHxDot()
+     * @see #getHyDot()
+     * @see #getLEDot()
+     * @see #getLvDot()
+     * @see #getLMDot()
+     * @see #getEDot()
+     * @see #getIDot()
+     * @since 9.0
+     */
+    public boolean hasDerivatives() {
+        return !Double.isNaN(getADot());
+    }
 
     /** Get the central acceleration constant.
      * @return central acceleration constant
@@ -240,20 +387,20 @@ public abstract class Orbit
         return mu;
     }
 
-    /** Get the keplerian period.
-     * <p>The keplerian period is computed directly from semi major axis
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds, or positive infinity for hyperbolic orbits
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
      */
     public double getKeplerianPeriod() {
         final double a = getA();
         return (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
     }
 
-    /** Get the keplerian mean motion.
-     * <p>The keplerian mean motion is computed directly from semi major axis
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return Keplerian mean motion in radians per second
      */
     public double getKeplerianMeanMotion() {
         final double absA = FastMath.abs(getA());
@@ -315,15 +462,17 @@ public abstract class Orbit
 
     /** Get a time-shifted orbit.
      * <p>
-     * The orbit can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model. It is <em>not</em> intended as a replacement
-     * for proper orbit and attitude propagation but should be sufficient for
-     * small time shifts or coarse accuracy.
+     * The orbit can be slightly shifted to close dates. The shifting model is a
+     * Keplerian one if no derivatives are available in the orbit, or Keplerian
+     * plus quadratic effect of the non-Keplerian acceleration if derivatives are
+     * available. Shifting is <em>not</em> intended as a replacement for proper
+     * orbit propagation but should be sufficient for small time shifts or coarse
+     * accuracy.
      * </p>
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
-    public abstract Orbit shiftedBy(final double dt);
+    public abstract Orbit shiftedBy(double dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
@@ -342,21 +491,21 @@ public abstract class Orbit
             switch (type) {
                 case MEAN :
                     if (jacobianMeanWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianMeanWrtCartesian = computeJacobianMeanWrtCartesian();
                     }
                     cachedJacobian = jacobianMeanWrtCartesian;
                     break;
                 case ECCENTRIC :
                     if (jacobianEccentricWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianEccentricWrtCartesian = computeJacobianEccentricWrtCartesian();
                     }
                     cachedJacobian = jacobianEccentricWrtCartesian;
                     break;
                 case TRUE :
                     if (jacobianTrueWrtCartesian == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianTrueWrtCartesian = computeJacobianTrueWrtCartesian();
                     }
                     cachedJacobian = jacobianTrueWrtCartesian;
@@ -390,21 +539,21 @@ public abstract class Orbit
             switch (type) {
                 case MEAN :
                     if (jacobianWrtParametersMean == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersMean = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersMean;
                     break;
                 case ECCENTRIC :
                     if (jacobianWrtParametersEccentric == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersEccentric = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersEccentric;
                     break;
                 case TRUE :
                     if (jacobianWrtParametersTrue == null) {
-                        // first call, we need to compute the jacobian and cache it
+                        // first call, we need to compute the Jacobian and cache it
                         jacobianWrtParametersTrue = createInverseJacobian(type);
                     }
                     cachedJacobian = jacobianWrtParametersTrue;
@@ -485,7 +634,7 @@ public abstract class Orbit
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(final PositionAngle type, final double gm, double[] pDot);
+    public abstract void addKeplerContribution(PositionAngle type, double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector
@@ -509,9 +658,9 @@ public abstract class Orbit
      */
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -527,9 +676,9 @@ public abstract class Orbit
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double a3, final Vector3D v3,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX(), a3, v3.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -547,9 +696,9 @@ public abstract class Orbit
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX(), a3, v3.getX(), a4, v4.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY(), a4, v4.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ(), a4, v4.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -570,9 +719,18 @@ public abstract class Orbit
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double a5, final Vector3D v5,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ();
+        final double[] a = new double[] {
+            a1, a2, a3, a4, a5
+        };
+        row[j]     = MathArrays.linearCombination(a, new double[] {
+            v1.getX(), v2.getX(), v3.getX(), v4.getX(), v5.getX()
+        });
+        row[j + 1] = MathArrays.linearCombination(a, new double[] {
+            v1.getY(), v2.getY(), v3.getY(), v4.getY(), v5.getY()
+        });
+        row[j + 2] = MathArrays.linearCombination(a, new double[] {
+            v1.getZ(), v2.getZ(), v3.getZ(), v4.getZ(), v5.getZ()
+        });
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -595,9 +753,18 @@ public abstract class Orbit
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double a5, final Vector3D v5, final double a6, final Vector3D v6,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX() + a6 * v6.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY() + a6 * v6.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ() + a6 * v6.getZ();
+        final double[] a = new double[] {
+            a1, a2, a3, a4, a5, a6
+        };
+        row[j]     = MathArrays.linearCombination(a, new double[] {
+            v1.getX(), v2.getX(), v3.getX(), v4.getX(), v5.getX(), v6.getX()
+        });
+        row[j + 1] = MathArrays.linearCombination(a, new double[] {
+            v1.getY(), v2.getY(), v3.getY(), v4.getY(), v5.getY(), v6.getY()
+        });
+        row[j + 2] = MathArrays.linearCombination(a, new double[] {
+            v1.getZ(), v2.getZ(), v3.getZ(), v4.getZ(), v5.getZ(), v6.getZ()
+        });
     }
 
 }

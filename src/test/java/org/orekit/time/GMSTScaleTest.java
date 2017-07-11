@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +53,20 @@ public class GMSTScaleTest {
             double dt2 = gmst.offsetToTAI(components.getDate(), components.getTime());
             Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
+    }
+
+    @Test
+    public void testDuringLeap() throws OrekitException {
+        final TimeScale utc   = TimeScalesFactory.getUTC();
+        final TimeScale scale = gmst;
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+                                                     new TimeComponents(23, 59, 59),
+                                                     utc);
+        final AbsoluteDate during = before.shiftedBy(1.25);
+        Assert.assertEquals(61, utc.minuteDuration(during));
+        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assert.assertEquals(60, scale.minuteDuration(during));
+        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
     @Before

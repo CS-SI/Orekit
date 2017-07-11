@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,16 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -47,8 +48,8 @@ public class JacobiansMapper {
      * (either 6 or 7 depending on mass being included or not). */
     private final int stateDimension;
 
-    /** Number of Parameters. */
-    private final int parameters;
+    /** Selected parameters for Jacobian computation. */
+    private final ParameterDriversList parameters;
 
     /** Orbit type. */
     private final OrbitType orbitType;
@@ -60,11 +61,11 @@ public class JacobiansMapper {
      * @param name name of the Jacobians
      * @param stateDimension dimension of the state (either 6 or 7 depending on mass
      * being included or not)
-     * @param parameters number of parameters
+     * @param parameters selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final int stateDimension, final int parameters,
+    JacobiansMapper(final String name, final int stateDimension, final ParameterDriversList parameters,
                     final OrbitType orbitType, final PositionAngle angleType) {
         this.name           = name;
         this.stateDimension = stateDimension;
@@ -84,7 +85,7 @@ public class JacobiansMapper {
      * @return length of the one-dimensional additional state array
      */
     public int getAdditionalStateDimension() {
-        return stateDimension * (stateDimension + parameters);
+        return stateDimension * (stateDimension + parameters.getNbParams());
     }
 
     /** Get the state vector dimension.
@@ -98,10 +99,10 @@ public class JacobiansMapper {
      * @return number of parameters
      */
     public int getParameters() {
-        return parameters;
+        return parameters.getNbParams();
     }
 
-    /** Get the conversion Jacobian between state parameters and cartesian parameters.
+    /** Get the conversion Jacobian between state parameters and Cartesian parameters.
      * @param state spacecraft state
      * @return conversion Jacobian
      */
@@ -114,8 +115,9 @@ public class JacobiansMapper {
 
         // compute the Jacobian, taking the position angle type into account
         orbit.getJacobianWrtCartesian(angleType, dYdC);
-        for (int i = 6; i < stateDimension; ++i) {
-            dYdC[i][i] = 1.0;
+        if (stateDimension > 6) {
+            // add mass derivative
+            dYdC[6][6] = 1.0;
         }
 
         return dYdC;
@@ -124,7 +126,7 @@ public class JacobiansMapper {
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * <p>
-     * This method converts the Jacobians to cartesian parameters and put the converted data
+     * This method converts the Jacobians to Cartesian parameters and put the converted data
      * in the one-dimensional {@code p} array.
      * </p>
      * @param state spacecraft state
@@ -138,11 +140,11 @@ public class JacobiansMapper {
     void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                              final double[][] dY1dP, final double[] p) {
 
-        // set up a converter between state parameters and cartesian parameters
+        // set up a converter between state parameters and Cartesian parameters
         final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getdYdC(state), false);
         final DecompositionSolver solver = new QRDecomposition(dY1dC1).getSolver();
 
-        // convert the provided state Jacobian to cartesian parameters
+        // convert the provided state Jacobian to Cartesian parameters
         final RealMatrix dC1dY0 = solver.solve(new Array2DRowRealMatrix(dY1dY0, false));
 
         // map the converted state Jacobian to one-dimensional array
@@ -153,13 +155,13 @@ public class JacobiansMapper {
             }
         }
 
-        if (parameters > 0) {
-            // convert the provided state Jacobian to cartesian parameters
+        if (parameters.getNbParams() != 0) {
+            // convert the provided state Jacobian to Cartesian parameters
             final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < stateDimension; ++i) {
-                for (int j = 0; j < parameters; ++j) {
+                for (int j = 0; j < parameters.getNbParams(); ++j) {
                     p[index++] = dC1dP.getEntry(i, j);
                 }
             }
@@ -180,7 +182,7 @@ public class JacobiansMapper {
     public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
         throws OrekitException {
 
-        // get the conversion Jacobian between state parameters and cartesian parameters
+        // get the conversion Jacobian between state parameters and Cartesian parameters
         final double[][] dYdC = getdYdC(state);
 
         // extract the additional state
@@ -205,7 +207,7 @@ public class JacobiansMapper {
 
     /** Get theJacobian with respect to parameters from a one-dimensional additional state array.
      * <p>
-     * This method extract the data from the {@code p} array and put it in the
+     * This method extract the data from the {@code state} and put it in the
      * {@code dYdP} array.
      * </p>
      * <p>
@@ -220,9 +222,9 @@ public class JacobiansMapper {
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
         throws OrekitException {
 
-        if (parameters > 0) {
+        if (parameters.getNbParams() != 0) {
 
-            // get the conversion Jacobian between state parameters and cartesian parameters
+            // get the conversion Jacobian between state parameters and Cartesian parameters
             final double[][] dYdC = getdYdC(state);
 
             // extract the additional state
@@ -232,12 +234,12 @@ public class JacobiansMapper {
             for (int i = 0; i < stateDimension; i++) {
                 final double[] rowC = dYdC[i];
                 final double[] rowD = dYdP[i];
-                for (int j = 0; j < parameters; ++j) {
+                for (int j = 0; j < parameters.getNbParams(); ++j) {
                     double sum = 0;
                     int pIndex = j + stateDimension * stateDimension;
                     for (int k = 0; k < stateDimension; ++k) {
                         sum += rowC[k] * p[pIndex];
-                        pIndex += parameters;
+                        pIndex += parameters.getNbParams();
                     }
                     rowD[j] = sum;
                 }

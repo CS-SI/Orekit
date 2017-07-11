@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,17 +17,13 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity/Acceleration triplets.
@@ -211,30 +207,34 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order)
         throws OrekitException {
 
+        final DSFactory factory;
         final DerivativeStructure x;
         final DerivativeStructure y;
         final DerivativeStructure z;
         switch(order) {
             case 0 :
-                x = new DerivativeStructure(1, 0, position.getX());
-                y = new DerivativeStructure(1, 0, position.getY());
-                z = new DerivativeStructure(1, 0, position.getZ());
+                factory = new DSFactory(1, order);
+                x = factory.build(position.getX());
+                y = factory.build(position.getY());
+                z = factory.build(position.getZ());
                 break;
             case 1 :
-                x = new DerivativeStructure(1, 1, position.getX(), velocity.getX());
-                y = new DerivativeStructure(1, 1, position.getY(), velocity.getY());
-                z = new DerivativeStructure(1, 1, position.getZ(), velocity.getZ());
+                factory = new DSFactory(1, order);
+                x = factory.build(position.getX(), velocity.getX());
+                y = factory.build(position.getY(), velocity.getY());
+                z = factory.build(position.getZ(), velocity.getZ());
                 break;
             case 2 :
-                x = new DerivativeStructure(1, 2, position.getX(), velocity.getX(), acceleration.getX());
-                y = new DerivativeStructure(1, 2, position.getY(), velocity.getY(), acceleration.getY());
-                z = new DerivativeStructure(1, 2, position.getZ(), velocity.getZ(), acceleration.getZ());
+                factory = new DSFactory(1, order);
+                x = factory.build(position.getX(), velocity.getX(), acceleration.getX());
+                y = factory.build(position.getY(), velocity.getY(), acceleration.getY());
+                z = factory.build(position.getZ(), velocity.getZ(), acceleration.getZ());
                 break;
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
-        return new FieldVector3D<DerivativeStructure>(x, y, z);
+        return new FieldVector3D<>(x, y, z);
 
     }
 
@@ -265,42 +265,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         return new PVCoordinates(new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
                                  new Vector3D(1, velocity, dt, acceleration),
                                  acceleration);
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param useVelocities if true, use sample points velocities,
-     * otherwise ignore them and use only positions
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @deprecated since 7.0 replaced with {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
-     */
-    @Deprecated
-    public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
-                                            final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
-        final List<TimeStampedPVCoordinates> list = new ArrayList<TimeStampedPVCoordinates>(sample.size());
-        for (final Pair<AbsoluteDate, PVCoordinates> pair : sample) {
-            list.add(new TimeStampedPVCoordinates(pair.getFirst(),
-                                                  pair.getSecond().getPosition(),
-                                                  pair.getSecond().getVelocity(),
-                                                  pair.getSecond().getAcceleration()));
-        }
-        return TimeStampedPVCoordinates.interpolate(date,
-                                                    useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
-                                                    list);
     }
 
     /** Gets the position.
@@ -338,9 +302,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
 
     /**
      * Get the angular velocity (spin) of this point as seen from the origin.
-     * <p/>
-     * The angular velocity vector is parallel to the {@link #getMomentum() angular
-     * momentum} and is computed by ω = p &times; v / ||p||²
+     *
+     * <p> The angular velocity vector is parallel to the {@link #getMomentum()
+     * angular momentum} and is computed by ω = p &times; v / ||p||²
      *
      * @return the angular velocity vector
      * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on

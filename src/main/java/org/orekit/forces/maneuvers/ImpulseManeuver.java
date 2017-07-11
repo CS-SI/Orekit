@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -80,6 +80,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** Engine exhaust velocity. */
     private final double vExhaust;
 
+    /** Indicator for forward propagation. */
+    private boolean forward;
+
     /** Build a new instance.
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
@@ -121,7 +124,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
+                            final int maxIter, final EventHandler<? super ImpulseManeuver<T>> handler,
                             final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                             final double isp) {
         super(maxCheck, threshold, maxIter, handler);
@@ -135,13 +138,14 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** {@inheritDoc} */
     @Override
     protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
-                                        final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
+                                        final int newMaxIter, final EventHandler<? super ImpulseManeuver<T>> newHandler) {
         return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                       trigger, attitudeOverride, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        forward = t.durationFrom(s0.getDate()) >= 0;
     }
 
     /** {@inheritDoc} */
@@ -212,16 +216,18 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
             // convert velocity increment in inertial frame
             final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+            final double sign     = im.forward ? +1 : -1;
 
             // apply increment to position/velocity
             final PVCoordinates oldPV = oldState.getPVCoordinates();
-            final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
-                                                          oldPV.getVelocity().add(deltaV));
+            final PVCoordinates newPV =
+                            new PVCoordinates(oldPV.getPosition(),
+                                              new Vector3D(1, oldPV.getVelocity(), sign, deltaV));
             final CartesianOrbit newOrbit =
                     new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
-            final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / im.vExhaust);
+            final double newMass = oldState.getMass() * FastMath.exp(-sign * deltaV.getNorm() / im.vExhaust);
 
             // pack everything in a new state
             return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),

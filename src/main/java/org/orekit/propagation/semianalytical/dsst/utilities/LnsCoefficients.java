@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
 
 /** Compute the L<sub>n</sub><sup>s</sup>(γ).
  *  <p>
- *  The fomula used is: <br/>
+ *  The fomula used is: <br>
  *  L<sub>n</sub><sup>s</sup>(γ) = ( R / a )<sup>n</sup>V<sub>ns</sub>Q<sup>ns</sup>(γ)
  *  </p>
  *  @author Lucian Barbulescu

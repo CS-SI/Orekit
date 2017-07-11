@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,19 +26,19 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.partitioning.BSPTree;
-import org.apache.commons.math3.geometry.partitioning.Hyperplane;
-import org.apache.commons.math3.geometry.partitioning.RegionFactory;
-import org.apache.commons.math3.geometry.partitioning.SubHyperplane;
-import org.apache.commons.math3.geometry.spherical.oned.ArcsSet;
-import org.apache.commons.math3.geometry.spherical.twod.Circle;
-import org.apache.commons.math3.geometry.spherical.twod.S2Point;
-import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
-import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
-import org.apache.commons.math3.geometry.spherical.twod.SubCircle;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.BSPTree;
+import org.hipparchus.geometry.partitioning.Hyperplane;
+import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.partitioning.SubHyperplane;
+import org.hipparchus.geometry.spherical.oned.ArcsSet;
+import org.hipparchus.geometry.spherical.twod.Circle;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.Sphere2D;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -62,6 +62,7 @@ import org.orekit.errors.OrekitInternalError;
  * the size of the zone to be tessellated increases.
  * </p>
  * @author Luc Maisonobe
+ * @since 7.1
  */
 public class EllipsoidTessellator {
 
@@ -428,7 +429,7 @@ public class EllipsoidTessellator {
         }
 
         // ensure the taxicab boundary follows the built tile sides
-        // this is done outside of the previous loop because in order
+        // this is done outside of the previous loop in order
         // to avoid one tile changing the min/max indices of the
         // neighboring tile as they share some nodes that will be enabled here
         for (final RangePair rangePair : rangePairs) {
@@ -510,7 +511,7 @@ public class EllipsoidTessellator {
     /** Merge two meshes together.
      * @param mesh1 first mesh
      * @param mesh2 second mesh
-     * @param mergingSeeds collection were to put the nodes created during the merge
+     * @param mergingSeeds collection where to put the nodes created during the merge
      * @return merged mesh (really one of the instances)
      * @exception OrekitException if tile direction cannot be computed
      */
@@ -630,8 +631,8 @@ public class EllipsoidTessellator {
     /** Build a simple zone (connected zone without holes).
      * <p>
      * In order to build more complex zones (not connected or with
-     * holes), the user should directly call Apache Commons
-     * Math {@link SphericalPolygonsSet} constructors and
+     * holes), the user should directly call Hipparchus
+     * {@link SphericalPolygonsSet} constructors and
      * {@link RegionFactory region factory} if set operations
      * are needed (union, intersection, difference ...).
      * </p>
@@ -649,7 +650,7 @@ public class EllipsoidTessellator {
      * @return a zone defined on the unit 2-sphere
      */
     public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
-                                                       final double[] ... points) {
+                                                       final double[]... points) {
         final S2Point[] vertices = new S2Point[points.length];
         for (int i = 0; i < points.length; ++i) {
             vertices[i] = new S2Point(points[i][1], 0.5 * FastMath.PI - points[i][0]);
@@ -660,8 +661,8 @@ public class EllipsoidTessellator {
     /** Build a simple zone (connected zone without holes).
      * <p>
      * In order to build more complex zones (not connected or with
-     * holes), the user should directly call Apache Commons
-     * Math {@link SphericalPolygonsSet} constructors and
+     * holes), the user should directly call Hipparchus
+     * {@link SphericalPolygonsSet} constructors and
      * {@link RegionFactory region factory} if set operations
      * are needed (union, intersection, difference ...).
      * </p>
@@ -678,7 +679,7 @@ public class EllipsoidTessellator {
      * @return a zone defined on the unit 2-sphere
      */
     public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
-                                                       final GeodeticPoint ... points) {
+                                                       final GeodeticPoint... points) {
         final S2Point[] vertices = new S2Point[points.length];
         for (int i = 0; i < points.length; ++i) {
             vertices[i] = new S2Point(points[i].getLongitude(),
@@ -726,7 +727,7 @@ public class EllipsoidTessellator {
     /** Check if an arc meets the inside of a zone.
      * <p>
      * This method is heavily based on the Characterization class from
-     * Apache Commons Math library, also distributed under the terms
+     * Hipparchus library, also distributed under the terms
      * of the Apache Software License V2.
      * </p>
      * @param node spherical zone node

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -35,15 +35,17 @@ public enum LOFType {
      *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub></li>
      *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #VNC
      */
     TNW {
+
         /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
+
     },
 
     /** Constant for QSW frame
@@ -58,16 +60,18 @@ public enum LOFType {
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #LVLH
      * @see #VVLH
      */
     QSW {
+
         /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
+
     },
 
     /** Constant for Local Vertical, Local Horizontal frame
@@ -82,16 +86,18 @@ public enum LOFType {
      *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #QSW
      * @see #VVLH
      */
     LVLH {
+
         /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
+
     },
 
     /** Constant for Vehicle Velocity, Local Horizontal frame
@@ -103,16 +109,18 @@ public enum LOFType {
      *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
      *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #QSW
      * @see #LVLH
      */
     VVLH {
+
         /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.MINUS_K, Vector3D.MINUS_J);
         }
+
     },
 
     /** Constant for Velocity - Normal - Co-normal frame
@@ -124,15 +132,17 @@ public enum LOFType {
      *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub></li>
      *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #TNW
      */
     VNC {
+
         /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_J);
         }
+
     };
 
     /** Get the transform from an inertial frame defining position-velocity and the local orbital frame.
@@ -160,6 +170,6 @@ public enum LOFType {
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return rotation from inertial frame to local orbital frame
      */
-    protected abstract Rotation rotationFromInertial(final PVCoordinates pv);
+    protected abstract Rotation rotationFromInertial(PVCoordinates pv);
 
 }

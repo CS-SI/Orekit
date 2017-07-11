@@ -1,8 +1,11 @@
 # internal error, contact maintenance at {0}
-INTERNAL_ERROR = eroare internă, contactați echipa de întrținere la {0}
+INTERNAL_ERROR = eroare internă, contactați suportul tehnic la {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
+
+# point is inside ellipsoid
+POINT_INSIDE_ELLIPSOID = punctul este în interiorul elipsoidului
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = traiectorie în interiorul sferei Brillouin (r = {0})
@@ -149,7 +152,7 @@ MISSING_SECOND_TLE_LINE = a doua linie TLE este așteptată după linia {0}:\n{0
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același obiect:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER = parametru TLE invalid pentru obiectul {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptata {1} ({3})
@@ -200,7 +203,7 @@ SATELLITE_COLLIDED_WITH_TARGET = satelitul s-a ciocnit de ținta sa
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = legea de indicare a atitudinii nu indică către pământ
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = timpul de {0} secunde este prea mic pentru schimbarea atitudinilor, ar trebui sa fie mai mare decât {1} secunde
 
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = data orbitală ({0}) nu corespunde datei ({1}) corespunzătoare atitudinii
@@ -222,7 +225,7 @@ UNABLE_TO_READ_JPL_HEADER = imposibil de citit antetul fișierului de efemeride 
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerente pentru unitățile astronomice din fișierele de efemeride JPL : ({0} și {1})
- 
+
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerente pentru raportul masei Pământ/Lună din fișierele de efemeride JPL : ({0} și {1})
 
@@ -250,8 +253,8 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valor
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {1}
 
-# duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+# scale factor for parameter {0} is too small: {1}
+TOO_SMALL_SCALE_FOR_PARAMETER = factorul de scalare pentru parametrul {0} este prea mic: {1}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
@@ -270,9 +273,6 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobianul de stare este o matrice {0}x{1},
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii dar Jacobianul parametrilor are {1} linii
-
-# finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = pas neinițializat pentru calculul derivatelor modelului de forțe prin metoda diferențelor finite
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = matricea Jacobiană inițială are {0} coloane, dar {1} parametrii au fost selectați
@@ -310,8 +310,26 @@ CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte 
 # frame {0} is not valid in this ODM file context
 CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier ODM
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme de timp incoerente in blocurile de efemeride : {0} ≠ {1}
+
+# Inconsistent time systems in the observations blocks: {0} ≠ {1}
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Sisteme de timp incoerente in blocurile de observare : {0} ≠ {1}
+
+# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+CCSDS_TDM_INCONSISTENT_DATA_LINE = Inconsistență detectată la linia de date {0} in fișierul TDM cu numele {1}.\nO linie de date TDM ar trebui să aibă valoarea \"keyword = epoch value\".\nValoarea citită este: {2}
+
+# No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
+CCSDS_TDM_KEYWORD_NOT_FOUND = Niciun cuvânt cheie CCSDS TDM nu a fost găsit la linia {0} din fișierul {1}:\n{2}
+
+# Parameter {0} needs a time system to be interpreted
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Parametrul {0} necesită un sistem de timp pentru a fi interpretat
+
+# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Bloc XML de observare inconsistent la linia {0} din fișierul TDM {1}.\nUn bloc TDM de observare ar trebui să aibă următoarea structură\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+
+# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+CCSDS_TDM_UNKNOWN_FORMAT = Formatul fișierului TDM {0} este necunoscut. Vă rog să specificați un format de fișier: KEYVALUE sau XML
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
@@ -333,9 +351,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versiunea fișierului sp3 {0} nesuportată
-
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = versiunea sistemului temporal {0} nesuportată
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului sp3 (după linia {0})
@@ -380,10 +395,10 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = imposibil de calculat orbita medie din 
 OUT_OF_RANGE_DERIVATION_ORDER = ordinul de derivare {0} este in afara domeniului de definiție
 
 # out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+OUT_OF_RANGE_LATITUDE = latitudine în afara domeniului de definiție: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = tipul de orbită {0} nu este permis aici, tipuri permise: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
@@ -402,3 +417,48 @@ UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
 INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
+
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = niciun fișier SEM almanah nu a fost găsit
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = fișierul {0} nu este un fișier SEM almanah suportat
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = niciun fișier Yuma almanah nu a fost găsit
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = fișierul {0} nu este un fișier Yuma almanah suportat
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = numai {0} orbite GNSS sunt oferite în timp ce {1} sunt necesare pentru a calcula DOP-ul
+
+# the CCSDS time system {0} has no corresponding Orekit TimeScale.
+CCSDS_NO_CORRESPONDING_TIME_SCALE = sistemul de timp CCSDS {0} nu are niciun corspondent Orekit TimeScale.
+
+# use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = utilizarea sistemului de timp {0} în fișierele CCSDS necesită un ICD adițional și nu este disponibil în Orekit 
+
+# Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
+NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
+
+# argument {0} cannot be null
+NULL_ARGUMENT = argumentul {0} nu poate fi nul
+
+# value {0} not found in {1}
+VALUE_NOT_FOUND = valoarea {0} nu a fost găsită în {1}
+
+# Ephemeris file format does not support multiple space objects
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spașiale multiple
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Coeficienții Klobuchar α sau β nu pot fi încărcați din {0}
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = Coeficienții Klobuchar α sau β nu sunt disponibili pentru data {0}
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = Fișierul {0} nu conține coeficienți Klobuchar α sau β
+
+# no reference date set for parameter {0}
+NO_REFERENCE_DATE_FOR_PARAMETER = nicio dată de referință nu este specificată pentru parametrul {0}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2015 CS Systèmes d'Information
+<!-- Copyright 2002-2017 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,7 +20,591 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.1" date="TBD" description="TBD">
+    <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove">
+        Removed Jacchia-Bowman 2006 now completely superseded by Jacchia-Bowman 2008.
+      </action>
+      <action dev="luc" type="update">
+        Make Jacchia-Bowman 2008 thread-safe and field-aware.
+      </action>
+      <action dev="luc" type="update">
+        Make NRL MSISE 2000 thread-safe and field-aware.
+      </action>
+      <action dev="luc" type="update">
+        Make DTM2000 thread-safe and field-aware.
+      </action>
+      <action dev="luc" type="add">
+        Added support for ITRF 2014.
+        As of mid-2017, depending on the source of EOP, the ITRF retrieved using
+        FramesFactory.getITRF will be either ITRF-2014 (if using EOP 14 C04) or
+        ITRF-2008 (if using EOP 08 C04, bulletins A, bulletins B, or finals .all).
+        If another ITRF is needed, it can be built using HelmertTransformation.
+      </action>
+      <action dev="luc" type="remove">
+        Removed classes and methods deprecated in 8.0.
+      </action>
+      <action dev="luc" type="add">
+        Added coordinates of all intermediate participants in estimated measurements.
+        This will allow estimation modifiers to get important vectors (sighting
+        directions for example) without recomputing everything from the states.
+      </action>
+      <action dev="luc" type="add">
+        Added a multi-satellites orbit determination feature.
+      </action>
+      <action dev="luc" type="add">
+        Added one-way and two-way inter-satellites range measurements.
+      </action>
+      <action dev="luc" type="fix" due-to="Glenn Ehrlich">
+        Avoid clash with Python reserved keywords and, or and not in BooleanDetector.
+      </action>
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added right ascension and declination angular measurements.
+      </action>
+      <action dev="luc" type="add">
+        Added a parallel propagation feature for addressing multi-satellites needs.
+        Propagators of different types (analytical, semi-analytical, numerical,
+        ephemerides ...) can be mixed at will.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed Gaussian quadrature inconsistent with DSST theory when orbit derivatives are present.
+        Fixes issue #345.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed infinite recursion when attempting two orbit determinations in row.
+        Fixes issue #347.
+      </action>
+      <action dev="luc" type="add" due-to="Lars Næsbye Christensen">
+        Added Danish translations.
+        Fixes issue #346.
+      </action>
+      <action dev="luc" type="add" >
+        Allow estimation of polar motion (offset plus linear drift) and prime meridian
+        correction (offset plus linear drift) in orbit determination. This is essentially
+        equivalent to add correction to the xp, yp, dtu1 and lod Earth Orientation Parameters.
+      </action>
+      <action dev="luc" type="add">
+        Parameters in orbit determination can be associated with a per-parameter reference date.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong generation of FieldTransforms by time stamped cache, when generation
+        happens backward in time.
+        Fixes issue #344.
+      </action>
+      <action dev="luc" type="update">
+        Improved computation ground station parameters derivatives
+        in orbit determination.
+      </action>
+      <action dev="luc" type="update" >
+        Use automatic differentiation for all orbit determination measurements types.
+        This allows simpler evolutions to estimate parameters for which derivatives
+        are not straightforward to compute; some of these parameters are needed for
+        precise orbit determination.
+      </action>
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added parsing of University of Bern Astronomical Institute files for α and β Klobuchar coefficients.
+      </action>
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added parsing of CCSDS TDM (Tracking Data Messages) files, both text and XML.
+      </action>
+      <action dev="luc" type="fix" due-to="Florentin-Alin Butu">
+        Fixed lighting ratio in solar radiation pressure for interplanetary trajectories.
+      </action>
+      <action dev="hank" type="fix">
+        Allow small extrapolation before and after ephemeris.
+        Fixes issue #261.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed missing attitude in DSST mean/osculating conversions.
+        Fixes issue #339.
+      </action>
+      <action dev="luc" type="fix">
+        Optionally take lift component of the drag force into account in BoxAndSolarArraySpacecraft.
+        Fixes issue #324.
+      </action>
+      <action dev="luc" type="fix" due-to="James Schatzman">
+        Change visibility of getTargetPV in GroundPointing to public so it can be subclassed by
+        users in other packages.
+        Fixes issue #341.
+      </action>
+      <action dev="luc" type="update">
+        Deprecated the TLESeries class. The file format used was considered to be too specific and
+        the API not really well designed. Users are encouraged to use their own parser for series of TLE.
+      </action>
+      <action dev="luc" type="fix" due-to="Gavin Eadie">
+        Removed dead code in deep SDP4 propagation model.
+        Fixes issue #342.
+      </action>
+      <action dev="luc" type="fix" due-to="Quentin Rhone">
+        Added a way to prefix parameters names when estimating several maneuvers
+        in one orbit determination.
+        Fixes issue #338.
+      </action>
+      <action dev="luc" type="fix" due-to="Pascal Parraud">
+        Removed unneeded reset at end of sample creation in propagators conversion.
+        Fixes issue #335.
+      </action>
+      <action dev="luc" type="fix" due-to="Michiel Zittersteijn">
+        Fixed wrong angle wrapping computation in IodLambert.
+      </action>
+      <action dev="luc" type="fix" due-to="Lucian Barbulescu">
+        Fixed boundaries of thrust parameter driver in ConstantThrustManeuver.
+        Fixes issue #327.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Allow some old version of TLE format to be parsed correctly.
+        Fixes issue #330.
+      </action>
+      <action dev="luc" type="fix" due-to="James Schatzman">
+        Fixed ArrayOutOfBoundException appearing when converting dates at past or future infinity
+        to string.
+        Fixes issue #340.
+      </action>
+      <action dev="luc" type="fix">
+        Extended range of DateComponents to allow the full integer range as days offset
+        from J2000.
+      </action>
+      <action dev="luc" type="fix">
+        Prevent NaN appearing in UTC-TAI offsets for dates at past or future infinity.
+      </action>
+      <action dev="luc" type="fix">
+        Prevent central attraction coefficient from being adjusted in TLEPropagatorBuilder,
+        as it is specified by the TLE theory.
+        Fixes issue #313.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Added a flag to prevent resetting initial state at the end of integrating propagators.
+        Fixes issue #251.
+      </action>
+      <action dev="luc" type="fix">
+        Tutorials now all rely on orekit-data being in user home folder.
+        Fixes issue #245.
+      </action>
+       <action dev="luc" type="fix">
+        Apply delay corresponding to h = 0 when station altitude is below 0 in SaastamoinenModel.
+        Fixes issue #202.
+      </action>
+      <action dev="luc" type="add">
+        Added derivatives to orbits computed from non-Keplerian models, and use
+        these derivatives when available. This improves shiftedBy() accuracy,
+        and as a consequence also the accuracy of EventShifter. As example, when
+        comparing shiftedBy and numerical model on a low Earth Sun Synchronous Orbit,
+        with a 20x20 gravity field, Sun and Moon third bodies attractions, drag and
+        solar radiation pressure, shifted position errors without derivatives are 18m
+        after 60s, 72m after 120s, 447m after 300s; 1601m after 600s and 3141m after
+        900s, whereas the shifted position errors with derivatives are 1.1m after 60s,
+        9.1m after 120s, 140m after 300s; 1067m after 600s and 3307m after 900s.
+      </action>
+      <action dev="luc" type="fix">
+        Preserved non-Keplerian acceleration in spacecraft state when computed from numerical propagator.
+        Fixes issue #183.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed accuracy of FieldAbsoluteDate.
+        Fixes issue #337.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed eccentricity computation for hyperbolic Cartesian orbits.
+        Fixes issue #336.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed an array out of bounds error in DSST zonal short periodics terms.
+      </action>
+      <action dev="luc" type="fix" due-to="Maxime Journot">
+        Fixed a factor two error in tropospheric and ionospheric modifiers.
+      </action>
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added turn-around (four-way range) measurements to orbit determination.
+      </action>
+      <action dev="luc" type="update">
+        Updated dependency to Hipparchus 1.1, released on 2017, March 16th.
+        Fixes issue #329.
+      </action>
+      <action dev="evan" type="add">
+        Added simple Boolean logic with EventDetectors.
+      </action>
+      <action dev="luc" type="add">
+        Added getGMSTRateFunction to IEEEConventions to compute accurately Earth rotation rate.
+      </action>
+      <action dev="luc" type="update">
+        OneAxisEllipsoid can now transform FieldGeodeticPoint from any field
+        and not only DerivativeStructure.
+      </action>
+      <action dev="luc" type="add">
+        Completed field-based Cartesian and angular coordinates with missing
+        features that were only in the double based versions.
+      </action>
+      <action dev="luc" type="update" due-to="Maxime Journot">
+        Use DerivativeStructure to compute derivatives for Range measurements.
+      </action>
+      <action dev="luc" type="update">
+        Improved conversion speed from Cartesian coordinates to geodetic coordinates
+        by about 15%.
+      </action>
+      <action dev="evan" type="add">
+        Replace OrbitFile interface with EphemerisFile, adding support for multiple
+        ephemeris segments and the capability to create a propagator from an ephemeris.
+      </action>
+      <action dev="hank" type="add">
+        Added EphemerisFileWriter interface for serializing EphemerisFiles to external
+        file formats, and implemented the OEMWriter for CCSDS OEM file export support.
+      </action>
+      <action dev="hank" type="add">
+        Added OrekitEphemerisFile object for encapsulating propagator outputs into an 
+        EphemerisFile which can then be exported with EphemerisFileWriter classes.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed thread-safety issues in DTM2000 model.
+        Fixes issue #258.
+      </action>
+      <action dev="pascal" type="add">
+        Added JB2008 atmosphere model.
+      </action>
+      <action dev="pascal" type="add">
+        Added NRLMSISE-00 atmosphere model.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Fixed outliers configuration parsing in orbit determination tutorial and test.
+        Fixes issue #249
+      </action>
+       <action dev="luc" type="fix" >
+        Greatly improved orbit determination speed when a lot of measurements are used
+        (several thousands).
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed ant build script to run Junit tests.
+        Fixes issue #246.
+      </action>
+      <action dev="luc" type="update">
+        Added a protection against zero scale factors for parameters drivers.
+      </action>
+      <action dev="evan" type="fix">
+        Fix AbsoluteDate.createMJDDate when the time scale is UTC and the date
+        is during a leap second.
+        Fixes issue #247
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed ant build script to retrieve Hipparchus dependencies correctly.
+        Fixes issue #244.
+      </action>
+    </release>
+    <release version="8.0" date="2016-06-30"
+             description="Version 8.0 is a major release of Orekit. It introduces several new
+             features and bug fixes as well as a major dependency change. New features introduced
+             in version 8.0 are orbit determination, specialized propagator for GPS satellites
+             based on SEM or YUMA files, computation of Dilution Of Precision and a new angular
+             separation event detector. Several bugs have been fixed. A major change introduced
+             with version 8.0 is the switch from Apache Commons Math to Hipparchus as the
+             mathematical library, which also implied switching from Java 6 to Java 8.">
+      <action dev="luc" type="fix" due-to="Andrea Antolino">
+        Improved accuracy of orbits Jacobians.
+        Fixes issue #243.
+      </action>
+      <action dev="luc" type="update">
+        Deprecated PropagationException, replaced by OrekitException.
+      </action>
+      <action dev="evan" type="fix" due-to="Greg Carbott">
+        Fix bug in restarting propagation with a ConstantThrustManeuver with an
+        updated initial condition.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed a display error for dates less than 0.5ms before a leap second.
+      </action>
+      <action dev="luc" type="update">
+        Use ParameterDriver with scale factor for both orbit determination, conversion,
+        and partial derivatives computation when finite differences are needed.
+      </action>
+      <action dev="luc" type="fix">
+        Apply impulse maneuver correctly in backward propagation.
+        Fixes issue #241.
+      </action>
+      <action dev="luc" type="add">
+        Added angular separation detector. This is typically used to check separation
+        between spacecraft and the Sun as seen from a ground station, to avoid interferences
+        or damage.
+      </action>
+      <action dev="luc" type="update">
+        All class and methods that were deprecated in the 7.X series have been removed.
+      </action>
+      <action dev="luc" type="update">
+        Allow ICGEM gravity field reader to parse non-Earth gravity fields.
+      </action>
+      <action dev="evan" type="add">
+        Add methods for a integration step handler to tell if the start/end of the step is
+        interpolated due to event detection. Also added ability to add a step handler in
+        ephemeris mode.
+      </action>
+      <action dev="evan" type="fix">
+        Switch to a continuous Ap to Kp geomagnetic index conversion.
+        Fixes issue #240.
+      </action>
+      <action dev="pascal" type="add">
+        Added computation of Dilution Of Precision (DOP).
+      </action>
+      <action dev="pascal" type="add">
+        Added a specialized propagator for GPS spacecrafts, based on
+        SEM or YUMA files.
+      </action>
+      <action dev="luc" type="update">
+        Ported the new Hipparchus event handling algorithm to Orekit.
+        This improves robustness in corner cases, typically when different
+        event detectors triggers at very close times and one of them
+        resets the state such that it affects the other detectors.
+      </action>
+      <action dev="luc" type="update">
+        Simplified step interpolators API, replacing the setDate/getState
+        pair with an interpolated state getter taking a date argument.
+      </action>
+      <action dev="luc" type="update">
+        Switched from Apache Commons Math to Hipparchus library.
+      </action>
+      <action dev="luc" type="add">
+        Added an orbit determination feature!
+      </action>
+      <action dev="evan" type="add">
+        Add EventHandler to record all events.
+      </action>
+      <action dev="evan" type="fix">
+        Fix exception during event detection using
+        NumericalPropagator.getGeneratedEphemeris() near the start/end date of
+        the generated ephemeris.
+        Fixes issue #238
+      </action>
+    </release>
+    <release version="7.2" date="2016-04-05"
+             description="Version 7.2 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 7.2
+             are handling of GLONASS and QZSS time scales, support for local time zones
+             according to ISO-8601 standard, and finer tuning of short period terms in
+             DSST propagator. Version 7.2 depends on version 3.6.1 of Apache Commons Math,
+             which also fixes a bug related to close events detection.">
+      <action dev="luc" type="add">
+        Added GLONASS and QZSS time scales. These time scales my be used in SP3-c files.
+      </action>
+      <action dev="luc" type="add">
+        Added parsing and displaying of local time according to ISO-8601 standard.
+      </action>
+      <action dev="luc" type="fix">
+        Added some protections against malformed SP3 files.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed Newcomb operators generation in DSST for high degree gravity fields.
+        Fixes issue #237
+      </action>
+      <action dev="luc" type="update">
+        Improved tuning of DSST tesseral force models. Users can now tune max degree,
+        max eccentricity power and max frequency in mean longitude for short
+        period terms, as well as for m-daily terms.
+      </action>
+      <action dev="luc" type="update">
+        Improved tuning of DSST zonal force models. Users can now tune max degree,
+        max eccentricity power and max frequency in true longitude for short
+        period terms.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong continuous maneuver handling in backward propagation.
+        Fixes issue #236
+      </action>
+    </release>
+    <release version="7.1" date="2016-02-07"
+             description="Version 7.1 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 7.1
+             are a lot of new event detectors (field of view based detectors supporting any FoV
+             shape, either on ground targetting spacecraft or on spacecraft and targetting
+             ground defined zones with any shape, extremum elevation detector, anomaly,
+             latitude argument, or longitude argument crossing detectors, either true, mean
+             or eccentric, latitude and longitude extremum detectors, latitude and longitude
+             crossing detectors), new event filtering capability based on user-provided
+             predicate function, ability to customize DSST interpolation grid for short period
+             elements, ability to retrieve DSS short periodic coefficients, removed some arbitrary
+             limitations in DSST tesseral and zonal contribution, ability to set short period
+             degree/order to smaller values than mean elements in DSST, vastly improved
+             frames transforms efficiency for various Earth frames, three different types of
+             solar radiation pressure coefficients, new tabulated attitudes related to Local
+             Orbital Frame, smooth attitude transitions in attitudes sequences, with derivatives
+             continuity at both endpoint, ground zone sampling either in tiles or grid with fixed
+             or track-based orientation, derivatives handling in geodetic points, parsing of TLE
+             with non-unclassified modifiers, support for officiel WMM coefficients from NOAA,
+             support for tai-utc.dat file from USNO, tropospheric refraction model following
+             Recommendation ITU-R P.834-7, geoid model based on gravity field, and use of the new
+             Apache Commons Math rotation API with either Frame transform convention or vector
+             operator convention. Numerous bugs were also fixed.
+             Version 7.1 depends on version 3.6 of Apache Commons Math.">
+      <action dev="thierry" type="add">
+        Added tropospheric refraction correction angle following Recommendation ITU-R P.834-7.
+      </action>
+      <action dev="luc" type="add">
+        Added a way to configure max degree/order for short periods separately
+        from the mean elements settings in DSST tutorial.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed limitation to degree 12 on zonal short periods, degree/order 8 on
+        tesseral short periods, and degree/order 12 for tesseral m-dailies in DSST.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong orbit type in propagator conversion. The type specified by
+        user was ignored when computing variable stepsize integrator tolerances.
+      </action>
+      <action dev="luc" type="add">
+        Set up three different implementations of radiation pressure coefficients,
+        using either a single reflection coefficient, or a pair of absorption
+        and specular reflection coefficients using the classical convention about
+        specular reflection, or a pair of absorption and specular reflection
+        coefficients using the legacy convention from the 1995 CNES book.
+        Fixes issue #170
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong latitude normalization in FieldGeodeticPoint.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed blanks handling in CCSDS ODM files.
+        Fixes issue #232
+      </action>
+      <action dev="luc" type="fix">
+        Fixed FramesFactory.getNonInterpolatingTransform working only
+        in one direction.
+        Fixes issue #231
+      </action>
+      <action dev="evan" type="add">
+        Added Field of View based event detector for ground based sensors.
+      </action>
+      <action dev="luc" type="add">
+        Added a getFootprint method to FieldOfView for projecting Field Of View
+        to ground, taking limb of ellipsoid into account (including flatness) if
+        Field Of View skims over horizon.
+      </action>
+      <action dev="luc" type="add">
+        Added a pointOnLimb method to Ellipsoid for computing points that lie
+        on the limb as seen from an external observer.
+      </action>
+      <action dev="luc" type="add">
+        Added an isInside predicate method to Ellipsoid for checking points location.
+      </action>
+      <action dev="evan" type="fix">
+        Support parsing lowercase values in CCSDS orbit data messages.
+        Fixes issue #230
+      </action>
+      <action dev="luc" type="add">
+        Added a generic FieldOfViewDetector that can handle any Field Of View shape.
+        The DihedralFieldOfViewDetector is deprecated, but the CircularFieldOfViewDetector
+        which corresponds to a common case that can be computed more accurately and faster
+        than the new generic detector is preserved.
+      </action>
+      <action dev="luc" type="add">
+        Added a FieldOfView class to model Fields Of View with any shape.
+      </action>
+      <action dev="luc" type="add">
+        Added a FootprintOverlapDetector which is triggered when a sensor
+        Field Of View (any shape, even split in non-connected parts or
+        containing holes) overlaps a geographic zone, which can be non-convex,
+        split in different sub-zones, have holes, contain the pole...
+        Fixes issue #216
+      </action>
+      <action dev="luc" type="fix" due-to="Carlos Casas">
+        Added a protection against low altitudes in JB2006 model.
+        Fixes issue #214
+      </action>
+      <action dev="luc" type="fix" due-to="Petrus Hyvönen">
+        Enlarged access to SGP4 and DeepSDP4 propagators.
+        Fixes issue #207
+      </action>
+      <action dev="luc" type="fix">
+        Fixed covariance matrices units when read from CCSDS ODM files. The
+        data returned at API level are now consistent with SI units, instead of being
+        kilometer-based.
+        Fixes issue #217
+      </action>
+      <action dev="luc" type="fix">
+        Fixed DSST ephemeris generation.
+        Fixes issue #222
+      </action>
+      <action dev="luc" type="update">
+        Vastly improved DSS short period terms interpolation.
+      </action>
+      <action dev="luc" type="fix">
+        Use new Rotation API from Apache Commons Math 3.6.
+        This API allows to use both vector operator convention and frames
+        transform convention naturally. This is useful when axis/angles are
+        involved, or when composing rotations. This probably fixes one of
+        the oldest stumbling blocks for Orekit users.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed state partial derivatives in drag force model.
+        Fixes issue #229
+      </action>
+      <action dev="evan" type="fix">
+        Fixed incorrect density in DTM2000 when the input position is not in ECI
+        or ECEF.
+        Fixes issue #228
+      </action>
+      <action dev="evan" type="add">
+        Added capability to use a single EventHandler with multiple types of
+        EventDetectors.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to customize interpolation grid in DSST, either using a fixed number
+        of points or a maximum time gap between points, for each mean elements integration
+        step.
+      </action>
+      <action dev="luc" type="add" >
+        Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
+        and spacecraft frame.
+        Fixes issue #227
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed wrong ephemeris generation for analytical propagators with maneuvers.
+        Fixes issue #224.
+      </action>
+       <action dev="luc" type="fix" >
+        Fixed date offset by one second for TLE built from their components,
+        if a leap second was introduced earlier in the same year.
+        Fixes issue #225.
+      </action>
+      <action dev="luc" type="fix" >
+        Allow parsing TLE with non-unclassified modifier.
+      </action>
+      <action dev="luc" type="add" >
+        As a side effect of fixing issue #223, KeplerianPropagator and
+        Eckstein-Hechler propagator are now serializable.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed missing additional states handling in ephemeris propagators
+        created from analytical propagators.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed NPE and serialization issues in ephemeris propagators created
+        from analytical propagators.
+        Fixes issue #223.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed time scale issues in JPL ephemerides and IAU pole models.
+        The time used for internal computation should be TDB, not TT.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed an issue with backward propagation on analytical propagator.
+        During first step, the analytical interpolator wrongly considered the
+        propagation was forward.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to retrieve short period coefficients from DSST as
+        spacecraft state additional parameters. This is mainly intended
+        for test and validation purposes.
+      </action>
+      <action dev="luc" type="fix" >
+        Prevent small overshoots of step limits in event detection.
+        Fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
+        Handle string conversion of dates properly for dates less than 1 millisecond
+        before midnight (they should not appear as second 60.0 of previous minute but
+        should rather wrap around to next minute).
+        Partly fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
+        Enforce Lexicographical order in DirectoryCrawler, to ensure reproducible
+        loading. Before this changes, some tests could fail in one computer while
+        succeeding in another computer as we use a mix of DE-4xx files, some having
+        a different EMRAT (81.30056907419062 for DE-431, 81.30056 for DE-405 and DE-406).
+      </action>
       <action dev="luc" type="add" >
         Added EventEnablingPredicateFilter to filter event based on an user-provided
         enabling predicate function. This allow for example to dynamically turn some

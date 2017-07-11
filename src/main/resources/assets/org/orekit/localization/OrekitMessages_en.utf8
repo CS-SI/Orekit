@@ -4,6 +4,9 @@ INTERNAL_ERROR = internal error, contact maintenance at {0}
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitude ({0} m) is below the {1} m allowed threshold
 
+# point is inside ellipsoid
+POINT_INSIDE_ELLIPSOID = point is inside ellipsoid
+
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = trajectory inside the Brillouin sphere (r = {0})
 
@@ -250,8 +253,8 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unexpected two elevation value
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = unsupported parameter name {0}, supported names: {1}
 
-# duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = duplicated parameter name {0}
+# scale factor for parameter {0} is too small: {1}
+TOO_SMALL_SCALE_FOR_PARAMETER = scale factor for parameter {0} is too small: {1}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = unknown additional state "{0}"
@@ -270,9 +273,6 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = state Jacobian is a {0}x{1} matrix, it shou
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = state Jacobian has {0} rows but parameters Jacobian has {1} rows
-
-# finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = finite differences steps for force models derivatives not initialized
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = initial Jacobian matrix has {0} columns, but {1} parameters have been selected
@@ -313,6 +313,24 @@ CCSDS_INVALID_FRAME = frame {0} is not valid in this ODM file context
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 
+# Inconsistent time systems in the observations blocks: {0} ≠ {1}
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Inconsistent time systems in the observations blocks: {0} ≠ {1}
+
+# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+CCSDS_TDM_INCONSISTENT_DATA_LINE = Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+
+# No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
+CCSDS_TDM_KEYWORD_NOT_FOUND = No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
+
+# Parameter {0} needs a time system to be interpreted
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Parameter {0} needs a time system to be interpreted
+
+# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+
+# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+CCSDS_TDM_UNKNOWN_FORMAT = TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = name "{0}" is already used for an additional state
 
@@ -333,9 +351,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = The current orbit has an eccentricity (
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = unsupported sp3 file version {0}
-
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = unsupported time system {0}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = unexpected end of sp3 file (after line {0})
@@ -377,7 +392,7 @@ UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = unable to compute hyperbolic ec
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = unable to compute mean orbit from osculating orbit after {0} iterations
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = derivation order {0} is out of range
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = out of range latitude: {0}, [{1}, {2}]
@@ -386,7 +401,7 @@ OUT_OF_RANGE_LATITUDE = out of range latitude: {0}, [{1}, {2}]
 ORBIT_TYPE_NOT_ALLOWED = orbit type {0} not allowed here, allowed types: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = non pseudo-inertial frame {0} is not suitable as reference for inertial forces
 
 # method not available in the absence of a central body
 METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = method not available in the absence of a central body
@@ -402,3 +417,48 @@ UNDEFINED_ABSOLUTE_PVCOORDINATES = absolute position-velocity-acceleration not d
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
 INERTIAL_FORCE_MODEL_MISSING = an inertial force model has to be used when propagating in non-inertial frame {0}
+
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = no SEM almanac file found
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = file {0} is not a supported SEM almanac file
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = no Yuma almanac file found
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = file {0} is not a supported Yuma almanac file
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+
+# the CCSDS time system {0} has no corresponding Orekit TimeScale.
+CCSDS_NO_CORRESPONDING_TIME_SCALE = the CCSDS time system {0} has no corresponding Orekit TimeScale.
+
+# use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
+
+# Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
+NOT_ENOUGH_PROPAGATORS = Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
+
+# argument {0} cannot be null
+NULL_ARGUMENT = argument {0} cannot be null
+
+# value {0} not found in {1}
+VALUE_NOT_FOUND = value {0} not found in {1}
+
+# Ephemeris file format does not support multiple space objects
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Ephemeris file format does not support multiple space objects
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Klobuchar coefficients α or β could not be loaded from {0}
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = Klobuchar coefficients α or β not available for date {0}
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = file {0} does not contain Klobuchar coefficients α or β
+
+# no reference date set for parameter {0}
+NO_REFERENCE_DATE_FOR_PARAMETER = no reference date set for parameter {0}

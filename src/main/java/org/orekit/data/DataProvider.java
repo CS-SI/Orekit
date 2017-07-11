@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,7 +72,7 @@ public interface DataProvider {
      * @exception OrekitException if the data loader cannot be fed
      * (read error ...)
      */
-    boolean feed(final Pattern supported, final DataLoader visitor)
+    boolean feed(Pattern supported, DataLoader visitor)
         throws OrekitException;
 
 }

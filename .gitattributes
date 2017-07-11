@@ -41,6 +41,8 @@ src/*/resources/*/*.gfc             text
 src/*/resources/*/*/*.gfc           text
 src/*/resources/*/UTC-TAI.history   text
 src/*/resources/*/*/UTC-TAI.history text
+src/*/resources/*/*.alm             text
+src/*/resources/*/*.al3             text
 
 # specific data files known to not be text: no End Of Line transformations will be done
 src/*/resources/*/unx*.405         -text

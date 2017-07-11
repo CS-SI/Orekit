@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,21 +28,22 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.solvers.BaseUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
-import org.apache.commons.math3.exception.NoBracketingException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -58,7 +59,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -66,7 +67,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.SecularAndHarmonic;
 
-import fr.cs.examples.Autoconfiguration;
 import fr.cs.examples.KeyValueFileParser;
 
 /** Orekit tutorial for setting up a Sun-synchronous Earth-phased Low Earth Orbit.
@@ -75,7 +75,7 @@ import fr.cs.examples.KeyValueFileParser;
 public class Phasing {
 
     /** GMST function. */
-    private final TimeFunction<DerivativeStructure> gmst;
+    private final TimeScalarFunction gmst;
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -95,7 +95,18 @@ public class Phasing {
             }
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // input/out
             URL url = Phasing.class.getResource("/" + args[0]);
@@ -165,7 +176,9 @@ public class Phasing {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
         TimeScale utc = TimeScalesFactory.getUTC();
 
        // simulation properties
@@ -174,7 +187,7 @@ public class Phasing {
         int          nbDays     = parser.getInt(ParameterKey.PHASING_DAYS_NUMBER);
         double       latitude   = parser.getAngle(ParameterKey.SUN_SYNCHRONOUS_REFERENCE_LATITUDE);
         boolean      ascending  = parser.getBoolean(ParameterKey.SUN_SYNCHRONOUS_REFERENCE_ASCENDING);
-        double       mst        = parser.getTime(ParameterKey.SUN_SYNCHRONOUS_MEAN_SOLAR_TIME).getSecondsInDay() / 3600;
+        double       mst        = parser.getTime(ParameterKey.SUN_SYNCHRONOUS_MEAN_SOLAR_TIME).getSecondsInUTCDay() / 3600;
         int          degree     = parser.getInt(ParameterKey.GRAVITY_FIELD_DEGREE);
         int          order      = parser.getInt(ParameterKey.GRAVITY_FIELD_ORDER);
         String       gridOutput = parser.getString(ParameterKey.GRID_OUTPUT);
@@ -251,11 +264,11 @@ public class Phasing {
         System.out.println("final orbit (osculating): " + orbit);
 
         // generate the ground track grid file
-        PrintStream output = new PrintStream(new File(input.getParent(), gridOutput));
-        for (int i = 0; i < gridLatitudes.length; ++i) {
-            printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
+        try (PrintStream output = new PrintStream(new File(input.getParent(), gridOutput), "UTF-8")) {
+            for (int i = 0; i < gridLatitudes.length; ++i) {
+                printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
+            }
         }
-        output.close();
 
     }
 
@@ -568,8 +581,8 @@ public class Phasing {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
-        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInDay();
-        final double theta      = gmst.value(orbit.getDate()).getValue();
+        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
+        final double theta      = gmst.value(orbit.getDate());
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
         final double dAlpha     = MathUtils.normalizeAngle(position.getAlpha() - sunAlpha, 0);
 
@@ -606,7 +619,7 @@ public class Phasing {
             previousLatitude = currentLatitude;
         }
 
-        throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                   "latitude " + FastMath.toDegrees(latitude) + " never crossed");
 
     }
@@ -622,13 +635,13 @@ public class Phasing {
      * @param propagator propagator used
      * @return state at latitude crossing time
      * @throws OrekitException if state cannot be propagated
-     * @throws NoBracketingException if latitude cannot be bracketed in the search interval
+     * @throws MathRuntimeException if latitude cannot be bracketed in the search interval
      */
     private SpacecraftState findLatitudeCrossing(final double latitude,
                                                  final AbsoluteDate guessDate, final AbsoluteDate endDate,
                                                  final double shift, final double maxShift,
                                                  final Propagator propagator)
-        throws OrekitException, NoBracketingException {
+        throws OrekitException, MathRuntimeException {
 
         // function evaluating to 0 at latitude crossings
         final UnivariateFunction latitudeFunction = new UnivariateFunction() {
@@ -657,7 +670,7 @@ public class Phasing {
         while (!UnivariateSolverUtils.isBracketing(latitudeFunction, -span, span)) {
 
             if (2 * span > maxShift) {
-                // let the Apache Commons Math exception be thrown
+                // let the Hipparchus exception be thrown
                 UnivariateSolverUtils.verifyBracketing(latitudeFunction, -span, span);
             } else if (guessDate.shiftedBy(2 * span).compareTo(endDate) > 0) {
                 // Out of range :
@@ -672,7 +685,7 @@ public class Phasing {
         // find the encounter in the bracketed interval
         final BaseUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0.1, 5);
-        final double dt = solver.solve(1000, latitudeFunction,-span, span);
+        final double dt = solver.solve(1000, latitudeFunction, -span, span);
         return propagator.propagate(guessDate.shiftedBy(dt));
 
     }

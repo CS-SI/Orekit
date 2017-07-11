@@ -1,4 +1,4 @@
-' Copyright 2002-2015 CS Systèmes d'Information
+' Copyright 2002-2017 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -50,12 +50,9 @@
       }
 
       interface OrekitStepInterpolator {
-        +AbsoluteDate getCurrentDate()
-        +AbsoluteDate getPreviousDate()
-        +AbsoluteDate getInterpolatedDate()
-        +void setInterpolatedDate(AbsoluteDate date)
-        +SpacecraftState getInterpolatedState()
-        +double[] getInterpolatedAdditionalState(String name)
+        +SpacecraftState getCurrentState()
+        +SpacecraftState getPreviousState()
+        +SpacecraftState getInterpolatedState(AbsoluteDate date)
         +boolean isForward()
       }
 

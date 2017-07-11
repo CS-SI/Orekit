@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,16 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.complex.Complex;
+import org.hipparchus.complex.Complex;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.
  *  <p>
  *  Those series are given in Danielson paper by expression 2.5.3-(5):
- *  <pre>C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup> </pre>
- *  </p>
+ *
+ *  <p> C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup>
+ *
+ *  <p>
  *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.

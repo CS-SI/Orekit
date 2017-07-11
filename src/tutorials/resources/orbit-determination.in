@@ -1,0 +1,345 @@
+## Input file for OrbitDetermination
+
+## The input file syntax is a set of key=value lines.
+## Blank lines and lines starting with '#' (after whitespace trimming) are
+## silently ignored.
+## The equal sign may be surrounded by space characters.
+## Keys must correspond to the ParameterKey enumerate constants, given that
+## matching is not case sensitive and that '_' characters may appear as '.'
+## characters in the file.
+
+## This file must contain one orbit defined as keplerian, equinoctial, circular
+## or cartesian.
+
+## Some parameters are optional, default values are shown below between [].
+
+## All dates are treated in UTC timescale.
+## The inertial frame for orbit definition and propagation is EME2000.
+## Physical data are read from the src/tutorial/resources/tutorial-orekit-data
+## directory.
+
+### Orbit definition
+## date of the orbital parameters (UTC)
+orbit.date = 2010-11-02T02:56:15.690
+
+### Keplerian elements
+## Semi-major axis (m)
+# orbit.keplerian.a = 0.0
+## Eccentricity
+# orbit.keplerian.e = 0.0
+## Inclination (degrees)
+# orbit.keplerian.i = 0.0
+## Right Ascension of Ascending Node (degrees)
+# orbit.keplerian.raan = 0.0
+## Perigee Argument (degrees)
+# orbit.keplerian.pa = 0.0
+## Anomaly (degrees)
+# orbit.keplerian.anomaly = 0.0
+
+### Equinoctial elements
+## Semi-major axis (m)
+# orbit.equinoctial.a = 0.0
+## ex/k component of eccentricity vector
+# orbit.equinoctial.ex = 0.0
+## ey/h component of eccentricity vector
+# orbit.equinoctial.ey = 0.0
+## hx/q component of inclination vector
+# orbit.equinoctial.hx = 0.0
+## hy/p component of inclination vector
+# orbit.equinoctial.hy = 0.0
+## Longitude Argument (degrees)
+# orbit.equinoctial.lambda = 0.0
+
+### Circular elements
+## Semi-major axis (m)
+# orbit.circular.a = 0.0
+## ex component of eccentricity vector
+# orbit.circular.ex = 0.0
+## ey component of eccentricity vector
+# orbit.circular.ey = 0.0
+## Inclination (degrees)
+# orbit.circular.i = 0.0
+## Right Ascension of Ascending Node (degrees)
+# orbit.circular.raan = 0.0
+## Latitude Argument (degrees)
+# orbit.circular.alpha = 0.0
+
+### Angle type for anomaly, alpha or lambda (ECCENTRIC/MEAN/TRUE) [MEAN]
+# orbit.angle.type = MEAN
+
+### Cartesian elements
+## Position along X in inertial frame (m)
+orbit.cartesian.px = -40517522.9
+## Position along Y in inertial frame (m)
+orbit.cartesian.py = -10003079.9
+## Position along Z in inertial frame (m)
+orbit.cartesian.pz = 166792.8
+## Velocity along X in inertial frame (m/s)
+orbit.cartesian.vx = 762.559
+## Velocity along Y in inertial frame (m/s)
+orbit.cartesian.vy =  -1474.468
+## Velocity along Z in inertial frame (m/s)
+orbit.cartesian.vz = 55.430
+
+## Spacecraft mass (kg) [1000.]
+# mass = 5370.0
+
+# IERS conventions [2010]
+iers.conventions = 2010
+
+# Inertial frame [EME2000]
+inertial.frame = EME2000
+
+# Propagator min step (s), max step (s) and position error (m) [0.001, 300, 10.0]
+propagator.min.step       = 0.001
+propagator.max.step       = 300
+propagator.position.error = 10.0
+
+# body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
+body.frame              = CIO/2010-based ITRF simple EOP
+body.equatorial.radius  = 6378137.0
+body.inverse.flattening =     298.257223563
+
+### Force models
+
+## Central body gravity potential degree
+central.body.degree = 20
+## Central body gravity potential order
+central.body.order  =  20
+
+## 3rd body Sun (true/false) [false]
+third.body.sun  = true
+## 3rd body Moon (true/false) [false]
+third.body.moon = true
+
+## ocean tides (negative degree and order by default to disable ocean tides)
+ocean.tides.degree = -1
+ocean.tides.order  = -1
+
+## solid tides (true/false) [false]
+solid.tides.sun    = false;
+solid.tides.moon   = false
+
+## Atmospheric drag (true/false) [false]
+drag = true
+## Drag coefficient
+drag.cd =  2.0
+## Estimation flag for drag coefficient (true/false) [false]
+drag.cd.estimated = true
+## Drag area (m^2)
+drag.area = 13.12
+
+## Solar Radiation Pressure (true/false) [false]
+solar.radiation.pressure = true
+## SRP coefficient
+solar.radiation.pressure.cr =  500
+## Estimation flag for SRP coefficient (true/false) [false]
+solar.radiation.pressure.cr.estimated = true
+## SRP area (m^2)
+solar.radiation.pressure.area = 13.12
+
+# Post-Newtonian correction force due to general relativity (true/false) [false]
+general.relativity = false
+
+## Transponder delay bias (m) [0.0]
+transponder.delay.bias     =   5969.0
+transponder.delay.bias.min = -50000.0
+transponder.delay.bias.max = +50000.0
+### Estimation flag for transponder delay (true/false) [false]
+transponder.delay.bias.estimated = false
+
+## Ground stations (angles in degrees, altitude and range bias in meters)
+ground.station.name                            [0] = Fucino
+ground.station.latitude                        [0] =   41.9774962512
+ground.station.longitude                       [0] =   13.6004229863
+ground.station.altitude                        [0] =  671.3542005921
+ground.station.position.estimated              [0] = false
+ground.station.range.sigma                     [0] = 20.0
+ground.station.range.bias                      [0] = 13468.956
+ground.station.range.bias.min                  [0] = -50000.0
+ground.station.range.bias.max                  [0] = +50000.0
+ground.station.range.bias.estimated            [0] = true
+ground.station.range.rate.sigma                [0] = 0.001
+ground.station.range.rate.bias                 [0] = 0.0
+ground.station.range.rate.bias.min             [0] = -50.0
+ground.station.range.rate.bias.max             [0] = +50.0
+ground.station.range.rate.bias.estimated       [0] = true
+ground.station.azimuth.sigma                   [0] =  0.02
+ground.station.azimuth.bias                    [0] =  0.01
+ground.station.azimuth.bias.min                [0] = -0.50
+ground.station.azimuth.bias.max                [0] = +0.50
+ground.station.elevation.sigma                 [0] =  0.02
+ground.station.elevation.bias                  [0] =  0.01
+ground.station.elevation.bias.min              [0] = -0.50
+ground.station.elevation.bias.max              [0] = +0.50
+ground.station.az.el.biases.estimated          [0] = true
+ground.station.elevation.refraction.correction [0] = true
+ground.station.range.tropospheric.correction   [0] = true
+
+ground.station.name                            [1] = Kumsan
+ground.station.latitude                        [1] =   36.1247623774
+ground.station.longitude                       [1] =  127.4871671976
+ground.station.altitude                        [1] =  180.5488660489
+ground.station.position.estimated              [1] = false
+ground.station.range.sigma                     [1] = 20.0
+ground.station.range.bias                      [1] = 13527.381
+ground.station.range.bias.min                  [1] = -50000.0
+ground.station.range.bias.max                  [1] = +50000.0
+ground.station.range.bias.estimated            [1] = true
+ground.station.range.rate.sigma                [1] = 0.001
+ground.station.range.rate.bias                 [1] = 0.0
+ground.station.range.rate.bias.min             [1] = -50.0
+ground.station.range.rate.bias.max             [1] = +50.0
+ground.station.range.rate.bias.estimated       [1] = true
+ground.station.azimuth.sigma                   [1] =  0.02
+ground.station.azimuth.bias                    [1] =  0.01
+ground.station.azimuth.bias.min                [1] = -0.50
+ground.station.azimuth.bias.max                [1] = +0.50
+ground.station.elevation.sigma                 [1] =  0.02
+ground.station.elevation.bias                  [1] =  0.01
+ground.station.elevation.bias.min              [1] = -0.50
+ground.station.elevation.bias.max              [1] = +0.50
+ground.station.az.el.biases.estimated          [1] = true
+ground.station.elevation.refraction.correction [1] = true
+ground.station.range.tropospheric.correction   [1] = true
+
+ground.station.name                            [2] = Uralla
+ground.station.latitude                        [2] =  -30.632947613
+ground.station.longitude                       [2] =  151.5650529068
+ground.station.altitude                        [2] = 1163.2667864364
+ground.station.position.estimated              [2] = false
+ground.station.range.sigma                     [2] = 20.0
+ground.station.range.bias                      [2] = 13314.655
+ground.station.range.bias.min                  [2] = -50000.0
+ground.station.range.bias.max                  [2] = +50000.0
+ground.station.range.bias.estimated            [2] = true
+ground.station.range.rate.sigma                [2] = 0.001
+ground.station.range.rate.bias                 [2] = 0.0
+ground.station.range.rate.bias.min             [2] = -50.0
+ground.station.range.rate.bias.max             [2] = +50.0
+ground.station.range.rate.bias.estimated       [2] = true
+ground.station.azimuth.sigma                   [2] =  0.02
+ground.station.azimuth.bias                    [2] =  0.01
+ground.station.azimuth.bias.min                [2] = -0.50
+ground.station.azimuth.bias.max                [2] = +0.50
+ground.station.elevation.sigma                 [2] =  0.02
+ground.station.elevation.bias                  [2] =  0.01
+ground.station.elevation.bias.min              [2] = -0.50
+ground.station.elevation.bias.max              [2] = +0.50
+ground.station.az.el.biases.estimated          [2] = true
+ground.station.elevation.refraction.correction [2] = true
+ground.station.range.tropospheric.correction   [2] = true
+
+ground.station.name                            [3] = Pretoria
+ground.station.latitude                        [3] =  -25.8854896226
+ground.station.longitude                       [3] =   27.7074493158
+ground.station.altitude                        [3] = 1566.6334663324
+ground.station.position.estimated              [3] = false
+ground.station.range.sigma                     [3] = 20.0
+ground.station.range.bias                      [3] = 13370.193
+ground.station.range.bias.min                  [3] = -50000.0
+ground.station.range.bias.max                  [3] = +50000.0
+ground.station.range.bias.estimated            [3] = true
+ground.station.range.rate.sigma                [3] = 0.001
+ground.station.range.rate.bias                 [3] = 0.0
+ground.station.range.rate.bias.min             [3] = -50.0
+ground.station.range.rate.bias.max             [3] = +50.0
+ground.station.range.rate.bias.estimated       [3] = true
+ground.station.azimuth.sigma                   [3] =  0.02
+ground.station.azimuth.bias                    [3] =  0.01
+ground.station.azimuth.bias.min                [3] = -0.50
+ground.station.azimuth.bias.max                [3] = +0.50
+ground.station.elevation.sigma                 [3] =  0.02
+ground.station.elevation.bias                  [3] =  0.01
+ground.station.elevation.bias.min              [3] = -0.50
+ground.station.elevation.bias.max              [3] = +0.50
+ground.station.az.el.biases.estimated          [3] = true
+ground.station.elevation.refraction.correction [3] = true
+ground.station.range.tropospheric.correction   [3] = true
+
+ground.station.name                            [4] = CastleRock
+ground.station.latitude                        [4] =   39.2764477379
+ground.station.longitude                       [4] = -104.8063531025
+ground.station.altitude                        [4] = 2095.3769797949
+ground.station.position.estimated              [4] = false
+ground.station.range.sigma                     [4] = 20.0
+ground.station.range.bias                      [4] = 11473.623
+ground.station.range.bias.min                  [4] = -50000.0
+ground.station.range.bias.max                  [4] = +50000.0
+ground.station.range.bias.estimated            [4] = true
+ground.station.range.rate.sigma                [4] = 0.001
+ground.station.range.rate.bias                 [4] = 0.0
+ground.station.range.rate.bias.min             [4] = -50.0
+ground.station.range.rate.bias.max             [4] = +50.0
+ground.station.range.rate.bias.estimated       [4] = true
+ground.station.azimuth.sigma                   [4] =  0.02
+ground.station.azimuth.bias                    [4] =  0.01
+ground.station.azimuth.bias.min                [4] = -0.50
+ground.station.azimuth.bias.max                [4] = +0.50
+ground.station.elevation.sigma                 [4] =  0.02
+ground.station.elevation.bias                  [4] =  0.01
+ground.station.elevation.bias.min              [4] = -0.50
+ground.station.elevation.bias.max              [4] = +0.50
+ground.station.az.el.biases.estimated          [4] = true
+ground.station.elevation.refraction.correction [4] = true
+ground.station.range.tropospheric.correction   [4] = true
+
+### Measurements parameters
+range.outlier.rejection.multiplier              = 6
+range.outlier.rejection.starting.iteration      = 2
+range.rate.outlier.rejection.multiplier         = 6
+range.rate.outlier.rejection.starting.iteration = 2
+az.el.outlier.rejection.multiplier              = 6
+az.el.outlier.rejection.starting.iteration      = 2
+PV.outlier.rejection.multiplier                 = 6
+PV.outlier.rejection.starting.iteration         = 2
+range.measurements.base.weight                  = 1.0
+range.rate.measurements.base.weight             = 1.0
+azimuth.measurements.base.weight                = 1.0
+elevation.measurements.base.weight              = 1.0
+PV.measurements.base.weight                     = 1.0
+PV.measurements.position.sigma                  = 10.0
+PV.measurements.velocity.sigma                  = 0.01
+
+## Estimator
+
+# normalized parameters p are computed from physical parameters x
+# as p = (x - x0) / sx where x0 is the reference value for physical
+# parameter x and sx is the associated scale factor
+# scaling factor for orbital parameters normalization (m)
+# if not specified, the value set for propagator.position.error will be copied
+estimator.orbital.parameters.position.scale     = 10.0
+
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Levenberg-Marquardt
+
+# the default initial step bound factor is 100 for Levenberg-Marquardt
+# this is too small for normalized parameters when initial guess is very
+# far. An order of magnitude is 100 times the distance error of the initial guess
+# divided by estimator.orbital.parameters.position.scale. So if the initial guess
+# is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
+# the initial step bound factor should be of the order of magnitude of 1.0e6
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+
+# convergence is reached when max|p(k+1) - p(k)| < ε for each
+# normalized estimated parameters p and iterations k and k+1
+# so the ε threshold (which corresponds to the key
+# estimator.normalized.parameters.convergence.threshold)
+# Normalized values are computed as (x - x0) / sx,
+# so convergence is reached when the following condition holds for
+# all estimated parameters: |x[i+1] - x[i]| <= ε * sx
+# So the convergence threshold specified here can be considered as
+# a multiplication factor applied to scale. Since for all parameters
+# the scale is often small (typically about 1 m for orbital positions
+# for example), then the threshold should not be too small. A value
+# of 10⁻³ is often quite accurate.
+estimator.normalized.parameters.convergence.threshold   = 1.0e-3
+estimator.max.iterations                                = 20
+estimator.max.evaluations                               = 25
+
+# comma-separated list of measurements files (in the same directory as this file)
+measurements.files = W3B.aer
+
+# base name of the output files (log and residuals), no files created if empty
+output.base.name = orbit-determination

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +97,7 @@ public class VEISFrameTest {
         PVCoordinates pvVEIS =
             new PVCoordinates(new Vector3D(-40713785.1340916604, -11007613.4509160239, 10293.2583441036),
                               new Vector3D(801.6573208750, -2967.4549256851, -0.9288811067));
-               
+
         PVCoordinates delta0 = new PVCoordinates(t0.transformPVCoordinates(pvJ2000), pvVEIS);
         Assert.assertEquals(0.0, delta0.getPosition().getNorm(), 4.0e-4);
         Assert.assertEquals(0.0, delta0.getVelocity().getNorm(), 4.0e-4);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,14 +27,16 @@ import org.junit.Test;
 
 public class OrekitMessagesTest {
 
+    private final String[] LANGUAGES_LIST =  { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
+
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(135, OrekitMessages.values().length);
+        Assert.assertEquals(155, OrekitMessages.values().length);
     }
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
+        for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -54,7 +56,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testAllPropertiesCorrespondToKeys() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
+        for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -89,7 +91,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testVariablePartsConsistency() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
+        for (final String language : LANGUAGES_LIST) {
             Locale locale = new Locale(language);
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source     = new MessageFormat(message.getSourceString());

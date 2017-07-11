@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,14 +12,12 @@
   limitations under the License.
 -->
 
-TLE
-===
+# TLE
 
 The `org.orekit.propagation.analytical.tle` package provides classes to read, and
 extrapolate from, orbital elements in Two-Line Elements (TLE) format.
 
-TLE Presentation
-----------------
+## TLE Presentation
 
 TLE orbits are supplied in two-line element format, then converted 
 into an internal format for easier retrieval and future extrapolation.
@@ -33,8 +31,7 @@ The implemented TLE model conforms to new 2006 corrected model.
 More information on the TLE format can be found on the
 [CelesTrak](http://www.celestrak.com/) website.
 
-Evolution
----------
+## Evolution
 
 The TLE orbit representation is de-correlated from other orbit representations 
 provided by `Orbits` package. It is due to the fact that TLE representation depends on 

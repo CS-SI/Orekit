@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,29 +17,27 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.exception.MathArithmeticException;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for rotation/rotation rate/rotation acceleration triplets.
@@ -156,10 +154,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final Vector3D c2        = new Vector3D(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
             rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2, tolerance);
 
-        } catch (MathIllegalArgumentException miae) {
-            throw new OrekitException(miae);
-        } catch (MathArithmeticException mae) {
-            throw new OrekitException(mae);
+        } catch (MathRuntimeException mrte) {
+            throw new OrekitException(mrte);
         }
 
     }
@@ -179,8 +175,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * {@link DerivativeStructure} with proper order
      */
     public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) throws OrekitException {
-        this(new FieldRotation<DerivativeStructure>(u.toDerivativeStructureVector(2),
-                                                    v.toDerivativeStructureVector(2)));
+        this(new FieldRotation<>(u.toDerivativeStructureVector(2),
+                                 v.toDerivativeStructureVector(2)));
     }
 
     /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
@@ -282,29 +278,33 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final RealVector v = solver.solve(rhs);
             omega = new Vector3D(v.getEntry(0), v.getEntry(1), v.getEntry(2));
 
-        } catch (SingularMatrixException sme) {
+        } catch (MathIllegalArgumentException miae) {
+            if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
 
-            // handle some special cases for which we can compute a solution
-            final double c12 = c1.getNormSq();
-            final double c1n = FastMath.sqrt(c12);
-            final double c22 = c2.getNormSq();
-            final double c2n = FastMath.sqrt(c22);
+                // handle some special cases for which we can compute a solution
+                final double c12 = c1.getNormSq();
+                final double c1n = FastMath.sqrt(c12);
+                final double c22 = c2.getNormSq();
+                final double c2n = FastMath.sqrt(c22);
 
-            if (c1n <= threshold && c2n <= threshold) {
-                // simple special case, velocities are cancelled
-                return Vector3D.ZERO;
-            } else if (v1n <= threshold && c1n >= threshold) {
-                // this is inconsistent, if v₁ is zero, c₁ must be 0 too
-                throw new NumberIsTooLargeException(c1n, 0, true);
-            } else if (v2n <= threshold && c2n >= threshold) {
-                // this is inconsistent, if v₂ is zero, c₂ must be 0 too
-                throw new NumberIsTooLargeException(c2n, 0, true);
-            } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
-                // simple special case, v₂ is redundant with v₁, we just ignore it
-                // use the simplest Ω: orthogonal to both v₁ and c₁
-                omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
+                if (c1n <= threshold && c2n <= threshold) {
+                    // simple special case, velocities are cancelled
+                    return Vector3D.ZERO;
+                } else if (v1n <= threshold && c1n >= threshold) {
+                    // this is inconsistent, if v₁ is zero, c₁ must be 0 too
+                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c1n, 0, true);
+                } else if (v2n <= threshold && c2n >= threshold) {
+                    // this is inconsistent, if v₂ is zero, c₂ must be 0 too
+                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c2n, 0, true);
+                } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
+                    // simple special case, v₂ is redundant with v₁, we just ignore it
+                    // use the simplest Ω: orthogonal to both v₁ and c₁
+                    omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
+                } else {
+                    throw miae;
+                }
             } else {
-                throw sme;
+                throw miae;
             }
 
         }
@@ -312,12 +312,12 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // check results
         final double d1 = Vector3D.distance(Vector3D.crossProduct(omega, v1), c1);
         if (d1 > threshold) {
-            throw new NumberIsTooLargeException(d1, 0, true);
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d1, 0, true);
         }
 
         final double d2 = Vector3D.distance(Vector3D.crossProduct(omega, v2), c2);
         if (d2 > threshold) {
-            throw new NumberIsTooLargeException(d2, 0, true);
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d2, 0, true);
         }
 
         return omega;
@@ -376,34 +376,38 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             oZDot, oYDot, oXDot, oZ, oY, oX
         });
 
+        final DSFactory factory;
         final DerivativeStructure q0DS;
         final DerivativeStructure q1DS;
         final DerivativeStructure q2DS;
         final DerivativeStructure q3DS;
         switch(order) {
             case 0 :
-                q0DS = new DerivativeStructure(1, 0, q0);
-                q1DS = new DerivativeStructure(1, 0, q1);
-                q2DS = new DerivativeStructure(1, 0, q2);
-                q3DS = new DerivativeStructure(1, 0, q3);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0);
+                q1DS = factory.build(q1);
+                q2DS = factory.build(q2);
+                q3DS = factory.build(q3);
                 break;
             case 1 :
-                q0DS = new DerivativeStructure(1, 1, q0, q0Dot);
-                q1DS = new DerivativeStructure(1, 1, q1, q1Dot);
-                q2DS = new DerivativeStructure(1, 1, q2, q2Dot);
-                q3DS = new DerivativeStructure(1, 1, q3, q3Dot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot);
+                q1DS = factory.build(q1, q1Dot);
+                q2DS = factory.build(q2, q2Dot);
+                q3DS = factory.build(q3, q3Dot);
                 break;
             case 2 :
-                q0DS = new DerivativeStructure(1, 2, q0, q0Dot, q0DotDot);
-                q1DS = new DerivativeStructure(1, 2, q1, q1Dot, q1DotDot);
-                q2DS = new DerivativeStructure(1, 2, q2, q2Dot, q2DotDot);
-                q3DS = new DerivativeStructure(1, 2, q3, q3Dot, q3DotDot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot, q0DotDot);
+                q1DS = factory.build(q1, q1Dot, q1DotDot);
+                q2DS = factory.build(q2, q2Dot, q2DotDot);
+                q3DS = factory.build(q3, q3Dot, q3DotDot);
                 break;
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
-        return new FieldRotation<DerivativeStructure>(q0DS, q1DS, q2DS, q3DS, false);
+        return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
 
     }
 
@@ -416,8 +420,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return rotation rate allowing to go from start to end orientations
      */
     public static Vector3D estimateRate(final Rotation start, final Rotation end, final double dt) {
-        final Rotation evolution = start.applyTo(end.revert());
-        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
+        final Rotation evolution = start.compose(end.revert(), RotationConvention.VECTOR_OPERATOR);
+        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis(RotationConvention.VECTOR_OPERATOR));
     }
 
     /** Revert a rotation/rotation rate/ rotation acceleration triplet.
@@ -458,11 +462,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
         final double rate = rotationRate.getNorm();
-        final Rotation rateContribution = (rate == 0.0) ? Rotation.IDENTITY : new Rotation(rotationRate, -rate * dt);
+        final Rotation rateContribution = (rate == 0.0) ?
+                                          Rotation.IDENTITY :
+                                          new Rotation(rotationRate, rate * dt, RotationConvention.FRAME_TRANSFORM);
 
         // append rotation and rate contribution
         final AngularCoordinates linearPart =
-                new AngularCoordinates(rateContribution.applyTo(rotation), rotationRate);
+                new AngularCoordinates(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR), rotationRate);
 
         final double acc  = rotationAcceleration.getNorm();
         if (acc == 0.0) {
@@ -475,7 +481,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
         final AngularCoordinates quadraticContribution =
-                new AngularCoordinates(new Rotation(rotationAcceleration, -0.5 * acc * dt * dt),
+                new AngularCoordinates(new Rotation(rotationAcceleration,
+                                                    0.5 * acc * dt * dt,
+                                                    RotationConvention.FRAME_TRANSFORM),
                                        new Vector3D(dt, rotationAcceleration),
                                        rotationAcceleration);
 
@@ -529,7 +537,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     public AngularCoordinates addOffset(final AngularCoordinates offset) {
         final Vector3D rOmega    = rotation.applyTo(offset.rotationRate);
         final Vector3D rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
-        return new AngularCoordinates(rotation.applyTo(offset.rotation),
+        return new AngularCoordinates(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
                                       rotationRate.add(rOmega),
                                       new Vector3D( 1.0, rotationAcceleration,
                                                     1.0, rOmegaDot,
@@ -600,52 +608,50 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     }
 
-    /** Interpolate angular coordinates.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * This method is based on Sergei Tanygin's paper <a
-     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
-     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
-     * vector as described in Malcolm D. Shuster's paper <a
-     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
-     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (rotation rates)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the rotations.
-     * </p>
-     * @param date interpolation date
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
      */
-    @Deprecated
-    public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                                                 final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample)
-        throws OrekitException {
-        final List<TimeStampedAngularCoordinates> list = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
-        for (final Pair<AbsoluteDate, AngularCoordinates> pair : sample) {
-            list.add(new TimeStampedAngularCoordinates(pair.getFirst(),
-                                                       pair.getSecond().getRotation(),
-                                                       pair.getSecond().getRotationRate(),
-                                                       pair.getSecond().getRotationAcceleration()));
-        }
-        return TimeStampedAngularCoordinates.interpolate(date,
-                                                         useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,
-                                                         list);
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new FieldPVCoordinates<>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
+
     }
 
     /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.

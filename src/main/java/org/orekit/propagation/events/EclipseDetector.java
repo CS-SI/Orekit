@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -127,7 +127,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 6.1
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<EclipseDetector> handler,
+                            final int maxIter, final EventHandler<? super EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
                             final PVCoordinatesProvider occulting, final double occultingRadius,
                             final boolean totalEclipse) {
@@ -142,7 +142,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     /** {@inheritDoc} */
     @Override
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
-                                     final int nawMaxIter, final EventHandler<EclipseDetector> newHandler) {
+                                     final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                    occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }

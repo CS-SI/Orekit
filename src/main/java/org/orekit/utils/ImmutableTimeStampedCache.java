@@ -20,9 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -88,7 +89,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
                                                      data.size(), neighborsSize);
         }
         if (neighborsSize < 1) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL,
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
                                                      neighborsSize, 0);
         }
 
@@ -108,7 +109,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     }
 
     /** {@inheritDoc} */
-    public List<T> getNeighbors(final AbsoluteDate central)
+    public Stream<T> getNeighbors(final AbsoluteDate central)
         throws TimeStampedCacheException {
 
         // find central index
@@ -116,12 +117,10 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         // check index in in the range of the data
         if (i < 0) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                 this.getEarliest().getDate());
         } else if (i >= this.data.size()) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                                                 this.getLatest().getDate());
         }
 
@@ -132,7 +131,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         start = end - this.neighborsSize;
 
         // return list without copying
-        return Collections.unmodifiableList(this.data.subList(start, end));
+        return this.data.subList(start, end).stream();
     }
 
     /**
@@ -193,11 +192,10 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         /** {@inheritDoc} */
         @Override
-        public List<T> getNeighbors(final AbsoluteDate central)
+        public Stream<T> getNeighbors(final AbsoluteDate central)
             throws TimeStampedCacheException {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.NO_CACHED_ENTRIES);
-        };
+            throw new TimeStampedCacheException(OrekitMessages.NO_CACHED_ENTRIES);
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -209,7 +207,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         @Override
         public T getEarliest() {
             throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
-        };
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -229,7 +227,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
             return "Empty immutable cache";
         }
 
-    };
+    }
 
     /**
      * Get an empty immutable cache, cast to the correct type.

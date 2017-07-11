@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,9 +91,10 @@ public class DateTimeComponentsTest {
         DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00");
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testBadZone() {
-        DateTimeComponents.parseDateTime("2000-02-29T03:04:05.000+00:01");
+    @Test
+    public void testLocalTime() {
+        final DateTimeComponents dtc = DateTimeComponents.parseDateTime("2000-02-29T03:04:05.000+00:01");
+        Assert.assertEquals(1, dtc.getTime().getMinutesFromUTC());
     }
 
 }

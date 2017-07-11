@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -69,16 +70,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     private final GroundPointing groundPointingLaw;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @deprecated as of 7.1, replaced with  {@link #YawCompensation(Frame, GroundPointing)}
-     */
-    @Deprecated
-    public YawCompensation(final GroundPointing groundPointingLaw) {
-        super(groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
-    }
-
-    /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      * @exception OrekitException if the frame specified is not a pseudo-inertial frame
@@ -98,8 +89,8 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
@@ -163,7 +154,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
         // attitude definition :
         //  . Z satellite axis points to sliding target
-        //  . target relative velocity is in (Z,X) plane, in the -X half plane part
+        //  . target relative velocity is in (Z, X) plane, in the -X half plane part
         return new Attitude(frame,
                             new TimeStampedAngularCoordinates(date,
                                                               relativePosition.normalize(),
@@ -185,7 +176,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         throws OrekitException {
         final Rotation rBase        = getBaseState(pvProv, date, frame).getRotation();
         final Rotation rCompensated = getAttitude(pvProv, date, frame).getRotation();
-        final Rotation compensation = rCompensated.applyTo(rBase.revert());
+        final Rotation compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);
         return -compensation.applyTo(Vector3D.PLUS_I).getAlpha();
     }
 

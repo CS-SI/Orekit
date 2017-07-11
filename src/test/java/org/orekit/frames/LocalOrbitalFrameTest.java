@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,11 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -116,7 +115,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Before
-    public void setUp() throws PropagationException {
+    public void setUp() throws OrekitException {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =
@@ -126,9 +125,9 @@ public class LocalOrbitalFrameTest {
 
     }
 
-    private Frame                 inertialFrame;
-    private AbsoluteDate          initDate;
-    private Orbit                 initialOrbit;
-    private PVCoordinatesProvider provider;
+    private Frame                                 inertialFrame;
+    private AbsoluteDate                          initDate;
+    private Orbit                                 initialOrbit;
+    private PVCoordinatesProvider                 provider;
 
 }

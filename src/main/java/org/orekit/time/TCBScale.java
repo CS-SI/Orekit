@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.time;
+
+import org.hipparchus.RealFieldElement;
 
 /** Barycentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Solar System.
@@ -55,18 +57,15 @@ public class TCBScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(REFERENCE_DATE);
     }
 
     /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return tdb.offsetFromTAI(date).add(date.durationFrom(REFERENCE_DATE).multiply(LB_RATE));
     }
 
     /** {@inheritDoc} */

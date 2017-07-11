@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,10 @@ package org.orekit.bodies;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.CompositeFormat;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.CompositeFormat;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 
 /** Point location relative to a 2D body surface.
  * <p>Instance of this class are guaranteed to be immutable.</p>

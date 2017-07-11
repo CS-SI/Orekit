@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Integration in Matlab
-=====================
+# Integration in Matlab
 
 Matlab is a commercial tool for technical computation, with easy access to graphical
 plot routines. It can access Java libraries and convert the results to Matlab objects.
@@ -24,7 +23,7 @@ javaaddpath to set the paths. Note that as of Matlab version 7.5.0 this needs to
 from the script to the Matlab prompt.
 
     %
-    % /* Copyright 2002-2015 CS Systèmes d'Information
+    % /* Copyright 2002-2017 CS Systèmes d'Information
     %  * Licensed to CS Systèmes d'Information (CS) under one or more
     %  * contributor license agreements.  See the NOTICE file distributed with
     %  * this work for additional information regarding copyright ownership.
@@ -43,15 +42,20 @@ from the script to the Matlab prompt.
     %
     % Translated from SlaveMode.java to Matlab by Petrus Hyvönen 2011 as an
     % example of how to access orekit from matlab
-    % the jars orekit-5.0.jar and commons-math-2.2.jar and orekit-data.zip is
-    % in current matlab dir.
+    % the jars orekit-8.0.jar, hipparchus-core-1.0.jar, hipparchus-geometry-1.0.jar,
+    % hipparchus-ode-1.0.jar, hipparchus-fitting-1.0.jar, hipparchus-optim-1.0.jar
+    % and orekit-data.zip is in current matlab dir.
 
 
     ______
     % These seems to work if pasted to prompt.
     javaaddpath 'C:\ ... enter your path here ...\MATLAB'
-    javaaddpath 'C:\.. enter your path here ...\MATLAB\orekit-5.0.jar'
-    javaaddpath 'C:\.. enter your path here ...\\MATLAB\commons-math-2.2.jar
+    javaaddpath 'C:\.. enter your path here ...\MATLAB\orekit-8.0.jar'
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-core-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-geometry-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-ode-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-fitting-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-optim-1.0.jar
 
 
     %% do the imports
@@ -60,6 +64,7 @@ from the script to the Matlab prompt.
     import org.orekit.frames.FramesFactory
     import org.orekit.orbits.KeplerianOrbit
     import org.orekit.orbits.Orbit
+    import org.orekit.orbits.PositionAngle
     import org.orekit.propagation.SpacecraftState
     import org.orekit.propagation.analytical.KeplerianPropagator
     import org.orekit.data.DataProvidersManager
@@ -93,7 +98,7 @@ from the script to the Matlab prompt.
     mu =  3.986004415e+14
 
     %Orbit construction as Keplerian
-    initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM, KeplerianOrbit.MEAN_ANOMALY, inertialFrame, initialDate, mu)
+    initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, inertialFrame, initialDate, mu)
 
     %Simple extrapolation with Keplerian motion
     kepler = KeplerianPropagator(initialOrbit);

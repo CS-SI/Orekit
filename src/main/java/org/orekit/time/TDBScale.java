@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,8 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Barycentric Dynamic Time.
@@ -36,26 +37,38 @@ public class TDBScale implements TimeScale {
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
 
+    /** Constant term for g angle. */
+    private static final double G0 = 357.53;
+
+    /** Slope term for g angle. */
+    private static final double G1 = 0.9856003;
+
+    /** Factor for sin(g). */
+    private static final double SIN_G_FACTOR = 0.001658;
+
+    /** Factor for sin(2g). */
+    private static final double SIN_2G_FACTOR = 0.000014;
+
     /** Package private constructor for the factory.
      */
     TDBScale() {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
-        final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
+        final double g = FastMath.toRadians(G0 + G1 * dtDays);
+        return TimeScalesFactory.getTT().offsetFromTAI(date) + (SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g));
     }
 
     /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        final T dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH).divide(Constants.JULIAN_DAY);
+        final T g = dtDays.multiply(G1).add(G0).multiply(FastMath.PI / 180);
+        return TimeScalesFactory.getTT().offsetFromTAI(date).
+                        add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Getting the sources
-===================
+# Getting the sources
 
-Released versions
------------------
+## Released versions
 
 In order to get the source for officially released versions, go to the
 [Files](https://www.orekit.org/forge/projects/orekit/files) tab in Orekit
@@ -27,8 +25,7 @@ forge and select one of the orekit-x.y-src.zip files. The x.y part in the name
  orekit-data.zip file which is an example file suitable for a quick start (see
  [configuration](./configuration.html) for further reading about data configuration).
 
-Development version
--------------------
+## Development version
 
 The development of the Orekit project is done using the [Git](http://git-scm.com/)
 source code control system. Orekit Git master repository is available online.

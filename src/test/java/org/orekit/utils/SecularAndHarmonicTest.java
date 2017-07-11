@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,18 @@
  */
 package org.orekit.utils;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.solvers.BaseUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
-import org.apache.commons.math3.exception.NoBracketingException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +51,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -61,7 +60,7 @@ public class SecularAndHarmonicTest {
     private TimeScale utc;
     private NormalizedSphericalHarmonicsProvider gravityField;
     private BodyShape earth;
-    private TimeFunction<DerivativeStructure> gmst;
+    private TimeScalarFunction gmst;
 
     @Before
     public void setUp() throws OrekitException {
@@ -239,7 +238,7 @@ public class SecularAndHarmonicTest {
             previousLatitude = currentLatitude;
         }
 
-        throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                   "latitude " + FastMath.toDegrees(latitude) + " never crossed");
 
     }
@@ -248,7 +247,7 @@ public class SecularAndHarmonicTest {
                                                  final AbsoluteDate guessDate, final AbsoluteDate endDate,
                                                  final double shift, final double maxShift,
                                                  final Propagator propagator)
-        throws OrekitException, NoBracketingException {
+        throws OrekitException, MathRuntimeException {
 
         // function evaluating to 0 at latitude crossings
         final UnivariateFunction latitudeFunction = new UnivariateFunction() {
@@ -277,7 +276,7 @@ public class SecularAndHarmonicTest {
         while (!UnivariateSolverUtils.isBracketing(latitudeFunction, -span, span)) {
 
             if (2 * span > maxShift) {
-                // let the Apache Commons Math exception be thrown
+                // let the Hipparchus exception be thrown
                 UnivariateSolverUtils.verifyBracketing(latitudeFunction, -span, span);
             } else if (guessDate.shiftedBy(2 * span).compareTo(endDate) > 0) {
                 // Out of range :
@@ -292,7 +291,7 @@ public class SecularAndHarmonicTest {
         // find the encounter in the bracketed interval
         final BaseUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0.1, 5);
-        final double dt = solver.solve(1000, latitudeFunction,-span, span);
+        final double dt = solver.solve(1000, latitudeFunction, -span, span);
         return propagator.propagate(guessDate.shiftedBy(dt));
 
     }
@@ -302,8 +301,8 @@ public class SecularAndHarmonicTest {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
-        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInDay();
-        final double theta      = gmst.value(orbit.getDate()).getValue();
+        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
+        final double theta      = gmst.value(orbit.getDate());
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
         final double dAlpha     = MathUtils.normalizeAngle(position.getAlpha() - sunAlpha, 0);
 

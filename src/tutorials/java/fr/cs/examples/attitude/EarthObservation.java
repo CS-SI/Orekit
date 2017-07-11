@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,21 +17,23 @@
 
 package fr.cs.examples.attitude;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
@@ -50,8 +52,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for Earth observation attitude sequence.
  * <p>This tutorial shows how to easily switch between day and night attitude modes.<p>
  * @author Luc Maisonobe
@@ -65,7 +65,19 @@ public class EarthObservation {
         try {
 
             // configure Orekit
-            Autoconfiguration.configureOrekit();
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
+
             final SortedSet<String> output = new TreeSet<String>();
 
             //  Initial state definition : date, orbit
@@ -128,26 +140,22 @@ public class EarthObservation {
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
                 public void init(final SpacecraftState s0, final AbsoluteDate t) {
                 }
-                public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-                    try {
-                    	DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
-                    	angleDegree.setDecimalSeparator('\u00b0');
-                        DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
-                        // the Earth position in spacecraft frame should be along spacecraft Z axis
-                        // during nigthtime and away from it during daytime due to roll and pitch offsets
-                        final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
-                        final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+                public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                    DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
+                    angleDegree.setDecimalSeparator('\u00b0');
+                    DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
+                    // the Earth position in spacecraft frame should be along spacecraft Z axis
+                    // during nigthtime and away from it during daytime due to roll and pitch offsets
+                    final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+                    final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
-                        // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
-                        // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                        final double eclipseAngle = dayNightEvent.g(currentState);
+                    // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+                    // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+                    final double eclipseAngle = dayNightEvent.g(currentState);
 
-                        output.add(currentState.getDate() +
-                                   " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
-                                   " " + ad.format(FastMath.toDegrees(pointingOffset)));
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
-                    }
+                    output.add(currentState.getDate() +
+                               " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
+                               " " + ad.format(FastMath.toDegrees(pointingOffset)));
                 }
             });
 

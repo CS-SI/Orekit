@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -128,11 +129,9 @@ public enum OceanLoadDeformationCoefficients {
 
             int lineNumber = 0;
             String line = null;
-            BufferedReader reader = null;
-            try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
                 // setup the reader
-                reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
                 lineNumber = 0;
                 int maxDegree = 0;
                 final Map<Integer, Double> map = new HashMap<Integer, Double>();
@@ -160,14 +159,6 @@ public enum OceanLoadDeformationCoefficients {
                                           lineNumber, RESOURCE_NAME, line);
             } catch (IOException ioe) {
                 throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-            } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException ioe) {
-                    // ignored here
-                }
             }
 
         }

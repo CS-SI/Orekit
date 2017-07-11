@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,26 +24,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFileParser;
+import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
  * @author sports
  * @since 6.1
  */
-public class OEMParser extends ODMParser implements OrbitFileParser {
+public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** Simple constructor.
      * <p>
@@ -52,8 +51,10 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
      * Mission Relative Time time systems, or the gravitational coefficient or
      * the IERS conventions, the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
-     * is a combination of the <a href="">builder design pattern</a> and
-     * a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
      * interface</a>.
      * </p>
      * <p>
@@ -130,11 +131,26 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public OEMFile parse(final InputStream stream) throws OrekitException {
+        return (OEMFile) super.parse(stream);
+    }
+
+    /** {@inheritDoc} */
     public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+            return parse(reader, fileName);
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
+    }
+
+    @Override
+    public OEMFile parse(final BufferedReader reader, final String fileName)
+            throws OrekitException {
 
         try {
 
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
             pi.fileName = fileName;
@@ -209,6 +225,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         if (pi.lastEphemeridesBlock != null) {
                             parsed = parsed || parseMetaDataEntry(pi.keyValue,
                                                                   pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                            if (parsed && pi.keyValue.getKeyword() == Keyword.REF_FRAME_EPOCH) {
+                                pi.lastEphemeridesBlock.setHasRefFrameEpoch(true);
+                            }
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -250,19 +269,22 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000);
-                        final CartesianOrbit orbit =
-                                new CartesianOrbit(new PVCoordinates(position, velocity),
-                                                   pi.lastEphemeridesBlock.getMetaData().getFrame(),
-                                                   date, pi.file.getMuUsed());
-                        Vector3D acceleration = null;
+                        Vector3D acceleration = Vector3D.NaN;
+                        boolean hasAcceleration = false;
                         if (sc.hasNext()) {
                             acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000);
+                            hasAcceleration = true;
                         }
-                        final OEMFile.EphemeridesDataLine epDataLine =
-                                new OEMFile.EphemeridesDataLine(orbit, acceleration);
+                        final TimeStampedPVCoordinates epDataLine;
+                        if (hasAcceleration) {
+                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+                        } else {
+                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity);
+                        }
                         pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
+                        pi.lastEphemeridesBlock.updateHasAcceleration(hasAcceleration);
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,20 +18,21 @@ package org.orekit.models.earth.tessellation;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class used to orient tiles along an orbit track.
@@ -46,6 +47,9 @@ public class AlongTrackAiming implements TileAiming {
     /** Ground track over one half orbit. */
     private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param orbit orbit along which tiles should be aligned
@@ -55,7 +59,8 @@ public class AlongTrackAiming implements TileAiming {
      */
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
         throws OrekitException {
-        this.halfTrack      = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.factory   = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -101,7 +106,7 @@ public class AlongTrackAiming implements TileAiming {
                                             velocity.getX(), velocity.getY(), velocity.getZ()
                                         });
         }
-        final DerivativeStructure[] p  = interpolator.value(new DerivativeStructure(1, 1, 0, gp.getLatitude()));
+        final DerivativeStructure[] p  = interpolator.value(factory.variable(0, gp.getLatitude()));
 
         // extract interpolated ground position/velocity
         final Vector3D position = new Vector3D(p[0].getValue(),
@@ -133,29 +138,23 @@ public class AlongTrackAiming implements TileAiming {
                                                                                      final boolean isAscending)
         throws OrekitException {
 
-        try {
-            // find the span of the next half track
-            final Propagator propagator = new KeplerianPropagator(orbit);
-            final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
-            propagator.addEventDetector(new HalfTrackSpanDetector(0.25 * orbit.getKeplerianPeriod(),
-                                                                  1.0e-3, 100, handler, ellipsoid.getBodyFrame()));
-            propagator.propagate(orbit.getDate().shiftedBy(3 * orbit.getKeplerianPeriod()));
+        // find the span of the next half track
+        final Propagator propagator = new KeplerianPropagator(orbit);
+        final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
+        final LatitudeExtremumDetector detector =
+                        new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).
+                        withHandler(handler).
+                        withMaxIter(100);
+        propagator.addEventDetector(detector);
+        propagator.propagate(orbit.getDate().shiftedBy(3 * orbit.getKeplerianPeriod()));
 
-            // sample the half track
-            propagator.clearEventsDetectors();
-            final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
-            propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
-            propagator.propagate(handler.getStart(), handler.getEnd());
+        // sample the half track
+        propagator.clearEventsDetectors();
+        final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
+        propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
+        propagator.propagate(handler.getStart(), handler.getEnd());
 
-            return sampler.getHalfTrack();
-
-        } catch (PropagationException pe) {
-            if (pe.getCause() instanceof OrekitException) {
-                throw (OrekitException) pe.getCause();
-            } else {
-                throw pe;
-            }
-        }
+        return sampler.getHalfTrack();
 
     }
 

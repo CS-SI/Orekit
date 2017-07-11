@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,19 +17,28 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
  * <p>This frame handles precession effects according to to selected IERS conventions.</p>
- * <p>Its parent frame is the GCRF frame.<p>
- * <p>It is sometimes called Mean of Date (MoD) frame.<p>
+ * <p>Its parent frame is the GCRF frame.
+ * <p>It is sometimes called Mean of Date (MoD) frame.
  * @author Pascal Parraud
  */
 class MODProvider implements TransformProvider {
@@ -41,10 +50,13 @@ class MODProvider implements TransformProvider {
     private final IERSConventions conventions;
 
     /** Function computing the precession angles. */
-    private final transient TimeFunction<double[]> precessionFunction;
+    private final transient TimeVectorFunction precessionFunction;
 
-    /** Constant rotation betwee ecliptic and equatoror poles at J2000.0. */
+    /** Constant rotation between ecliptic and equator poles at J2000.0. */
     private final Rotation r4;
+
+    /** Constant rotations between ecliptic and equator poles at J2000.0. */
+    private final transient Map<Field<? extends RealFieldElement<?>>, FieldRotation<? extends RealFieldElement<?>>> fieldR4;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -53,32 +65,54 @@ class MODProvider implements TransformProvider {
     MODProvider(final IERSConventions conventions) throws OrekitException {
         this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
-        final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
+        final TimeScalarFunction epsilonAFunction = conventions.getMeanObliquityFunction();
         final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
         final double epsilon0 = epsilonAFunction.value(date0);
-        r4 = new Rotation(Vector3D.PLUS_I, -epsilon0);
+        r4 = new Rotation(Vector3D.PLUS_I, epsilon0, RotationConvention.FRAME_TRANSFORM);
+        fieldR4 = new HashMap<>();
     }
 
-    /** Get the transfrom from parent frame.
-     * <p>The update considers the precession effects.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final double[] angles = precessionFunction.value(date);
 
-        // elementary rotations for precession
-        final Rotation r1 = new Rotation(Vector3D.PLUS_K, -angles[2]);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_I,  angles[1]);
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
-
         // complete precession
-        final Rotation precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
+        final Rotation precession = r4.compose(new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                            -angles[0], -angles[1], angles[2]),
+                                               RotationConvention.FRAME_TRANSFORM);
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // compute the precession angles phiA, omegaA, chiA
+        final T[] angles = precessionFunction.value(date);
+
+        @SuppressWarnings("unchecked")
+        FieldRotation<T> fR4 = (FieldRotation<T>) fieldR4.get(date.getField());
+        if (fR4 == null) {
+            fR4 = new FieldRotation<>(date.getField(), r4);
+            fieldR4.put(date.getField(), fR4);
+        }
+
+        // complete precession
+        final FieldRotation<T> precession = fR4.compose(new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                                            angles[0].negate(),
+                                                                            angles[1].negate(),
+                                                                            angles[2]),
+                                                        RotationConvention.FRAME_TRANSFORM);
+
+        // set up the transform from parent GCRF
+        return new FieldTransform<>(date, precession);
 
     }
 

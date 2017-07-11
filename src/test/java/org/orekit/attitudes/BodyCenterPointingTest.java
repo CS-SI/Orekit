@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,13 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.fitting.PolynomialCurveFitter;
-import org.apache.commons.math3.fitting.WeightedObservedPoint;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.fitting.PolynomialCurveFitter;
+import org.hipparchus.fitting.WeightedObservedPoint;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -252,7 +252,7 @@ public class BodyCenterPointingTest {
             // Transform from EME2000 to ITRF2008
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date);
 
-            // Create earth center pointing attitude provider */
+            // Create earth center pointing attitude provider
             earthCenterAttitudeLaw = new BodyCenterPointing(circ.getFrame(), earth);
 
         } catch (OrekitException oe) {

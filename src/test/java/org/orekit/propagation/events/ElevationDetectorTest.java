@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +29,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -82,8 +81,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -93,6 +92,10 @@ public class ElevationDetectorTest {
                 new ElevationDetector(topo).
                 withConstantElevation(FastMath.toRadians(5.0)).
                 withHandler(checking);
+        Assert.assertNull(detector.getElevationMask());
+        Assert.assertNull(detector.getRefractionModel());
+        Assert.assertSame(topo, detector.getTopocentricFrame());
+        Assert.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -117,37 +120,33 @@ public class ElevationDetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast)
-        throws PropagationException {
-            try {
-                BodyShape shape = topo.getParentShape();
-                GeodeticPoint p =
-                    shape.transform(currentState.getPVCoordinates().getPosition(),
-                                    currentState.getFrame(), currentState.getDate());
-                Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
-                double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
+            throws OrekitException {
+            BodyShape shape = topo.getParentShape();
+            GeodeticPoint p =
+                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                                            currentState.getFrame(), currentState.getDate());
+            Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
+            double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
 
-                if (visible) {
-                    Assert.assertTrue(range < 2.45e6);
-                } else {
-                    Assert.assertTrue(range > 2.02e6);
-                }
-
-            } catch (OrekitException e) {
-                throw new PropagationException(e);
+            if (visible) {
+                Assert.assertTrue(range < 2.45e6);
+            } else {
+                Assert.assertTrue(range > 2.02e6);
             }
+        }
 
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
+        }
+
+        @Deprecated
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
         }
 
     }
-    
+
     @Test
     public void testEventForMask() throws OrekitException {
 
@@ -164,28 +163,29 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
-        double [][] maskValues = {{FastMath.toRadians(0),FastMath.toRadians(5)},
-                              {FastMath.toRadians(30),FastMath.toRadians(4)},
-                              {FastMath.toRadians(60),FastMath.toRadians(3)},
-                              {FastMath.toRadians(90),FastMath.toRadians(2)},
-                              {FastMath.toRadians(120),FastMath.toRadians(3)},
-                              {FastMath.toRadians(150),FastMath.toRadians(4)},
-                              {FastMath.toRadians(180),FastMath.toRadians(5)},
-                              {FastMath.toRadians(210),FastMath.toRadians(6)},
-                              {FastMath.toRadians(240),FastMath.toRadians(5)},
-                              {FastMath.toRadians(270),FastMath.toRadians(4)},
-                              {FastMath.toRadians(300),FastMath.toRadians(3)},
-                              {FastMath.toRadians(330),FastMath.toRadians(4)}};
+        double [][] maskValues = {{ FastMath.toRadians(  0), FastMath.toRadians(5)},
+                                  { FastMath.toRadians( 30), FastMath.toRadians(4)},
+                                  { FastMath.toRadians( 60), FastMath.toRadians(3)},
+                                  { FastMath.toRadians( 90), FastMath.toRadians(2)},
+                                  { FastMath.toRadians(120), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(150), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(180), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(210), FastMath.toRadians(6)},
+                                  { FastMath.toRadians(240), FastMath.toRadians(5)},
+                                  { FastMath.toRadians(270), FastMath.toRadians(4)},
+                                  { FastMath.toRadians(300), FastMath.toRadians(3)},
+                                  { FastMath.toRadians(330), FastMath.toRadians(4)}};
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
+        Assert.assertSame(mask, detector.getElevationMask());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -196,7 +196,7 @@ public class ElevationDetectorTest {
 
     }
 
-    
+
     @Test
     public void testHorizon() throws OrekitException {
 
@@ -213,8 +213,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -223,6 +223,7 @@ public class ElevationDetectorTest {
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
+        Assert.assertSame(refractionModel, detector.getRefractionModel());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -245,7 +246,7 @@ public class ElevationDetectorTest {
                                                 0.0001223149429077902, PositionAngle.MEAN,
                                                 inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
-        // Propagator : consider a simple keplerian motion (could be more elaborate)
+        // Propagator : consider a simple Keplerian motion (could be more elaborate)
         Propagator kepler = new EcksteinHechlerPropagator(initialOrbit,
                                                           Constants.EGM96_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
                                                           Constants.EGM96_EARTH_C20, 0.0, 0.0, 0.0, 0.0);
@@ -253,8 +254,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
 
         // Station
         final double longitude = FastMath.toRadians(-147.5);
@@ -350,8 +351,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -379,17 +380,17 @@ public class ElevationDetectorTest {
         AbsoluteDate initialDate = new AbsoluteDate("2012-01-26T07:00:00.000", TimeScalesFactory.getUTC());
 
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
-        
+
         Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngle.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
-        
+
         Propagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, 
+                new EcksteinHechlerPropagator(initialOrbit,
                         Constants.EGM96_EARTH_EQUATORIAL_RADIUS,
                         Constants.EGM96_EARTH_MU,
-                        Constants.EGM96_EARTH_C20, 
-                        Constants.EGM96_EARTH_C30, 
-                        Constants.EGM96_EARTH_C40, 
-                        Constants.EGM96_EARTH_C50, 
+                        Constants.EGM96_EARTH_C20,
+                        Constants.EGM96_EARTH_C30,
+                        Constants.EGM96_EARTH_C40,
+                        Constants.EGM96_EARTH_C50,
                         Constants.EGM96_EARTH_C60);
 
         // Earth and frame
@@ -402,7 +403,7 @@ public class ElevationDetectorTest {
         final double longitude = FastMath.toRadians(21.0);
         final double latitude  = FastMath.toRadians(67.9);
         final double altitude  = 300.0;
-        
+
         final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
         final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
@@ -486,14 +487,14 @@ public class ElevationDetectorTest {
             {2.6354471705114375, 0.06632251157578452}, {2.652900463031381, 0.06283185307179587},
             {2.670353755551324, 0.06632251157578452}, {2.6878070480712677, 0.0645771823237902}};
         ElevationMask mask = new ElevationMask(maskValues);
-        
-      
+
+
         final AbsoluteDate start = new AbsoluteDate("2012-02-10T22:00:00.000", TimeScalesFactory.getUTC());
         final AbsoluteDate end   = initialDate.shiftedBy(1000 * Constants.JULIAN_DAY);
 
         // Event definition
         final double maxcheck  = 60.0;
-        final double threshold =  1.0; // 0.001;
+        final double threshold =  2.0; // 0.001;
         final EventDetector sta1Visi =
                 new ElevationDetector(maxcheck, threshold, sta1Frame).
                 withElevationMask(mask).
@@ -505,10 +506,7 @@ public class ElevationDetectorTest {
                         return (--count > 0) ? Action.CONTINUE : Action.STOP;
                     }
 
-                    @Override
-                    public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-                        return oldState;
-                    }});
+                });
 
         // Add event to be detected
         EventsLogger logger = new EventsLogger();
@@ -524,7 +522,7 @@ public class ElevationDetectorTest {
         // the second one is not merged into the first one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
-        Assert.assertEquals(0.6501, d3.durationFrom(d2), 0.01);
+        Assert.assertEquals(1.529, d3.durationFrom(d2), 0.01);
 
     }
 

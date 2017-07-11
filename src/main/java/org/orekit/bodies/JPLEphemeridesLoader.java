@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -40,10 +41,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.GenericTimeStampedCache;
@@ -175,12 +178,22 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Interface for raw position-velocity retrieval. */
     public interface RawPVProvider {
+
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @return position-velocity at the specified date
          * @exception OrekitException if the date is not available to the loader
          */
-        PVCoordinates getRawPV(final AbsoluteDate date) throws OrekitException;
+        PVCoordinates getRawPV(AbsoluteDate date) throws OrekitException;
+
+        /** Get the position-velocity at date.
+         * @param date date at which the position-velocity is desired
+         * @param <T> type of the field elements
+         * @return position-velocity at the specified date
+         * @exception OrekitException if the date is not available to the loader
+         */
+        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date) throws OrekitException;
+
     }
 
     /** Regular expression for supported files names. */
@@ -252,8 +265,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         ephemerides = new GenericTimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
-                Double.POSITIVE_INFINITY, FIFTY_DAYS,
-                new EphemerisParser(), PosVelChebyshev.class);
+                                                                   Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                                                                   new EphemerisParser());
         maxChunksDuration = Double.NaN;
         chunksDuration    = Double.NaN;
 
@@ -267,7 +280,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     public CelestialBody loadCelestialBody(final String name) throws OrekitException {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
-        final IAUPole iauPole = IAUPoleFactory.getIAUPole(generateType);
+        final IAUPole iauPole = PredefinedIAUPoles.getIAUPole(generateType);
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
@@ -411,7 +424,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return value of the constant of NaN if the constant is not defined
      * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedConstant(final String ... names) throws OrekitException {
+    public double getLoadedConstant(final String... names) throws OrekitException {
 
         // lazy loading of constants
         Map<String, Double> map = constants.get();
@@ -452,7 +465,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // get the ephemerides type
         final int deNum = extractInt(record, HEADER_EPHEMERIS_TYPE_OFFSET);
 
-        // as default, 3 polynomial coefficients for the cartesian coordinates
+        // as default, 3 polynomial coefficients for the Cartesian coordinates
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;
@@ -734,7 +747,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final long l3 = ((long) record[offset + 5]) & 0xffl;
         final long l2 = ((long) record[offset + 6]) & 0xffl;
         final long l1 = ((long) record[offset + 7]) & 0xffl;
-        long l;
+        final long l;
         if (bigEndian) {
             l = (l8 << 56) | (l7 << 48) | (l6 << 40) | (l5 << 32) |
                 (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
@@ -837,24 +850,24 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public List<PosVelChebyshev> generate(final PosVelChebyshev existing, final AbsoluteDate date)
+        public List<PosVelChebyshev> generate(final AbsoluteDate existingDate, final AbsoluteDate date)
             throws TimeStampedCacheException {
             try {
 
                 // prepare reading
                 entries.clear();
-                if (existing == null) {
+                if (existingDate == null) {
                     // we want ephemeris data for the first time, set up an arbitrary first range
                     start = date.shiftedBy(-FIFTY_DAYS);
                     end   = date.shiftedBy(+FIFTY_DAYS);
-                } else if (existing.getDate().compareTo(date) <= 0) {
+                } else if (existingDate.compareTo(date) <= 0) {
                     // we want to extend an existing range towards future dates
-                    start = existing.getDate();
+                    start = existingDate;
                     end   = date;
                 } else {
                     // we want to extend an existing range towards past dates
                     start = date;
-                    end   = existing.getDate();
+                    end   = existingDate;
                 }
 
                 // get new entries in the specified data range
@@ -995,7 +1008,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // build the position-velocity model for current chunk
-                entries.add(new PosVelChebyshev(chunkStart, duration, xCoeffs, yCoeffs, zCoeffs));
+                entries.add(new PosVelChebyshev(chunkStart, timeScale, duration, xCoeffs, yCoeffs, zCoeffs));
 
             }
 
@@ -1014,11 +1027,33 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
             try {
-                chebyshev = ephemerides.getNeighbors(date).get(0);
+                chebyshev = ephemerides.getNeighbors(date).findFirst().get();
             } catch (TimeStampedCacheException tce) {
                 // we cannot bracket the date, check if the last available chunk covers the specified date
                 chebyshev = ephemerides.getLatest();
                 if (!chebyshev.inRange(date)) {
+                    // we were not able to recover from the error, the date is too far
+                    throw tce;
+                }
+            }
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPositionVelocityAcceleration(date);
+
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date)
+            throws TimeStampedCacheException {
+
+            // get raw PV from Chebyshev polynomials
+            PosVelChebyshev chebyshev;
+            try {
+                chebyshev = ephemerides.getNeighbors(date.toAbsoluteDate()).findFirst().get();
+            } catch (TimeStampedCacheException tce) {
+                // we cannot bracket the date, check if the last available chunk covers the specified date
+                chebyshev = ephemerides.getLatest();
+                if (!chebyshev.inRange(date.toAbsoluteDate())) {
                     // we were not able to recover from the error, the date is too far
                     throw tce;
                 }
@@ -1037,6 +1072,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** {@inheritDoc} */
         public PVCoordinates getRawPV(final AbsoluteDate date) {
             return PVCoordinates.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+            return FieldPVCoordinates.getZero(date.getField());
         }
 
     }

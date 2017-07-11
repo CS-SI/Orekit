@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ class KeyValue {
 
     /** Regular expression for splitting lines. */
     private final Pattern PATTERN =
-            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?");
+            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
 
     /** Regular expression for user defined keywords. */
     private final Pattern USER_DEFINED_KEYWORDS =
@@ -74,6 +75,8 @@ class KeyValue {
      * is made to recognize the special keywords. The key and value parts
      * may be empty if not matched, and the keyword may be null.
      * </p>
+     * <p> The value part may be upper case or lower case. This constructor
+     * converts all lower case values to upper case.
      * @param line to split
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
@@ -87,7 +90,7 @@ class KeyValue {
         final Matcher matcher = PATTERN.matcher(line);
         if (matcher.matches()) {
             key   = matcher.group(1);
-            value = matcher.group(2);
+            final String rawValue = matcher.group(2);
             Keyword recognized;
             try {
                 recognized = Keyword.valueOf(key);
@@ -99,11 +102,48 @@ class KeyValue {
                 }
             }
             keyword = recognized;
+            if (recognized == Keyword.COMMENT) {
+                value = rawValue;
+            } else {
+                value = rawValue.
+                        toUpperCase(Locale.US).
+                        replace('_', ' ').
+                        replaceAll("\\p{Space}+", " ");
+            }
         } else {
             key     = "";
             value   = key;
             keyword = null;
         }
+    }
+
+    /** Build a pair by giving the input arguments.
+     *  This is essentially used while parsing XML files.
+     *  It is made to be allow the use of the class KeyValue for both Keyvalue and XML file formats.
+     *  Thus common functions can be used for the parsing.
+     * <p>
+     * The splitting is very basic and only extracts words using a regular
+     * expression ignoring the '=' sign and the optional unit. No attempt
+     * is made to recognize the special keywords. The key and value parts
+     * may be empty if not matched, and the keyword may be null.
+     * </p>
+     * <p> The value part may be upper case or lower case. This constructor
+     * converts all lower case values to upper case.
+     * @param keyword the keyword
+     * @param value the value attached to the keyword
+     * @param line the line where the keyword was found
+     * @param lineNumber number of the line in the CCSDS data message
+     * @param fileName name of the file
+     */
+    KeyValue(final Keyword keyword, final String value,
+             final String line, final int lineNumber,
+             final String fileName) {
+        this.keyword = keyword;
+        this.key = keyword.name();
+        this.value = value;
+        this.lineNumber = lineNumber;
+        this.line = line;
+        this.fileName = fileName;
     }
 
     /** Keyword corresponding to the parsed key.
@@ -135,6 +175,19 @@ class KeyValue {
     public double getDoubleValue() throws OrekitException {
         try {
             return Double.parseDouble(value);
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, fileName, line);
+        }
+    }
+
+    /** Get the value as an integer number.
+     * @return value
+     * @exception OrekitException if value is not a number
+     */
+    public int getIntegerValue() throws OrekitException {
+        try {
+            return Integer.parseInt(value);
         } catch (NumberFormatException nfe) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                       lineNumber, fileName, line);

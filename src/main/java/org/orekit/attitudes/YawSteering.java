@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -32,7 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * Yaw steering is mainly used for low Earth orbiting satellites with no
  * missions-related constraints on yaw angle. It sets the yaw angle in
- * such a way the solar arrays have maximal lightning without changing the
+ * such a way the solar arrays have maximal lighting without changing the
  * roll and pitch.
  * </p>
  * <p>
@@ -80,25 +80,6 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     private final PVCoordinates phasingNormal;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @param sun sun motion model
-     * @param phasingAxis satellite axis that must be roughly in Sun direction
-     * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
-     * @deprecated as of 7.1, replaced with {@link #YawSteering(Frame, GroundPointing, PVCoordinatesProvider, Vector3D)}
-     */
-    @Deprecated
-    public YawSteering(final GroundPointing groundPointingLaw,
-                       final PVCoordinatesProvider sun,
-                       final Vector3D phasingAxis) {
-        super(groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
-        this.sun = sun;
-        this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),
-                                               Vector3D.ZERO,
-                                               Vector3D.ZERO);
-    }
-
-    /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      * @param sun sun motion model
@@ -128,8 +109,8 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }

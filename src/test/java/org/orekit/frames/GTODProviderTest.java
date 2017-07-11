@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,8 +39,10 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -74,7 +82,9 @@ public class GTODProviderTest {
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
-                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+                new Transform(t0, new Rotation(Vector3D.PLUS_K,
+                                               dDeltaPsi * FastMath.cos(epsilonA),
+                                               RotationConvention.FRAME_TRANSFORM));
 
         // TOD iau76
         PVCoordinates pvTOD =
@@ -131,7 +141,62 @@ public class GTODProviderTest {
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
-                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+                new Transform(t0, new Rotation(Vector3D.PLUS_K,
+                                               dDeltaPsi * FastMath.cos(epsilonA),
+                                               RotationConvention.FRAME_TRANSFORM));
+
+        checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.0503, 3.59e-4);
+
+        // if we forget to apply nutation corrections, results are much worse, which is expected
+        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
+        checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 1458.27, 3.847e-4);
+
+    }
+
+    @Test
+    public void testAASReferenceGEOField() throws OrekitException {
+
+        // this reference test has been extracted from the following paper:
+        // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
+        // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
+        // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53156, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53157, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53158, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
+                         }));
+        FieldAbsoluteDate<Decimal64> t0 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+                                                                  new DateComponents(2004, 06, 01),
+                                                                  TimeComponents.H00,
+                                                                  TimeScalesFactory.getUTC());
+
+        FieldTransform<Decimal64> t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
+        // TOD iau76
+        PVCoordinates pvTOD =
+            new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
+                              new Vector3D(837.552338, -2957.524176, -0.928772));
+
+        // PEF iau76
+        PVCoordinates pvPEF =
+            new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
+                              new Vector3D(-0.979178, -1.476540, -0.928772));
+
+        // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
+        // was not taken into account in the reference paper, so we fix it here for the test
+        final Decimal64 dDeltaPsi =
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
+        final Decimal64 epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
+        final FieldTransform<Decimal64> fix =
+                new FieldTransform<>(t0, new FieldRotation<>(FieldVector3D.getPlusK(Decimal64Field.getInstance()),
+                                                             dDeltaPsi.multiply(epsilonA.cos()),
+                                                             RotationConvention.FRAME_TRANSFORM));
 
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.0503, 3.59e-4);
 
@@ -145,7 +210,7 @@ public class GTODProviderTest {
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
                                                  FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
@@ -179,6 +244,17 @@ public class GTODProviderTest {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
         Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+    }
+
+    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
+                                                         FieldPVCoordinates<T> result,
+                                                         double expectedPositionError,
+                                                         double expectedVelocityError) {
+
+        FieldVector3D<T> dP = result.getPosition().subtract(reference.getPosition());
+        FieldVector3D<T> dV = result.getVelocity().subtract(reference.getVelocity());
+        Assert.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
     }
 
 }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,14 +12,12 @@
   limitations under the License.
 -->
 
-Bodies
-======
+# Bodies
 
 The `org.orekit.bodies` package provides an interface to representation of the
 position and geometry of space objects such as stars, planets or asteroids.
 	
-Position
---------
+## Position
 
 The position of celestial bodies is represented by the `CelestialBody` interface.
 This interface provides the methods needed to either consider the body as an
@@ -59,8 +57,7 @@ no effect at all on computations. The solar system bodies frames tree is shown b
  
 ![solar system frames](../images/solar-system-frames.png)
 
-Shape
------
+## Shape
  
 The shape of celestial bodies is represented by the `BodyShape` interface. 
 

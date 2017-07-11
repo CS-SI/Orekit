@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.Ellipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -47,16 +47,6 @@ public class BodyCenterPointing extends GroundPointing {
     private final Ellipsoid ellipsoid;
 
     /** Creates new instance.
-     * @param bodyFrame Body frame
-     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(Frame, Ellipsoid)}
-     */
-    @Deprecated
-    public BodyCenterPointing(final Frame bodyFrame) {
-        super(bodyFrame);
-        this.ellipsoid = new Ellipsoid(bodyFrame, 0.0, 0.0, 0.0);
-    }
-
-    /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
      * @exception OrekitException if the frame specified is not a pseudo-inertial frame
@@ -70,8 +60,8 @@ public class BodyCenterPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // spacecraft coordinates in body frame

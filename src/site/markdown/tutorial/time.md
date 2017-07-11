@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Time
-====
+# Time
 
 This tutorial shows how to handle time in Orekit.
 
-Basic use
----------
+## Basic use
 
 The first example will be devoted to basic use: creating dates,
 comparing dates and printing dates. We will build a small program

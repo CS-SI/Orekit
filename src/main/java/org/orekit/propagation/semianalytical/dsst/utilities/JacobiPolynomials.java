@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 
 /** Provider of the Jacobi polynomials P<sub>l</sub><sup>v,w</sup>.
  * <p>
  * This class is used for {@link
- * org.orekit.propagation.semianalytical.dsst.forces.TesseralContribution
+ * org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral
  * tesseral contribution} computation.
  * </p>
  *
@@ -90,11 +90,11 @@ public class JacobiPolynomials {
     /** Inner class for Jacobi polynomials keys.
      * <p>
      * Please note that this class is not original content but is a copy from the
-     * Apache commons-math3 library. This library is published under the
+     * Hipparchus library. This library is published under the
      * Apache License, version 2.0.
      * </p>
      *
-     * @see org.apache.commons.math3.analysis.polynomials.PolynomialsUtils
+     * @see org.hipparchus.analysis.polynomials.PolynomialsUtils
      */
     private static class JacobiKey {
 

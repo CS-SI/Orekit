@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -35,7 +34,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OPMParser extends ODMParser implements OrbitFileParser {
+public class OPMParser extends ODMParser {
 
     /** Simple constructor.
      * <p>
@@ -44,8 +43,10 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
      * Mission Relative Time time systems, or the gravitational coefficient or
      * the IERS conventions, the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
-     * is a combination of the <a href="">builder design pattern</a> and
-     * a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
      * interface</a>.
      * </p>
      * <p>
@@ -122,6 +123,12 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public OPMFile parse(final InputStream stream) throws OrekitException {
+        return (OPMFile) super.parse(stream);
+    }
+
+    /** {@inheritDoc} */
     public OPMFile parse(final InputStream stream, final String fileName) throws OrekitException {
 
         try {
@@ -183,7 +190,7 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                             file.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new OPMFile.Maneuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetaData().getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();

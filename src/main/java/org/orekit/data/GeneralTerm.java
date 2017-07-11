@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 
 /** Class for general terms.
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class GeneralTerm extends SeriesTerm {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -83,8 +83,8 @@ class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cPa coefficient for general accumulated precession in longitude
      */
     GeneralTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
-                       final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
-                       final int cSa, final int cUr, final int cNe, final int cPa) {
+                final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+                final int cSa, final int cUr, final int cNe, final int cPa) {
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;
@@ -109,26 +109,52 @@ class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
                cMa * elements.getLMa() + cJu * elements.getLJu() +
                cSa * elements.getLSa() + cUr * elements.getLUr() +
                cNe * elements.getLNe() + cPa * elements.getPa();
-
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
-        return elements.getL().multiply(cL).
-                add(elements.getLPrime().multiply(cLPrime)).
-                add(elements.getF().multiply(cF)).
-                add(elements.getD().multiply(cD)).
-                add(elements.getOmega().multiply(cOmega)).
-                add(elements.getLMe().multiply(cMe)).
-                add(elements.getLVe().multiply(cVe)).
-                add(elements.getLE().multiply(cE)).
-                add(elements.getLMa().multiply(cMa)).
-                add(elements.getLJu().multiply(cJu)).
-                add(elements.getLSa().multiply(cSa)).
-                add(elements.getLUr().multiply(cUr)).
-                add(elements.getLNe().multiply(cNe)).
-                add(elements.getPa().multiply(cPa));
+    protected double argumentDerivative(final BodiesElements elements) {
+        return cL * elements.getLDot() + cLPrime * elements.getLPrimeDot() + cF * elements.getFDot() +
+               cD * elements.getDDot() + cOmega * elements.getOmegaDot() +
+               cMe * elements.getLMeDot() + cVe * elements.getLVeDot() + cE  * elements.getLEDot() +
+               cMa * elements.getLMaDot() + cJu * elements.getLJuDot() +
+               cSa * elements.getLSaDot() + cUr * elements.getLUrDot() +
+               cNe * elements.getLNeDot() + cPa * elements.getPaDot();
+    }
 
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
+        return elements.getL().multiply(cL).
+               add(elements.getLPrime().multiply(cLPrime)).
+               add(elements.getF().multiply(cF)).
+               add(elements.getD().multiply(cD)).
+               add(elements.getOmega().multiply(cOmega)).
+               add(elements.getLMe().multiply(cMe)).
+               add(elements.getLVe().multiply(cVe)).
+               add(elements.getLE().multiply(cE)).
+               add(elements.getLMa().multiply(cMa)).
+               add(elements.getLJu().multiply(cJu)).
+               add(elements.getLSa().multiply(cSa)).
+               add(elements.getLUr().multiply(cUr)).
+               add(elements.getLNe().multiply(cNe)).
+               add(elements.getPa().multiply(cPa));
+    }
+
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+        return elements.getLDot().multiply(cL).
+               add(elements.getLPrimeDot().multiply(cLPrime)).
+               add(elements.getFDot().multiply(cF)).
+               add(elements.getDDot().multiply(cD)).
+               add(elements.getOmegaDot().multiply(cOmega)).
+               add(elements.getLMeDot().multiply(cMe)).
+               add(elements.getLVeDot().multiply(cVe)).
+               add(elements.getLEDot().multiply(cE)).
+               add(elements.getLMaDot().multiply(cMa)).
+               add(elements.getLJuDot().multiply(cJu)).
+               add(elements.getLSaDot().multiply(cSa)).
+               add(elements.getLUrDot().multiply(cUr)).
+               add(elements.getLNeDot().multiply(cNe)).
+               add(elements.getPaDot().multiply(cPa));
     }
 
 }

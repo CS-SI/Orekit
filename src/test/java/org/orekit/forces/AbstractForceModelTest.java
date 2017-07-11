@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,12 @@
 package org.orekit.forces;
 
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.UnknownParameterException;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -36,6 +34,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 public abstract class AbstractForceModelTest {
@@ -76,8 +75,6 @@ public abstract class AbstractForceModelTest {
         try {
             forceModel.accelerationDerivatives(state, "not a parameter");
             Assert.fail("an exception should have been thrown");
-        } catch (UnknownParameterException upe) {
-            // expected
         } catch (OrekitException oe) {
             // expected
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
@@ -88,14 +85,20 @@ public abstract class AbstractForceModelTest {
                                            accDer.getZ().getPartialDerivative(1));
 
         AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        double p0 = forceModel.getParameter(name);
-        double hParam = hFactor * forceModel.getParameter(name);
-        forceModel.setParameter(name, p0 - 1 * hParam);
-        Assert.assertEquals(p0 - 1 * hParam, forceModel.getParameter(name), 1.0e-10);
+        ParameterDriver driver = null;
+        for (ParameterDriver d : forceModel.getParametersDrivers()) {
+            if (d.getName().equals(name)) {
+                driver = d;
+            }
+        }
+        double p0 = driver.getValue();
+        double hParam = hFactor * p0;
+        driver.setValue(p0 - 1 * hParam);
+        Assert.assertEquals(p0 - 1 * hParam, driver.getValue(), 1.0e-10);
         forceModel.addContribution(state, accelerationRetriever);
         final Vector3D gammaM1h = accelerationRetriever.getAcceleration();
-        forceModel.setParameter(name, p0 + 1 * hParam);
-        Assert.assertEquals(p0 + 1 * hParam, forceModel.getParameter(name), 1.0e-10);
+        driver.setValue(p0 + 1 * hParam);
+        Assert.assertEquals(p0 + 1 * hParam, driver.getValue(), 1.0e-10);
         forceModel.addContribution(state, accelerationRetriever);
         final Vector3D gammaP1h = accelerationRetriever.getAcceleration();
 
@@ -129,24 +132,16 @@ public abstract class AbstractForceModelTest {
 
         final String name = "pde";
         PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        propagator.setInitialState(pde.setInitialJacobians(state0, 6, 0));
+        propagator.setInitialState(pde.setInitialJacobians(state0, 6));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {
-            
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            
+
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                throws PropagationException {
+                throws OrekitException {
                 if (isLast) {
-                    try {
-                        // pick up final Jacobian
-                        interpolator.setInterpolatedDate(interpolator.getCurrentDate());
-                        mapper.getStateJacobian(interpolator.getInterpolatedState(), dYdY0);
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
-                    }
+                    // pick up final Jacobian
+                    mapper.getStateJacobian(interpolator.getCurrentState(), dYdY0);
                 }
             }
 
@@ -165,7 +160,7 @@ public abstract class AbstractForceModelTest {
     private double[] jacobianColumn(final NumericalPropagator propagator, final SpacecraftState state0,
                                     final AbsoluteDate targetDate, final int index,
                                     final double h)
-                                            throws PropagationException {
+                                            throws OrekitException {
         return differential4(integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
@@ -177,19 +172,20 @@ public abstract class AbstractForceModelTest {
                                            final SpacecraftState state0,
                                            final AbsoluteDate targetDate,
                                            final int index, final double h)
-        throws PropagationException {
+        throws OrekitException {
         OrbitType orbitType = propagator.getOrbitType();
         PositionAngle angleType = propagator.getPositionAngleType();
         double[] a = new double[6];
-        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a);
+        double[] aDot = new double[6];
+        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);
         a[index] += h;
-        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, angleType, state0.getDate(),
+        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
                                                                                      state0.getMu(), state0.getFrame()),
                                                            state0.getAttitude(),
                                                            state0.getMass());
         propagator.setInitialState(shiftedState);
         SpacecraftState integratedState = propagator.propagate(targetDate);
-        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a);
+        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);
         return a;
     }
 

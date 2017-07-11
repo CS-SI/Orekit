@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +34,7 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -42,9 +43,11 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -138,46 +141,50 @@ public class SolidTidesFieldTest {
         throws OrekitException, NoSuchFieldException, IllegalAccessException,
                NoSuchMethodException, InvocationTargetException {
         // the reference for this test is the example at the bottom of page 86, IERS conventions 2010 section 6.2.1
-        final PoissonSeriesParser<DerivativeStructure> k21Parser =
-                new PoissonSeriesParser<DerivativeStructure>(18).
+        final PoissonSeriesParser k21Parser =
+                new PoissonSeriesParser(18).
                     withOptionalColumn(1).
                     withDoodson(4, 3).
                     withFirstDelaunay(10);
         final String name = "/tides/tab6.5a-only-K1.txt";
         final double pico = 1.0e-12;
-        final PoissonSeries<DerivativeStructure> c21Series =
+        final PoissonSeries c21Series =
                 k21Parser.
                 withSinCos(0, 17, pico, 18, pico).
                 parse(getClass().getResourceAsStream(name), name);
-        final PoissonSeries<DerivativeStructure> s21Series =
+        final PoissonSeries s21Series =
                 k21Parser.
                 withSinCos(0, 18, -pico, 17, pico).
                 parse(getClass().getResourceAsStream(name), name);
         final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
-        final TimeFunction<DerivativeStructure> gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
+        final TimeScalarFunction gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
         Method getNA = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeScale.class);
         getNA.setAccessible(true);
         final FundamentalNutationArguments arguments =
                 (FundamentalNutationArguments) getNA.invoke(IERSConventions.IERS_2010, ut1);
-        TimeFunction<double[]> deltaCSFunction = new TimeFunction<double[]>() {
+        TimeVectorFunction deltaCSFunction = new TimeVectorFunction() {
             public double[] value(final AbsoluteDate date) {
                 final BodiesElements elements = arguments.evaluateAll(date);
                 return new double[] {
                     0.0, c21Series.value(elements), s21Series.value(elements), 0.0, 0.0
                 };
             }
+            public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                // never called in this test
+                throw new OrekitInternalError(null);
+            }
         };
 
         SolidTidesField tf = new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
-                                       deltaCSFunction,
-                                       IERSConventions.IERS_2010.getPermanentTide(),
-                                       IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
-                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false),
-                                       Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                       Constants.EIGEN5C_EARTH_MU,
-                                       TideSystem.ZERO_TIDE,
-                                       CelestialBodyFactory.getSun(),
-                                       CelestialBodyFactory.getMoon());
+                                                 deltaCSFunction,
+                                                 IERSConventions.IERS_2010.getPermanentTide(),
+                                                 IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
+                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false),
+                                                 Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                 Constants.EIGEN5C_EARTH_MU,
+                                                 TideSystem.ZERO_TIDE,
+                                                 CelestialBodyFactory.getSun(),
+                                                 CelestialBodyFactory.getMoon());
         Method frequencyDependentPart = SolidTidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class, double[][].class, double[][].class);
         frequencyDependentPart.setAccessible(true);
         double[][] cachedCNM = new double[5][5];
@@ -191,7 +198,7 @@ public class SolidTidesFieldTest {
                 Arrays.fill(cachedSNM[i], 0.0);
             }
             frequencyDependentPart.invoke(tf, date, cachedCNM, cachedSNM);
-            double thetaPlusPi = gmstFunction.value(date).getValue() + FastMath.PI;
+            double thetaPlusPi = gmstFunction.value(date) + FastMath.PI;
             Assert.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
                                 cachedCNM[2][1], 2.0e-25);
             Assert.assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),
@@ -222,16 +229,16 @@ public class SolidTidesFieldTest {
             {           0.0,                     0.0,                    0.0,                   0.0,                  0.0  },
             { -2.6732289327355114E-9,   4.9078992447259636E-9,   3.5894110538262888E-9,         0.0 ,                 0.0  },
 // should the previous line be as follows?
-//            { -2.6598001259297745E-9,   4.9078992447259636E-9,   3.5894110538262888E-9,         0.0 ,                 0.0  },
-            { -1.2906396038844278E-11, -9.287425761494864E-14,   8.356574031169308E-12, -2.2644465239439227E-12,      0.0  },
-            {  7.88813885692598E-12,   -1.4422209452671492E-11, -6.815519349197347E-12,         0.0,                  0.0  }
+//            { -2.6598001259383122E-9,   4.907899244804072E-9,   3.5894110542365972E-9,         0.0 ,                 0.0  },
+            { -1.290639603871307E-11, -9.287425756410472E-14,   8.356574033404024E-12, -2.2644465207860626E-12,      0.0  },
+            {  7.888138856951149E-12,   -1.4422209452877158E-11, -6.815519349970944E-12,         0.0,                  0.0  }
         };
         double[][] refDeltaSnm = new double[][] {
             {           0.0,                     0.0,                    0.0,                   0.0,                  0.0 },
             {           0.0,                     0.0,                    0.0,                   0.0,                  0.0 },
-            {           0.0,            1.5999274492985954E-9,   2.1815888173803134E-9,         0.0 ,                 0.0 },
-            {           0.0,           -4.612996118452923E-14,   1.80975277221385E-11,   1.6338892247419556E-11,      0.0 },
-            {           0.0,           -4.8972289760103175E-12, -4.103404269740309E-12,         0.0,                  0.0 }
+            {           0.0,            1.599927449004677E-9,   2.1815888169727694E-9,         0.0 ,                 0.0 },
+            {           0.0,           -4.6129961143785774E-14,   1.8097527720906976E-11,   1.633889224766215E-11,      0.0 },
+            {           0.0,           -4.897228975221076E-12, -4.1034042689652575E-12,         0.0,                  0.0 }
         };
         for (int n = 0; n < refDeltaCnm.length; ++n) {
             double threshold = (n == 2) ? 1.3e-17 : 1.0e-24;
@@ -278,7 +285,7 @@ public class SolidTidesFieldTest {
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2003, 6, 12, utc);
         AbsoluteDate end   = start.shiftedBy(3 * Constants.JULIAN_DAY);
-        SummaryStatistics stat = new SummaryStatistics();
+        StreamingStatistics stat = new StreamingStatistics();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
             NormalizedSphericalHarmonics rawHarmonics = raw.onDate(date);
             NormalizedSphericalHarmonics interpolatedHarmonics = interpolated.onDate(date);
@@ -305,7 +312,7 @@ public class SolidTidesFieldTest {
         Assert.assertEquals(0.0, stat.getMean(), 2.0e-12);
         Assert.assertTrue(stat.getStandardDeviation() < 2.0e-9);
         Assert.assertTrue(stat.getMin() > -9.0e-8);
-        Assert.assertTrue(stat.getMax() <  8.0e-8);
+        Assert.assertTrue(stat.getMax() <  2.2e-7);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,92 +17,249 @@
 package org.orekit.bodies;
 
 
-import java.text.ParseException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.stream.Stream;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 public class SolarBodyTest {
 
     @Test
-    public void geocentricPV() throws OrekitException, ParseException {
+    public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {
         Utils.setDataRoot("regular-data");
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
-        Frame geocentricFrame = FramesFactory.getGCRF();
-        checkPV(CelestialBodyFactory.getMoon(), date, geocentricFrame,
-                new Vector3D(-0.0022350411591597575, -0.0010106334699928434, -5.658291803646671E-4),
-                new Vector3D(3.1279236468844985E-4, -4.526815459166321E-4, -2.428841016970333E-4));
-        checkPV(CelestialBodyFactory.getEarth(), date, geocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
+        final Frame refFrame = FramesFactory.getICRF();
+        final TimeScale tdb = TimeScalesFactory.getTDB();
+        final InputStream inEntry = getClass().getResourceAsStream("/naif/DE431-ephemeris-NAIF.txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            line = line.trim();
+            if (!line.isEmpty() && !line.startsWith("#")) {
+
+                // extract reference data from Naif
+                String[] fields = line.split("\\s+");
+                final AbsoluteDate date1 = new AbsoluteDate(fields[0], tdb);
+                final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
+                                                            Double.parseDouble(fields[1]),
+                                                            tdb);
+                String name       = fields[2];
+                final String barycenter = fields[3];
+                final Vector3D pRef     = new Vector3D(Double.parseDouble(fields[4]) * 1000.0,
+                                                       Double.parseDouble(fields[5]) * 1000.0,
+                                                       Double.parseDouble(fields[6]) * 1000.0);
+                final Vector3D vRef     = new Vector3D(Double.parseDouble(fields[7]) * 1000.0,
+                                                       Double.parseDouble(fields[8]) * 1000.0,
+                                                       Double.parseDouble(fields[9]) * 1000.0);
+
+                // check position-velocity
+                Assert.assertEquals("BARYCENTER", barycenter);
+                if (name.equals("EARTH")) {
+                    name = "EARTH-MOON BARYCENTER";
+                }
+                Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
+                final PVCoordinates pv = CelestialBodyFactory.getBody(name).getPVCoordinates(date2,
+                                                                                             refFrame);
+
+                Assert.assertEquals(0.0, Vector3D.distance(pRef, pv.getPosition()), 15.0);
+                Assert.assertEquals(0.0, Vector3D.distance(vRef, pv.getVelocity()), 1.0e-5);
+            }
+        }
     }
 
     @Test
-    public void heliocentricPV() throws OrekitException, ParseException {
+    public void testPO405() throws OrekitException {
+
         Utils.setDataRoot("regular-data");
-        AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
-        final Frame gcrf = FramesFactory.getGCRF();
-        Frame heliocentricFrame = new Frame(gcrf, new TransformProvider() {
-            private static final long serialVersionUID = 1L;
-            public Transform getTransform(AbsoluteDate date)
-                throws OrekitException {
-                return new Transform(date, CelestialBodyFactory.getSun().getPVCoordinates(date, gcrf).negate());
-            }
-        }, "heliocentric/aligned GCRF", true);
-        checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
-        checkPV(CelestialBodyFactory.getMercury(), date, heliocentricFrame,
-                new Vector3D(0.3388866970713254, -0.16350851403469605, -0.12250815624343761),
-                new Vector3D(0.008716751907934464, 0.02294287010530833, 0.011349219084264612));
-        checkPV(CelestialBodyFactory.getVenus(), date, heliocentricFrame,
-                new Vector3D(0.5733328682513444, -0.3947124128748959, -0.21383496742544283),
-                new Vector3D(0.012311818929592546, 0.014756722625966128, 0.005857890214695866));
-        checkPV(CelestialBodyFactory.getMars(), date, heliocentricFrame,
-        new Vector3D(-0.15808000178306866, -1.3285167111540124, -0.6050478023304016),
-        new Vector3D(0.014443621048367267, -1.3669889027283553E-4, -4.542404441793112E-4));
-        checkPV(CelestialBodyFactory.getJupiter(), date, heliocentricFrame,
-        new Vector3D(-5.387442227958154, -0.8116709870422928, -0.21662388956102652),
-        new Vector3D(0.0010628473875341506, -0.006527800816267844, -0.0028242250304474767));
-        checkPV(CelestialBodyFactory.getSaturn(), date, heliocentricFrame,
-        new Vector3D(7.89952834654684, 4.582711147265509, 1.552649660593234),
-        new Vector3D(-0.003208403682518813, 0.004335751536569781, 0.001928152129122073));
-        checkPV(CelestialBodyFactory.getUranus(), date, heliocentricFrame,
-        new Vector3D(-18.2705614311796, -1.151408356279009, -0.24540975062356502),
-        new Vector3D(2.1887052624725852E-4, -0.0037678288699642877, -0.0016532828516810242));
-        checkPV(CelestialBodyFactory.getNeptune(), date, heliocentricFrame,
-        new Vector3D(-16.06747366050193, -23.938436657940095, -9.39837851302005),
-        new Vector3D(0.0026425894813251684, -0.0015042632480101307, -6.815738977894145E-4));
-        checkPV(CelestialBodyFactory.getPluto(), date, heliocentricFrame,
-        new Vector3D(-30.488788499360652, -0.8637991387172488, 8.914537151982762),
-        new Vector3D(3.21695873843002E-4, -0.0031487797507673814, -0.0010799339515148705));
+        double threshold = 4.0e-11;
+
+        // extracts from ftp://ssd.jpl.nasa.gov/pub/eph/planets/test-data/testpo.405
+
+        // part of the file covered by Orekit test file unxp0000.405
+        //        405  1969.06.01 2440373.5  6  8  2      28.3804268378833
+        //        405  1969.07.01 2440403.5 10  4  3       0.2067143944892
+        //        405  1969.08.01 2440434.5 11  5  6       0.0028060503833
+        //        405  1969.09.01 2440465.5 11  8  4      -0.0026546031502
+        //        405  1969.10.01 2440495.5 13  9  2       1.3012071081901
+        testPOCoordinate(1969,  6, 1,  6, 8, 2, 28.3804268378833, threshold);
+        testPOCoordinate(1969,  7, 1, 10, 4, 3,  0.2067143944892, threshold);
+        testPOCoordinate(1969,  8, 1, 11, 5, 6,  0.0028060503833, threshold);
+        testPOCoordinate(1969,  9, 1, 11, 8, 4, -0.0026546031502, threshold);
+        testPOCoordinate(1969, 10, 1, 13, 9, 2,  1.3012071081901, threshold);
+
+        // part of the file covered by Orekit test file unxp0001.405
+        //        405  1970.01.01 2440587.5  3  2  4      -0.0372587543468
+        //        405  1970.02.01 2440618.5 12 11  4       0.0000020665428
+        //        405  1970.03.01 2440646.5  8  7  1       2.7844971346089
+        //        405  1970.04.01 2440677.5  2  8  6       0.0067657404049
+        testPOCoordinate(1970, 1, 1,  3,  2, 4, -0.0372587543468, threshold);
+        testPOCoordinate(1970, 2, 1, 12, 11, 4,  0.0000020665428, threshold);
+        testPOCoordinate(1970, 3, 1,  8,  7, 1,  2.7844971346089, threshold);
+        testPOCoordinate(1970, 4, 1,  2,  8, 6,  0.0067657404049, threshold);
+
+        // part of the file covered by Orekit test file unxp0002.405
+        //        405  1970.07.01 2440768.5 15  0  4       0.0002194918273
+        //        405  1970.08.01 2440799.5  7 12  5      -0.0037257497269
+        testPOCoordinate(1970, 7, 1, 15,  0, 4,  0.0002194918273, threshold);
+        testPOCoordinate(1970, 8, 1,  7, 12, 5, -0.0037257497269, threshold);
+
+        // part of the file covered by Orekit test file unxp0003.405
+        //        405  2003.01.01 2452640.5 12  9  5       0.0008047877725
+        //        405  2003.02.01 2452671.5 14  0  1      -0.0000669416537
+        //        405  2003.03.01 2452699.5 10  5  3      -1.4209598221498
+        //        405  2003.04.01 2452730.5 14  0  3      -0.0000007196601
+        //        405  2003.05.01 2452760.5  7 12  3      -4.2775692622201
+        //        405  2003.06.01 2452791.5  3  8  3       8.5963291192940
+        //        405  2003.07.01 2452821.5  9  6  1      -5.4895120744145
+        //        405  2003.08.01 2452852.5  4  5  2      -3.4742823298269
+        //        405  2003.09.01 2452883.5  2  5  5      -0.0124587966663
+        //        405  2003.10.01 2452913.5 10  9  6       0.0078155256966
+        //        405  2003.11.01 2452944.5 10  7  3       4.2838045135189
+        //        405  2003.12.01 2452974.5  5  3  6      -0.0050290663372
+        //        405  2004.01.01 2453005.5 11  6  5       0.0009776712155
+        //        405  2004.02.01 2453036.5  2  7  4      -0.0175274499718
+        testPOCoordinate(2003,  1, 1, 12,  9,  5,  0.0008047877725, threshold);
+        testPOCoordinate(2003,  2, 1, 14,  0,  1, -0.0000669416537, threshold);
+        testPOCoordinate(2003,  3, 1, 10,  5,  3, -1.4209598221498, threshold);
+        testPOCoordinate(2003,  4, 1, 14,  0,  3, -0.0000007196601, threshold);
+        testPOCoordinate(2003,  5, 1,  7, 12,  3, -4.2775692622201, threshold);
+        testPOCoordinate(2003,  6, 1,  3,  8,  3,  8.5963291192940, threshold);
+        testPOCoordinate(2003,  7, 1,  9,  6,  1, -5.4895120744145, threshold);
+        testPOCoordinate(2003,  8, 1,  4,  5,  2, -3.4742823298269, threshold);
+        testPOCoordinate(2003,  9, 1,  2,  5,  5, -0.0124587966663, threshold);
+        testPOCoordinate(2003, 10, 1, 10,  9,  6,  0.0078155256966, threshold);
+        testPOCoordinate(2003, 11, 1, 10,  7,  3,  4.2838045135189, threshold);
+        testPOCoordinate(2003, 12, 1,  5,  3,  6, -0.0050290663372, threshold);
+        testPOCoordinate(2004,  1, 1, 11,  6,  5,  0.0009776712155, threshold);
+        testPOCoordinate(2004,  2, 1,  2,  7,  4, -0.0175274499718, threshold);
+
+    }
+
+    @Test
+    public void testPO406() throws OrekitException {
+
+        Utils.setDataRoot("regular-data");
+        double threshold = 2.0e-13;
+
+        // extracts from ftp://ssd.jpl.nasa.gov/pub/eph/planets/test-data/testpo.406
+
+        // part of the file covered by Orekit test file unxp0000.406
+        //        406  2964.08.01 2803851.5  9 12  6      -0.0011511788059
+        //        406  2964.10.01 2803912.5  6  8  5       0.0046432313657
+        //        406  2964.12.01 2803973.5 10 11  5       0.0090766356095
+        testPOCoordinate(2964,  8, 1,  9, 12, 6, -0.0011511788059, threshold);
+        testPOCoordinate(2964, 10, 1,  6,  8, 5,  0.0046432313657, threshold);
+        testPOCoordinate(2964, 12, 1, 10, 11, 5,  0.0090766356095, threshold);
+
+    }
+
+    private void testPOCoordinate(final int year, final int month, final int day,
+                                  final int targetNumber, final int centerNumber,
+                                  final int coordinateNumber, final double coordinateValue,
+                                  final double threshold)
+        throws OrekitException {
+        final AbsoluteDate date = new AbsoluteDate(year,  month, day, TimeScalesFactory.getTDB());
+        final CelestialBody target = getBody(targetNumber);
+        final CelestialBody center = getBody(centerNumber);
+        if (target != null && center != null) {
+            final PVCoordinates relativePV =
+                            new PVCoordinates(center.getPVCoordinates(date, FramesFactory.getICRF()),
+                                              target.getPVCoordinates(date, FramesFactory.getICRF()));
+            Assert.assertEquals(coordinateValue, getCoordinate(coordinateNumber, relativePV), threshold);
+        }
+    }
+
+    private CelestialBody getBody(final int number) throws OrekitException {
+        switch (number) {
+            case 1 :
+                return CelestialBodyFactory.getMercury();
+            case 2 :
+                return CelestialBodyFactory.getVenus();
+            case 3 :
+                return CelestialBodyFactory.getEarth();
+            case 4 :
+                return CelestialBodyFactory.getMars();
+            case 5 :
+                return CelestialBodyFactory.getJupiter();
+            case 6 :
+                return CelestialBodyFactory.getSaturn();
+            case 7 :
+                return CelestialBodyFactory.getUranus();
+            case 8 :
+                return CelestialBodyFactory.getNeptune();
+            case 9 :
+                return CelestialBodyFactory.getPluto();
+            case 10 :
+                return CelestialBodyFactory.getMoon();
+            case 11 :
+                return CelestialBodyFactory.getSun();
+            case 12 :
+                return CelestialBodyFactory.getSolarSystemBarycenter();
+            case 13 :
+                return CelestialBodyFactory.getEarthMoonBarycenter();
+            default :
+                return null;
+        }
+    }
+
+    public double getCoordinate(final int number, final PVCoordinates pv) {
+        switch (number) {
+            case 1 :
+                return pv.getPosition().getX() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 2 :
+                return pv.getPosition().getY() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 3 :
+                return pv.getPosition().getZ() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 4 :
+                return pv.getVelocity().getX() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 5 :
+                return pv.getVelocity().getY() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            case 6 :
+                return pv.getVelocity().getZ() * Constants.JULIAN_DAY / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+            default :
+                return Double.NaN;
+        }
     }
 
     @Test(expected = OrekitException.class)
@@ -171,23 +328,6 @@ public class SolarBodyTest {
         CelestialBodyFactory.getSun();
     }
 
-    private void checkPV(PVCoordinatesProvider body, AbsoluteDate date, Frame frame,
-                         Vector3D position, Vector3D velocity)
-    throws OrekitException {
-
-        PVCoordinates pv = body.getPVCoordinates(date, frame);
-
-        final double posScale = 149597870691.0;
-        final double velScale = posScale / Constants.JULIAN_DAY;
-        PVCoordinates reference =
-            new PVCoordinates(new Vector3D(posScale, position), new Vector3D(velScale, velocity));
-
-        PVCoordinates error = new PVCoordinates(reference, pv);
-        Assert.assertEquals(0, error.getPosition().getNorm(), 2.0e-3);
-        Assert.assertEquals(0, error.getVelocity().getNorm(), 5.0e-10);
-
-    }
-
     @Test
     public void testFrameShift() throws OrekitException {
         Utils.setDataRoot("regular-data");
@@ -219,7 +359,7 @@ public class SolarBodyTest {
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody mercury = CelestialBodyFactory.getMercury();
         final CelestialBody venus   = CelestialBodyFactory.getVenus();
-        final CelestialBody earth   = CelestialBodyFactory.getEarth();  
+        final CelestialBody earth   = CelestialBodyFactory.getEarth();
         final CelestialBody mars    = CelestialBodyFactory.getMars();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
         final CelestialBody saturn  = CelestialBodyFactory.getSaturn();
@@ -247,41 +387,38 @@ public class SolarBodyTest {
         propag.setMu(negligibleMu);
 
         //Creation of the ForceModels
-        propag.addForceModel(new BodyAttraction(sun)); 
+        propag.addForceModel(new BodyAttraction(sun));
         propag.addForceModel(new BodyAttraction(mercury));
-        propag.addForceModel(new BodyAttraction(earth)); 
-        propag.addForceModel(new BodyAttraction(mars)); 
+        propag.addForceModel(new BodyAttraction(earth));
+        propag.addForceModel(new BodyAttraction(mars));
         propag.addForceModel(new BodyAttraction(jupiter));
         propag.addForceModel(new BodyAttraction(saturn));
         propag.addForceModel(new BodyAttraction(uranus));
         propag.addForceModel(new BodyAttraction(neptune));
-        propag.addForceModel(new BodyAttraction(pluto)); 
+        propag.addForceModel(new BodyAttraction(pluto));
 
         // checks are done within the step handler
         propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
-                try {
-                    // propagated position should remain within 1400m of ephemeris for one month
-                    Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
-                    Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
-                    Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
+                throws OrekitException {
+                // propagated position should remain within 1400m of ephemeris for one month
+                Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
+                Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
+                Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
             }
         });
 
-        propag.propagate(startingDate,endDate);
+        propag.propagate(startingDate, endDate);
 
     }
 
-    private static class BodyAttraction extends AbstractParameterizable implements ForceModel {
+    private static class BodyAttraction extends AbstractForceModel {
 
-        /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+        /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
+
+        /** Drivers for force model parameters. */
+        private final ParameterDriver[] parametersDrivers;
 
         /** The body to consider. */
         private final CelestialBody body;
@@ -295,7 +432,22 @@ public class SolarBodyTest {
          * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
          */
         public BodyAttraction(final CelestialBody body) {
-            super(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX);
+            this.parametersDrivers = new ParameterDriver[1];
+            try {
+                parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                           body.getGM(), 1.0e-5 * body.getGM(),
+                                                           0.0, Double.POSITIVE_INFINITY);
+                parametersDrivers[0].addObserver(new ParameterObserver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(double previousValue, final ParameterDriver driver) {
+                        BodyAttraction.this.gm = driver.getValue();
+                    }
+                });
+            } catch (OrekitException oe) {
+                // this should never occur as valueChanged above never throws an exception
+                throw new OrekitInternalError(oe);
+            }
             this.body = body;
             this.gm   = body.getGM();
         }
@@ -319,6 +471,14 @@ public class SolarBodyTest {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+                                                                    final FieldTimeDerivativesEquations<T> adder) {
+            throw new UnsupportedOperationException();
+        }
+
+
+        /** {@inheritDoc} */
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                           final FieldVector3D<DerivativeStructure> position,
                                                                           final FieldVector3D<DerivativeStructure> velocity,
@@ -332,7 +492,7 @@ public class SolarBodyTest {
             final DerivativeStructure r2Sat = satToBody.getNormSq();
 
             // compute absolute acceleration
-            return new FieldVector3D<DerivativeStructure>(r2Sat.pow(-1.5).multiply(gm), satToBody);
+            return new FieldVector3D<>(r2Sat.pow(-1.5).multiply(gm), satToBody);
 
         }
 
@@ -347,30 +507,26 @@ public class SolarBodyTest {
             final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
             final double r2Sat           = Vector3D.dotProduct(satToBody, satToBody);
 
-            final DerivativeStructure gmds = new DerivativeStructure(1, 1, 0, gm);
+            final DerivativeStructure gmds = new DSFactory(1, 1).variable(0, gm);
 
             // compute relative acceleration
-            return new FieldVector3D<DerivativeStructure>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody);
+            return new FieldVector3D<>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody);
 
         }
 
         /** {@inheritDoc} */
-        public EventDetector[] getEventsDetectors() {
-            return new EventDetector[0];
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
         }
 
         /** {@inheritDoc} */
-        public double getParameter(final String name)
-            throws IllegalArgumentException {
-            complainIfNotSupported(name);
-            return gm;
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
         }
 
         /** {@inheritDoc} */
-        public void setParameter(final String name, final double value)
-            throws IllegalArgumentException {
-            complainIfNotSupported(name);
-            gm = value;
+        public ParameterDriver[] getParametersDrivers() {
+            return parametersDrivers.clone();
         }
 
     }
@@ -398,7 +554,7 @@ public class SolarBodyTest {
 
         // set up Keplerian orbit of orbiting body around central body
         Orbit orbit = new KeplerianOrbit(orbiting.getPVCoordinates(start, central.getInertiallyOrientedFrame()),
-                                         central.getInertiallyOrientedFrame(),start, central.getGM());
+                                         central.getInertiallyOrientedFrame(), start, central.getGM());
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Assert.assertEquals(a, orbit.getA(), 0.02 * a);
         double duration = FastMath.min(50 * Constants.JULIAN_DAY, 0.01 * orbit.getKeplerianPeriod());

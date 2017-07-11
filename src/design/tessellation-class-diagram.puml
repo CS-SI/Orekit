@@ -1,4 +1,4 @@
-' Copyright 2002-2015 CS Systèmes d'Information
+' Copyright 2002-2017 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package "Apache Commons Math" #F3EDF7 {
+  package "Hipparchus" #F3EDF7 {
     class SphericalPolygonsSet #EAE6F7/B9B3D2
   }
 

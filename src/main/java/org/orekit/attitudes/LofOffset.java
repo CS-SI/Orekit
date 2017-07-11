@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -67,26 +68,28 @@ public class LofOffset implements AttitudeProvider {
      * <p>
      * An important thing to note is that the rotation order and angles signs used here
      * are compliant with an <em>attitude</em> definition, i.e. they correspond to
-     * a frame that rotate in a field of fixed vectors. The underlying definitions used
-     * in commons-math {@link org.apache.commons.math3.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
-     * double, double, double) Rotation(RotationOrder, double, double, double)} use
-     * <em>reversed</em> definition, i.e. they correspond to a vectors field rotating
-     * with respect to a fixed frame. So to retrieve the angles provided here from the
-     * commons-math underlying rotation, one has to <em>revert</em> the rotation, as in
-     * the following code snippet:
+     * a frame that rotate in a field of fixed vectors. So to retrieve the angles
+     * provided here from the Hipparchus underlying rotation, one has to either use the
+     * {@link RotationConvention#VECTOR_OPERATOR} and <em>revert</em> the rotation, or
+     * to use {@link RotationConvention#FRAME_TRANSFORM} as in the following code snippet:
      * </p>
      * <pre>
      *   LofOffset law          = new LofOffset(inertial, lofType, order, alpha1, alpha2, alpha3);
      *   Rotation  offsetAtt    = law.getAttitude(orbit).getRotation();
      *   Rotation  alignedAtt   = new LofOffset(inertial, lofType).getAttitude(orbit).getRotation();
-     *   Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+     *   Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
      *
-     *   // note the call to revert in the following statement
-     *   double[] angles = offsetProper.revert().getAngles(order);
+     *   // note the call to revert and the conventions in the following statement
+     *   double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
+     *   System.out.println(alpha1 + " == " + anglesV[0]);
+     *   System.out.println(alpha2 + " == " + anglesV[1]);
+     *   System.out.println(alpha3 + " == " + anglesV[2]);
      *
-     *   System.out.println(alpha1 + " == " + angles[0]);
-     *   System.out.println(alpha2 + " == " + angles[1]);
-     *   System.out.println(alpha3 + " == " + angles[2]);
+     *   // note the conventions in the following statement
+     *   double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
+     *   System.out.println(alpha1 + " == " + anglesF[0]);
+     *   System.out.println(alpha2 + " == " + anglesF[1]);
+     *   System.out.println(alpha3 + " == " + anglesF[2]);
      * </pre>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param type type of Local Orbital Frame
@@ -100,7 +103,7 @@ public class LofOffset implements AttitudeProvider {
                      final RotationOrder order, final double alpha1,
                      final double alpha2, final double alpha3) throws OrekitException {
         this.type = type;
-        this.offset = new Rotation(order, alpha1, alpha2, alpha3).revert();
+        this.offset = new Rotation(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -124,7 +127,7 @@ public class LofOffset implements AttitudeProvider {
 
         // compose with offset rotation
         return new Attitude(date, frame,
-                            offset.applyTo(frameToLof.getRotation()),
+                            offset.compose(frameToLof.getRotation(), RotationConvention.VECTOR_OPERATOR),
                             offset.applyTo(frameToLof.getRotationRate()),
                             offset.applyTo(frameToLof.getRotationAcceleration()));
 

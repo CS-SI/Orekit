@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.utils.Constants;
 
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
@@ -47,9 +48,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Offset start of validity date. */
     private final AbsoluteDate validityStart;
-
-    /** Offset end of validity date. */
-    private AbsoluteDate validityEnd;
 
     /** Reference date for the slope multiplication as Modified Julian Day. */
     private final int mjdRef;
@@ -94,7 +92,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
-        this.validityEnd   = AbsoluteDate.FUTURE_INFINITY;
         this.mjdRef        = mjdRef;
         this.reference     = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjdRef),
                                               TimeScalesFactory.getTAI()).shiftedBy(offset);
@@ -124,28 +121,9 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * seconds after the start of the leap itself.</p>
      * @return start of validity date
      * @see #getDate()
-     * @see #getValidityEnd()
      */
     public AbsoluteDate getValidityStart() {
         return validityStart;
-    }
-
-    /** Get the end time of validity for this offset.
-     * <p>The end of the validity of the offset is the date of the
-     * start of the leap leading to the next offset.</p>
-     * @return end of validity date
-     * @see #getValidityStart()
-     */
-    public AbsoluteDate getValidityEnd() {
-        return validityEnd;
-    }
-
-    /** Set the end time of validity for this offset.
-     * @param validityEnd end of validity date
-     * @see #getValidityEnd()
-     */
-    void setValidityEnd(final AbsoluteDate validityEnd) {
-        this.validityEnd = validityEnd;
     }
 
     /** Get the value of the leap at offset validity start (in seconds).
@@ -160,7 +138,33 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      */
     public double getOffset(final AbsoluteDate date) {
-        return offset + date.durationFrom(reference) * slopeTAI;
+        if (slopeTAI == 0) {
+            // we use an if statement here so the offset computation returns
+            // a finite value when date is AbsoluteDate.FUTURE_INFINITY
+            // without this if statement, the multiplication between an
+            // infinite duration and a zero slope would induce a NaN offset
+            return offset;
+        } else {
+            return offset + date.durationFrom(reference) * slopeTAI;
+        }
+    }
+
+    /** Get the TAI - UTC offset in seconds.
+     * @param date date at which the offset is requested
+     * @param <T> type of the filed elements
+     * @return TAI - UTC offset in seconds.
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+        if (slopeTAI == 0) {
+            // we use an if statement here so the offset computation returns
+            // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
+            // without this if statement, the multiplication between an
+            // infinite duration and a zero slope would induce a NaN offset
+            return date.getField().getZero().add(offset);
+        } else {
+            return date.durationFrom(reference).multiply(slopeTAI).add(offset);
+        }
     }
 
     /** Get the TAI - UTC offset in seconds.
@@ -170,7 +174,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      */
     public double getOffset(final DateComponents date, final TimeComponents time) {
         final int    days     = date.getMJD() - mjdRef;
-        final double fraction = time.getSecondsInDay();
+        final double fraction = time.getSecondsInUTCDay();
         return offset + days * (slopeUTC * Constants.JULIAN_DAY) + fraction * slopeUTC;
     }
 

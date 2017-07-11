@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,17 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** EME2000 frame : mean equator at J2000.0.
  * <p>This frame was the standard inertial reference prior to GCRF. It was defined
  * using Lieske precession-nutation model for Earth. This frame has been superseded
- * by GCRF which is implicitly defined from a few hundred quasars coordinates.<p>
+ * by GCRF which is implicitly defined from a few hundred quasars coordinates.
  * <p>The transformation between GCRF and EME2000 is a constant rotation bias.</p>
  * @author Luc Maisonobe
  */
@@ -52,9 +53,10 @@ class EME2000Provider extends FixedTransformProvider {
 
         // build the bias transform
         super(new Transform(AbsoluteDate.J2000_EPOCH,
-                            new Rotation(Vector3D.PLUS_I, D_EPSILON_B).
-                            applyTo(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0)).
-                                    applyTo(new Rotation(Vector3D.PLUS_K, -ALPHA_0)))));
+                            new Rotation(Vector3D.PLUS_I, D_EPSILON_B, RotationConvention.VECTOR_OPERATOR).
+                            compose(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0), RotationConvention.VECTOR_OPERATOR).
+                                    compose(new Rotation(Vector3D.PLUS_K, -ALPHA_0, RotationConvention.VECTOR_OPERATOR), RotationConvention.VECTOR_OPERATOR),
+                                    RotationConvention.VECTOR_OPERATOR)));
 
     }
 

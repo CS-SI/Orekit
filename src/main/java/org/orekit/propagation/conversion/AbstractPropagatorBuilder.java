@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,20 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -36,17 +37,28 @@ import org.orekit.time.AbsoluteDate;
  */
 public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Date of the initial orbit. */
+    private final AbsoluteDate initialOrbitDate;
+
     /** Frame in which the orbit is propagated. */
     private final Frame frame;
 
     /** Central attraction coefficient (m³/s²). */
     private double mu;
 
-    /** List of the supported parameters names. */
-    private List<String> supportedParameters;
+    /** Drivers for orbital parameters. */
+    private final ParameterDriversList orbitalDrivers;
 
-    /** List of the free parameters names. */
-    private List<String> freeParameters;
+    /** List of the supported parameters. */
+    private ParameterDriversList propagationDrivers;
 
     /** Orbit type to use. */
     private final OrbitType orbitType;
@@ -55,22 +67,59 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private final PositionAngle positionAngle;
 
     /** Build a new instance.
-     * @param frame the frame in which the orbit is propagated
-     *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * <p>
+     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * are selected, which means that if the builder is used for orbit determination or
+     * propagator conversion, all orbital parameters will be estimated. If only a subset
+     * of the orbital parameters must be estimated, caller must retrieve the orbital
+     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
+     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
      * @param positionAngle position angle type to use
-     * @since 7.1
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
+     * be set up for central attraction coefficient
+     * @exception OrekitException if parameters drivers cannot be scaled
+     * @since 8.0
      */
-    public AbstractPropagatorBuilder(final Frame frame, final double mu,
-                                     final OrbitType orbitType, final PositionAngle positionAngle) {
-        this.frame               = frame;
-        this.mu                  = mu;
-        this.supportedParameters = new ArrayList<String>();
-        this.freeParameters      = new ArrayList<String>();
-        this.orbitType           = orbitType;
+    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+                                        final double positionScale, final boolean addDriverForCentralAttraction)
+        throws OrekitException {
+
+        this.initialOrbitDate    = templateOrbit.getDate();
+        this.frame               = templateOrbit.getFrame();
+        this.mu                  = templateOrbit.getMu();
+        this.propagationDrivers  = new ParameterDriversList();
+        this.orbitType           = templateOrbit.getType();
         this.positionAngle       = positionAngle;
-        addSupportedParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
+        for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
+            driver.setSelected(true);
+        }
+
+        if (addDriverForCentralAttraction) {
+            final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                                 mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
+            muDriver.addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    AbstractPropagatorBuilder.this.mu = driver.getValue();
+                }
+            });
+            propagationDrivers.add(muDriver);
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -84,112 +133,131 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
+    public AbsoluteDate getInitialOrbitDate() {
+        return initialOrbitDate;
+    }
+
+    /** {@inheritDoc} */
     public Frame getFrame() {
         return frame;
     }
 
     /** {@inheritDoc} */
-    public List<String> getSupportedParameters() {
-        return Collections.unmodifiableList(supportedParameters);
+    public ParameterDriversList getOrbitalParametersDrivers() {
+        return orbitalDrivers;
     }
 
     /** {@inheritDoc} */
-    public void setFreeParameters(final List<String> parameters)
-        throws OrekitIllegalArgumentException {
-        for (String name : parameters) {
-            if (!supportedParameters.contains(name)) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                         name, supportedAsString());
+    public ParameterDriversList getPropagationParametersDrivers() {
+        return propagationDrivers;
+    }
+
+    /** Get the number of selected parameters.
+     * @return number of selected parameters
+     */
+    private int getNbSelected() {
+
+        int count = 0;
+
+        // count orbital parameters
+        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                ++count;
             }
         }
-        freeParameters = new ArrayList<String>(parameters);
+
+        // count propagation parameters
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                ++count;
+            }
+        }
+
+        return count;
+
     }
 
     /** {@inheritDoc} */
-    public List<String> getFreeParameters() {
-        return Collections.unmodifiableList(freeParameters);
-    }
+    public double[] getSelectedNormalizedParameters() {
 
-    /** {@inheritDoc}
-     * <p>
-     * The abstract base class only supports {@link
-     * NewtonianAttraction#CENTRAL_ATTRACTION_COEFFICIENT}, specialized propagator
-     * builders may support more parameters.
-     * </p>
-     */
-    public double getParameter(final String name)
-        throws OrekitIllegalArgumentException {
-        if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
-            return mu;
-        }
-        throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                 name, supportedAsString());
-    }
+        // allocate array
+        final double[] selected = new double[getNbSelected()];
 
-    /** {@inheritDoc}
-     * <p>
-     * The abstract base class only supports {@link
-     * NewtonianAttraction#CENTRAL_ATTRACTION_COEFFICIENT}, specialized propagator
-     * builders may support more parameters.
-     * </p>
-     */
-    public void setParameter(final String name, final double value)
-        throws OrekitIllegalArgumentException {
-        if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
-            this.mu = value;
-        } else {
-            throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                     name, supportedAsString());
-        }
-    }
-
-    /** Check the size of the parameters array.
-     * @param parameters to configure the propagator
-     * @exception OrekitIllegalArgumentException if the number of
-     * parameters is not 6 (for initial state) plus the number of free
-     * parameters
-     */
-    protected void checkParameters(final double[] parameters)
-        throws OrekitIllegalArgumentException {
-        if (parameters.length != (freeParameters.size() + 6)) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE,
-                                                     parameters.length, freeParameters.size() + 6);
-        }
-    }
-
-    /** Crate the orbit for the first 6 parameters.
-     * @param date date associated to the parameters to configure the initial state
-     * @param parameters set of position/velocity(/free) parameters to configure the propagator
-     * @return initial orbit
-     */
-    protected Orbit createInitialOrbit(final AbsoluteDate date, final double[] parameters) {
-        return getOrbitType().mapArrayToOrbit(parameters, positionAngle, date, mu, frame);
-    }
-
-    /** Add a supported parameter name.
-     * @param name name of a supported parameter
-     * @exception OrekitIllegalArgumentException if the name is already supported
-     */
-    protected void addSupportedParameter(final String name)
-        throws OrekitIllegalArgumentException {
-        if (supportedParameters.contains(name)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.DUPLICATED_PARAMETER_NAME, name);
-        }
-        supportedParameters.add(name);
-    }
-
-    /** Create a string with the list of supported parameters.
-     * @return string with the list of supported parameters
-     */
-    private String supportedAsString() {
-        final StringBuilder supported = new StringBuilder();
-        for (final String name : supportedParameters) {
-            if (supported.length() > 0) {
-                supported.append(", ");
+        // fill data
+        int index = 0;
+        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                selected[index++] = driver.getNormalizedValue();
             }
-            supported.append(name);
         }
-        return supported.toString();
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                selected[index++] = driver.getNormalizedValue();
+            }
+        }
+
+        return selected;
+
+    }
+
+    /** Build an initial orbit using the current selected parameters.
+     * <p>
+     * This method is a stripped down version of {@link #buildPropagator(double[])}
+     * that only builds the initial orbit and not the full propagator.
+     * </p>
+     * @return an initial orbit
+     * @since 8.0
+     */
+    protected Orbit createInitialOrbit() {
+        final double[] unNormalized = new double[orbitalDrivers.getNbParams()];
+        for (int i = 0; i < unNormalized.length; ++i) {
+            unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue();
+        }
+        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngle, initialOrbitDate, mu, frame);
+    }
+
+    /** Set the selected parameters.
+     * @param normalizedParameters normalized values for the selected parameters
+     * @exception OrekitException if some parameter cannot be set to the specified value
+     * @exception OrekitIllegalArgumentException if the number of parameters is not the
+     * number of selected parameters (adding orbits and models parameters)
+     */
+    protected void setParameters(final double[] normalizedParameters)
+        throws OrekitException, OrekitIllegalArgumentException {
+
+
+        if (normalizedParameters.length != getNbSelected()) {
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                     normalizedParameters.length,
+                                                     getNbSelected());
+        }
+
+        int index = 0;
+
+        // manage orbital parameters
+        for (final ParameterDriver driver : orbitalDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                driver.setNormalizedValue(normalizedParameters[index++]);
+            }
+        }
+
+        // manage propagation parameters
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
+            if (driver.isSelected()) {
+                driver.setNormalizedValue(normalizedParameters[index++]);
+            }
+        }
+
+    }
+
+    /** Add a supported parameter.
+     * @param driver driver for the parameter
+     * @exception OrekitException if the name is already supported
+     */
+    protected void addSupportedParameter(final ParameterDriver driver)
+        throws OrekitException {
+        propagationDrivers.add(driver);
+        propagationDrivers.sort();
     }
 
 }

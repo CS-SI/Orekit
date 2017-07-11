@@ -35,7 +35,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Time
     <ul>
       <li>high accuracy absolute dates</li>
-      <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST ...)</li>
+      <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)</li>
       <li>transparent handling of leap seconds</li>
       <li>support for CCSDS time code standards</li>
     </ul>
@@ -43,7 +43,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Geometry
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
-      <li>predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008 and
+      <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014 and
           intermediate frames, TOD, MOD, GTOD and TEME frames, Veis, topocentric, tnw and qsw local orbital
           frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecraft)</li>
@@ -54,11 +54,13 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
       <li>Cartesian and geodesic coordinates, kinematics</li>
+      <li>Computation of Dilution Of Precision (DOP) with respect to GNSS constellations</li>
     </ul>
   </li>
   <li>Spacecraft state
     <ul>
-      <li>Cartesian, elliptical Keplerian, circular and equinoctial parameters</li>
+      <li>Cartesian, elliptical Keplerian, circular and equinoctial parameters, with non-Keplerian
+          derivatives if available</li>
       <li>Two-Line Elements</li>
       <li>transparent conversion between all parameters</li>
       <li>automatic binding with frames</li>
@@ -86,8 +88,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
               EGM and GRGS gravity field files formats, even compressed)</li>
-              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
-              and Marshall solar Activity Future Estimation</li>
+              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models),
+              and Marshall solar Activity Future Estimation, optionally with lift component</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
               <li>solid tides, with or without solid pole tide</li>
@@ -109,6 +111,12 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>memory based</li>
           <li>integration based</li>
         </ul>
+      </li>
+      <li>specialized GPS propagation, using SEM or YUMA files</li>
+      <li>Taylor-algebra (or any other real field) version of most of the above propagators,
+            with all force models, events detection, orbits types, coordinates types and frames
+           allowing allowing high order uncertainties and derivatives computation or very fast
+           Monte-Carlo analyzes
       </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
@@ -133,25 +141,32 @@ discrete events. Here is a short list of the features offered by the library:</p
               with either true, eccentric or mean angles</li>
           <li>apogee and perigee crossing</li>
           <li>alignment with some body in the orbital plane (with customizable threshold angle)</li>
+          <li>angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+              as seen from an observer (typically a ground station)</li>
           <li>raising/setting with respect to a ground location
-              (with customizable triggering elevation and ground mask)</li>
-          <li>date</li>
+              (with customizable triggering elevation and ground mask, optionally considering refraction)</li>
+          <li>date and on-the-fly resetting countdown</li>
           <li>latitude, longitude, altitude crossing</li>
           <li>latitude, longitude extremum</li>
           <li>elevation extremum</li>
           <li>anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric</li>
-          <li>target detection in sensor field of view (circular or dihedral)</li>
-          <li>complex geographic zone traversal</li>
+          <li>moving target detection in spacecraft sensor Field Of View (any shape, with special case for circular)</li>
+          <li>spacecraft detection in ground based Field Of View (any shape)</li>
+          <li>sensor Field Of View (any shape) overlapping complex geographic zone</li>
+           <li>complex geographic zone traversal</li>
           <li>impulse maneuvers occurrence</li>
         </ul>
       </li>
       <li>possibility of slightly shifting events in time (for example to switch from
           solar pointing mode to something else a few minutes before eclipse entry and
           reverting to solar pointing mode a few minutes after eclipse exit)</li>
-      <li>possibility of filtering events based on their direction (for example to detect
+      <li>events filtering  based on their direction (for example to detect
           only eclipse entries and not eclipse exits)</li>
-      <li>possibility of filtering events based on an external enabling function (for
+      <li>events filtering  based on an external enabling function (for
           example to detect events only during selected orbits and not others)</li>
+      <li>events combination with boolean operators</li>
+      <li>ability to run several propagators in parallel and manage their states
+          simultaneously throughout propagation</li>
     </ul>
   </li>
   <li>Attitude
@@ -164,20 +179,61 @@ discrete events. Here is a short list of the features offered by the library:</p
                yaw compensation, yaw-steering)</li>
           <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
           <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
-          <li>tabulated attitudes</li>
+          <li>tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames</li>
         </ul>
       </li>
+    </ul>
+  </li>
+  <li>Orbit determination
+    <ul>
+      <li>batch least squares fitting
+        <ul>
+          <li>orbital parameters estimation (or only a subset if desired)</li>
+          <li>force model parameters estimation (drag coefficients, radiation pressure coefficients,
+              central attraction, maneuver thrust or flow rate)</li>
+          <li>measurements parameters estimation (biases, station position, pole motion and rate,
+              prime meridian correction and rate)</li>
+        </ul>
+      </li>
+      <li>multi-satellites orbit determination
+       </li>
+      <li>several predefined measurements
+        <ul>
+          <li>range</li>
+          <li>range rate (one way and two way)</li>
+          <li>turn-around range</li>
+          <li>azimuth/elevation</li>
+          <li>right ascension/declination</li>
+          <li>position-velocity</li>
+          <li>inter-satellites range (one way and two way)</li>
+        </ul>
+      </li>
+      <li>possibility to add custom measurements</li>
+      <li>several predefined modifiers
+        <ul>
+          <li>tropospheric effects</li>
+          <li>ionospheric effects</li>
+          <li>station offsets</li>
+          <li>biases</li>
+          <li>delays</li>
+        </ul>
+      <li>possibility to add custom measurement modifiers (even for predefined events)</li>
+      <li>possibility to parse CCSDS Tracking Data Message files</li>
     </ul>
   </li>
   <li>Orbit file handling
     <ul>
       <li>loading of SP3-a and SP3-c orbit files</li>
       <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
+      <li>loading of SEM and YUMA files for GPS constellation</li>
+      <li>exporting of ephemeris in CCSDS OEM file format</li>
     </ul>
   </li>
   <li>Earth models
     <ul>
       <li>tropospheric delay (modified Saastamoinen)</li>
+      <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)</li>
+      <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)</li>
       <li>geomagnetic field (WMM, IGRF)</li>
       <li>geoid model from any gravity field</li>
       <li>tessellation of zones of interest as tiles</li>
@@ -198,13 +254,13 @@ discrete events. Here is a short list of the features offered by the library:</p
 
 <h2>3. Dependency</h2>
 <p>
-OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">Apache Commons Math</a>
+OREKIT has only one dependency: the <a href="https://hipparchus.org/">Hipparchus</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,
 polynomial equations, differential equations, and more... It is distributed under the
 business-friendly Apache Software License version 2.0.
 </p>
 <p>
-OREKIT is based on several Apache Commons Math packages:
+OREKIT is based on several Hipparchus packages:
 </p>
 <ul>
  <li>geometry, which provides very useful objects as vectors
@@ -217,7 +273,7 @@ OREKIT is based on several Apache Commons Math packages:
  to arbitrary order and arbitrary number of free parameters</li>
 </ul>
 <p>
-The use of Apache Commons Math is hidden in OREKIT as much as possible so users don't 
+The use of Hipparchus is hidden in OREKIT as much as possible so users don't 
 need to fully master this library. If they wish, they can limit themselves to understanding
 the simple classes Vector3D and Rotation from the geometry package, and the interface
 FirstOrderIntegrator from the ode package. 

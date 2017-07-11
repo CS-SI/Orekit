@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Holder for date and time components.
@@ -125,7 +125,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
         // extract linear data from reference date/time
         int    day     = reference.getDate().getJ2000Day();
-        double seconds = reference.getTime().getSecondsInDay();
+        double seconds = reference.getTime().getSecondsInLocalDay();
 
         // apply offset
         seconds += offset;
@@ -134,10 +134,12 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
         seconds -= Constants.JULIAN_DAY * dayShift;
         day     += dayShift;
+        final TimeComponents tmpTime = new TimeComponents(seconds);
 
         // set up components
         this.date = new DateComponents(day);
-        this.time = new TimeComponents(seconds);
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+                                       reference.getTime().getMinutesFromUTC());
 
     }
 
@@ -172,7 +174,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final double timeOffset = time.getSecondsInDay() - dateTime.time.getSecondsInDay();
+        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
         return Constants.JULIAN_DAY * dateOffset + timeOffset;
     }
 
@@ -222,6 +224,35 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return string representation of this pair
      */
     public String toString() {
+        return toString(60);
+    }
+
+    /** Return a string representation of this pair.
+     * <p>The format used is ISO8601.</p>
+     * @param minuteDuration 60 or 61 depending on the date being
+     * close to a leap second introduction
+     * @return string representation of this pair
+     */
+    public String toString(final int minuteDuration) {
+        double second = time.getSecond();
+        final double wrap = minuteDuration - 0.0005;
+        if (second >= wrap) {
+            // we should wrap around next millisecond
+            int minute = time.getMinute();
+            int hour   = time.getHour();
+            int j2000  = date.getJ2000Day();
+            second = 0;
+            ++minute;
+            if (minute > 59) {
+                minute = 0;
+                ++hour;
+                if (hour > 23) {
+                    hour = 0;
+                    ++j2000;
+                }
+            }
+            return new DateComponents(j2000).toString() + 'T' + new TimeComponents(hour, minute, second).toString();
+        }
         return date.toString() + 'T' + time.toString();
     }
 

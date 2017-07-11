@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,26 +26,205 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.PVCoordinates;
 
 public class FramesFactoryTest {
 
     @Test
     public void testTreeRoot() throws OrekitException {
         Assert.assertNull(FramesFactory.getFrame(Predefined.GCRF).getParent());
+    }
+
+    @Test
+    public void testWrongSupportedFileNames1980() throws OrekitException {
+        FramesFactory.addDefaultEOP1980HistoryLoaders("wrong-rapidDataColumns-1980",
+                                                      "wrong-rapidDataXML-1980",
+                                                      "wrong-eopC04-1980",
+                                                      "wrong-bulletinB-1980",
+                                                      "wrong-bulletinA-1980");
+        try {
+            FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongSupportedFileNames2000() throws OrekitException {
+        FramesFactory.addDefaultEOP2000HistoryLoaders("wrong-rapidDataColumns-2000",
+                                                      "wrong-rapidDataXML-2000",
+                                                      "wrong-eopC04-2000",
+                                                      "wrong-bulletinB-2000",
+                                                      "wrong-bulletinA-2000");
+        try {
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongConventions() throws OrekitException {
+        // set up only 1980 conventions
+        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
+        try {
+            // attempt to retrieve 2000 conventions
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testEOPLoaderException() {
+        final boolean[] flags = new boolean[2];
+        try {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
+                    // don't really fill history here
+                    flags[0] = true;
+                }
+            });
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
+                    throws OrekitException {
+                    // generate exception
+                    flags[1] = true;
+                    throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
+                }
+            });
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(flags[0]);
+            Assert.assertTrue(flags[1]);
+            Assert.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testUnwrapInterpolatingTransformProvider() throws OrekitException {
+        TransformProvider raw = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(final AbsoluteDate date) {
+                double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
+                return new Transform(date,
+                                     new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
+                                                       Vector3D.ZERO));
+            }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+        };
+        Frame parent = FramesFactory.getGCRF();
+        Frame frame  = new Frame(parent,
+                                 new InterpolatingTransformProvider(raw,
+                                                                    CartesianDerivativesFilter.USE_P,
+                                                                    AngularDerivativesFilter.USE_R,
+                                                                    AbsoluteDate.PAST_INFINITY,
+                                                                    AbsoluteDate.FUTURE_INFINITY,
+                                                                    4, Constants.JULIAN_DAY, 10,
+                                                                    Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
+                                 "sine");
+        double maxErrorNonInterpolating = 0;
+        double maxErrorInterpolating    = 0;
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+            AbsoluteDate date            = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform reference          = raw.getTransform(date);
+            Transform nonInterpolating   = FramesFactory.getNonInterpolatingTransform(parent, frame, date);
+            Transform interpolating      = parent.getTransformTo(frame, date);
+            double errorNonInterpolating = Vector3D.distance(reference.getTranslation(),
+                                                             nonInterpolating.getTranslation());
+            maxErrorNonInterpolating     = FastMath.max(maxErrorNonInterpolating, errorNonInterpolating);
+            double errorInterpolating    = Vector3D.distance(reference.getTranslation(),
+                                                             interpolating.getTranslation());
+            maxErrorInterpolating        = FastMath.max(maxErrorInterpolating, errorInterpolating);
+        }
+        Assert.assertEquals(0.0, maxErrorNonInterpolating, 1.0e-15);
+        Assert.assertEquals(1.0, maxErrorInterpolating,    1.0e-15);
+    }
+
+    @Test
+    public void testUnwrapShiftingTransformProvider() throws OrekitException {
+        TransformProvider raw = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(final AbsoluteDate date) {
+                double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
+                return new Transform(date,
+                                     new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
+                                                       Vector3D.ZERO));
+            }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+        };
+        Frame parent = FramesFactory.getGCRF();
+        Frame frame  = new Frame(parent,
+                                 new ShiftingTransformProvider(raw,
+                                                               CartesianDerivativesFilter.USE_P,
+                                                               AngularDerivativesFilter.USE_R,
+                                                               AbsoluteDate.PAST_INFINITY,
+                                                               AbsoluteDate.FUTURE_INFINITY,
+                                                               4, Constants.JULIAN_DAY, 10,
+                                                               Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
+                                 "sine");
+        double maxErrorNonShifting = 0;
+        double maxErrorShifting    = 0;
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+            AbsoluteDate date       = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform reference     = raw.getTransform(date);
+            Transform nonShifting   = FramesFactory.getNonInterpolatingTransform(parent, frame, date);
+            Transform shifting      = parent.getTransformTo(frame, date);
+            double errorNonShifting = Vector3D.distance(reference.getTranslation(),
+                                                        nonShifting.getTranslation());
+            maxErrorNonShifting     = FastMath.max(maxErrorNonShifting, errorNonShifting);
+            double errorShifting    = Vector3D.distance(reference.getTranslation(),
+                                                        shifting.getTranslation());
+            maxErrorShifting        = FastMath.max(maxErrorShifting, errorShifting);
+        }
+        Assert.assertEquals(0.0, maxErrorNonShifting, 1.0e-15);
+        Assert.assertEquals(1.0, maxErrorShifting,    1.0e-15);
     }
 
     @Test
@@ -196,7 +375,7 @@ public class FramesFactoryTest {
         Frame tod  = FramesFactory.getTOD(conventions, false);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 06, 21), TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
-        for (double dt = -30 * Constants.JULIAN_DAY; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
+        for (double dt = -10 * Constants.JULIAN_DAY; dt < 10 * Constants.JULIAN_DAY; dt += 7200) {
             // CIRF and TOD should both have the Celestial Intermediate Pole as their Z axis
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(tod, cirf, date);
@@ -250,7 +429,7 @@ public class FramesFactoryTest {
             // its Z axis is much better aligned with CIRF Z axis
             Vector3D zConverted  = tConverted.transformVector(Vector3D.PLUS_K);
             Assert.assertTrue(Vector3D.angle(zConverted, Vector3D.PLUS_K) < 6e-12);
-  
+
         }
 
     }
@@ -305,6 +484,178 @@ public class FramesFactoryTest {
         Assert.assertEquals(dx, nro[0], 1.0e-20);
         Assert.assertEquals(dy, nro[1], 1.0e-20);
 
+    }
+
+    @Test
+    public void testFieldConsistency() throws OrekitException {
+        for (final Predefined predefined : Predefined.values()) {
+            final Frame frame = FramesFactory.getFrame(predefined);
+            final Frame parent = frame.getParent();
+            if (parent != null) {
+                double maxPositionError             = 0;
+                double maxVelocityError             = 0;
+                double maxAccelerationError         = 0;
+                double maxRotationError             = 0;
+                double maxRotationRateError         = 0;
+                double maxRotationAccelerationError = 0;
+                for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+                    final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+                    final Transform transformDouble = parent.getTransformTo(frame, date);
+                    final FieldTransform<Decimal64> transformD64 =
+                                    parent.getTransformTo(frame, new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+                    maxPositionError             = FastMath.max(maxPositionError,
+                                                                Vector3D.distance(transformDouble.getTranslation(),
+                                                                                  transformD64.getTranslation().toVector3D()));
+                    maxVelocityError             = FastMath.max(maxVelocityError,
+                                                                Vector3D.distance(transformDouble.getVelocity(),
+                                                                                  transformD64.getVelocity().toVector3D()));
+                    maxAccelerationError         = FastMath.max(maxAccelerationError,
+                                                                Vector3D.distance(transformDouble.getAcceleration(),
+                                                                                  transformD64.getAcceleration().toVector3D()));
+                    maxRotationError             = FastMath.max(maxRotationError,
+                                                               Rotation.distance(transformDouble.getRotation(),
+                                                                                 transformD64.getRotation().toRotation()));
+                    maxRotationRateError         = FastMath.max(maxRotationRateError,
+                                                                Vector3D.distance(transformDouble.getRotationRate(),
+                                                                                  transformD64.getRotationRate().toVector3D()));
+                    maxRotationAccelerationError = FastMath.max(maxRotationAccelerationError,
+                                                               Vector3D.distance(transformDouble.getRotationAcceleration(),
+                                                                                 transformD64.getRotationAcceleration().toVector3D()));
+                }
+                Assert.assertEquals(0, maxPositionError,             1.0e-100);
+                Assert.assertEquals(0, maxVelocityError,             1.0e-100);
+                Assert.assertEquals(0, maxAccelerationError,         1.0e-100);
+                Assert.assertEquals(0, maxRotationError,             2.0e-14);
+                Assert.assertEquals(0, maxRotationRateError,         2.0e-18);
+                Assert.assertEquals(0, maxRotationAccelerationError, 8.0e-22);
+            }
+        }
+    }
+
+    @Test
+    public void testDerivatives2000WithInterpolation() throws OrekitException {
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH, Constants.JULIAN_DAY, 60.0, false,
+                          8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
+    }
+
+    @Test
+    public void testDerivatives2000WithoutInterpolation() throws OrekitException {
+        // when we forbid interpolation, the test is really slow (almost two hours
+        // runtime on a very old machine for one day time span and one minute rate),
+        // we drastically reduce sampling to circumvent this drawback
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH, Constants.JULIAN_DAY / 4, 3600, true,
+                          8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
+    }
+
+    @Test
+    public void testDerivatives2003WithInterpolation() throws OrekitException {
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
+                          Constants.JULIAN_DAY, 60.0, false,
+                          8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
+    }
+
+    @Test
+    public void testDerivatives2003WithoutInterpolation() throws OrekitException {
+        // when we forbid interpolation, the test is really slow (almost two hours
+        // runtime on a very old machine for one day time span and one minute rate),
+        // we drastically reduce sampling to circumvent this drawback
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
+                          Constants.JULIAN_DAY / 4, 3600, true,
+                          8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
+    }
+
+    private void doTestDerivatives(AbsoluteDate ref,
+                                   double duration, double step, boolean forbidInterpolation,
+                                   double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
+                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
+        throws OrekitException {
+
+        final DSFactory factory = new DSFactory(1, 2);
+        final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
+
+        for (final Predefined predefined : Predefined.values()) {
+            final Frame frame = FramesFactory.getFrame(predefined);
+            final Frame parent = frame.getParent();
+            if (parent != null) {
+
+                UnivariateDifferentiableVectorFunction dCartesian = differentiator.differentiate(new UnivariateVectorFunction() {
+                    @Override
+                    public double[] value(double t) {
+                        try {
+                            return forbidInterpolation ?
+                                   FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
+                                   parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
+                        } catch (OrekitException oe) {
+                            throw new OrekitExceptionWrapper(oe);
+                        }
+                    }
+                });
+
+                UnivariateDifferentiableVectorFunction dOrientation = differentiator.differentiate(new UnivariateVectorFunction() {
+                    double sign = +1.0;
+                    Rotation previous = Rotation.IDENTITY;
+                    @Override
+                    public double[] value(double t) {
+                        try {
+                            AngularCoordinates ac = forbidInterpolation ?
+                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
+                                                    parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
+                            final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
+                                                                            ac.getRotation().getQ1(), previous.getQ1(),
+                                                                            ac.getRotation().getQ2(), previous.getQ2(),
+                                                                            ac.getRotation().getQ3(), previous.getQ3());
+                            sign = FastMath.copySign(1.0, dot * sign);
+                            previous = ac.getRotation();
+                            return ac.getModifiedRodrigues(sign)[0];
+                        } catch (OrekitException oe) {
+                            throw new OrekitExceptionWrapper(oe);
+                        }
+                    }
+                });
+
+                double maxCartesianError       = 0;
+                double maxCartesianDotError    = 0;
+                double maxCartesianDotDotError = 0;
+                double maxRodriguesError       = 0;
+                double maxRodriguesDotError    = 0;
+                double maxRodriguesDotDotError = 0;
+                for (double dt = 0; dt < duration; dt += step) {
+
+                    final DerivativeStructure dtDS = factory.variable(0, dt);
+                    final FieldTransform<DerivativeStructure> tDS = forbidInterpolation ?
+                                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, refDS.shiftedBy(dtDS)) :
+                                                                    parent.getTransformTo(frame, refDS.shiftedBy(dtDS));
+
+                    final DerivativeStructure[] refCart   = dCartesian.value(dtDS);
+                    final DerivativeStructure[] fieldCart = tDS.getTranslation().toArray();
+                    for (int i = 0; i < 3; ++i) {
+                        maxCartesianError       = FastMath.max(maxCartesianError,       FastMath.abs(refCart[i].getValue()              - fieldCart[i].getValue()));
+                        maxCartesianDotError    = FastMath.max(maxCartesianDotError,    FastMath.abs(refCart[i].getPartialDerivative(1) - fieldCart[i].getPartialDerivative(1)));
+                        maxCartesianDotDotError = FastMath.max(maxCartesianDotDotError, FastMath.abs(refCart[i].getPartialDerivative(2) - fieldCart[i].getPartialDerivative(2)));
+                    }
+
+                    final DerivativeStructure[] refOr   = dOrientation.value(dtDS);
+                    DerivativeStructure[] fieldOr = tDS.getAngular().getModifiedRodrigues(1.0)[0];
+                    final double dot = refOr[0].linearCombination(refOr, fieldOr).getReal();
+                    if (dot < 0 || Double.isNaN(dot)) {
+                        fieldOr = tDS.getAngular().getModifiedRodrigues(-1.0)[0];
+                    }
+                    for (int i = 0; i < 3; ++i) {
+                        maxRodriguesError       = FastMath.max(maxRodriguesError,       FastMath.abs(refOr[i].getValue()              - fieldOr[i].getValue()));
+                        maxRodriguesDotError    = FastMath.max(maxRodriguesDotError,    FastMath.abs(refOr[i].getPartialDerivative(1) - fieldOr[i].getPartialDerivative(1)));
+                        maxRodriguesDotDotError = FastMath.max(maxRodriguesDotDotError, FastMath.abs(refOr[i].getPartialDerivative(2) - fieldOr[i].getPartialDerivative(2)));
+                    }
+
+                }
+                Assert.assertEquals(frame.getName(), 0, maxCartesianError,             cartesianTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotError,          cartesianDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotDotError,       cartesianDotDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesError,             rodriguesTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotError,          rodriguesDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotDotError,       rodriguesDotDotTolerance);
+            }
+        }
     }
 
     @Before

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Arrays;
 
-import org.apache.commons.math3.util.FastMath;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.FastMath;
 
 /** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
  *
@@ -28,11 +27,14 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
  */
 public class GammaMnsFunction {
 
-    /** Storage map. */
-    private final Map<MNSKey, Double> map;
+    /** Factorial ratios. */
+    private static double[] PRECOMPUTED_RATIOS = new double[0];
 
-    /** Factorial. */
-    private final double[] fact;
+    /** Factorial ratios. */
+    private final double[] ratios;
+
+    /** Storage array. */
+    private final double[] values;
 
     /** 1 + I * γ. */
     private final double opIg;
@@ -41,15 +43,69 @@ public class GammaMnsFunction {
     private final int    I;
 
     /** Simple constructor.
-     *  @param fact factorial array
+     *  @param nMax max value for n
      *  @param gamma γ
      *  @param I retrograde factor
      */
-    public GammaMnsFunction(final double[] fact, final double gamma, final int I) {
-        this.fact = fact.clone();
-        this.opIg = 1. + I * gamma;
-        this.I    = I;
-        this.map  = new TreeMap<MNSKey, Double>();
+    public GammaMnsFunction(final int nMax, final double gamma, final int I) {
+        final int size = (nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6;
+        this.values = new double[size];
+        this.ratios = getRatios(nMax, size);
+        Arrays.fill(values, Double.NaN);
+        this.opIg   = 1. + I * gamma;
+        this.I      = I;
+    }
+
+    /** Compute the array index.
+     *  @param m m
+     *  @param n n
+     *  @param s s
+     *  @return index for element m, n, s
+     */
+    private static int index(final int m, final int n, final int s) {
+        return n * (n + 1) * (4 * n - 1) / 6 + // index for 0, n, 0
+               m * (2 * n + 1) +               // index for m, n, 0
+               s + n;                          // index for m, n, s
+    }
+
+    /** Get the ratios for the given size.
+     * @param nMax max value for n
+     * @param size ratio size array
+     * @return factorial ratios
+     */
+    private static double[] getRatios(final int nMax, final int size) {
+        synchronized (PRECOMPUTED_RATIOS) {
+            if (PRECOMPUTED_RATIOS.length < size) {
+                // we need to compute a larger reference array
+
+                final BigFraction[] bF = new BigFraction[size];
+                for (int n = 0; n <= nMax; ++n) {
+
+                    // populate ratios for s = 0
+                    bF[index(0, n, 0)] = BigFraction.ONE;
+                    for (int m = 1; m <= n; ++m) {
+                        bF[index(m, n, 0)] = bF[index(m - 1, n, 0)].multiply(n + m).divide(n - (m - 1));
+                    }
+
+                    // populate ratios for s != 0
+                    for (int absS = 1; absS <= n; ++absS) {
+                        for (int m = 0; m <= n; ++m) {
+                            bF[index(m, n, +absS)] = bF[index(m, n, absS - 1)].divide(n + absS).multiply(n - (absS - 1));
+                            bF[index(m, n, -absS)] = bF[index(m, n, absS)];
+                        }
+                    }
+
+                }
+
+                // convert to double
+                PRECOMPUTED_RATIOS = new double[size];
+                for (int i = 0; i < bF.length; ++i) {
+                    PRECOMPUTED_RATIOS[i] = bF[i].doubleValue();
+                }
+
+            }
+            return PRECOMPUTED_RATIOS;
+        }
     }
 
     /** Get &Gamma; function value.
@@ -59,23 +115,17 @@ public class GammaMnsFunction {
      *  @return &Gamma;<sup>m</sup><sub>n, s</sub>(γ)
      */
     public double getValue(final int m, final int n, final int s) {
-        double res = 0.;
-        final MNSKey key = new MNSKey(m, n, s);
-        if (map.containsKey(key)) {
-            res = map.get(key);
-        } else {
+        final int i = index(m, n, s);
+        if (Double.isNaN(values[i])) {
             if (s <= -m) {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow(opIg, -I * m);
-            } else if (s >= m) {
-                res = FastMath.pow(2, -s) * FastMath.pow(opIg, I * m);
+                values[i] = (((m - s) & 0x1) == 0 ? +1 : -1) * FastMath.scalb(FastMath.pow(opIg, -I * m), s);
+            } else if (s <= m) {
+                values[i] = (((m - s) & 0x1) == 0 ? +1 : -1) * FastMath.scalb(FastMath.pow(opIg, I * s), -m) * ratios[i];
             } else {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * FastMath.pow(opIg, I * s);
-                res *= fact[n + m] * fact[n - m];
-                res /= fact[n + s] * fact[n - s];
+                values[i] = FastMath.scalb(FastMath.pow(opIg, I * m), -s);
             }
-            map.put(key, res);
         }
-        return res;
+        return values[i];
     }
 
     /** Get &Gamma; function derivative.

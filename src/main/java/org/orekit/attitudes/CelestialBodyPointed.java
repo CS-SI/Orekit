@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *   <li>a celestial body towards which some satellite axis is exactly aimed</li>
  *   <li>a phasing reference defining the rotation around the pointing axis</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The celestial body implicitly defines two of the three degrees of freedom
  * and the phasing reference defines the remaining degree of freedom. This definition

@@ -1,4 +1,4 @@
-' Copyright 2002-2015 CS Systèmes d'Information
+' Copyright 2002-2017 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -97,6 +97,8 @@
       +TDBScale getTDB()
       +TCBScale getTCB()
       +GMSTScale getGMST()
+      +GLONASSScale getGLONASS()
+      +QZSSScale getQZSS()
     }
 
     class TAIScale
@@ -104,11 +106,11 @@
     class UT1Scale
     class TTScale
     class GalileoScale
-    class GPSScale
-    class TCGScale
-    class TDBScale
-    class TCBScale
-    class GMSTScale
+    class "...Scale" as DummyScale
+    note bottom
+      numerous times scales ommitted
+      for clarity
+    end note
 
     TimeStamped               <|.left. AbsoluteDate
     TimeShiftable_T_          <|.left. AbsoluteDate
@@ -130,11 +132,9 @@
     TimeScale  <|-- UT1Scale
     TimeScale  <|-- TTScale
     TimeScale  <|-- GalileoScale
-    TimeScale  <|-- GPSScale
-    TimeScale  <|-- TCGScale
-    TimeScale  <|-- TDBScale
-    TimeScale  <|-- TCBScale
-    TimeScale  <|-- GMSTScale
+    TimeScale  <|-- DummyScale
+
+    UTCScale <--* GLONASSScale
 
   }
   }

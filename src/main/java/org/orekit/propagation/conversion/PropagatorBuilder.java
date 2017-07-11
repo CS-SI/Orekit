@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriversList;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
@@ -33,71 +31,59 @@ import org.orekit.time.AbsoluteDate;
 public interface PropagatorBuilder {
 
     /** Build a propagator.
-     * @param date date associated to the parameters to configure the initial state
-     * @param parameters set of position/velocity(/free) parameters to configure the propagator
+     * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator
      * @exception OrekitException if propagator cannot be build
      */
-    Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
+    Propagator buildPropagator(double[] normalizedParameters)
         throws OrekitException;
 
+    /** Get the current value of selected normalized parameters.
+     * @return current value of selected normalized parameters
+     */
+    double[] getSelectedNormalizedParameters();
+
     /** Get the orbit type expected for the 6 first parameters in
-     * {@link #buildPropagator(AbsoluteDate, double[])}.
-     * @return orbit type to use in {@link #buildPropagator(AbsoluteDate, double[])}
-     * @see #buildPropagator(AbsoluteDate, double[])
+     * {@link #buildPropagator(double[])}.
+     * @return orbit type to use in {@link #buildPropagator(double[])}
+     * @see #buildPropagator(double[])
      * @see #getPositionAngle()
      * @since 7.1
      */
     OrbitType getOrbitType();
 
     /** Get the position angle type expected for the 6 first parameters in
-     * {@link #buildPropagator(AbsoluteDate, double[])}.
-     * @return position angle type to use in {@link #buildPropagator(AbsoluteDate, double[])}
-     * @see #buildPropagator(AbsoluteDate, double[])
+     * {@link #buildPropagator(double[])}.
+     * @return position angle type to use in {@link #buildPropagator(double[])}
+     * @see #buildPropagator(double[])
      * @see #getOrbitType()
      * @since 7.1
      */
     PositionAngle getPositionAngle();
+
+    /** Get the date of the initial orbit.
+     * @return date of the initial orbit
+     */
+    AbsoluteDate getInitialOrbitDate();
 
     /** Get the frame in which the orbit is propagated.
      * @return frame in which the orbit is propagated
      */
     Frame getFrame();
 
-    /** Set the free parameters in order to build the propagator.
+    /** Get the drivers for the configurable orbital parameters.
+     * @return drivers for the configurable orbital parameters
+     * @since 8.0
+     */
+    ParameterDriversList getOrbitalParametersDrivers();
+
+    /** Get the drivers for the configurable propagation parameters.
      * <p>
-     * The parameters must belong to the list returned by {@link #getSupportedParameters()}
+     * The parameters typically correspond to force models.
      * </p>
-     * @param parameters free parameters to set when building the propagator
-     * @exception OrekitIllegalArgumentException if one of the parameters is not supported
+     * @return drivers for the configurable propagation parameters
+     * @since 8.0
      */
-    void setFreeParameters(List<String> parameters)
-        throws OrekitIllegalArgumentException;
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @since 7.1
-     */
-    List<String> getSupportedParameters();
-
-    /** Get the free parameters used to build the propagator.
-     * @return free parameters used when building the propagator
-     * @since 7.1
-     */
-    List<String> getFreeParameters();
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @exception OrekitIllegalArgumentException if parameter is not supported
-     */
-    double getParameter(String name) throws OrekitIllegalArgumentException;
-
-    /** Set parameter value from its name.
-     * @param name parameter name
-     * @param value parameter value
-     * @exception OrekitIllegalArgumentException if parameter is not supported
-     */
-    void setParameter(String name, double value) throws OrekitIllegalArgumentException;
+    ParameterDriversList getPropagationParametersDrivers();
 
 }

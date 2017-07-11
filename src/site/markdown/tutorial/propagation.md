@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,15 +12,13 @@
   limitations under the License.
 -->
 
-Propagation
-===========
+# Propagation
 
 The next 4 tutorials detail some elementary usages of the propagation package
 described in the [propagation section](../architecture/propagation.html) of
 the library architecture documentation.
 
-Propagation modes
------------------
+## Propagation modes
 
 Three different operational modes are available for all propagators.
 They are mutually exclusive.
@@ -59,7 +57,7 @@ of the library architecture documentation.
     Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                             inertialFrame, initialDate, mu);
 
-We choose to use a very simple `KeplerianPropagator` to compute basic keplerian motion.
+We choose to use a very simple `KeplerianPropagator` to compute basic Keplerian motion.
 It could be any of the available propagators.
 
     KeplerianPropagator kepler = new KeplerianPropagator(initialOrbit);
@@ -89,37 +87,37 @@ The printed results are shown below
 
     step 1
      time : 2004-01-01T23:30:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 0.0;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 0.0;}
     step 2
      time : 2004-01-01T23:31:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 5.281383633573694;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 5.281383633573694;}
     step 3
      time : 2004-01-01T23:32:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 10.525261309411585;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 10.525261309411585;}
     step 4
      time : 2004-01-01T23:33:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 15.695876839823306;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 15.695876839823306;}
     step 5
      time : 2004-01-01T23:34:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 20.76077035517381;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 20.76077035517381;}
     step 6
      time : 2004-01-01T23:35:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 25.691961427063767;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 25.691961427063767;}
     step 7
      time : 2004-01-01T23:36:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 30.466680460539763;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 30.466680460539763;}
     step 8
      time : 2004-01-01T23:37:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 35.06763907945756;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 35.06763907945756;}
     step 9
      time : 2004-01-01T23:38:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 39.48289615024968;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 39.48289615024968;}
     step 10
      time : 2004-01-01T23:39:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 43.70541689946282;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 43.70541689946282;}
     step 11
      time : 2004-01-01T23:40:00.000
-     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 47.732436294590705;}
+     Keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 47.732436294590705;}
 
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/SlaveMode.java`.
@@ -151,7 +149,7 @@ As in the slave mode tutorial above, let's define some initial state with:
     SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
 Here we use a more sophisticated `NumericalPropagator` based on an adaptive
-step integrator provided by the underlying Apache Commons Math library,
+step integrator provided by the underlying Hipparchus library,
 but it doesn't matter which integrator is used.
 
     // Adaptive step integrator
@@ -286,7 +284,7 @@ As in the two tutorials above, let's first define some initial state as:
 
 Here we use a simple `NumericalPropagator`, without perturbation,
 based on a classical fixed step Runge-Kutta integrator provided
-by the underlying Apache Commons Math library.
+by the underlying Hipparchus library.
 
     double stepSize = 10;
     FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
@@ -355,8 +353,7 @@ before ephemeris start:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/EphemerisMode.java`.
 
-Events management
------------------
+## Events management
 
 This tutorial aims to demonstrate the power and simplicity of the event-handling mechanism.
   
@@ -386,7 +383,7 @@ More details on the orbit representation can be found
 in the [orbits section](../architecture/orbits.html)
 of the library architecture documentation.
 
-As a propagator, we consider a `KeplerianPropagator` to compute the simple keplerian motion.
+As a propagator, we consider a `KeplerianPropagator` to compute the simple Keplerian motion.
 It could be more elaborate without modifying the general purpose of this tutorial.
 
     Propagator kepler = new KeplerianPropagator(initialOrbit);

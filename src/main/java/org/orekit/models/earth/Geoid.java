@@ -16,14 +16,16 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -32,6 +34,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -217,7 +220,7 @@ public class Geoid implements EarthShape {
 
         // position in geodetic coordinates
         final GeodeticPoint gp = new GeodeticPoint(geodeticLatitude, longitude, 0);
-        // position in cartesian coordinates, is converted to geocentric lat and
+        // position in Cartesian coordinates, is converted to geocentric lat and
         // lon in the Holmes and Featherstone class
         final Vector3D position = ellipsoid.transform(gp);
 
@@ -430,14 +433,10 @@ public class Geoid implements EarthShape {
         // solve line search problem to find the intersection
         final UnivariateSolver solver = new BracketingNthOrderBrentSolver();
         try {
-            final double abscissa = solver.solve(
-                    MAX_EVALUATIONS, heightFunction, lowPoint, highPoint);
+            final double abscissa = solver.solve(MAX_EVALUATIONS, heightFunction, lowPoint, highPoint);
             // return intersection point
             return this.transform(line.pointAt(abscissa), bodyFrame, date);
-        } catch (TooManyEvaluationsException e) {
-            // no intersection
-            return null;
-        } catch (MathIllegalArgumentException e) {
+        } catch (MathRuntimeException e) {
             // no intersection
             return null;
         }
@@ -487,6 +486,37 @@ public class Geoid implements EarthShape {
                 ellipsoidal.getLatitude(),
                 ellipsoidal.getLongitude(),
                 ellipsoidal.getAltitude() - undulation
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param date date of the conversion. Used for computing frame
+     *             transformations and for time dependent geopotential.
+     * @return The surface relative point at the same location. Altitude is
+     * orthometric height, that is height above the {@link Geoid}. Latitude and
+     * longitude are both geodetic and defined with respect to the {@link
+     * #getEllipsoid() reference ellipsoid}.
+     * @see #transform(GeodeticPoint)
+     * @see <a href="http://en.wikipedia.org/wiki/Orthometric_height">Orthometric_height</a>
+     */
+    @Override
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
+                                                                           final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+        // convert using reference ellipsoid, altitude referenced to ellipsoid
+        final FieldGeodeticPoint<T> ellipsoidal = this.getEllipsoid().transform(
+                point, frame, date);
+        // convert altitude to orthometric using the undulation.
+        final double undulation = this.getUndulation(ellipsoidal.getLatitude().getReal(),
+                                                     ellipsoidal.getLongitude().getReal(),
+                                                     date.toAbsoluteDate());
+        // add undulation to the altitude
+        return new FieldGeodeticPoint<>(
+                ellipsoidal.getLatitude(),
+                ellipsoidal.getLongitude(),
+                ellipsoidal.getAltitude().subtract(undulation)
         );
     }
 

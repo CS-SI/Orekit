@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 
 
@@ -59,7 +59,7 @@ import org.orekit.errors.OrekitException;
  *   System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
  *   Authenticator.setDefault(new AuthenticatorDialog());
  * </pre>
- * </p>
+ *
  * <p>
  * Gzip-compressed files are supported.
  * </p>
@@ -160,12 +160,8 @@ public class NetworkCrawler implements DataProvider {
 
             return loaded;
 
-        } catch (URISyntaxException use) {
-            throw new OrekitException(use, new DummyLocalizable(use.getMessage()));
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
+        } catch (URISyntaxException | IOException | ParseException e) {
+            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
 
     }

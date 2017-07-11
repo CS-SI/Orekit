@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -44,13 +45,10 @@ import org.orekit.time.AbsoluteDate;
  *  <li>the {@link #getMeanElementRate(SpacecraftState)} method.
  *  The force model instance will extract all the state data needed to compute
  *  the mean element rates that contribute to the mean state derivative.</li>
+ *  <li>the {@link #updateShortPeriodTerms(SpacecraftState...)} method,
+ *  if osculating parameters are desired, on a sample of points within the
+ *  last step.</li>
  *  </ol>
- *  </p>
- *  <p>
- *  The propagator will call the {@link #getShortPeriodicVariations(AbsoluteDate, double[])}
- *  method at the end of the propagation in order to compute the short periodic
- *  variations to be added to the mean elements to get the final state.
- *  </p>
  *
  * @author Romain Di Constanzo
  * @author Pascal Parraud
@@ -63,9 +61,11 @@ public interface DSSTForceModel {
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements are used during the propagation
+     *  @return a list of objects that will hold short period terms (the objects
+     *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    void initialize(AuxiliaryElements aux, boolean meanOnly)
+    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly)
         throws OrekitException;
 
     /** Performs initialization at each integration step for the current force model.
@@ -86,16 +86,6 @@ public interface DSSTForceModel {
      */
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
 
-    /** Computes the short periodic variations.
-     *
-     *  @param date current date
-     *  @param meanElements mean elements at current date
-     *  @return the short periodic variations
-     *  @throws OrekitException if some specific error occurs
-     */
-    double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
-        throws OrekitException;
-
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not
      * related to any discrete events
@@ -110,18 +100,16 @@ public interface DSSTForceModel {
      */
     void registerAttitudeProvider(AttitudeProvider provider);
 
-    /** Compute the coefficients used for short periodic variations.
-     *
-     * @param state current state information: date, kinematics, attitude
+    /** Update the short period terms.
+     * <p>
+     * The {@link ShortPeriodTerms short period terms} that will be updated
+     * are the ones that were returned during the call to {@link
+     * #initialize(AuxiliaryElements, boolean)}.
+     * </p>
+     * @param meanStates mean states information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void computeShortPeriodicsCoefficients(SpacecraftState state) throws OrekitException;
+    void updateShortPeriodTerms(SpacecraftState... meanStates)
+        throws OrekitException;
 
-    /** Reset the coefficients used for short periodic variations.
-     * <p>
-     * This method is aimed to reset short periodics coefficients.
-     * It is called when one goes from a interpolation step to the next one.
-     * </p>
-     */
-    void resetShortPeriodicsCoefficients();
 }

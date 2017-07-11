@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,12 +62,14 @@ public class NetworkCrawlerTest {
     @Test
     public void local() throws OrekitException {
         CountingLoader crawler = new CountingLoader();
-        new NetworkCrawler(url("regular-data/UTC-TAI.history"),
+        NetworkCrawler nc = new NetworkCrawler(url("regular-data/UTC-TAI.history"),
                            url("regular-data/de405-ephemerides/unxp0000.405"),
                            url("regular-data/de405-ephemerides/unxp0001.405"),
                            url("regular-data/de406-ephemerides/unxp0000.406"),
                            url("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"),
-                           url("no-data")).feed(Pattern.compile(".*"), crawler);
+                           url("no-data"));
+        nc.setTimeout(20);
+        nc.feed(Pattern.compile(".*"), crawler);
         Assert.assertEquals(6, crawler.getCount());
     }
 

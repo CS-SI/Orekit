@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,14 @@ package org.orekit.utils;
 
 import java.util.Collection;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -184,7 +185,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
         final Vector3D rOmega    = getRotation().applyTo(offset.getRotationRate());
         final Vector3D rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
         return new TimeStampedAngularCoordinates(date,
-                                                 getRotation().applyTo(offset.getRotation()),
+                                                 getRotation().compose(offset.getRotation(), RotationConvention.VECTOR_OPERATOR),
                                                  getRotationRate().add(rOmega),
                                                  new Vector3D( 1.0, getRotationAcceleration(),
                                                                1.0, rOmegaDot,
@@ -227,7 +228,10 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
      * Survey of Attitude Representations</a>. This change avoids the singularity at π.
      * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
+     * when this singularity is detected. Another change is that the mean linear motion
+     * is first removed before interpolation and added back after interpolation. This allows
+     * to use interpolation even when the sample covers much more than one turn and even
+     * when sample points are separated by more than one turn.
      * </p>
      * <p>
      * Note that even if first and second time derivatives (rotation rates and acceleration)
@@ -338,21 +342,14 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
             if (restart) {
                 // interpolation failed, some intermediate rotation was too close to 2π
                 // we need to offset all rotations to avoid the singularity
-                offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I, epsilon),
+                offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I,
+                                                                              epsilon,
+                                                                              RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO));
             } else {
                 // interpolation succeeded with the current offset
-                final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
-                final DerivativeStructure[] p = interpolator.value(zero);
-                final AngularCoordinates ac = createFromModifiedRodrigues(new double[][] {
-                    {
-                        p[0].getValue(),              p[1].getValue(),              p[2].getValue()
-                    }, {
-                        p[0].getPartialDerivative(1), p[1].getPartialDerivative(1), p[2].getPartialDerivative(1)
-                    }, {
-                        p[0].getPartialDerivative(2), p[1].getPartialDerivative(2), p[2].getPartialDerivative(2)
-                    }
-                });
+                final double[][] p = interpolator.derivatives(0.0, 2);
+                final AngularCoordinates ac = createFromModifiedRodrigues(p);
                 return new TimeStampedAngularCoordinates(offset.getDate(),
                                                          ac.getRotation(),
                                                          ac.getRotationRate(),

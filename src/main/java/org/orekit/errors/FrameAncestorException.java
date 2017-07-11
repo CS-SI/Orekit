@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.UpdatableFrame#updateTransform(org.orekit.frames.Frame,
@@ -33,7 +33,7 @@ public class FrameAncestorException extends OrekitException {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public FrameAncestorException(final Localizable specifier, final Object ... parts) {
+    public FrameAncestorException(final Localizable specifier, final Object... parts) {
         super(specifier, parts);
     }
 

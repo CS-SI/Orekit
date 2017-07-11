@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,10 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
@@ -46,7 +43,7 @@ public class TimeScalesFactory implements Serializable {
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
 
-    /** Universal Time Coordinate scale. */
+    /** Universal Time Coordinate depscale. */
     private static UTCScale utc = null;
 
     /** Universal Time 1 scale (tidal effects ignored). */
@@ -60,6 +57,12 @@ public class TimeScalesFactory implements Serializable {
 
     /** Galileo System Time scale. */
     private static GalileoScale gst = null;
+
+    /** GLObal NAvigation Satellite System scale. */
+    private static GLONASSScale glonass = null;
+
+    /** Quasi-Zenith Satellite System scale. */
+    private static QZSSScale qzss = null;
 
     /** Global Positioning System scale. */
     private static GPSScale gps = null;
@@ -100,57 +103,6 @@ public class TimeScalesFactory implements Serializable {
         loaders.add(loader);
     }
 
-    /** Add a loader for UTC-TAI offsets history files.
-     * @param loader custom loader to add
-     * @see #getUTC()
-     * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)}
-     */
-    @Deprecated
-    public static void addUTCTAILoader(final UTCTAILoader loader) {
-        addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
-
-            /** {@inheritDoc} */
-            @Override
-            public List<OffsetModel> loadOffsets() throws OrekitException {
-
-
-                // get the post-1972 constant offsets
-                DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                final SortedMap<DateComponents, Integer> constant = loader.loadTimeSteps();
-                if (constant.isEmpty()) {
-                    // return an empty list, maybe another loader will find something ...
-                    return Collections.emptyList();
-                }
-
-                // add the constant offsets
-                final List<OffsetModel> offsets = new ArrayList<OffsetModel>();
-                for (Map.Entry<DateComponents, Integer> entry : constant.entrySet()) {
-                    offsets.add(new OffsetModel(entry.getKey(), entry.getValue()));
-                }
-
-                return offsets;
-
-            }
-
-        });
-    }
-
-    /** Add the default loader for UTC-TAI offsets history files.
-     * <p>
-     * The default loader looks for a file named {@code UTC-TAI.history}
-     * that must be in the IERS format.
-     * </p>
-     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS UTC-TAI.history file</a>
-     * @see #getUTC()
-     * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addDefaultUTCTAIOffsetsLoaders()}
-     */
-    @Deprecated
-    public static void addDefaultUTCTAILoader() {
-        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
-    }
-
     /** Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
      * <p>
      * The default loaders are {@link TAIUTCDatFilesLoader} that looks for
@@ -173,17 +125,6 @@ public class TimeScalesFactory implements Serializable {
     public static void addDefaultUTCTAIOffsetsLoaders() {
         addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
         addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
-    }
-
-    /** Clear loaders for UTC-TAI offsets history files.
-     * @see #getUTC()
-     * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #addDefaultUTCTAILoader
-     * @deprecated as of 7.1, replaced with {@link #clearUTCTAIOffsetsLoaders()}
-     */
-    @Deprecated
-    public static void clearUTCTAILoaders() {
-        loaders.clear();
     }
 
     /** Clear loaders for UTC-TAI offsets history files.
@@ -213,17 +154,15 @@ public class TimeScalesFactory implements Serializable {
 
     /** Get the Universal Time Coordinate scale.
      * <p>
-     * If no {@link UTCTAILoader} has been added by calling {@link
-     * #addUTCTAILoader(UTCTAILoader) addUTCTAILoader} or if {@link
-     * #clearUTCTAILoaders() clearUTCTAILoaders} has been called afterwards,
+     * If no {@link UTCTAIOffsetsLoader} has been added by calling {@link
+     * #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader) addUTCTAIOffsetsLoader} or if {@link
+     * #clearUTCTAIOffsetsLoaders() clearUTCTAIOffsetsLoaders} has been called afterwards,
      * the {@link #addDefaultUTCTAIOffsetsLoaders() addDefaultUTCTAILoaders} method
      * will be called automatically.
      * </p>
      * @return Universal Time Coordinate scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
-     * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #clearUTCTAILoaders()
      * @see #addDefaultUTCTAIOffsetsLoaders()
      */
     public static UTCScale getUTC() throws OrekitException {
@@ -328,6 +267,37 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return gst;
+
+        }
+    }
+
+    /** Get the GLObal NAvigation Satellite System time scale.
+     * @return  GLObal NAvigation Satellite System time scale
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     */
+    public static GLONASSScale getGLONASS() throws OrekitException {
+        synchronized (TimeScalesFactory.class) {
+
+            if (glonass == null) {
+                glonass = new GLONASSScale(getUTC());
+            }
+
+            return glonass;
+
+        }
+    }
+
+    /** Get the Quasi-Zenith Satellite System time scale.
+     * @return  Quasi-Zenith Satellite System time scale
+     */
+    public static QZSSScale getQZSS() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (qzss == null) {
+                qzss = new QZSSScale();
+            }
+
+            return qzss;
 
         }
     }

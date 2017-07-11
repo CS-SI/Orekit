@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,24 +17,18 @@
 package org.orekit.utils;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 
 
 public class PVCoordinatesTest {
@@ -170,50 +164,6 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    @Deprecated // to be removed when PVCoordinates.interpolate is removed
-    public void testInterpolatePolynomialPV() {
-        Random random = new Random(0xae7771c9933407bdl);
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        for (int i = 0; i < 20; ++i) {
-
-            PolynomialFunction px       = randomPolynomial(5, random);
-            PolynomialFunction py       = randomPolynomial(5, random);
-            PolynomialFunction pz       = randomPolynomial(5, random);
-            PolynomialFunction pxDot    = px.polynomialDerivative();
-            PolynomialFunction pyDot    = py.polynomialDerivative();
-            PolynomialFunction pzDot    = pz.polynomialDerivative();
-            PolynomialFunction pxDotDot = pxDot.polynomialDerivative();
-            PolynomialFunction pyDotDot = pyDot.polynomialDerivative();
-            PolynomialFunction pzDotDot = pzDot.polynomialDerivative();
-
-            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
-            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-                Vector3D position     = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                Vector3D velocity     = new Vector3D(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt));
-                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt),
-                                                                 new PVCoordinates(position, velocity, Vector3D.ZERO)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-                Vector3D p = interpolated.getPosition();
-                Vector3D v = interpolated.getVelocity();
-                Vector3D a = interpolated.getAcceleration();
-                Assert.assertEquals(px.value(dt),       p.getX(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(py.value(dt),       p.getY(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),       p.getZ(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt),    v.getX(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt),    v.getY(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt),    v.getZ(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pxDotDot.value(dt), a.getX(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pyDotDot.value(dt), a.getY(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pzDotDot.value(dt), a.getZ(), 1.0e-14 * a.getNorm());
-            }
-
-        }
-    }
-
-    @Test
     public void testGetMomentum() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
@@ -251,6 +201,7 @@ public class PVCoordinatesTest {
 
     @Test
     public void testNormalize() {
+        DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0xb2011ffd25412067l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
         for (int i = 0; i < 200; ++i) {
@@ -260,19 +211,19 @@ public class PVCoordinatesTest {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getX();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure y =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getY();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure z =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getZ();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             PVCoordinates normalized = pv.normalize();
             Assert.assertEquals(x.getValue(),              normalized.getPosition().getX(),     1.0e-16);
             Assert.assertEquals(y.getValue(),              normalized.getPosition().getY(),     1.0e-16);
@@ -288,6 +239,7 @@ public class PVCoordinatesTest {
 
     @Test
     public void testCrossProduct() {
+        DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0x85c592b3be733d23l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
         for (int i = 0; i < 200; ++i) {
@@ -299,21 +251,21 @@ public class PVCoordinatesTest {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getX();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure y =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getY();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure z =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getZ();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             PVCoordinates product = PVCoordinates.crossProduct(pv1, pv2);
             Assert.assertEquals(x.getValue(),              product.getPosition().getX(),     1.0e-16);
             Assert.assertEquals(y.getValue(),              product.getPosition().getY(),     1.0e-16);
@@ -341,14 +293,6 @@ public class PVCoordinatesTest {
         Vector3D p1 = randomVector(random, norm1);
         Vector3D p2 = randomVector(random, norm2);
         return new PVCoordinates(p0, p1, p2);
-    }
-
-    private PolynomialFunction randomPolynomial(int degree, Random random) {
-        double[] coeff = new double[ 1 + degree];
-        for (int j = 0; j < degree; ++j) {
-            coeff[j] = random.nextDouble();
-        }
-        return new PolynomialFunction(coeff);
     }
 
     private void checkPV(PVCoordinates expected, PVCoordinates real, double epsilon) {

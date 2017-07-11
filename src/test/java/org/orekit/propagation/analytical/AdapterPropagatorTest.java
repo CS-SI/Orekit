@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ package org.orekit.propagation.analytical;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -173,8 +173,8 @@ public class AdapterPropagatorTest {
              t = t.shiftedBy(300.0)) {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, heo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
-            double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
-            Assert.assertEquals(0, revertError, 180.0);
+            double revertError       = Vector3D.distance(pvWithout.getPosition(), pvReverted.getPosition());
+            Assert.assertEquals(0, revertError, 2.5e-5 * heo.getA());
             Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
             Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
             Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
@@ -251,7 +251,7 @@ public class AdapterPropagatorTest {
             double nominal           = new PVCoordinates(pvWithout, pvWith).getPosition().getNorm();
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             maxDelta = FastMath.max(maxDelta, revertError);
-            maxNominal = FastMath.max(maxNominal, nominal);           
+            maxNominal = FastMath.max(maxNominal, nominal);
             Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
             Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
             Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);

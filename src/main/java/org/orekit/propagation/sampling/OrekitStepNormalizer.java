@@ -16,9 +16,8 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -27,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  * into a {@link OrekitStepHandler}.
 
  * <p>It mirrors the <code>StepNormalizer</code> interface from <a
- * href="http://commons.apache.org/math/">commons-math</a> but
+ * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
@@ -38,9 +37,6 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
     /** Underlying step handler. */
     private OrekitFixedStepHandler handler;
-
-    /** Last step date. */
-    private AbsoluteDate lastDate;
 
     /** Last State vector. */
     private SpacecraftState lastState;
@@ -53,11 +49,10 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * @param handler fixed time step handler to wrap
      */
     public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
-        this.h       = FastMath.abs(h);
-        this.handler = handler;
-        lastDate  = null;
-        lastState = null;
-        forward   = true;
+        this.h         = FastMath.abs(h);
+        this.handler   = handler;
+        this.lastState = null;
+        this.forward   = true;
     }
 
     /** Determines whether this handler needs dense output.
@@ -72,11 +67,10 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t)
-        throws PropagationException {
-        lastDate  = null;
+        throws OrekitException {
         lastState = null;
         forward   = true;
-        handler.init(s0, t);
+        handler.init(s0, t, h);
     }
 
     /**
@@ -89,66 +83,48 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * should build a local copy using the clone method and store this
      * copy.
      * @param isLast true if the step is the last one
-     * @throws PropagationException this exception is propagated to the
+     * @throws OrekitException this exception is propagated to the
      * caller if the underlying user function triggers one
      */
     public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-        throws PropagationException {
-        try {
+        throws OrekitException {
 
-            if (lastState == null) {
-                // initialize lastState in the first step case
+        if (lastState == null) {
+            // initialize lastState in the first step case
+            lastState = interpolator.getPreviousState();
+        }
 
-                lastDate = interpolator.getPreviousDate();
-                interpolator.setInterpolatedDate(lastDate);
-                lastState = interpolator.getInterpolatedState();
-            }
-
-            // take the propagation direction into account
-            double step = h;
-            forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
-            if (!forward) {
-                step = -h;
-            }
+        // take the propagation direction into account
+        double step = h;
+        forward = interpolator.isForward();
+        if (!forward) {
+            step = -h;
+        }
 
 
-            // use the interpolator to push fixed steps events to the underlying handler
-            AbsoluteDate nextTime = lastDate.shiftedBy(step);
-            boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
-            while (nextInStep) {
+        // use the interpolator to push fixed steps events to the underlying handler
+        AbsoluteDate nextTime = lastState.getDate().shiftedBy(step);
+        boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+        while (nextInStep) {
 
-                // output the stored previous step
-                handler.handleStep(lastState, false);
+            // output the stored previous step
+            handler.handleStep(lastState, false);
 
-                // store the next step
-                lastDate = nextTime;
-                interpolator.setInterpolatedDate(lastDate);
-                lastState = interpolator.getInterpolatedState();
+            // store the next step
+            lastState = interpolator.getInterpolatedState(nextTime);
 
-                // prepare next iteration
-                nextTime = nextTime.shiftedBy(step);
-                nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
-
-            }
-
-            if (isLast) {
-                // there will be no more steps,
-                // the stored one should be flagged as being the last
-                handler.handleStep(lastState, true);
-            }
-
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-
-            throw new PropagationException(oe);
+            // prepare next iteration
+            nextTime = nextTime.shiftedBy(step);
+            nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
 
         }
+
+        if (isLast) {
+            // there will be no more steps,
+            // the stored one should be flagged as being the last
+            handler.handleStep(lastState, true);
+        }
+
     }
 
 }

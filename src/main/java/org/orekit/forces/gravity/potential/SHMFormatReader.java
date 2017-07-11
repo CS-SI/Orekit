@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
@@ -170,7 +170,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
             // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 1)) {
+            if (Precision.equals(c[0][0], 0.0, 0)) {
                 c[0][0] = 1.0;
             }
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,11 +27,10 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.drag.DTM2000InputParameters;
-import org.orekit.forces.drag.JB2006InputParameters;
+import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -46,7 +45,7 @@ import org.orekit.utils.Constants;
  *
  * @author Fabien Maussion
  */
-public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
+public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -3687601846334870069L;
@@ -251,7 +250,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             cal.setTimeZone(TimeZone.getTimeZone("UTC"));
             cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
             int hour = cal.get(Calendar.HOUR_OF_DAY);
-            for(int i= 0; i<8; i++) {
+            for (int i= 0; i<8; i++) {
                 if ((hour >= (i * 3)) && (hour < ((i + 1) * 3))) {
                     result = currentParam.ap[i];
                 }
@@ -347,7 +346,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         double result = 0;
         AbsoluteDate myDate = date;
 
-        for(int i=0; i<8; i++) {
+        for (int i=0; i<8; i++) {
             result += getThreeHourlyKP(date);
             myDate = myDate.shiftedBy(3 * 3600);
         }
@@ -385,7 +384,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         double ap = getAp(date);
         int i = 0;
         for ( i= 0; ap>=apTab[i]; i++) {
-            if(i==apTab.length-1) {
+            if (i==apTab.length-1) {
                 i++;
                 break;
             }

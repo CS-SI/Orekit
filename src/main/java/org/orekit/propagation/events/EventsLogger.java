@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
- * occurs backward).<p>
+ * occurs backward).
  * <p>This class works by wrapping user-provided {@link EventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
@@ -191,7 +191,7 @@ public class EventsLogger implements Serializable {
          * @since 6.1
          */
         private LoggingWrapper(final double maxCheck, final double threshold,
-                               final int maxIter, final EventHandler<LoggingWrapper<T>> handler,
+                               final int maxIter, final EventHandler<? super LoggingWrapper<T>> handler,
                                final T detector) {
             super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
@@ -200,7 +200,7 @@ public class EventsLogger implements Serializable {
         /** {@inheritDoc} */
         @Override
         protected LoggingWrapper<T> create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<LoggingWrapper<T>> newHandler) {
+                                           final int newMaxIter, final EventHandler<? super LoggingWrapper<T>> newHandler) {
             return new LoggingWrapper<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 

@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="7.0"   />
+  <property name="project.version"         value="9.0-SNAPSHOT"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,15 +18,25 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="commons-math.version"    value="3.4" />
-  <property name="commons-math.jar"        value="commons-math3-${commons-math.version}.jar" />
-  <property name="commons-math.maven.path" value="org/apache/commons/commons-math3" />
-  <property name="maven.repository"        value="http://repo1.maven.org/maven2" />
+  <property name="hipparchus.version"      value="1.1"                                           />
+  <property name="hipparchus.core.jar"     value="hipparchus-core-${hipparchus.version}.jar"     />
+  <property name="hipparchus.geometry.jar" value="hipparchus-geometry-${hipparchus.version}.jar" />
+  <property name="hipparchus.ode.jar"      value="hipparchus-ode-${hipparchus.version}.jar"      />
+  <property name="hipparchus.fitting.jar"  value="hipparchus-fitting-${hipparchus.version}.jar"  />
+  <property name="hipparchus.optim.jar"    value="hipparchus-optim-${hipparchus.version}.jar"    />
+  <property name="hipparchus.stat.jar"     value="hipparchus-stat-${hipparchus.version}.jar"     />
+  <property name="hipparchus.maven.path"   value="org/hipparchus"                                />
+  <property name="junit.version"           value="4.12"                                          />
+  <property name="junit.jar"               value="junit-${junit.version}.jar"                    />
+  <property name="junit.maven.path"        value="junit/junit"                                   />
+  <property name="hamcrest.version"        value="1.3"                                           />
+  <property name="hamcrest.core.jar"       value="hamcrest-core-${hamcrest.version}.jar"         />
+  <property name="hamcrest.maven.path"     value="org/hamcrest"                                  />
+  <property name="maven.repository"        value="http://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2015 CS Syst&#232;mes d&#039;Information" />
+  <property name="copyright"               value="2002-2017 CS Syst&#232;mes d&#039;Information" />
 
-  <available classname="org.junit.Test"            property="junit4.present" />
-  <available file="${lib.dir}/${commons-math.jar}" property="apache-commons-math.present" />
+  <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
   <target name="clean" description="Clean the build directory">
     <delete dir="${build.dir}"/>
@@ -40,53 +50,72 @@
           description="Clean the build and lib directories">
   </target>
 
-  <target name="get-apache-commons-math" description="Get Apache commons-math"
-          unless="apache-commons-math.present">
+  <target name="get-libs" description="Get libraries" unless="libs.present">
     <!-- if you need to set up a proxy to download artifacts,
          uncomment and edit the following setproxy task -->
     <!-- <setproxy proxyhost="my-proxy.my-company.com" proxyport="8080"
               proxyUser="username" proxyPassword="password"/> -->
     <mkdir dir="${lib.dir}"/>
-    <get src="${maven.repository}/${commons-math.maven.path}/${commons-math.version}/${commons-math.jar}"
-         dest="${lib.dir}/${commons-math.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-core/${hipparchus.version}/${hipparchus.core.jar}"
+         dest="${lib.dir}/${hipparchus.core.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-geometry/${hipparchus.version}/${hipparchus.geometry.jar}"
+         dest="${lib.dir}/${hipparchus.geometry.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-ode/${hipparchus.version}/${hipparchus.ode.jar}"
+         dest="${lib.dir}/${hipparchus.ode.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-fitting/${hipparchus.version}/${hipparchus.fitting.jar}"
+         dest="${lib.dir}/${hipparchus.fitting.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-optim/${hipparchus.version}/${hipparchus.optim.jar}"
+         dest="${lib.dir}/${hipparchus.optim.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-stat/${hipparchus.version}/${hipparchus.stat.jar}"
+         dest="${lib.dir}/${hipparchus.stat.jar}"/>
+    <get src="${maven.repository}/${junit.maven.path}/${junit.version}/${junit.jar}"
+         dest="${lib.dir}/${junit.jar}"/>
+    <get src="${maven.repository}/${hamcrest.maven.path}/hamcrest-core/${hamcrest.version}/${hamcrest.core.jar}"
+         dest="${lib.dir}/${hamcrest.core.jar}"/>
   </target>
 
-  <target name="compile" depends="get-apache-commons-math" description="Compile the code">
+  <target name="compile" depends="get-libs" description="Compile the code">
     <mkdir dir="${main.classes.dir}"/>
-    <javac srcdir="${main.src.dir}" destdir="${main.classes.dir}"
-           classpath="${lib.dir}/${commons-math.jar}"
-           deprecation="true" target="1.6" source="1.6">
+    <javac srcdir="${main.src.dir}" destdir="${main.classes.dir}" includeantruntime="false"
+           classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}"
+           deprecation="true" target="1.8" source="1.8">
     </javac>
     <copy todir="${main.classes.dir}">
       <fileset dir="${main.resources.dir}"/>
     </copy>
   </target>
 
-  <target name="compile-tests" depends="compile"
-          description="Compile the test code" if="junit4.present">
+  <target name="compile-tests" depends="compile" description="Compile the test code" >
     <mkdir dir="${test.classes.dir}"/>
-    <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}"
-           classpath="${main.classes.dir}:${lib.dir}/${commons-math.jar}"
-           deprecation="true" target="1.6" source="1.6">
+    <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" includeantruntime="false"
+    	   classpath="${main.classes.dir}:${lib.dir}/${junit.jar}:${lib.dir}/${hamcrest.core.jar}:${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}"
+    	   deprecation="true" target="1.8" source="1.8">
     </javac>
     <copy todir="${test.classes.dir}">
       <fileset dir="${test.resources.dir}"/>
     </copy>
   </target>
 
-  <target name="test" depends="compile-tests" if="junit4.present" description="Run the tests">
+  <target name="test" depends="compile-tests" description="Run the tests">
     <mkdir dir="${tests.reports}"/>
-    <junit>
+    <junit fork="yes" haltonerror="yes" haltonfailure="yes">
       <classpath>
-        <pathelement location="${main.classes.dir}" />
-        <pathelement location="${test.classes.dir}" />
-        <pathelement location="${lib.dir}/${commons-math.jar}" />
+        <pathelement location="${main.classes.dir}"                   />
+        <pathelement location="${test.classes.dir}"                   />
+        <pathelement location="${lib.dir}/${hipparchus.core.jar}"     />
+      	<pathelement location="${lib.dir}/${hipparchus.geometry.jar}" />
+      	<pathelement location="${lib.dir}/${hipparchus.ode.jar}"      />
+      	<pathelement location="${lib.dir}/${hipparchus.fitting.jar}"  />
+      	<pathelement location="${lib.dir}/${hipparchus.optim.jar}"    />
+      	<pathelement location="${lib.dir}/${hipparchus.stat.jar}"     />
+      	<pathelement location="${lib.dir}/${junit.jar}"               />
+      	<pathelement location="${lib.dir}/${hamcrest.core.jar}"       />
       </classpath>
-      <formatter type="brief"/>
+      <formatter type="plain" usefile="false"/>
       <batchtest todir="${tests.reports}">
         <fileset dir="${test.src.dir}">
-          <include name="**/*Test*.java"/>
-          <exclude name="**/Abstract*Test*.java"/>
+          <include name="**/*Test.java"/>
+          <exclude name="**/*Abstract*.java"/>
         </fileset>
       </batchtest>
     </junit>
@@ -103,8 +132,8 @@
              encoding="UTF-8" version="true" use="true" author="true"
              charset="UTF-8" docencoding="UTF-8"
              bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
-      <link href="http://docs.oracle.com/javase/6/docs/api/"/>
-      <link href="http://commons.apache.org/proper/commons-math/javadocs/api-${commons-math.version}/"/>
+      <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+      <link href="https://www.hipparchus.org/apidocs/"/>
     </javadoc>
   </target>
 

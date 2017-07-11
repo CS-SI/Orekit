@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,17 @@ package org.orekit.forces.gravity;
 
 import java.util.Map;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
@@ -92,9 +93,22 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testTideEffect() throws OrekitException {
+    public void testTideEffect1996() throws OrekitException {
+        doTestTideEffect(IERSConventions.IERS_1996, 3.66948, 0.00000);
+    }
 
-        IERSConventions conventions = IERSConventions.IERS_2010;
+    @Test
+    public void testTideEffect2003() throws OrekitException {
+        doTestTideEffect(IERSConventions.IERS_2003, 3.66941, 0.00000);
+    }
+
+    @Test
+    public void testTideEffect2010() throws OrekitException {
+        doTestTideEffect(IERSConventions.IERS_2010, 3.66939, 0.08981);
+    }
+
+    private void doTestTideEffect(IERSConventions conventions, double delta1, double delta2) throws OrekitException {
+
         Frame eme2000 = FramesFactory.getEME2000();
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -126,18 +140,66 @@ public class OceanTidesTest {
         SpacecraftState oceanTidesPoleTide = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                           true, SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
                           6, 6, conventions, ut1));
-        Assert.assertEquals(3.67,
+        Assert.assertEquals(delta1,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               oceanTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);
-        Assert.assertEquals(0.0897,
+        Assert.assertEquals(delta2,
                             Vector3D.distance(oceanTidesNoPoleTide.getPVCoordinates().getPosition(),
                                               oceanTidesPoleTide.getPVCoordinates().getPosition()),
                             0.01);
 
     }
 
-    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)
+    @Test
+    public void testNoGetParameter() throws OrekitException {
+        AstronomicalAmplitudeReader aaReader =
+                new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
+        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
+        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
+                                                                         0.01, FastMath.toRadians(1.0),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
+                                                                         map));
+        ForceModel fm = new OceanTides(FramesFactory.getITRF(IERSConventions.IERS_1996, false),
+                                       Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                       Constants.WGS84_EARTH_MU,
+                                       5, 5, IERSConventions.IERS_1996,
+                                       TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        try {
+            fm.getParameterDriver("unknown");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testNoSetParameter() throws OrekitException {
+        AstronomicalAmplitudeReader aaReader =
+                new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
+        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
+        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
+                                                                         0.01, FastMath.toRadians(1.0),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
+                                                                         map));
+        ForceModel fm = new OceanTides(FramesFactory.getITRF(IERSConventions.IERS_1996, false),
+                                       Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                       Constants.WGS84_EARTH_MU,
+                                       5, 5, IERSConventions.IERS_1996,
+                                       TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        try {
+            fm.getParameterDriver("unknown").setValue(0.0);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+        }
+    }
+
+    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
         throws OrekitException {
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);

@@ -1,0 +1,81 @@
+' Copyright 2002-2017 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit #ECEBD8 {
+
+    package utils #DDEBD8 {
+      class ParameterDriver {
+        +getName()
+        +getReferenceValue()
+        +geMinValue()
+        +geMaxValue()
+        +geScale()
+        +[is|set]Estimated()
+        +[get|set]NormalizedValue()
+        +[get|set]Value()
+        +addObserver()
+      }
+      interface ParameterObserver {
+        +valueChanged(previousValue, driver)
+      }
+      ParameterDriver o--> ParameterObserver : observers
+      ParameterDriver <-right-* ParameterDriversList : manage duplicates
+    }
+
+    package estimation #DDEBD8 {
+
+      package leastsquares #CEEBD8 { 
+        class BatchLSEstimator
+      }
+
+      BatchLSEstimator --> ParameterDriver : change normalized value
+      BatchLSEstimator *--> ParameterDriversList : managed parameters
+      package measurement #CEEBD8 {
+        interface ObservedMeasurement {
+            getParametersDrivers()
+        }
+        class GroundStation
+        ObservedMeasurement <|.. Range
+        ObservedMeasurement <|.. RangeRate
+        Range o--> "1" GroundStation
+        RangeRate o--> "1" GroundStation
+        ParameterObserver <..* GroundStation : East/North/Zenith offsets
+        BatchLSEstimator --> ObservedMeasurement
+       }
+
+    }
+
+    package frames #DDEBD8 {
+      class TopocentricFrame
+      GroundStation --> TopocentricFrame : updated on parameter change
+    }
+
+  }
+
+
+@enduml

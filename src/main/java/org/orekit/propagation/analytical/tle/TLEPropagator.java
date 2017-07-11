@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -179,7 +179,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        super.resetInitialState(new SpacecraftState(propagateOrbit(initialTLE.getDate())));
+        final Orbit orbit = propagateOrbit(initialTLE.getDate());
+        final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -467,8 +469,14 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
@@ -477,12 +485,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
-        try {
-            return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
     }
 
     /** Get the underlying TLE.

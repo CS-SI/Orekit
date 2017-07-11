@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,38 +16,44 @@
  */
 package fr.cs.examples.propagation;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Formatter;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
-import org.orekit.Utils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
-import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -56,19 +62,23 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.KeyValueFileParser;
@@ -95,8 +105,19 @@ public class DSSTPropagation {
     public static void main(String[] args) {
         try {
 
-            // configure Orekit data acces
-            Utils.setDataRoot("tutorial-orekit-data");
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
 
             // input/output (in user's home directory)
             File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
@@ -121,6 +142,8 @@ public class DSSTPropagation {
 
     /** Input parameter keys. */
     private static enum ParameterKey {
+        BODY_FRAME,
+        INERTIAL_FRAME,
         ORBIT_DATE,
         ORBIT_CIRCULAR_A,
         ORBIT_CIRCULAR_EX,
@@ -147,15 +170,32 @@ public class DSSTPropagation {
         ORBIT_CARTESIAN_VX,
         ORBIT_CARTESIAN_VY,
         ORBIT_CARTESIAN_VZ,
-        ORBIT_IS_OSCULATING,
+        INITIAL_ORBIT_IS_OSCULATING,
+        OUTPUT_ORBIT_IS_OSCULATING,
         START_DATE,
         DURATION,
         DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
+        MIN_VARIABLE_INTEGRATION_STEP,
+        MAX_VARIABLE_INTEGRATION_STEP,
+        POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP,
+        FIXED_NUMBER_OF_INTERPOLATION_POINTS,
+        MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
+        CENTRAL_BODY_ROTATION_RATE,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
+        MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS,
+        MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_TESSERAL_SHORT_PERIODS,
+        MAX_FREQUENCY_MEAN_LONGITUDE_TESSERAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_TESSERAL_M_DAILIES_SHORT_PERIODS,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
         MASS,
@@ -164,7 +204,11 @@ public class DSSTPropagation {
         DRAG_SF,
         SOLAR_RADIATION_PRESSURE,
         SOLAR_RADIATION_PRESSURE_CR,
-        SOLAR_RADIATION_PRESSURE_SF;
+        SOLAR_RADIATION_PRESSURE_SF,
+        OUTPUT_KEPLERIAN,
+        OUTPUT_EQUINOCTIAL,
+        OUTPUT_CARTESIAN,
+        OUTPUT_SHORT_PERIOD_COEFFICIENTS;
     }
 
     private void run(final File input, final File output)
@@ -172,7 +216,9 @@ public class DSSTPropagation {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
 
         // check mandatory input parameters
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {
@@ -185,6 +231,12 @@ public class DSSTPropagation {
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
 
+        final double rotationRate;
+        if (!parser.containsKey(ParameterKey.CENTRAL_BODY_ROTATION_RATE)) {
+            rotationRate = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
+        } else {
+            rotationRate = parser.getDouble(ParameterKey.CENTRAL_BODY_ROTATION_RATE);
+        }
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
@@ -197,29 +249,87 @@ public class DSSTPropagation {
         // Central body attraction coefficient (m³/s²)
         final double mu = unnormalized.getMu();
 
-        // Earth frame definition (for faster computation)
-        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        // Earth frame definition
+        final Frame earthFrame;
+        if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
+            earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        } else {
+            earthFrame = parser.getEarthFrame(ParameterKey.BODY_FRAME);
+        }
 
-        // Orbit definition (inertial frame is EME2000)
-        final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
+        // Orbit definition
+        final Orbit orbit = createOrbit(parser, utc, mu);
 
         // DSST propagator definition
         double mass = 1000.0;
         if (parser.containsKey(ParameterKey.MASS)) {
             mass = parser.getDouble(ParameterKey.MASS);
         }
-        Boolean isOsculating = false;
-        if (parser.containsKey(ParameterKey.ORBIT_IS_OSCULATING)) {
-            isOsculating = parser.getBoolean(ParameterKey.ORBIT_IS_OSCULATING);
+        boolean initialIsOsculating = false;
+        if (parser.containsKey(ParameterKey.INITIAL_ORBIT_IS_OSCULATING)) {
+            initialIsOsculating = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING);
+        }
+        boolean outputIsOsculating = initialIsOsculating;
+        if (parser.containsKey(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING)) {
+            outputIsOsculating = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING);
+        }
+        List<String> shortPeriodCoefficients = null;
+        if (parser.containsKey(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS)) {
+            shortPeriodCoefficients = parser.getStringsList(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS, ',');
+            if (shortPeriodCoefficients.size() == 1 && shortPeriodCoefficients.get(0).equalsIgnoreCase("all")) {
+                // special case, we use the empty list to represent all possible (unknown) keys
+                // we don't use Collections.emptyList() because we want the list to be populated later on
+                shortPeriodCoefficients = new ArrayList<String>();
+            } else if (shortPeriodCoefficients.size() == 1 && shortPeriodCoefficients.get(0).equalsIgnoreCase("none")) {
+                // special case, we use null to select no coefficients at all
+                shortPeriodCoefficients = null;
+            } else {
+                // general case, we have an explicit list of coefficients names
+                Collections.sort(shortPeriodCoefficients);
+            }
+            if (shortPeriodCoefficients != null && !outputIsOsculating) {
+                System.out.println("\nWARNING:");
+                System.out.println("Short periodic coefficients can be output only if output orbit is osculating.");
+                System.out.println("No coefficients will be computed here.\n");
+            }
         }
         double fixedStepSize = -1.;
+        double minStep       =  6000.0;
+        double maxStep       = 86400.0;
+        double dP            =     1.0;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
+        } else {
+            if (parser.containsKey(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP)) {
+                minStep = parser.getDouble(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP)) {
+                maxStep = parser.getDouble(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP)) {
+                dP = parser.getDouble(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP);
+            }
         }
-        final DSSTPropagator dsstProp = createDSSTProp(orbit, mass, isOsculating, fixedStepSize);
+        final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
+                                                       initialIsOsculating, outputIsOsculating,
+                                                       fixedStepSize, minStep, maxStep, dP,
+                                                       shortPeriodCoefficients);
+
+        if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
+            if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                          "cannot specify both fixed.number.of.interpolation.points" +
+                                          " and max.time.gap.between.interpolation.points");
+            }
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(parser.getInt(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS));
+        } else if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+            dsstProp.setInterpolationGridToMaxTimeGap(parser.getDouble(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS));
+        } else {
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(3);
+        }
 
         // Set Force models
-        setForceModel(parser, unnormalized, earthFrame, dsstProp);
+        setForceModel(parser, unnormalized, earthFrame, rotationRate, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -236,68 +346,88 @@ public class DSSTPropagation {
             duration = parser.getDouble(ParameterKey.DURATION_IN_DAYS) * Constants.JULIAN_DAY;
         }
         double outStep = parser.getDouble(ParameterKey.OUTPUT_STEP);
-
-        // Add orbit handler
-        OrbitHandler dsstHandler = new OrbitHandler();
-        dsstProp.setMasterMode(outStep, dsstHandler);
+        boolean displayKeplerian = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_KEPLERIAN)) {
+            displayKeplerian = parser.getBoolean(ParameterKey.OUTPUT_KEPLERIAN);
+        }
+        boolean displayEquinoctial = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_EQUINOCTIAL)) {
+            displayEquinoctial = parser.getBoolean(ParameterKey.OUTPUT_EQUINOCTIAL);
+        }
+        boolean displayCartesian = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_CARTESIAN)) {
+            displayCartesian = parser.getBoolean(ParameterKey.OUTPUT_CARTESIAN);
+        }
 
         // DSST Propagation
+        dsstProp.setEphemerisMode();
         final double dsstOn = System.currentTimeMillis();
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
-        System.out.println("DSST execution time: " + (dsstOff - dsstOn) / 1000.);
-
-        // Print results
-        printOutput(output, dsstHandler, start);
+        System.out.println("DSST execution time (without large file write) : " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("writing file...");
+        final BoundedPropagator dsstEphem = dsstProp.getGeneratedEphemeris();
+        dsstEphem.setMasterMode(outStep, new OutputHandler(output,
+                                                           displayKeplerian, displayEquinoctial, displayCartesian,
+                                                           shortPeriodCoefficients));
+        dsstEphem.propagate(start, start.shiftedBy(duration));
         System.out.println("DSST results saved as file " + output);
 
         // Check if we want to compare numerical to DSST propagator (default is false)
         if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
                 && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
-            
-            if ( !isOsculating ) {
+
+            if ( !outputIsOsculating ) {
                 System.out.println("\nWARNING:");
                 System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
                 System.out.println("The comparison will be meaningless.\n");
             }
 
-            // output (in user's home directory)
-            File output_num = new File(input.getParentFile(), "numerical-propagation.out");
-
             // Numerical propagator definition
             final NumericalPropagator numProp = createNumProp(orbit, mass);
-            
+
             // Set Force models
             setForceModel(parser, normalized, earthFrame, numProp);
 
-            // Add orbit handler
-            OrbitHandler numHandler = new OrbitHandler();
-            numProp.setMasterMode(outStep, numHandler);
-
-            // Numerical Propagation
+            // Numerical Propagation without output
+            numProp.setEphemerisMode();
             final double numOn = System.currentTimeMillis();
             numProp.propagate(start, start.shiftedBy(duration));
             final double numOff = System.currentTimeMillis();
-            System.out.println("Numerical execution time: " + (numOff - numOn) / 1000.);
-            
-            // Print results
-            printOutput(output_num, numHandler, start);
-            System.out.println("Numerical results saved as file " + output_num);
+            System.out.println("Numerical execution time (including output): " + (numOff - numOn) / 1000.);
+
+            // Add output
+            final BoundedPropagator numEphemeris = numProp.getGeneratedEphemeris();
+            File numOutput = new File(input.getParentFile(), "numerical-propagation.out");
+            numEphemeris.setMasterMode(outStep, new OutputHandler(numOutput,
+                                                                  displayKeplerian, displayEquinoctial, displayCartesian,
+                                                                  null));
+            System.out.println("Writing file, this may take some time ...");
+            numEphemeris.propagate(numEphemeris.getMaxDate());
+            System.out.println("Numerical results saved as file " + numOutput);
+
         }
 
     }
 
     /** Create an orbit from input parameters
      * @param parser input file parser
-     * @param frame  inertial frame
      * @param scale  time scale
      * @param mu     central attraction coefficient
-     * @throws NoSuchElementException if input parameters are mising
+     * @throws OrekitException if inertial frame cannot be retrieved
+     * @throws NoSuchElementException if input parameters are missing
      * @throws IOException if input parameters are invalid
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
-                              final Frame frame, final TimeScale scale, final double mu)
-        throws NoSuchElementException, IOException {
+                              final TimeScale scale, final double mu)
+        throws OrekitException, NoSuchElementException, IOException {
+
+        final Frame frame;
+        if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
+            frame = FramesFactory.getEME2000();
+        } else {
+            frame = parser.getInertialFrame(ParameterKey.INERTIAL_FRAME);
+        }
 
         // Orbit definition
         Orbit orbit;
@@ -360,31 +490,45 @@ public class DSSTPropagation {
         return orbit;
 
     }
+
     /** Set up the DSST Propagator
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @param isOsculating if orbital elements are osculating
+     *  @param initialIsOsculating if initial orbital elements are osculating
+     *  @param outputIsOsculating if we want to output osculating parameters
      *  @param fixedStepSize step size for fixed step integrator (s)
+     *  @param minStep minimum step size, if step is not fixed (s)
+     *  @param maxStep maximum step size, if step is not fixed (s)
+     *  @param dP position tolerance for step size control, if step is not fixed (m)
+     *  @param shortPeriodCoefficients list of short periodic coefficients
+     *  to output (null means no coefficients at all, empty list means all
+     *  possible coefficients)
      *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
-                                          final boolean isOsculating,
-                                          final double fixedStepSize) throws OrekitException {
+                                          final boolean initialIsOsculating,
+                                          final boolean outputIsOsculating,
+                                          final double fixedStepSize,
+                                          final double minStep,
+                                          final double maxStep,
+                                          final double dP,
+                                          final List<String> shortPeriodCoefficients)
+        throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {
-            final double minStep = orbit.getKeplerianPeriod();
-            final double maxStep = minStep * 100.;
-            final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
+            final double[][] tol = DSSTPropagator.tolerances(dP, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
-        dsstProp.setInitialState(new SpacecraftState(orbit, mass), isOsculating);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, !outputIsOsculating);
+        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
+        dsstProp.setSelectedCoefficients(shortPeriodCoefficients == null ?
+                                         null : new HashSet<String>(shortPeriodCoefficients));
 
         return dsstProp;
     }
@@ -393,7 +537,7 @@ public class DSSTPropagation {
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @throws OrekitException 
+     *  @throws OrekitException
      */
     private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
@@ -413,17 +557,18 @@ public class DSSTPropagation {
      *  @param parser input file parser
      *  @param unnormalized spherical harmonics provider
      *  @param earthFrame Earth rotating frame
+     *  @param rotationRate central body rotation rate (rad/s)
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider unnormalized,
-                               final Frame earthFrame,
+                               final Frame earthFrame, final double rotationRate,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = unnormalized.getAe();
-        
+
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
 
@@ -432,7 +577,18 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, unnormalized));
+        dsstProp.addForceModel(new DSSTZonal(unnormalized,
+                                             parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS)));
+        dsstProp.addForceModel(new DSSTTesseral(earthFrame, rotationRate, unnormalized,
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_FREQUENCY_MEAN_LONGITUDE_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -476,7 +632,7 @@ public class DSSTPropagation {
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = normalized.getAe();
-        
+
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
 
@@ -501,122 +657,214 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, earthFrame);
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
-                                                                    parser.getDouble(ParameterKey.DRAG_CD),
-                                                                    0., 0.);
+            final DragSensitive ssc = new IsotropicDrag(parser.getDouble(ParameterKey.DRAG_SF),
+                                                        parser.getDouble(ParameterKey.DRAG_CD));
             numProp.addForceModel(new DragForce(atm, ssc));
         }
 
         // Solar Radiation Pressure
         if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
             final double cR = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
-            // cR being the DSST SRP coef and assuming a spherical spacecraft, the conversion is:
-            // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
-            // with kA arbitrary sets to 0
-            final double kR = 3.25 - 2.25 * cR;
-            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
-                                                                    0., 0., kR);
+            final RadiationSensitive ssc = new IsotropicRadiationSingleCoefficient(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
+                                                                                   cR);
             numProp.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, ssc));
         }
     }
 
-    /** Print the results in the output file
-     *
-     *  @param handler orbit handler
-     *  @param output output file
-     *  @param sart start date of propagation
-     *  @throws OrekitException 
-     *  @throws IOException 
-     */
-    private void printOutput(final File output,
-                             final OrbitHandler handler,
-                             final AbsoluteDate start) throws OrekitException, IOException {
-        // Output format:
-        // time_from_start, a, e, i, raan, pa, aM, h, k, p, q, lM, px, py, pz, vx, vy, vz
-        final String format = new String(" %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e");
-        final BufferedWriter buffer = new BufferedWriter(new FileWriter(output));
-        buffer.write("##   time_from_start(s)            a(km)                      e                      i(deg)         ");
-        buffer.write("         raan(deg)                pa(deg)              mean_anomaly(deg)              ey/h          ");
-        buffer.write("           ex/k                    hy/p                     hx/q             mean_longitude_arg(deg)");
-        buffer.write("       Xposition(km)           Yposition(km)             Zposition(km)           Xvelocity(km/s)    ");
-        buffer.write("      Yvelocity(km/s)         Zvelocity(km/s)");
-        buffer.newLine();
-        for (Orbit o : handler.getOrbits()) {
-            final Formatter f = new Formatter(new StringBuilder(), Locale.ENGLISH);
-            // Time from start (s)
-            final double time = o.getDate().durationFrom(start);
-            // Semi-major axis (km)
-            final double a = o.getA() / 1000.;
-            // Keplerian elements
-            // Eccentricity
-            final double e = o.getE();
-            // Inclination (degrees)
-            final double i = Math.toDegrees(MathUtils.normalizeAngle(o.getI(), FastMath.PI));
-            // Right Ascension of Ascending Node (degrees)
-            KeplerianOrbit ko = new KeplerianOrbit(o);
-            final double ra = Math.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI));
-            // Perigee Argument (degrees)
-            final double pa = Math.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI));
-            // Mean Anomaly (degrees)
-            final double am = Math.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI));
-            // Equinoctial elements
-            // ey/h component of eccentricity vector
-            final double h = o.getEquinoctialEy();
-            // ex/k component of eccentricity vector
-            final double k = o.getEquinoctialEx();
-            // hy/p component of inclination vector
-            final double p = o.getHy();
-            // hx/q component of inclination vector
-            final double q = o.getHx();
-            // Mean Longitude Argument (degrees)
-            final double lm = Math.toDegrees(MathUtils.normalizeAngle(o.getLM(), FastMath.PI));
-            // Cartesian elements
-            // Position along X in inertial frame (km)
-            final double px = o.getPVCoordinates().getPosition().getX() / 1000.;
-            // Position along Y in inertial frame (km)
-            final double py = o.getPVCoordinates().getPosition().getY() / 1000.;
-            // Position along Z in inertial frame (km)
-            final double pz = o.getPVCoordinates().getPosition().getZ() / 1000.;
-            // Velocity along X in inertial frame (km/s)
-            final double vx = o.getPVCoordinates().getVelocity().getX() / 1000.;
-            // Velocity along Y in inertial frame (km/s)
-            final double vy = o.getPVCoordinates().getVelocity().getY() / 1000.;
-            // Velocity along Z in inertial frame (km/s)
-            final double vz = o.getPVCoordinates().getVelocity().getZ() / 1000.;
-            buffer.write(f.format(format, time, a, e, i, ra, pa, am, h, k, p, q, lm, px, py, pz, vx, vy, vz).toString());
-            buffer.newLine();
-            f.close();
-        }
-        buffer.close();
-    }
+    /** Specialized step handler catching the state at each step. */
+    private static class OutputHandler implements OrekitFixedStepHandler {
 
-    /** Specialized step handler catching the orbit at each step. */
-    private static class OrbitHandler implements OrekitFixedStepHandler {
+        /** Format for delta T. */
+        private static final String DT_FORMAT                             = "%20.9f";
 
-        /** List of orbits. */
-        private final List<Orbit> orbits;
+        /** Format for Keplerian elements. */
+        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
-        private OrbitHandler() {
-            // initialise an empty list of orbit
-            orbits = new ArrayList<Orbit>();
-        }
+        /** Format for equinoctial elements. */
+        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %23.16e %23.16e %23.16e %23.16e %23.16e";
 
-        /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
+        /** Format for equinoctial elements. */
+        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %23.16e" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
 
-        /** {@inheritDoc} */
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
-            // fill in the list with the orbit from the current step
-            orbits.add(currentState.getOrbit());
-        }
+        /** Format for Cartesian elements. */
+        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
-        /** Get the list of propagated orbits.
-         * @return orbits
+        /** Format for short period coefficients. */
+        private static final String SHORT_PERIOD_COEFFICIENTS_FORMAT      = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
+
+        /** Output file. */
+        private final File outputFile;
+
+        /** Indicator for Keplerian elements output. */
+        private final boolean outputKeplerian;
+
+        /** Indicator for equinoctial elements output. */
+        private final boolean outputEquinoctial;
+
+        /** Indicator for Cartesian elements output. */
+        private final boolean outputCartesian;
+
+        /** Start date of propagation. */
+        private AbsoluteDate start;
+
+        /** Indicator for first step. */
+        private boolean isFirst;
+
+        /** Stream for output. */
+        private PrintStream outputStream;
+
+        /** Number of columns already declared in the header. */
+        private int nbColumns;
+
+        /** Sorted list of short period coefficients to display. */
+        private List<String> shortPeriodCoefficients;
+
+        /** Simple constructor.
+         * @param outputFile output file
+         * @param outputKeplerian if true, the file should contain Keplerian elements
+         * @param outputEquinoctial if true, the file should contain equinoctial elements
+         * @param displayCaresian if true, the file should contain Cartesian elements
+         *  @param shortPeriodCoefficients list of short periodic coefficients
+         *  to output (null means no coefficients at all, empty list means all
+         *  possible coefficients)
          */
-        public List<Orbit> getOrbits() {
-            return orbits;
+        private OutputHandler(final File outputFile,
+                              final boolean outputKeplerian, final boolean outputEquinoctial,
+                              final boolean outputCartesian, final List<String> shortPeriodCoefficients) {
+            this.outputFile              = outputFile;
+            this.outputKeplerian         = outputKeplerian;
+            this.outputEquinoctial       = outputEquinoctial;
+            this.outputCartesian         = outputCartesian;
+            this.shortPeriodCoefficients = shortPeriodCoefficients;
+            this.isFirst                 = true;
         }
+
+        /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
+            throws OrekitException {
+            try {
+                nbColumns           = 0;
+                outputStream        = new PrintStream(outputFile, "UTF-8");
+                describeNextColumn("time from start (s)");
+                if (outputKeplerian) {
+                    describeNextColumn("semi major axis a (km)");
+                    describeNextColumn("eccentricity e");
+                    describeNextColumn("inclination i (deg)");
+                    describeNextColumn("right ascension of ascending node raan (deg)");
+                    describeNextColumn("perigee argument (deg)");
+                    describeNextColumn("mean anomaly M (deg)");
+                }
+                if (outputEquinoctial) {
+                    if (!outputKeplerian) {
+                        describeNextColumn("semi major axis a (km)");
+                    }
+                    describeNextColumn("eccentricity vector component ey/h");
+                    describeNextColumn("eccentricity vector component ex/k");
+                    describeNextColumn("inclination vector component hy/p");
+                    describeNextColumn("inclination vector component hx/q");
+                    describeNextColumn("mean longitude argument L (deg)");
+                }
+                if (outputCartesian) {
+                    describeNextColumn("position along X (km)");
+                    describeNextColumn("position along Y (km)");
+                    describeNextColumn("position along Z (km)");
+                    describeNextColumn("velocity along X (km/s)");
+                    describeNextColumn("velocity along Y (km/s)");
+                    describeNextColumn("velocity along Z (km/s)");
+                }
+                start   = s0.getDate();
+                isFirst = true;
+            } catch (IOException ioe) {
+                throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+            }
+        }
+
+        /** Describe next column.
+         * @param description column description
+         */
+        private void describeNextColumn(final String description) {
+            outputStream.format("# %3d %s%n", ++nbColumns, description);
+        }
+
+        /** {@inheritDoc} */
+        public void handleStep(SpacecraftState s, boolean isLast) throws OrekitException {
+            if (isFirst) {
+                if (shortPeriodCoefficients != null) {
+                    if (shortPeriodCoefficients.isEmpty()) {
+                        // we want all available coefficients,
+                        // they correspond to the additional states
+                        for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
+                            shortPeriodCoefficients.add(entry.getKey());
+                        }
+                        Collections.sort(shortPeriodCoefficients);
+                    }
+                    for (final String coefficientName : shortPeriodCoefficients) {
+                        describeNextColumn(coefficientName + " (a)");
+                        describeNextColumn(coefficientName + " (h)");
+                        describeNextColumn(coefficientName + " (k)");
+                        describeNextColumn(coefficientName + " (p)");
+                        describeNextColumn(coefficientName + " (q)");
+                        describeNextColumn(coefficientName + " (L)");
+                    }
+                }
+                isFirst = false;
+            }
+            outputStream.format(Locale.US, DT_FORMAT, s.getDate().durationFrom(start));
+            if (outputKeplerian) {
+                final KeplerianOrbit ko = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
+                outputStream.format(Locale.US, KEPLERIAN_ELEMENTS_FORMAT,
+                                    ko.getA() / 1000.,
+                                    ko.getE(),
+                                    FastMath.toDegrees(ko.getI()),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI)),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI)),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI)));
+                if (outputEquinoctial) {
+                    outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT,
+                                        ko.getEquinoctialEy(), // h
+                                        ko.getEquinoctialEx(), // k
+                                        ko.getHy(),            // p
+                                        ko.getHx(),            // q
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getLM(), FastMath.PI)));
+                }
+            } else if (outputEquinoctial) {
+                outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT,
+                                    s.getOrbit().getA(),
+                                    s.getOrbit().getEquinoctialEy(), // h
+                                    s.getOrbit().getEquinoctialEx(), // k
+                                    s.getOrbit().getHy(),            // p
+                                    s.getOrbit().getHx(),            // q
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(s.getOrbit().getLM(), FastMath.PI)));
+            }
+            if (outputCartesian) {
+                final PVCoordinates pv = s.getPVCoordinates();
+                outputStream.format(Locale.US, CARTESIAN_ELEMENTS_FORMAT,
+                                    pv.getPosition().getX() * 0.001,
+                                    pv.getPosition().getY() * 0.001,
+                                    pv.getPosition().getZ() * 0.001,
+                                    pv.getVelocity().getX() * 0.001,
+                                    pv.getVelocity().getY() * 0.001,
+                                    pv.getVelocity().getZ() * 0.001);
+            }
+            if (shortPeriodCoefficients != null) {
+                for (final String coefficientName : shortPeriodCoefficients) {
+                    final double[] coefficient = s.getAdditionalState(coefficientName);
+                    outputStream.format(Locale.US, SHORT_PERIOD_COEFFICIENTS_FORMAT,
+                                        coefficient[0],
+                                        coefficient[2], // beware, it is really 2 (ey/h), not 1 (ex/k)
+                                        coefficient[1], // beware, it is really 1 (ex/k), not 2 (ey/h)
+                                        coefficient[4], // beware, it is really 4 (hy/p), not 3 (hx/q)
+                                        coefficient[3], // beware, it is really 3 (hx/q), not 4 (hy/p)
+                                        coefficient[5]);
+                }
+            }
+            outputStream.format(Locale.US, "%n");
+            if (isLast) {
+                outputStream.close();
+                outputStream = null;
+            }
+        }
+
     }
 
 }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Utils
-=====
+# Utils
 
 The `org.orekit.utils` package provides methods for managing mathematical or geometrical objects.
 
-Utils Presentation
-------------------
+## Utils Presentation
 
 The `PVCoordinates` class is a mere container for a position and a velocity vector.
 The `TimeStampedPVCoordinates` class is a simple extension adding a.
@@ -47,7 +45,6 @@ nutation model to use when creating a Mean Of Date frame, simply by providing ei
 IERS_1996, IERS_2003 or IERS_2010 as the conventions parameters to the FrameFactory
 `getMOD` factory method.
 
-Package organization
---------------------
+## Package organization
 
 ![utils class diagram](../images/design/utils-class-diagram.png)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -26,7 +26,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Finder for satellite/body alignment events.
+/** Finder for satellite/body alignment events in orbital plane.
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
@@ -98,7 +98,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * @param alignAngle the alignment angle (rad)
      */
     private AlignmentDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<AlignmentDetector> handler,
+                              final int maxIter, final EventHandler<? super AlignmentDetector> handler,
                               final PVCoordinatesProvider body,
                               final double alignAngle) {
         super(maxCheck, threshold, maxIter, handler);
@@ -111,7 +111,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     /** {@inheritDoc} */
     @Override
     protected AlignmentDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<AlignmentDetector> newHandler) {
+                                       final int newMaxIter, final EventHandler<? super AlignmentDetector> newHandler) {
         return new AlignmentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      body, alignAngle);
     }
@@ -141,8 +141,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     public double g(final SpacecraftState s) throws OrekitException {
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D a  = pv.getPosition().normalize();
-        final Vector3D z  = pv.getMomentum().negate().normalize();
-        final Vector3D b  = Vector3D.crossProduct(a, z).normalize();
+        final Vector3D b  = Vector3D.crossProduct(pv.getMomentum(), a).normalize();
         final Vector3D x  = new Vector3D(cosAlignAngle, a,  sinAlignAngle, b);
         final Vector3D y  = new Vector3D(sinAlignAngle, a, -cosAlignAngle, b);
         final Vector3D pb = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();

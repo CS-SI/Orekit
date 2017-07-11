@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Development Guidelines
-======================
+# Development Guidelines
 
 The following guidelines are used for Orekit development.
 
-Development
------------
+## Development
 
 Orekit is a low level library. It may be used in very different
 contexts which cannot be foreseen, from quick studies up to critical
@@ -84,8 +82,7 @@ difficult to catch bugs are caused by mutable objects that are changed in some d
 buried code and have an impact on user code that forgot to perform a defensive copy.
 Orbits, dates, vectors, and rotations are all immutable objects.
 
-Style Rules
------------
+## Style Rules
 
 For reading ease and consistency, the existing code style should be
 preserved for all new developments. The rules are common ones, inherited
@@ -153,8 +150,7 @@ root directory.
   _star_ imports are forbidden, parameters and local variables are final
   wherever possible.
 
-Design Rules
-------------
+## Design Rules
 
 * *coverage* (validation)
 

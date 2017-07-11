@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -75,8 +76,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         this.size         = (k * (k + 1)) / 2;
 
         cache = new GenericTimeStampedCache<TimeStampedSphericalHarmonics>(nbPoints, maxSlots, maxSpan,
-                                                                           newSlotInterval, new Generator(step),
-                                                                           TimeStampedSphericalHarmonics.class);
+                                                                           newSlotInterval, new Generator(step));
     }
 
     /** {@inheritDoc} */
@@ -143,7 +143,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
 
         /** {@inheritDoc} */
         @Override
-        public List<TimeStampedSphericalHarmonics> generate(final TimeStampedSphericalHarmonics existing,
+        public List<TimeStampedSphericalHarmonics> generate(final AbsoluteDate existingDate,
                                                             final AbsoluteDate date)
             throws TimeStampedCacheException {
             try {
@@ -152,7 +152,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                         new ArrayList<TimeStampedSphericalHarmonics>();
                 final double[] cnmsnm = new double[2 * size];
 
-                if (existing == null) {
+                if (existingDate == null) {
 
                     // no prior existing transforms, just generate a first set
                     for (int i = 0; i < cache.getNeighborsSize(); ++i) {
@@ -166,7 +166,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                     // some coefficients have already been generated
                     // add the missing ones up to specified date
 
-                    AbsoluteDate t = existing.getDate();
+                    AbsoluteDate t = existingDate;
                     if (date.compareTo(t) > 0) {
                         // forward generation
                         do {
@@ -276,15 +276,13 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
          * @return a new time-stamped spherical harmonics, interpolated at specified date
          */
         public static TimeStampedSphericalHarmonics interpolate(final AbsoluteDate date,
-                                                                final Collection<TimeStampedSphericalHarmonics> sample) {
+                                                                final Stream<TimeStampedSphericalHarmonics> sample) {
 
             // set up an interpolator taking derivatives into account
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
             // add sample points
-            for (final TimeStampedSphericalHarmonics tssh : sample) {
-                interpolator.addSamplePoint(tssh.date.durationFrom(date), tssh.cnmsnm);
-            }
+            sample.forEach(tssh -> interpolator.addSamplePoint(tssh.date.durationFrom(date), tssh.cnmsnm));
 
             // build a new interpolated instance
             return new TimeStampedSphericalHarmonics(date, interpolator.value(0.0));

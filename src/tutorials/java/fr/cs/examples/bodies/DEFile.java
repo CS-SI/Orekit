@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package fr.cs.examples.bodies;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,7 +33,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -43,8 +46,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-
-import fr.cs.examples.Autoconfiguration;
 
 public class DEFile {
 
@@ -86,7 +87,21 @@ public class DEFile {
      */
     public static void main(String[] args) {
         try {
-            Autoconfiguration.configureOrekit();
+
+            // configure Orekit
+            File home       = new File(System.getProperty("user.home"));
+            File orekitData = new File(home, "orekit-data");
+            if (!orekitData.exists()) {
+                System.err.format(Locale.US, "Failed to find %s folder%n",
+                                  orekitData.getAbsolutePath());
+                System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+                                  "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
+                                  home.getAbsolutePath());
+                System.exit(1);
+            }
+            DataProvidersManager manager = DataProvidersManager.getInstance();
+            manager.addProvider(new DirectoryCrawler(orekitData));
+
             String inName  = null;
             String outName = null;
             List<String> constants = new ArrayList<String>();
@@ -119,7 +134,7 @@ public class DEFile {
                 displayUsage(System.err);
                 System.exit(1);
             }
-            DEFile de = new DEFile(inName, outName);                
+            DEFile de = new DEFile(inName, outName);
 
             de.processHeader();
             System.out.println("header label 1     " + de.label1);
@@ -136,7 +151,7 @@ public class DEFile {
             }
 
             if (allConstants) {
-                for (Map.Entry<String,Double> entry : de.headerConstants.entrySet()) {
+                for (Map.Entry<String, Double> entry : de.headerConstants.entrySet()) {
                     System.out.println(entry.getKey() + "     " + entry.getValue());
                 }
             }
@@ -235,62 +250,62 @@ public class DEFile {
 
         if (!selected.isEmpty()) {
             if (outName != null) {
-                OutputStream out = new FileOutputStream(outName);
+                try (OutputStream out = new FileOutputStream(outName)) {
 
-                // patch header epoch
-                System.arraycopy(selected.get(0), DATA_START_RANGE_OFFSET,
-                                 first, HEADER_START_EPOCH_OFFSET,
-                                 8);
-                System.arraycopy(selected.get(selected.size() - 1), DATE_END_RANGE_OFFSET,
-                                 first, HEADER_END_EPOCH_OFFSET,
-                                 8);
+                    // patch header epoch
+                    System.arraycopy(selected.get(0), DATA_START_RANGE_OFFSET,
+                                     first, HEADER_START_EPOCH_OFFSET,
+                                     8);
+                    System.arraycopy(selected.get(selected.size() - 1), DATE_END_RANGE_OFFSET,
+                                     first, HEADER_END_EPOCH_OFFSET,
+                                     8);
 
-                // patch header labels
-                final AbsoluteDate       start = extractDate(first, HEADER_START_EPOCH_OFFSET, bigEndian);
-                final DateTimeComponents sc    = start.getComponents(timeScale);
-                final AbsoluteDate       end   = extractDate(first, HEADER_END_EPOCH_OFFSET, bigEndian);
-                final DateTimeComponents ec    = end.getComponents(timeScale);
-                System.arraycopy(padString("THIS IS NOT A GENUINE JPL DE FILE," +
-                                           " THIS IS AN EXCERPT WITH A LIMITED TIME RANGE",
-                                           HEADER_LABEL_SIZE), 0,
-                                 first, HEADER_LABEL_1_OFFSET,
-                                 HEADER_LABEL_SIZE);
-                System.arraycopy(padString(String.format(Locale.US,
-                                                         "Start Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
-                                                         (start.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
-                                                         Constants.JULIAN_DAY,
-                                                         sc.getDate().getYear(),
-                                                         sc.getDate().getMonthEnum().getUpperCaseAbbreviation(),
-                                                         sc.getDate().getDay(),
-                                                         sc.getTime().getHour(),
-                                                         sc.getTime().getMinute(),
-                                                         sc.getTime().getSecond()),
-                                           HEADER_LABEL_SIZE), 0,
-                                 first, HEADER_LABEL_2_OFFSET,
-                                 HEADER_LABEL_SIZE);
-                System.arraycopy(padString(String.format(Locale.US,
-                                                         "Final Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
-                                                         (end.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
-                                                         Constants.JULIAN_DAY,
-                                                         ec.getDate().getYear(),
-                                                         ec.getDate().getMonthEnum().getUpperCaseAbbreviation(),
-                                                         ec.getDate().getDay(),
-                                                         ec.getTime().getHour(),
-                                                         ec.getTime().getMinute(),
-                                                         ec.getTime().getSecond()),
-                                           HEADER_LABEL_SIZE), 0,
-                                 first, HEADER_LABEL_3_OFFSET,
-                                 HEADER_LABEL_SIZE);
+                    // patch header labels
+                    final AbsoluteDate       start = extractDate(first, HEADER_START_EPOCH_OFFSET, bigEndian);
+                    final DateTimeComponents sc    = start.getComponents(timeScale);
+                    final AbsoluteDate       end   = extractDate(first, HEADER_END_EPOCH_OFFSET, bigEndian);
+                    final DateTimeComponents ec    = end.getComponents(timeScale);
+                    System.arraycopy(padString("THIS IS NOT A GENUINE JPL DE FILE," +
+                                    " THIS IS AN EXCERPT WITH A LIMITED TIME RANGE",
+                                    HEADER_LABEL_SIZE), 0,
+                                     first, HEADER_LABEL_1_OFFSET,
+                                     HEADER_LABEL_SIZE);
+                    System.arraycopy(padString(String.format(Locale.US,
+                                                             "Start Epoch: JED=  %.1f %4d-%s-%02d %02d:%02d:%02.0f",
+                                                             (start.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
+                                                             Constants.JULIAN_DAY,
+                                                             sc.getDate().getYear(),
+                                                             sc.getDate().getMonthEnum().getUpperCaseAbbreviation(),
+                                                             sc.getDate().getDay(),
+                                                             sc.getTime().getHour(),
+                                                             sc.getTime().getMinute(),
+                                                             sc.getTime().getSecond()),
+                                               HEADER_LABEL_SIZE), 0,
+                                     first, HEADER_LABEL_2_OFFSET,
+                                     HEADER_LABEL_SIZE);
+                    System.arraycopy(padString(String.format(Locale.US,
+                                                             "Final Epoch: JED=  %.1f %4d-%s-%02d %02d:%02d:%02.0f",
+                                                             (end.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
+                                                             Constants.JULIAN_DAY,
+                                                             ec.getDate().getYear(),
+                                                             ec.getDate().getMonthEnum().getUpperCaseAbbreviation(),
+                                                             ec.getDate().getDay(),
+                                                             ec.getTime().getHour(),
+                                                             ec.getTime().getMinute(),
+                                                             ec.getTime().getSecond()),
+                                               HEADER_LABEL_SIZE), 0,
+                                     first, HEADER_LABEL_3_OFFSET,
+                                     HEADER_LABEL_SIZE);
 
-                // write patched header
-                out.write(first);
-                out.write(second);
+                    // write patched header
+                    out.write(first);
+                    out.write(second);
 
-                // write selected data
-                for (byte[] data : selected) {
-                    out.write(data);
+                    // write selected data
+                    for (byte[] data : selected) {
+                        out.write(data);
+                    }
                 }
-                out.close();
             }
         }
 

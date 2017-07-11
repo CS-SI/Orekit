@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,10 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,7 +93,7 @@ public class NadirPointingTest {
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
         // shall be the same, i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity.
-        Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
+        Rotation rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
@@ -130,7 +131,7 @@ public class NadirPointingTest {
         // For a satellite at equatorial position, earth center pointing attitude and nadir pointing
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity.
-        Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
+        Rotation rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(0.0, angle, 5.e-6);
 
@@ -150,7 +151,7 @@ public class NadirPointingTest {
         // For a satellite at polar position, earth center pointing attitude and nadir pointing
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity.
-        rotCompo = rotCenter.applyInverseTo(rotNadir);
+        rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, 5.e-6);
 
@@ -170,7 +171,7 @@ public class NadirPointingTest {
         // For a satellite at any position, earth center pointing attitude and nadir pointing
         // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth
         // pointing rotation with nadir pointing rotation shall be different from identity.
-        rotCompo = rotCenter.applyInverseTo(rotNadir);
+        rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         angle = rotCompo.getAngle();
         Assert.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
@@ -260,7 +261,7 @@ public class NadirPointingTest {
                             3.0e-11 * reference.getVelocity().getNorm());
         Assert.assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
-                            1.0e-5 * reference.getAcceleration().getNorm());
+                            1.3e-5 * reference.getAcceleration().getNorm());
 
     }
 
@@ -292,12 +293,12 @@ public class NadirPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 4.0e-9 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 5.3e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 8.0e-9 * evolutionAnglePlus);
+        Assert.assertEquals(0.0, errorAnglePlus, 8.1e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();

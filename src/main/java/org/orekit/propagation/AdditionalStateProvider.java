@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation;
 
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
@@ -39,8 +39,8 @@ public interface AdditionalStateProvider {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-     * @exception PropagationException if additional state cannot be computed
+     * @exception OrekitException if additional state cannot be computed
      */
-    double[] getAdditionalState(SpacecraftState state) throws PropagationException;
+    double[] getAdditionalState(SpacecraftState state) throws OrekitException;
 
 }

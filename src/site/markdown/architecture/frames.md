@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,14 +12,12 @@
   limitations under the License.
 -->
 
-Frames
-======
+# Frames
 
 The `org.orekit.frames` package provides classes to handle frames and
 transforms between them.
 	
-Frames Presentation
--------------------
+## Frames Presentation
 
 ### Frames tree
 
@@ -72,8 +70,7 @@ with or without first derivatives (i.e. angular and linear velocities compositio
 Transformations can be interpolated using Hermite interpolation, i.e. taking derivatives
 into account if desired.
  
-Predefined Frames
------------------
+## Predefined Frames
 
 The `FramesFactory` class provides several predefined reference frames.
 
@@ -230,8 +227,7 @@ meters, a rather crude accuracy for many space systems.
 The same kind of optimization used for the IAU-2006 precession and IAU-2000A nutation model are
 also applied for the older IAU-1980 precession-nutation model, despite it is much simpler.
 
-Solar system frames
--------------------
+## Solar system frames
 
 All celestial bodies are linked to their own body-centered inertial frame, just
 as the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
@@ -246,8 +242,7 @@ system barycenter, as its associated frame is the ICRF.
 
 ![solar system frames](../images/solar-system-frames.png)
 
-Topocentric Frame
------------------
+## Topocentric Frame
   
 This frame model allows defining the frame associated with any position at 
 the surface of a body shape, which itself is referenced to a frame, typically
@@ -265,8 +260,7 @@ canonical axes:
 In such a frame, the user can retrieve azimuth angle, elevation angle, 
 range and range rate of any point given in any frame, at given date.
 
-Local Orbital Frame
--------------------
+## Local Orbital Frame
   
 Local orbital frames are bound to an orbiting spacecraft. They move with
 the spacecraft so they are time-dependent. Two local orbital frames are provided:
@@ -278,8 +272,7 @@ the central body). The (q, s, w) frame has its X axis along position (radial), i
 along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly
 along velocity).
 
-User-defined frames
--------------------
+## User-defined frames
 
 The frames tree can be extended by users who can add as many frames as they
 want for specific needs. This is done by adding frames one at a time, attaching
@@ -310,7 +303,6 @@ whole tree. We also want to take into account the offset between the GPS receive
 satellite center of mass. When a new GPS measurement is available, we want to update the complete
 left subtree. This is done by using the dedicated `UpdatableFrame` which will do all the conversions. 
 
-Package organization
---------------------
+## Package organization
 
 ![frames class diagram](../images/design/frames-class-diagram.png)

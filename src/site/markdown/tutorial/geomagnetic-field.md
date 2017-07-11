@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Geomagnetic Field
-=================
+# Geomagnetic Field
 
 This tutorial shows how to use the Geomagnetic Field Model.
 
-Introduction
-------------
+## Introduction
 
 Orekit provides an easy to use class for calculating the geomagnetic field of the earth.
 Currently there is support for two different models:
@@ -26,8 +24,7 @@ Currently there is support for two different models:
 * WMM: [http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml](http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml)
 * IGRF: [http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html](http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html)
 
-Prerequisites
--------------
+## Prerequisites
 
 A geomagnetic field model relies on published coefficients files that are loaded on demand.
 There exist different formats for these files, but orekit uses a modified version, which may
@@ -46,8 +43,7 @@ Example:
 
 The latest coefficient files for IGRF and WMM can be found in attachment.
 
-Basic Use
----------
+## Basic Use
 
 To calculate the geomagnetic field of a specified geodetic location and altitude is
 pretty much straight-forward.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -58,21 +58,6 @@ public class LofOffsetPointing extends GroundPointing {
     private final Vector3D satPointingVector;
 
     /** Creates new instance.
-     * @param shape Body shape
-     * @param attLaw Attitude law
-     * @param satPointingVector satellite vector defining the pointing direction
-     * @deprecated as of 7.1, replaced with {@link #LofOffsetPointing(Frame, BodyShape, AttitudeProvider, Vector3D)}
-     */
-    @Deprecated
-    public LofOffsetPointing(final BodyShape shape, final AttitudeProvider attLaw,
-                             final Vector3D satPointingVector) {
-        super(shape.getBodyFrame());
-        this.shape = shape;
-        this.attitudeLaw = attLaw;
-        this.satPointingVector = satPointingVector;
-    }
-
-    /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
      * @param attLaw Attitude law
@@ -98,8 +83,8 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // transform from specified reference frame to spacecraft frame

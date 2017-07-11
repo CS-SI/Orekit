@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -37,7 +39,7 @@ import org.orekit.utils.OrekitConfiguration;
 
 /** Factory for predefined reference frames.
  *
- * <h5> FramesFactory Presentation </h5>
+ * <h1> FramesFactory Presentation </h1>
  * <p>
  * Several predefined reference {@link Frame frames} are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric
@@ -50,7 +52,7 @@ import org.orekit.utils.OrekitConfiguration;
  *   <li>set up interpolation/caching features for some frames that may induce costly computation</li>
  *   <li>streamline the {@link EOPHistory Earth Orientation Parameters} history loading.</li>
  * </ul>
- * <h5> Reference Frames </h5>
+ * <h2> Reference Frames </h2>
  * <p>
  * The user can retrieve those reference frames using various static methods, the most
  * important ones being: {@link #getFrame(Predefined)}, {@link #getGCRF()},
@@ -60,7 +62,7 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getGTOD(IERSConventions, boolean)}, {@link #getITRFEquinox(IERSConventions, boolean)},
  * {@link #getTEME()} and {@link #getVeis1950()}.
  * </p>
- * <h5> International Terrestrial Reference Frame</h5>
+ * <h2> International Terrestrial Reference Frame</h2>
  * <p>
  * This frame is the current (as of 2013) reference realization of
  * the International Terrestrial Reference System produced by IERS.
@@ -96,14 +98,14 @@ import org.orekit.utils.OrekitConfiguration;
  * choice of IERS conventions (i.e. the choice of precession/nutation models) can
  * be made independently by user, Orekit provides all alternatives.
  * </p>
- * <h5>Intermediate frames</h5>
+ * <h2>Intermediate frames</h2>
  * <p>
  * Orekit also provides all the intermediate frames that are needed to transform
  * between GCRF and ITRF, along the two paths: ITRF/TIRF/CIRF/GCRF for the
  * non-rotating origin paradigm and ITRF/GTOD/TOD/MOD/EME2000/GCRF for the equinox
  * paradigm.
  * </p>
- * <h5> Earth Orientation Parameters </h5>
+ * <h2> Earth Orientation Parameters </h2>
  * <p>
  * This factory also handles loading of Earth Orientation Parameters (EOP) needed
  * for accurate transformations between inertial and Earth fixed frames, using
@@ -166,10 +168,10 @@ public class FramesFactory {
     public static final String RAPID_DATA_PREDICTION_XML_1980_FILENAME = "^finals\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04_08\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04_\\d\\d\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
-    public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+    public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
     public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
@@ -178,10 +180,10 @@ public class FramesFactory {
     public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_08_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04_\\d\\d_IAU2000\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
-    public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+    public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
     public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
@@ -207,7 +209,7 @@ public class FramesFactory {
 
     /** Add the default loaders EOP history (IAU 1980 precession/nutation).
      * <p>
-     * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
+     * The default loaders look for IERS EOP C04 and bulletins B files. They
      * correspond to {@link IERSConventions#IERS_1996 IERS 1996} conventions.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
@@ -216,13 +218,13 @@ public class FramesFactory {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
@@ -245,7 +247,7 @@ public class FramesFactory {
         final String eopcNames =
                 (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
@@ -258,7 +260,7 @@ public class FramesFactory {
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
      * <p>
-     * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
+     * The default loaders look for IERS EOP C04 and bulletins B files. They
      * correspond to both {@link IERSConventions#IERS_2003 IERS 2003} and {@link
      * IERSConventions#IERS_2010 IERS 2010} conventions.
      * </p>
@@ -268,13 +270,13 @@ public class FramesFactory {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
@@ -301,9 +303,9 @@ public class FramesFactory {
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new EOP08C04FilesLoader(eopcNames));
+                            new EOPC04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
@@ -384,12 +386,13 @@ public class FramesFactory {
 
         synchronized (EOP_HISTORY_LOADERS) {
 
-            //TimeStamped based set needed to remove duplicates
             if (EOP_HISTORY_LOADERS.isEmpty()) {
+                // set up using default loaders
                 addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
                 addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
             }
 
+            // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
             final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
 
@@ -525,6 +528,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             default :
+                // this should never happen
                 throw new OrekitInternalError(null);
         }
     }
@@ -911,12 +915,6 @@ public class FramesFactory {
                                                final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1018,12 +1016,6 @@ public class FramesFactory {
                                               final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1124,12 +1116,6 @@ public class FramesFactory {
      */
     private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
-
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
 
         synchronized (FramesFactory.class) {
 
@@ -1244,36 +1230,107 @@ public class FramesFactory {
         }
         final Frame common = currentF;
 
-        // transform from common to instance
-        Transform commonToInstance = Transform.IDENTITY;
+        // transform from common to origin
+        Transform commonToOrigin = Transform.IDENTITY;
         for (Frame frame = from; frame != common; frame = frame.getParent()) {
-            TransformProvider provider = frame.getTransformProvider();
-            boolean peeling = true;
-            while (peeling) {
-                if (provider instanceof InterpolatingTransformProvider) {
-                    provider = ((InterpolatingTransformProvider) provider).getRawProvider();
-                } else if (provider instanceof ShiftingTransformProvider) {
-                    provider = ((ShiftingTransformProvider) provider).getRawProvider();
-                } else if (provider instanceof EOPBasedTransformProvider &&
-                           ((EOPBasedTransformProvider) provider).getEOPHistory().usesInterpolation()) {
-                    provider = ((EOPBasedTransformProvider) provider).getNonInterpolatingProvider();
-                } else {
-                    peeling = false;
-                }
-            }
-            commonToInstance =
-                    new Transform(date, provider.getTransform(date), commonToInstance);
+            commonToOrigin = new Transform(date,
+                                             peel(frame.getTransformProvider()).getTransform(date),
+                                             commonToOrigin);
         }
 
         // transform from destination up to common
         Transform commonToDestination = Transform.IDENTITY;
         for (Frame frame = to; frame != common; frame = frame.getParent()) {
-            commonToDestination =
-                    new Transform(date, frame.getTransformProvider().getTransform(date), commonToDestination);
+            commonToDestination = new Transform(date,
+                                                peel(frame.getTransformProvider()).getTransform(date),
+                                                commonToDestination);
         }
 
-        // transform from instance to destination via common
-        return new Transform(date, commonToInstance.getInverse(), commonToDestination);
+        // transform from origin to destination via common
+        return new Transform(date, commonToOrigin.getInverse(), commonToDestination);
+
+    }
+
+    /** Get the transform between two frames, suppressing all interpolation.
+     * <p>
+     * This method is similar to {@link Frame#getTransformTo(Frame, AbsoluteDate)}
+     * except it removes the performance enhancing interpolation features that are
+     * added by the {@link FramesFactory factory} to some frames, in order to focus
+     * on accuracy. The interpolation features are intended to save processing time
+     * by avoiding doing some lengthy computation like nutation evaluation at each
+     * time step and caching some results. This method can be used to avoid this,
+     * when very high accuracy is desired, or for testing purposes. It should be
+     * used with care, as doing the full computation is <em>really</em> costly for
+     * some frames.
+     * </p>
+     * @param from frame from which transformation starts
+     * @param to frame to which transformation ends
+     * @param date date of the transform
+     * @param <T> type of the field elements
+     * @return transform between the two frames, avoiding interpolation
+     * @throws OrekitException if transform cannot be computed at this date
+     * @since 9.0
+     */
+    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+                                                                                                 final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // common ancestor to both frames in the frames tree
+        Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
+        Frame currentT = from.getDepth() > to.getDepth() ? to : to.getAncestor(to.getDepth() - from.getDepth());
+        while (currentF != currentT) {
+            currentF = currentF.getParent();
+            currentT = currentT.getParent();
+        }
+        final Frame common = currentF;
+
+        // transform from common to origin
+        FieldTransform<T> commonToOrigin = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = from; frame != common; frame = frame.getParent()) {
+            commonToOrigin = new FieldTransform<>(date,
+                                                   peel(frame.getTransformProvider()).getTransform(date),
+                                                   commonToOrigin);
+        }
+
+        // transform from destination up to common
+        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = to; frame != common; frame = frame.getParent()) {
+            commonToDestination = new FieldTransform<>(date,
+                                                       peel(frame.getTransformProvider()).getTransform(date),
+                                                       commonToDestination);
+        }
+
+        // transform from origin to destination via common
+        return new FieldTransform<>(date, commonToOrigin.getInverse(), commonToDestination);
+
+    }
+
+    /** Peel interpolation and shifting from a transform provider.
+     * @param provider transform provider to peel
+     * @return peeled transform provider
+     * @exception OrekitException if EOP cannot be retrieved
+     */
+    private static TransformProvider peel(final TransformProvider provider)
+        throws OrekitException {
+
+        TransformProvider peeled = provider;
+
+        boolean peeling = true;
+        while (peeling) {
+            if (peeled instanceof InterpolatingTransformProvider) {
+                peeled = ((InterpolatingTransformProvider) peeled).getRawProvider();
+            } else if (peeled instanceof ShiftingTransformProvider) {
+                peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
+            } else if (peeled instanceof EOPBasedTransformProvider &&
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory() != null &&
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory().usesInterpolation()) {
+                peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
+            } else {
+                peeling = false;
+            }
+        }
+
+        return peeled;
 
     }
 

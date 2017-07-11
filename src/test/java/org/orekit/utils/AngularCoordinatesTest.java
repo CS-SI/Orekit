@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,28 +19,27 @@ package org.orekit.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.sampling.FixedStepHandler;
-import org.apache.commons.math3.ode.sampling.StepNormalizer;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.ODEState;
+import org.hipparchus.ode.ODEStateAndDerivative;
+import org.hipparchus.ode.OrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.sampling.ODEFixedStepHandler;
+import org.hipparchus.ode.sampling.StepNormalizer;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 
 public class AngularCoordinatesTest {
 
@@ -166,25 +165,27 @@ public class AngularCoordinatesTest {
         final AngularCoordinates linear =
                 new AngularCoordinates(quadratic.getRotation(), quadratic.getRotationRate(), Vector3D.ZERO);
 
-        final FirstOrderDifferentialEquations ode = new FirstOrderDifferentialEquations() {
+        final OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
             public int getDimension() {
                 return 4;
             }
-            public void computeDerivatives(final double t, final double[] q, final double[] qDot) {
+            public double[] computeDerivatives(final double t, final double[] q) {
                 final double omegaX = quadratic.getRotationRate().getX() + t * quadratic.getRotationAcceleration().getX();
                 final double omegaY = quadratic.getRotationRate().getY() + t * quadratic.getRotationAcceleration().getY();
                 final double omegaZ = quadratic.getRotationRate().getZ() + t * quadratic.getRotationAcceleration().getZ();
-                qDot[0] = 0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ);
-                qDot[1] = 0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ);
-                qDot[2] = 0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ);
-                qDot[3] = 0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ);
+                return new double[] {
+                    0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ),
+                    0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ)
+                };
             }
         };
-        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
-        integrator.addStepHandler(new StepNormalizer(dt / n, new FixedStepHandler() {
-            public void init(double t0, double[] y0, double t) {
-            }
-            public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
+        ODEIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / n, new ODEFixedStepHandler() {
+            public void handleStep(ODEStateAndDerivative s, boolean isLast) {
+                final double   t = s.getTime();
+                final double[] y = s.getPrimaryState();
                 Rotation reference = new Rotation(y[0], y[1], y[2], y[3], true);
 
                 // the error in shiftedBy taking acceleration into account is cubic
@@ -203,12 +204,12 @@ public class AngularCoordinatesTest {
         }));
 
         double[] y = new double[] {
-            quadratic.getRotation().getQ0(), 
-            quadratic.getRotation().getQ1(), 
-            quadratic.getRotation().getQ2(), 
+            quadratic.getRotation().getQ0(),
+            quadratic.getRotation().getQ1(),
+            quadratic.getRotation().getQ2(),
             quadratic.getRotation().getQ3()
         };
-        integrator.integrate(ode, 0, y, dt, y);
+        integrator.integrate(ode, new ODEState(0, y), dt);
 
     }
 
@@ -341,11 +342,11 @@ public class AngularCoordinatesTest {
         RandomGenerator random = new Well1024a(0x2158523e6accb859l);
         for (int i = 0; i < 100; ++i) {
             Vector3D axis = randomVector(random, 1.0);
-            AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI),
+            AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI, RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO);
             AngularCoordinates rebuilt = AngularCoordinates.createFromModifiedRodrigues(original.getModifiedRodrigues(1.0));
             Assert.assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
-            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis())), 1.0e-15);
+            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
             Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
         }
 
@@ -472,35 +473,6 @@ public class AngularCoordinatesTest {
         Assert.assertEquals(0, Vector3D.distance(v2.getVelocity(),     v2Computed.getVelocity()),     1.0e-15);
         Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration(), v1Computed.getAcceleration()), 1.0e-15);
         Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
-    }
-
-    @Test
-    @Deprecated  // to be removed when AngularCoordinates.interpolate is removed
-    public void testInterpolationSimple() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        AngularCoordinates reference =
-                new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
-                                       new Vector3D(omega, Vector3D.MINUS_K),
-                                       Vector3D.ZERO);
-
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
-                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt), reference.shiftedBy(dt)));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
-            Rotation r            = interpolated.getRotation();
-            Vector3D rate         = interpolated.getRotationRate();
-            Vector3D acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, Rotation.distance(new Rotation(Vector3D.PLUS_K, alpha0 + omega * dt), r), 1.1e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(new Vector3D(omega, Vector3D.MINUS_K), rate), 4.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(Vector3D.ZERO, acceleration), 3.0e-14);
-        }
-
     }
 
     private Vector3D randomVector(RandomGenerator random, double norm) {

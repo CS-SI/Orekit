@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -75,7 +74,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Set the propagator to slave mode.
      * <p>This mode is used when the user needs only the final orbit at the target time.
      *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.<p>
+     *  (master) application, without any intermediate feedback.
      * <p>This is the default mode.</p>
      * @see #setMasterMode(double, OrekitFixedStepHandler)
      * @see #setMasterMode(OrekitStepHandler)
@@ -129,6 +128,31 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     void setEphemerisMode();
 
+    /**
+     * Set the propagator to ephemeris generation mode with the specified handler for each
+     * integration step.
+     *
+     * <p>This mode is used when the user needs random access to the orbit state at any
+     * time between the initial and target times, as well as access to the steps computed
+     * by the integrator as in Master Mode. A typical example is the implementation of
+     * search and iterative algorithms that may navigate forward and backward inside the
+     * propagation range before finding their result.</p>
+     *
+     * <p>Beware that since this mode stores <strong>all</strong> intermediate results, it
+     * may be memory intensive for long integration ranges and high precision/short time
+     * steps.</p>
+     *
+     * @param handler handler called at the end of each finalized step
+     * @see #setEphemerisMode()
+     * @see #getGeneratedEphemeris()
+     * @see #setSlaveMode()
+     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setMasterMode(OrekitStepHandler)
+     * @see #getMode()
+     * @see #EPHEMERIS_GENERATION_MODE
+     */
+    void setEphemerisMode(OrekitStepHandler handler);
+
     /** Get the ephemeris generated during propagation.
      * @return generated ephemeris
      * @exception IllegalStateException if the propagator was not set in ephemeris
@@ -139,22 +163,22 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Get the propagator initial state.
      * @return initial state
-     * @exception PropagationException if state cannot be retrieved
+     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getInitialState() throws PropagationException;
+    SpacecraftState getInitialState() throws OrekitException;
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
-     * @exception PropagationException if initial state cannot be reset
+     * @exception OrekitException if initial state cannot be reset
      */
-    void resetInitialState(final SpacecraftState state)
-        throws PropagationException;
+    void resetInitialState(SpacecraftState state)
+        throws OrekitException;
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
      * @exception OrekitException if an additional state with the same name is already present
      */
-    void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
+    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
         throws OrekitException;
 
     /** Get an unmodifiable list of providers for additional state.
@@ -186,7 +210,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param name name of the additional state
      * @return true if the additional state is managed
      */
-    boolean isAdditionalStateManaged(final String name);
+    boolean isAdditionalStateManaged(String name);
 
     /** Get all the names of all managed states.
      * @return names of all managed states
@@ -199,7 +223,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see #getEventsDetectors()
      * @param <T> class type for the generic version
      */
-    <T extends EventDetector> void addEventDetector(final T detector);
+    <T extends EventDetector> void addEventDetector(T detector);
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors
@@ -222,7 +246,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Set attitude provider.
      * @param attitudeProvider attitude provider
      */
-    void setAttitudeProvider(final AttitudeProvider attitudeProvider);
+    void setAttitudeProvider(AttitudeProvider attitudeProvider);
 
     /** Get the frame in which the orbit is propagated.
      * <p>
@@ -243,9 +267,9 @@ public interface Propagator extends PVCoordinatesProvider {
      * target date is only a hint, not a mandatory objective.</p>
      * @param target target date towards which orbit state should be propagated
      * @return propagated state
-     * @exception PropagationException if state cannot be propagated
+     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate target) throws PropagationException;
+    SpacecraftState propagate(AbsoluteDate target) throws OrekitException;
 
     /** Propagate from a start date towards a target date.
      * <p>Those propagators use a start date and a target date to
@@ -256,8 +280,8 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated state
-     * @exception PropagationException if state cannot be propagated
+     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws PropagationException;
+    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws OrekitException;
 
 }

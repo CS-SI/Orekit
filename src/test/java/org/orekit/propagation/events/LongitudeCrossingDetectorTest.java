@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,13 +53,16 @@ public class LongitudeCrossingDetectorTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         LongitudeCrossingDetector d =
-                new LongitudeCrossingDetector(60.0, 1.e-6, earth, FastMath.toRadians(10.0)).
+                new LongitudeCrossingDetector(earth, FastMath.toRadians(10.0)).
+                withMaxCheck(60).
+                withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent<LongitudeCrossingDetector>());
 
         Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assert.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assert.assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -88,7 +91,7 @@ public class LongitudeCrossingDetectorTest {
             SpacecraftState state = e.getState();
             double longitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                               earth.getBodyFrame(), null).getLongitude();
-            Assert.assertEquals(10.0, FastMath.toDegrees(longitude), 3.0e-8);
+            Assert.assertEquals(10.0, FastMath.toDegrees(longitude), 1.6e-7);
             if (previous != null) {
                 // same time interval regardless of increasing/decreasing,
                 // as increasing/decreasing flag is irrelevant for this detector
@@ -130,14 +133,14 @@ public class LongitudeCrossingDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(d));
 
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
-        double[] expectedLatitudes = new double[] { -6.5394381900, -0.4918760372, +6.5916016832 };
+        double[] expectedLatitudes = new double[] { -6.5394381901, -0.4918760372, +6.5916016832 };
         Assert.assertEquals(3, logger.getLoggedEvents().size());
         for (int i = 0; i < 3; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
             GeodeticPoint gp = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                                earth.getBodyFrame(), null);
             Assert.assertEquals(expectedLatitudes[i], FastMath.toDegrees(gp.getLatitude()),  1.0e-10);
-            Assert.assertEquals(-100.0,               FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
+            Assert.assertEquals(-100.0,               FastMath.toDegrees(gp.getLongitude()), 1.2e-9);
         }
 
     }

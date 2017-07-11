@@ -1,8 +1,24 @@
+/* Copyright 2002-2017 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.random.MersenneTwister;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,8 +44,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] GHmsj = getGHmsj(k, h, a, b, m, s, j);
-                    Assert.assertEquals(GHmsj[0], gMSJ.getGmsj(m, s, j), Math.abs(eps * GHmsj[0]));
-                    Assert.assertEquals(GHmsj[1], gMSJ.getHmsj(m, s, j), Math.abs(eps * GHmsj[1]));
+                    Assert.assertEquals(GHmsj[0], gMSJ.getGmsj(m, s, j), FastMath.abs(eps * GHmsj[0]));
+                    Assert.assertEquals(GHmsj[1], gMSJ.getHmsj(m, s, j), FastMath.abs(eps * GHmsj[1]));
                 }
             }
         }
@@ -53,8 +69,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdk = getdGHdk(k, h, a, b, m, s, j);
-                    Assert.assertEquals(dGHdk[0], gMSJ.getdGmsdk(m, s, j), Math.abs(eps * dGHdk[0]));
-                    Assert.assertEquals(dGHdk[1], gMSJ.getdHmsdk(m, s, j), Math.abs(eps * dGHdk[1]));
+                    Assert.assertEquals(dGHdk[0], gMSJ.getdGmsdk(m, s, j), FastMath.abs(eps * dGHdk[0]));
+                    Assert.assertEquals(dGHdk[1], gMSJ.getdHmsdk(m, s, j), FastMath.abs(eps * dGHdk[1]));
                 }
             }
         }
@@ -78,8 +94,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdh = getdGHdh(k, h, a, b, m, s, j);
-                    Assert.assertEquals(dGHdh[0], gMSJ.getdGmsdh(m, s, j), Math.abs(eps * dGHdh[0]));
-                    Assert.assertEquals(dGHdh[1], gMSJ.getdHmsdh(m, s, j), Math.abs(eps * dGHdh[1]));
+                    Assert.assertEquals(dGHdh[0], gMSJ.getdGmsdh(m, s, j), FastMath.abs(eps * dGHdh[0]));
+                    Assert.assertEquals(dGHdh[1], gMSJ.getdHmsdh(m, s, j), FastMath.abs(eps * dGHdh[1]));
                 }
             }
         }
@@ -103,8 +119,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHda = getdGHda(k, h, a, b, m, s, j);
-                    Assert.assertEquals(dGHda[0], gMSJ.getdGmsdAlpha(m, s, j), Math.abs(eps * dGHda[0]));
-                    Assert.assertEquals(dGHda[1], gMSJ.getdHmsdAlpha(m, s, j), Math.abs(eps * dGHda[1]));
+                    Assert.assertEquals(dGHda[0], gMSJ.getdGmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[0]));
+                    Assert.assertEquals(dGHda[1], gMSJ.getdHmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[1]));
                 }
             }
         }
@@ -128,8 +144,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdb = getdGHdb(k, h, a, b, m, s, j);
-                    Assert.assertEquals(dGHdb[0], gMSJ.getdGmsdBeta(m, s, j), Math.abs(eps * dGHdb[0]));
-                    Assert.assertEquals(dGHdb[1], gMSJ.getdHmsdBeta(m, s, j), Math.abs(eps * dGHdb[1]));
+                    Assert.assertEquals(dGHdb[0], gMSJ.getdGmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[0]));
+                    Assert.assertEquals(dGHdb[1], gMSJ.getdHmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[1]));
                 }
             }
         }

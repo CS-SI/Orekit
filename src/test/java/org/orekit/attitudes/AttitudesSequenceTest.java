@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
@@ -81,9 +80,10 @@ public class AttitudesSequenceTest {
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
                 withHandler(new ContinueOnEvent<EclipseDetector>() {
+                    private static final long serialVersionUID = 1L;
                     public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
-                        return EventHandler.Action.CONTINUE;
+                        return EventHandler.Action.RESET_STATE;
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
@@ -95,7 +95,9 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(nightRestingLaw, dayObservationLaw,
                                                 monitored, true, false, 300.0,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
-        if (ed.g(new SpacecraftState(initialOrbit)) >= 0) {
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
+        if (ed.g(initialState) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate, false);
             attitudesSequence.resetActiveProvider(dayObservationLaw);
@@ -116,34 +118,28 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(propagator);
 
         propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
-            public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-                try {
-                    // the Earth position in spacecraft frame should be along spacecraft Z axis
-                    // during night time and away from it during day time due to roll and pitch offsets
-                    final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
-                    final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+            public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                // the Earth position in spacecraft frame should be along spacecraft Z axis
+                // during night time and away from it during day time due to roll and pitch offsets
+                final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+                final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
-                    // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
-                    // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                    final double eclipseAngle = ed.g(currentState);
+                // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+                // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+                final double eclipseAngle = ed.g(currentState);
 
-                    if (currentState.getDate().durationFrom(lastChange) > 300) {
-                        if (inEclipse) {
-                            Assert.assertTrue(eclipseAngle <= 0);
-                            Assert.assertEquals(0.0, pointingOffset, 1.0e-6);
-                        } else {
-                            Assert.assertTrue(eclipseAngle >= 0);
-                            Assert.assertEquals(0.767215, pointingOffset, 1.0e-6);
-                        }
+                if (currentState.getDate().durationFrom(lastChange) > 300) {
+                    if (inEclipse) {
+                        Assert.assertTrue(eclipseAngle <= 0);
+                        Assert.assertEquals(0.0, pointingOffset, 1.0e-6);
                     } else {
-                        // we are in transition
-                        Assert.assertTrue(pointingOffset + " " + (0.767215 - pointingOffset),
-                                          pointingOffset <= 0.7672155);
+                        Assert.assertTrue(eclipseAngle >= 0);
+                        Assert.assertEquals(0.767215, pointingOffset, 1.0e-6);
                     }
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
+                } else {
+                    // we are in transition
+                    Assert.assertTrue(pointingOffset + " " + (0.767215 - pointingOffset),
+                                      pointingOffset <= 0.7672155);
                 }
             }
         });
@@ -186,16 +182,21 @@ public class AttitudesSequenceTest {
                                                 true, false, 10.0, AngularDerivativesFilter.USE_R, null);
         attitudesSequence.resetActiveProvider(current);
 
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
         final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                     Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,
                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+        propagator.resetInitialState(initialState);
+        Assert.assertEquals(42.0, propagator.getInitialState().getAdditionalState("fortyTwo")[0], 1.0e-10);
 
         // Register the switching events to the propagator
         attitudesSequence.registerSwitchEvents(propagator);
 
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
+        Assert.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
         Assert.assertEquals(1, handler.dates.size());
         Assert.assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
         Assert.assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);

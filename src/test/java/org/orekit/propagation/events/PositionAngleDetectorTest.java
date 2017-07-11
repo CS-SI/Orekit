@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,9 @@ public class PositionAngleDetectorTest {
     @Test
     public void testCartesian() {
         try {
-            new PositionAngleDetector(600.0, 1.e-6, OrbitType.CARTESIAN, PositionAngle.TRUE, 0.0);
+            new PositionAngleDetector(OrbitType.CARTESIAN, PositionAngle.TRUE, 0.0).
+            withMaxCheck(600.0).
+            withThreshold(1.0e-6);
             Assert.fail("an exception should habe been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oiae.getSpecifier());
@@ -105,7 +107,9 @@ public class PositionAngleDetectorTest {
         throws OrekitException {
 
         PositionAngleDetector d =
-                new PositionAngleDetector(60.0, 1.e-10, orbitType, positionAngle, angle).
+                new PositionAngleDetector(orbitType, positionAngle, angle).
+                withMaxCheck(60).
+                withThreshold(1.e-10).
                 withHandler(new ContinueOnEvent<PositionAngleDetector>());
 
         Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
@@ -141,7 +145,7 @@ public class PositionAngleDetectorTest {
         double[] array = new double[6];
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
-            orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array);
+            orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
             Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
         }
         Assert.assertEquals(15, logger.getLoggedEvents().size());

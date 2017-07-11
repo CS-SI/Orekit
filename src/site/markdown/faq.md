@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,8 +12,9 @@
   limitations under the License.
 -->
 
-References
-----------
+# Frequently Asked Questions (FAQ)
+
+## References
 
 ### Has Orekit already been used?
 
@@ -32,6 +33,9 @@ systems, study systems and mission analysis systems.
 
 Orekit is used at Eumetsat for very long term mission analysis (up to
 the full lifetime of a satellite) for both LEO and GEO missions.
+
+Orekit is used underneath the [Rugged](https://www.orekit.org/rugged/) sensor-to-terrain mapping library in the
+Sentinel-2 Image Processing Facility to process terabytes of data each day.
 
 As Orekit is open-source, we cannot know about all uses as people are
 not require to notify us of anything.
@@ -92,15 +96,16 @@ As thread-safety was an important need for many people, this problem has been ad
 starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
 for which sequential access is natural (like numerical propagators) are <em>not</em> thread-safe.
 
-Installation
-------------
+## Installation
 
 ### What are Orekit dependencies?
 
 Up to version 4.0, Orekit depended on features of Apache Commons Math which were not released
 as of mid 2008, so the dependency was set to 2.0-SNAPSHOT development version.
 This development version was available from Apache subversion repository. Starting
-with version 4.1, Orekit depends only on officially released versions of Apache Commons Math
+with version 4.1, and up to 7.2, Orekit depends only on officially released versions of
+Apache Commons Math. Starting with version 8.0, Orekit has switched from Apache Commons
+Math to Hipparchus
 
     version    |                             dependency
 ---------------|---------------------------------------------
@@ -110,6 +115,36 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 6.0   | Apache Commons Math 3.2
   Orekit 6.1   | Apache Commons Math 3.2
   Orekit 7.0   | Apache Commons Math 3.4.1
+  Orekit 7.1   | Apache Commons Math 3.6
+  Orekit 7.2   | Apache Commons Math 3.6.1
+  Orekit 8.0   | Hipparchus          1.0
+
+### Maven failed to compile Orekit and complained about a missing artifact.
+
+The released versions of Orekit always depend only on released Hipparchus
+versions, but development Orekit versions may depend on unreleased Hipparchus
+versions. Maven knows how to download the pre-built binary for
+released Hipparchus versions but it cannot download
+pre-built binaries for unreleased Hipparchus versions as none are
+publicly available. In this case the maven command will end with an error message
+like:
+
+    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:8.0-SNAPSHOT: Could not find artifact org.hipparchus:hipparchus-core:jar:1.0-SNAPSHOT
+
+In this case, you should build the missing Hipparchus artifact and
+install it in your local maven repository beforehand. This is done by cloning
+the Hipparchus source from Hipparchus git repository at GitHub in some
+temporary folder and install it with maven. This is done by
+running the commands below (using Linux command syntax):
+
+    git clone https://github.com/Hipparchus-Math/hipparchus.git
+    cd hipparchus
+    mvn install
+
+Once the Hipparchus development version has been installed locally using
+the previous commands, you can delete the cloned folder if you want. You can then
+attempt again the mvn command at Orekit level, this time it should succeed as the
+necessary artifact is now locally available.
 
 ### The orekit-data.zip file you provide is not up to date. Can you update it?
 
@@ -125,10 +160,9 @@ data for the IERS convention 2003, they have switched to IERS conventions 2010. 
 (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
 the IERS publish them.
 
-Concerning UTC leap seconds, as of end 2013, the last one was introduced at the end of June 2012.
+Concerning UTC leap seconds, as of mid 2016, the last one was introduced at the end of June 2015.
 
-Runtime errors
---------------
+## Runtime errors
 
 ### I get an error "no IERS UTC-TAI history data loaded" (or something similar in another language). What does it mean?
 
@@ -146,17 +180,13 @@ USNO tai-utc.dat file. If either file is found in the Orekit configuration, it w
 and the message should not appear.
 
 Configuring data loading is explained in the configuration page For a start, the simplest configuration
-is to download the orekit-data.zip file from the download page and to either set the "orekit.data.path" Java
-property to this file or to manually configure the DataProvidersManager to use it. This example archive file
-contains the required UTC-TAI history file among others. Configuring Orekit to use this archive file can be done
-by keeping the file as a zip archive and pointing to this archive, or by unzipping it and pointing to the unzipped folder.
+is to download the orekit-data.zip file from the download page, to unzip it anywhere you want, note the
+path of the orekit-data folder that will be created and add the following lines at the start of
+your program:
 
-Here is an example using the file in zip format:
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataProvidersManager.getInstance();
+    manager.addProvider(new DirectoryCrawler(orekitData));
 
-    DataProvidersManager.getInstance().addProvider(new ZipJarCrawler(new File("/path/to/the/zip/file/orekit-data.zip")));
-
-Here is an example using the folder resulting from expanding the archive:
-
-    DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File("/path/to/the/folder/orekit-data")));
-
-Using a folder allows one to change the data in it, e.g., adding new EOP files as they are published by IERS.
+Using a folder allows one to change the data in it after the initial download, e.g., adding new EOP files as they
+are published by IERS.

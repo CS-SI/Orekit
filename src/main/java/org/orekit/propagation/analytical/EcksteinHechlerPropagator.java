@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,22 @@
  */
 package org.orekit.propagation.analytical;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.CartesianOrbit;
@@ -32,14 +39,16 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.SpacecraftState}
  *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
- * (e < 0.1, with poor accuracy between 0.005 and 0.1) and inclination
+ * (e &lt; 0.1, with poor accuracy between 0.005 and 0.1) and inclination
  * neither equatorial (direct or retrograde) nor critical (direct or
  * retrograde).</p>
  * <p>
@@ -72,13 +81,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see Orbit
  * @author Guylaine Prat
  */
-public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
+public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator implements Serializable {
 
-    /** Eckstein-Hechler model. */
-    private EHModel model;
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20151202L;
 
-    /** Current mass. */
-    private double mass;
+    /** Initial Eckstein-Hechler model. */
+    private EHModel initialModel;
+
+    /** All models. */
+    private transient TimeSpanMap<EHModel> models;
 
     /** Reference radius of the central body attraction model (m). */
     private double referenceRadius;
@@ -93,14 +105,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
-                provider.onDate(initialOrbit.getDate()));
+             provider.onDate(initialOrbit.getDate()));
     }
 
     /**
@@ -119,11 +131,11 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final UnnormalizedSphericalHarmonics harmonics)
         throws OrekitException {
         this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
-                harmonics.getUnnormalizedCnm(2, 0),
-                harmonics.getUnnormalizedCnm(3, 0),
-                harmonics.getUnnormalizedCnm(4, 0),
-                harmonics.getUnnormalizedCnm(5, 0),
-                harmonics.getUnnormalizedCnm(6, 0));
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             harmonics.getUnnormalizedCnm(6, 0));
     }
 
     /** Build a propagator from orbit and potential.
@@ -132,11 +144,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -145,14 +158,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the mean parameters cannot be computed
      * @see org.orekit.utils.Constants
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -161,12 +174,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -176,11 +189,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -190,13 +204,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -205,15 +219,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
-        this(initialOrbit, attitudeProv, DEFAULT_MASS, provider,
-                provider.onDate(initialOrbit.getDate()));
+        throws OrekitException {
+        this(initialOrbit, attitudeProv, DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -222,11 +235,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                     <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -236,14 +250,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -252,16 +266,15 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
-        this(initialOrbit, attitudeProv, mass, provider,
-                provider.onDate(initialOrbit.getDate()));
+        throws OrekitException {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -269,11 +282,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
@@ -284,7 +298,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @exception PropagationException if the mean parameters cannot be computed
+     * @exception OrekitException if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
@@ -292,58 +306,67 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60)
-        throws PropagationException {
+        throws OrekitException {
 
         super(attitudeProv);
-        this.mass = mass;
 
-        try {
+        // store model coefficients
+        this.referenceRadius = referenceRadius;
+        this.mu  = mu;
+        this.ck0 = new double[] {
+            0.0, 0.0, c20, c30, c40, c50, c60
+        };
 
-            // store model coefficients
-            this.referenceRadius = referenceRadius;
-            this.mu  = mu;
-            this.ck0 = new double[] {
-                0.0, 0.0, c20, c30, c40, c50, c60
-            };
+        // compute mean parameters
+        // transform into circular adapted parameters used by the Eckstein-Hechler model
+        resetInitialState(new SpacecraftState(initialOrbit,
+                                              attitudeProv.getAttitude(initialOrbit,
+                                                                       initialOrbit.getDate(),
+                                                                       initialOrbit.getFrame()),
+                                              mass));
 
-            // compute mean parameters
-            // transform into circular adapted parameters used by the Eckstein-Hechler model
-            resetInitialState(new SpacecraftState(initialOrbit,
-                                                  attitudeProv.getAttitude(initialOrbit,
-                                                                           initialOrbit.getDate(),
-                                                                           initialOrbit.getFrame()),
-                                                  mass));
-
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
     }
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
+        throws OrekitException {
         super.resetInitialState(state);
-        this.mass = state.getMass();
-        computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()));
+        this.initialModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
+                                                  state.getMass());
+        this.models       = new TimeSpanMap<EHModel>(initialModel);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws OrekitException {
+        final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
+                                                       state.getMass());
+        if (forward) {
+            models.addValidAfter(newModel, state.getDate());
+        } else {
+            models.addValidBefore(newModel, state.getDate());
+        }
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
      * @param osculating osculating orbit
-     * @exception PropagationException if orbit goes outside of supported range
+     * @param mass constant mass
+     * @return Eckstein-Hechler mean model
+     * @exception OrekitException if orbit goes outside of supported range
      * (trajectory inside the Brillouin sphere, too eccentric, equatorial, critical
      * inclination) or if convergence cannot be reached
      */
-    private void computeMeanParameters(final CircularOrbit osculating)
-        throws PropagationException {
+    private EHModel computeMeanParameters(final CircularOrbit osculating, final double mass)
+        throws OrekitException {
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
-            throw new PropagationException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
                                            osculating.getA());
         }
 
         // rough initialization of the mean parameters
-        EHModel current = new EHModel(osculating);
+        EHModel current = new EHModel(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
         final double epsilon         = 1.0e-13;
@@ -376,7 +399,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                     current.mean.getAlphaM()     + deltaAlphaM,
                                                     PositionAngle.MEAN,
                                                     current.mean.getFrame(),
-                                                    current.mean.getDate(), mu));
+                                                    current.mean.getDate(), mu),
+                                  mass, referenceRadius, mu, ck0);
 
             // check convergence
             if ((FastMath.abs(deltaA)      < thresholdA) &&
@@ -385,30 +409,39 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                 (FastMath.abs(deltaI)      < thresholdAngles) &&
                 (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
                 (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
-                model = current;
-                return;
+                return current;
             }
 
         }
 
-        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS, i);
+        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS, i);
 
     }
 
     /** {@inheritDoc} */
     public CartesianOrbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
-        return new CartesianOrbit(toCartesian(date, model.propagateParameters(date)),
-                                  model.mean.getFrame(), mu);
+        final EHModel current = models.get(date);
+        return new CartesianOrbit(toCartesian(date, current.propagateParameters(date)),
+                                  current.mean.getFrame(), mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
-    private class EHModel {
+    private static class EHModel implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160115L;
+
+        /** Factory for derivatives. */
+        private static final DSFactory FACTORY = new DSFactory(1, 2);
 
         /** Mean orbit. */
         private final CircularOrbit mean;
+
+        /** Constant mass. */
+        private final double mass;
 
         // CHECKSTYLE: stop JavadocVariable check
 
@@ -470,11 +503,18 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
         /** Create a model for specified mean orbit.
          * @param mean mean orbit
-         * @exception PropagationException if mean orbit is not within model supported domain
+         * @param mass constant mass
+         * @param referenceRadius reference radius of the central body attraction model (m)
+         * @param mu central attraction coefficient (m³/s²)
+         * @param ck0 un-normalized zonal coefficients
+         * @exception OrekitException if mean orbit is not within model supported domain
          */
-        EHModel(final CircularOrbit mean) throws PropagationException {
+        EHModel(final CircularOrbit mean, final double mass,
+                final double referenceRadius, final double mu, final double[] ck0)
+            throws OrekitException {
 
-            this.mean = mean;
+            this.mean            = mean;
+            this.mass            = mass;
 
             // preliminary processing
             double q = referenceRadius / mean.getA();
@@ -496,19 +536,19 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             final double sinI6 = sinI2 * sinI4;
 
             if (sinI2 < 1.0e-10) {
-                throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
-                                               FastMath.toDegrees(mean.getI()));
+                throw new OrekitException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
+                                          FastMath.toDegrees(mean.getI()));
             }
 
             if (FastMath.abs(sinI2 - 4.0 / 5.0) < 1.0e-3) {
-                throw new PropagationException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
-                                               FastMath.toDegrees(mean.getI()));
+                throw new OrekitException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
+                                          FastMath.toDegrees(mean.getI()));
             }
 
             if (mean.getE() > 0.1) {
                 // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                throw new PropagationException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
-                                               mean.getE());
+                throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
+                                          mean.getE());
             }
 
             xnotDot = FastMath.sqrt(mu / mean.getA()) / mean.getA();
@@ -602,14 +642,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         /** Extrapolate an orbit up to a specific target date.
          * @param date target date for the orbit
          * @return propagated parameters
-         * @exception PropagationException if some parameters are out of bounds
+         * @exception OrekitException if some parameters are out of bounds
          */
         public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
-            throws PropagationException {
+            throws OrekitException {
 
-            // keplerian evolution
-            final DerivativeStructure dt =
-                    new DerivativeStructure(1, 2, 0, date.durationFrom(mean.getDate()));
+            // Keplerian evolution
+            final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));
             final DerivativeStructure xnot = dt.multiply(xnotDot);
 
             // secular effects
@@ -628,18 +667,16 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
             // right ascension of ascending node
             final DerivativeStructure omm =
-                    new DerivativeStructure(1, 2,
-                                            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
-                                                                     FastMath.PI),
-                                            ommD * xnotDot,
-                                            0.0);
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                                                           FastMath.PI),
+                                  ommD * xnotDot,
+                                  0.0);
 
             // latitude argument
             final DerivativeStructure xlm =
-                    new DerivativeStructure(1, 2,
-                                            MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
-                                            aMD * xnotDot,
-                                            0.0);
+                            FACTORY.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
+                                  aMD * xnotDot,
+                                  0.0);
 
             // periodical terms
             final DerivativeStructure cl1 = xlm.cos();
@@ -762,9 +799,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
         // canonical orbit reference frame
         final FieldVector3D<DerivativeStructure> p =
-                new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                                       x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                                       y.multiply(sinI));
+                new FieldVector3D<>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                    x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                    y.multiply(sinI));
 
         // dispatch derivatives
         final Vector3D p0 = new Vector3D(p.getX().getValue(),
@@ -797,7 +834,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
         DerivativeStructure cosAlphaE     = alphaE.cos();
         DerivativeStructure sinAlphaE     = alphaE.sin();
-        int    iter          = 0;
+        int                 iter          = 0;
         do {
             final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
             final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
@@ -819,7 +856,156 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
-        return mass;
+        return models.get(date).mass;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if an additional state provider is not serializable
+     */
+    private Object writeReplace() throws NotSerializableException {
+        try {
+            // managed states providers
+            final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
+            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+                if (provider instanceof Serializable) {
+                    serializableProviders.add(provider);
+                } else {
+                    throw new NotSerializableException(provider.getClass().getName());
+                }
+            }
+
+            // states transitions
+            final AbsoluteDate[]  transitionDates;
+            final CircularOrbit[] allOrbits;
+            final double[]        allMasses;
+            final SortedSet<TimeSpanMap.Transition<EHModel>> transitions = models.getTransitions();
+            if (transitions.size() == 1  && transitions.first().getBefore() == transitions.first().getAfter()) {
+                // the single entry is a dummy one, without a real transition
+                // we ignore it completely
+                transitionDates = null;
+                allOrbits       = null;
+                allMasses       = null;
+            } else {
+                transitionDates = new AbsoluteDate[transitions.size()];
+                allOrbits       = new CircularOrbit[transitions.size() + 1];
+                allMasses       = new double[transitions.size() + 1];
+                int i = 0;
+                for (final TimeSpanMap.Transition<EHModel> transition : transitions) {
+                    if (i == 0) {
+                        // model before the first transition
+                        allOrbits[i] = transition.getBefore().mean;
+                        allMasses[i] = transition.getBefore().mass;
+                    }
+                    transitionDates[i] = transition.getDate();
+                    allOrbits[++i]     = transition.getAfter().mean;
+                    allMasses[i]       = transition.getAfter().mass;
+                }
+            }
+
+            return new DataTransferObject(getInitialState().getOrbit(), initialModel.mass,
+                                          referenceRadius, mu, ck0, getAttitudeProvider(),
+                                          transitionDates, allOrbits, allMasses,
+                                          serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]));
+        } catch (OrekitException orekitException) {
+            // this should never happen
+            throw new OrekitInternalError(null);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151202L;
+
+        /** Initial orbit. */
+        private final Orbit orbit;
+
+        /** Attitude provider. */
+        private final AttitudeProvider attitudeProvider;
+
+        /** Mass and gravity field. */
+        private double[] g;
+
+        /** Transition dates (may be null). */
+        private final AbsoluteDate[] transitionDates;
+
+        /** Orbits before and after transitions (may be null). */
+        private final CircularOrbit[] allOrbits;
+
+        /** Masses before and after transitions (may be null). */
+        private final double[] allMasses;
+
+        /** Providers for additional states. */
+        private final AdditionalStateProvider[] providers;
+
+        /** Simple constructor.
+         * @param orbit initial orbit
+         * @param mass spacecraft mass
+         * @param referenceRadius reference radius of the Earth for the potential model (m)
+         * @param mu central attraction coefficient (m³/s²)
+         * @param ck0 un-normalized zonal coefficients
+         * @param attitudeProvider attitude provider
+         * @param transitionDates transition dates (may be null)
+         * @param allOrbits orbits before and after transitions (may be null)
+         * @param allMasses masses before and after transitions (may be null)
+         * @param providers providers for additional states
+         */
+        DataTransferObject(final Orbit orbit, final double mass,
+                           final double referenceRadius, final double mu,
+                           final double[] ck0,
+                           final AttitudeProvider attitudeProvider,
+                           final AbsoluteDate[] transitionDates,
+                           final CircularOrbit[] allOrbits,
+                           final double[] allMasses,
+                           final AdditionalStateProvider[] providers) {
+            this.orbit            = orbit;
+            this.attitudeProvider = attitudeProvider;
+            this.g = new double[] {
+                mass, referenceRadius, mu,
+                ck0[2], ck0[3], ck0[4], ck0[5], ck0[6] // ck0[0] and ck0[1] are both zero so not serialized
+            };
+            this.transitionDates  = transitionDates;
+            this.allOrbits        = allOrbits;
+            this.allMasses        = allMasses;
+            this.providers        = providers;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EcksteinHechlerPropagator}.
+         * @return replacement {@link EcksteinHechlerPropagator}
+         */
+        private Object readResolve() {
+            try {
+                final EcksteinHechlerPropagator propagator =
+                                new EcksteinHechlerPropagator(orbit, attitudeProvider,
+                                                              g[0], g[1], g[2],              // mass, referenceRadius, mu
+                                                              g[3], g[4], g[5], g[6], g[7]); // c20, c30, c40, c50, c60
+                for (final AdditionalStateProvider provider : providers) {
+                    propagator.addAdditionalStateProvider(provider);
+
+                }
+                if (transitionDates != null) {
+                    // override the state transitions
+                    final double[] ck0 = new double[] {
+                        0, 0, g[3], g[4], g[5], g[6], g[7]
+                    };
+                    propagator.models = new TimeSpanMap<EHModel>(new EHModel(allOrbits[0], allMasses[0],
+                                                                             g[1], g[2], ck0));
+                    for (int i = 0; i < transitionDates.length; ++i) {
+                        propagator.models.addValidAfter(new EHModel(allOrbits[i + 1], allMasses[i + 1],
+                                                                    g[1], g[2], ck0),
+                                                        transitionDates[i]);
+                    }
+                }
+
+                return propagator;
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }

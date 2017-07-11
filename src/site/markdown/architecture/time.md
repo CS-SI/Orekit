@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2017 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -12,14 +12,12 @@
   limitations under the License.
 -->
 
-Time
-=====
+# Time
 
 The `org.orekit.time` package is an independent package providing classes to handle epochs and
 time scales, and to compare instants.
 	
-Time Presentation
------------------
+## Time Presentation
 
 The principal class is `AbsoluteDate` which represents a unique instant in time, 
 so as to be able to locate it with respect to the many different times scales in
@@ -32,8 +30,7 @@ calling Orekit from a high level application should not have to deal with it. Th
 class allows users to pass a date regardless of the time scale it was defined in,
 conversions will be done as required transparently.
 
-Time Scales
------------
+## Time Scales
 
 Dates are commonly defined by specifying a point in a specific _time scale_.
 For example, the J2000.0 epoch is defined from its calendar components as
@@ -95,6 +92,18 @@ the various available time scales definitions to avoid mistakes. The
   realize the time scales. It is of the order of a few tens nanoseconds. This class
   does not implement this offset,
 
+* _GLONASS System reference scale_
+
+  this scale is equal to UTC + 3h at any time. GLONASS System Time does include leap
+  seconds just as UTC scale (and they occur at the same instant, which is 3h00 at
+  GLONASS clock time since it is 3h ahead of UTC),
+
+* _Quasi-Zenith reference scale_
+
+  Quasi Zenith System Time and GPS time are very close scales. Without any errors,
+  they should be identical. The offset between these two scales is the GGTO, it depends
+  on the clocks used to realize the time scales. This class does not implement this offset,
+
 * _Greenwich Mean Sidereal Time scale_
 
   the Greenwich Mean Sidereal Time is the hour angle between the meridian of Greenwich
@@ -106,8 +115,7 @@ The following figure shows the offset history up to 2010.
 
 ![plot showing offset between UTC and TAI over the last half century](../images/utc-tai.png)
 
-Date Definition
----------------
+## Date Definition
 
 There are three main ways to define a date:
 
@@ -154,8 +162,7 @@ The two variables `date1` and `date2` represent the same instant. The first one 
 defined relative to a time scale, the second one has been defined independently of any time
 scale.
 
-Reference Epochs
-----------------
+## Reference Epochs
 
 Orekit defines 10 reference epochs. The first 7 are commonly used in the space
 community, the seventh one is commonly used in the computer science field and the
@@ -172,8 +179,7 @@ last two are convenient for initialization in min/max research loops:
 * _Past infinity Epoch_: at infinity in the past
 * _Future Epoch_: at infinity in the future
 
-Time Use
---------
+## Time Use
 
 Once it is constructed, an `AbsoluteDate` can be compared to others, and converted to 
 and expressed in other time scales. It is used to define states, orbits, frames ...
@@ -215,8 +221,7 @@ or `subSet`.
     }
 
 
-Time shift
-----------
+## Time shift
 
 Lots of space flight dynamics objects are date related (dates themselves, of course,
 but also attitudes, orbits, position-velocity coordinates or spacecraft states). In some
@@ -230,7 +235,6 @@ a new instance shifted in time without changing the original object.
 This feature should not be used for large shifts where complex propagation models are
 needed.
 
-Package organization
---------------------
+## Package organization
 
 ![time class diagram](../images/design/time-class-diagram.png)

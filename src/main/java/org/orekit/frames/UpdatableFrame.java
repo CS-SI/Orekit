@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,12 @@ package org.orekit.frames;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 /** Frame whose transform from its parent can be updated.
@@ -206,6 +208,11 @@ public class UpdatableFrame extends Frame {
             return transform.get();
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            return new FieldTransform<>(date.getField(), transform.get());
+        }
     }
 
 }

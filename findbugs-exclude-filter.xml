@@ -11,15 +11,20 @@
     <Or>
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper\$DataTransferObject$" />
       <Class name="~.*\.IntegratedEphemeris\$DataTransferObject$" />
+     <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
+     <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
     </Or>
     <Bug pattern="SE_BAD_FIELD" />
   </Match>
 
   <!-- the following classes are serialized using writeReplace/readResolve with proxy classes,
-       so the is no real problem about the base class not having a proper constructor.
-       This is tested in the IntegratedEphemerisTest for the ephemeris and both propagators. -->
+       so the is no real problem about the base class not having a proper constructor.  -->
   <Match>
     <Or>
+      <Class name="~.*\.AbstractAnalyticalPropagator\$BoundedPropagatorView$" />
+      <Class name="~.*\.KeplerianPropagator$" />
+      <Class name="~.*\.EcksteinHechlerPropagator$" />
+      <Class name="~.*\.Ephemeris$" />
       <Class name="~.*\.IntegratedEphemeris$" />
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
       <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />
@@ -27,18 +32,25 @@
     <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR" />
   </Match>
   <Match>
-    <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+    <Or>
+      <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+      <Class name="~.*\.AbstractGaussianContribution\$GaussianShortPeriodicCoefficients$" />
+      <Class name="~.*\.DSSTThirdBody\$ThirdBodyShortPeriodicCoefficients$" />
+      <Class name="~.*\.TesseralContributionContribution\$TesseralShortPeriodicCoefficients$" />
+      <Class name="~.*\.ZonalContribution\$ZonalShortPeriodicCoefficients$" />
+      <Class name="~.*\.FieldOfView$" />
+      <Class name="~.*\.FootprintOverlapDetector$" />
+      <Class name="~.*\.GeographicZoneDetector$" />
+      <Class name="~.*\.SaastamoinenModel$" />
+      <Class name="~.*\.EventEnablingPredicateFilter$" />
+      <Class name="~.*\.FixedTransformProvider$" />
+      <Class name="~.*\.InterpolatingTransformProvider$" />
+      <Class name="~.*\.ShiftingTransformProvider$" />
+      <Class name="~.*\.MODProvider$" />
+      <Class name="~.*\.TIRFProvider$" />
+      <Class name="~.*\.CartesianOrbit$" />
+    </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
-  </Match>
-  <Match>
-    <Class name="~.*\.GeographicZoneDetector$" />
-    <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
-  </Match>
-
-  <!-- The following is an intentional behaviour, to be removed when class is suppressed -->
-  <Match>
-    <Class name="~.*\.SpacecraftFrame\$LocalProvider$"/>
-    <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION" />
   </Match>
 
   <!-- the following are in fact false positives from findbugs -->
@@ -98,10 +110,20 @@
     <Local name="HP" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
+  <Match>
+    <Class name="~.*\.OneAxisEllipsoid$"/>
+    <Method name="transform" />
+    <Local name="epsPhi" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 
-  <!-- the approximate constants do belong to the model -->
+  <!-- the approximate constants do belong to the models -->
   <Match>
     <Class name="~.*\.JB2006$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.SEMParser$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   
@@ -120,7 +142,10 @@
   </Match>
   <Match>
     <Class name="org.orekit.orbits.KeplerianOrbit"/>
-    <Method name ="eMeSinE" params="double" returns="double" />
+    <Or>
+      <Method name ="eMeSinE" params="double,double" returns="double" />
+      <Method name ="eMeSinE" params="org.hipparchus.analysis.differentiation.DerivativeStructure,org.hipparchus.analysis.differentiation.DerivativeStructure" returns="org.hipparchus.analysis.differentiation.DerivativeStructure" />
+    </Or>
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
 
@@ -164,6 +189,14 @@
     <Class name="~.*\.DirectoryCrawler$"/>
     <Method name="feed"   params="java.util.regex.Pattern,org.orekit.data.DataLoader,java.io.File" returns="boolean" />
     <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
+  </Match>
+
+  <!-- the following is a false positive as the inverseCrossProducts method either
+        returns eatly, throws an exception or sets the omega variable to non-null  -->
+  <Match>
+    <Class name="~.*\.FieldAngularCoordinates$"/>
+    <Method name="inverseCrossProducts" />
+    <Bug pattern="NP_NULL_ON_SOME_PATH_EXCEPTION" />
   </Match>
 
   <!-- the following is a false positive as the Direction.next() always return non-null
