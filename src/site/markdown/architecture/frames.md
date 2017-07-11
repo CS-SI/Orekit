@@ -16,7 +16,7 @@
 
 The `org.orekit.frames` package provides classes to handle frames and
 transforms between them.
-	
+
 ## Frames Presentation
 
 ### Frames tree

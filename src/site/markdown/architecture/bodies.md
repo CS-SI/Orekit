@@ -16,7 +16,7 @@
 
 The `org.orekit.bodies` package provides an interface to representation of the
 position and geometry of space objects such as stars, planets or asteroids.
-	
+
 ## Position
 
 The position of celestial bodies is represented by the `CelestialBody` interface.

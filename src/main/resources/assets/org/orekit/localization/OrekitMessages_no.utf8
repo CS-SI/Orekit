@@ -254,7 +254,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = uventete to høydeverdier: {0}
 UNSUPPORTED_PARAMETER_NAME = ustøttet parameter navn {0}, støttete navn: {1}
 
 # scale factor for parameter {0} is too small: {1}
-TOO_SMALL_SCALE_FOR_PARAMETER = <MISSING TRANSLATION>
+TOO_SMALL_SCALE_FOR_PARAMETER = skala-faktoren for parameteren {0} er for liten: {1}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
@@ -314,22 +314,22 @@ CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne ODM filens sammenheng
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = ukonsekvente tidssystemer i efemerideblokkene: {0} ≠ {1}
 
 # Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Ukonsekvente tidssystemer i observasjonsblokkene: {0} ≠ {1}
 
 # Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = <MISSING TRANSLATION>
+CCSDS_TDM_INCONSISTENT_DATA_LINE = Ukonsekvente datalinje i TDM filen, linje {0} i filen {1}.\nEn TDM datalinje må være som følgene: \"keyword = epoch value\".\nFant følgene datalinje: {2}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
-CCSDS_TDM_KEYWORD_NOT_FOUND = <MISSING TRANSLATION>
+CCSDS_TDM_KEYWORD_NOT_FOUND = Fant ingen CCSDS TDM nøkkel på linje {0} i filen {1}:\n{2}
 
 # Parameter {0} needs a time system to be interpreted
-CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Parameteren {0} trenger et tidssystem for å bli tolket
 
 # Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = <MISSING TRANSLATION>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Ukonsekvent XML observasjonsblokk på linje {0} i TDM filen {1}.\nEn TDM observasjonsblokk må være som følgene:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
 
 # TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
-CCSDS_TDM_UNKNOWN_FORMAT = <MISSING TRANSLATION>
+CCSDS_TDM_UNKNOWN_FORMAT = TDM filen {0}'s format er ukjent. Vennligst oppgi fileformat KEYVALUE eller XML
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brukt for en annen tilstand
@@ -419,46 +419,46 @@ UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
 INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
 
 # no SEM almanac file found
-NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+NO_SEM_ALMANAC_AVAILABLE = Ingen SEM almanakk tilgjengelig
 
 # file {0} is not a supported SEM almanac file
-NOT_A_SUPPORTED_SEM_ALMANAC_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = filen {0} er ikke en støttet SEM almanakkfil
 
 # no Yuma almanac file found
-NO_YUMA_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+NO_YUMA_ALMANAC_AVAILABLE = Ingen Yuma almanakkfil funnet
 
 # file {0} is not a supported Yuma almanac file
-NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = filen {0} er ikke en støttet Yuma almanakkfil
 
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
-NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
+NOT_ENOUGH_GNSS_FOR_DOP = Bare {0} GNSS baner har blitt presistert mens {1} baner trengs for å regne ut DOP'en
 
 # the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
+CCSDS_NO_CORRESPONDING_TIME_SCALE = CCSDS-tidssystemet {0} har ingen korresponderene Orekit TimeScale.
 
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
-CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = Bruk av tidssystemet {0} i CCSDS-filer krever en ytterligere ICD og er ikke støttet av Orekit
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
+NOT_ENOUGH_PROPAGATORS = En aggregat-propagatør krever minst en bestanddel propagatør, men ingen var spesifisert.
 
 # argument {0} cannot be null
-NULL_ARGUMENT = <MISSING TRANSLATION>
+NULL_ARGUMENT = argumentet {0} kan ikke være null
 
 # value {0} not found in {1}
-VALUE_NOT_FOUND = <MISSING TRANSLATION>
+VALUE_NOT_FOUND = fant ikke verdien {0} i {1}
 
 # Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Efemeridefilformatet støtter ikke flere romgjenstander
 
 # Klobuchar coefficients α or β could not be loaded from {0}
-KLOBUCHAR_ALPHA_BETA_NOT_LOADED = <MISSING TRANSLATION>
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Klobuchar-koeffisientene α eller β kunne ikke bli lastet fra {0}
 
 # Klobuchar coefficients α or β not available for date {0}
-KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = Klobuchar-koeffisientene α eller β er ikke tilgjengelige for datoen {0}
 
 # file {0} does not contain Klobuchar coefficients α or β
-NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = filen {0} inneholder ikke Klobuchar-koeffisientene α eller β
 
 # no reference date set for parameter {0}
-NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
+NO_REFERENCE_DATE_FOR_PARAMETER = Ingen referanse-datasett for parameteren {0}
