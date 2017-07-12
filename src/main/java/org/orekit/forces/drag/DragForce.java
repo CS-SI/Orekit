@@ -20,24 +20,19 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -124,70 +119,6 @@ public class DragForce extends AbstractForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-        // retrieve derivation properties
-        final DSFactory factory = mass.getFactory();
-
-        // get atmosphere properties in atmosphere own frame
-        final Frame      atmFrame  = atmosphere.getFrame();
-        final Transform  toBody    = frame.getTransformTo(atmFrame, date);
-        final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position);
-        final Vector3D   posBody   = posBodyDS.toVector3D();
-        final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
-
-        // estimate density model by finite differences and composition
-        // the following implementation works only for first order derivatives.
-        // this could be improved by adding a new method
-        // getDensity(AbsoluteDate, DerivativeStructure, Frame)
-        // to the Atmosphere interface
-        if (factory.getCompiler().getOrder() > 1) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, factory.getCompiler().getOrder());
-        }
-        final double delta  = 1.0;
-        final double x      = posBody.getX();
-        final double y      = posBody.getY();
-        final double z      = posBody.getZ();
-        final double rho0   = atmosphere.getDensity(date, posBody, atmFrame);
-        final double dRhodX = (atmosphere.getDensity(date, new Vector3D(x + delta, y,         z),         atmFrame) - rho0) / delta;
-        final double dRhodY = (atmosphere.getDensity(date, new Vector3D(x,         y + delta, z),         atmFrame) - rho0) / delta;
-        final double dRhodZ = (atmosphere.getDensity(date, new Vector3D(x,         y,         z + delta), atmFrame) - rho0) / delta;
-        final double[] dXdQ = posBodyDS.getX().getAllDerivatives();
-        final double[] dYdQ = posBodyDS.getY().getAllDerivatives();
-        final double[] dZdQ = posBodyDS.getZ().getAllDerivatives();
-        final double[] rhoAll = new double[dXdQ.length];
-        rhoAll[0] = rho0;
-        for (int i = 1; i < rhoAll.length; ++i) {
-            rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
-        }
-        final DerivativeStructure rho = factory.build(rhoAll);
-
-        // we consider that at first order the atmosphere velocity in atmosphere frame
-        // does not depend on local position; however atmosphere velocity in inertial
-        // frame DOES depend on position since the transform between the frames depends
-        // on it, due to central body rotation rate and velocity composition.
-        // So we use the transform to get the correct partial derivatives on vAtm
-        final FieldVector3D<DerivativeStructure> vAtmBodyDS =
-                new FieldVector3D<>(factory.constant(vAtmBody.getX()),
-                                    factory.constant(vAtmBody.getY()),
-                                    factory.constant(vAtmBody.getZ()));
-        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<>(posBodyDS, vAtmBodyDS);
-        final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
-
-        // now we can compute relative velocity, it takes into account partial derivatives with respect to position
-        final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
-
-        // compute acceleration with all its partial derivatives
-        return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
-
     }
 
     /** {@inheritDoc} */

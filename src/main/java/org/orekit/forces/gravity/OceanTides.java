@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -37,7 +36,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -148,19 +146,6 @@ public class OceanTides extends AbstractForceModel {
         return attractionModel.acceleration(s);
     }
 
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date,
-                                                                      final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-        // delegate to underlying attraction model
-        return attractionModel.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
-    }
 
     /** {@inheritDoc} */
     @Override

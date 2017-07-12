@@ -20,6 +20,7 @@ package org.orekit.forces.maneuvers;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -39,10 +40,13 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -70,9 +74,82 @@ public class ConstantThrustManeuverTest extends AbstractForceModelTest {
     // Body mu
     private double mu;
 
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
+            firingField.setAccessible(true);
+            boolean firing = firingField.getBoolean(forceModel);
+            java.lang.reflect.Field thrustField = ConstantThrustManeuver.class.getDeclaredField("thrust");
+            thrustField.setAccessible(true);
+            double thrust = thrustField.getDouble(forceModel);
+            java.lang.reflect.Field directionField = ConstantThrustManeuver.class.getDeclaredField("direction");
+            directionField.setAccessible(true);
+            Vector3D direction;
+            direction = (Vector3D) directionField.get(forceModel);
+            if (firing) {
+                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+            } else {
+                // constant (and null) acceleration when not firing
+                return FieldVector3D.getZero(mass.getField());
+            }
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
     private CircularOrbit dummyOrbit(AbsoluteDate date) {
         return new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
                                  FramesFactory.getEME2000(), date, mu);
+    }
+
+    @Test
+    public void testJacobianVs80Implementation() throws OrekitException {
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv = 0;
+
+        final double duration = 3653.99;
+        final double f = 420;
+ 
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), initDate, mu);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.VVLH);
+       final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
+                                                       TimeScalesFactory.getUTC());
+        final ConstantThrustManeuver maneuver =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+
+        // before maneuver (Jacobian wrt. state is zero)
+        checkStateJacobianVs80Implementation(initialState, maneuver, 1.0e-50, false);
+
+        // in maneuver
+        // TODO maneuver currently does not depend on position/velocity, as attitude dependency is broken
+        //      if *should* depend on them for a LOF-aligned attitude law
+        SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
+        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        SpacecraftState midState = startState.shiftedBy(duration / 2.0);
+        checkStateJacobianVs80Implementation(midState, maneuver, 1.0e-50, false);
+
     }
 
     @Test

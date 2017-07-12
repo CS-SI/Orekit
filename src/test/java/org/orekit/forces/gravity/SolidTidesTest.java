@@ -16,6 +16,10 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -24,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
@@ -32,22 +37,62 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class SolidTidesTest extends AbstractForceModelTest {
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field attractionModelField = SolidTides.class.getDeclaredField("attractionModel");
+            attractionModelField.setAccessible(true);
+            ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
+            double mu = GravityFieldFactory.getConstantNormalizedProvider(5, 5).getMu();
+            Field<DerivativeStructure> field = position.getX().getField();
+            FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, date);
+            FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
+            FieldSpacecraftState<DerivativeStructure> dState =
+                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(dsDate,
+                                                                                                                     position,
+                                                                                                                     velocity,
+                                                                                                                     zero),
+                                                                                 frame, mu),
+                                                      new FieldAttitude<>(frame,
+                                                                      new TimeStampedFieldAngularCoordinates<>(dsDate,
+                                                                                                               rotation,
+                                                                                                               zero,
+                                                                                                               zero)),
+                                                      mass);
+            return attractionModel.acceleration(dState);
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
 
     @Test
     public void testDefaultInterpolation() throws OrekitException {

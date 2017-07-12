@@ -142,17 +142,6 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
-                                                                          Frame frame,
-                                                                          FieldVector3D<DerivativeStructure> position,
-                                                                          FieldVector3D<DerivativeStructure> velocity,
-                                                                          FieldRotation<DerivativeStructure> rotation,
-                                                                          DerivativeStructure mass)
-            throws OrekitException {
-            return position;
-        }
-
-        @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName) throws OrekitException {
             return null;
         }

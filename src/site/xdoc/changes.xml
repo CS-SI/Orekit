@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Simplified ForceModel interface. It does not require a dedicated method for
+        computing state derivatives anymore.
+      </action>
       <action dev="luc" type="remove">
         Removed Jacchia-Bowman 2006 now completely superseded by Jacchia-Bowman 2008.
       </action>

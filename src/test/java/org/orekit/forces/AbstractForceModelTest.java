@@ -29,7 +29,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -88,19 +88,8 @@ public abstract class AbstractForceModelTest {
 
     }
 
-    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(ForceModel forceModel, FieldSpacecraftState<DerivativeStructure> fState)
-        throws OrekitException {
-        // TODO: should be removed from interface and pushed into test classes
-        return forceModel.accelerationDerivatives(fState.getDate().toAbsoluteDate(), FramesFactory.getEME2000(),
-                                                  fState.getPVCoordinates().getPosition(),
-                                                  fState.getPVCoordinates().getVelocity(),
-                                                  fState.getAttitude().getRotation(),
-                                                  fState.getMass());
-    }
+    protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state) {
 
-    protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
-                                                        final double checkTolerance, final boolean print)
-        throws OrekitException {
         final Vector3D p = state.getPVCoordinates().getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
@@ -123,12 +112,30 @@ public abstract class AbstractForceModelTest {
                                         new FieldRotation<>(field, state.getAttitude().getRotation()),
                                         new FieldVector3D<>(field, state.getAttitude().getSpin()),
                                         new FieldVector3D<>(field, state.getAttitude().getRotationAcceleration()));
-        final FieldSpacecraftState<DerivativeStructure> fState =
-                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state.getFrame(), state.getMu()),
-                                                   new FieldAttitude<>(state.getFrame(), fAC),
-                                                   field.getZero().add(state.getMass()));
+        return new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state.getFrame(), state.getMu()),
+                                          new FieldAttitude<>(state.getFrame(), fAC),
+                                          field.getZero().add(state.getMass()));
+    }
+
+    protected abstract FieldVector3D<DerivativeStructure> accelerationDerivatives(ForceModel forceModel,
+                                                                                  final AbsoluteDate date, final  Frame frame,
+                                                                                  final FieldVector3D<DerivativeStructure> position,
+                                                                                  final FieldVector3D<DerivativeStructure> velocity,
+                                                                                  final FieldRotation<DerivativeStructure> rotation,
+                                                                                  final DerivativeStructure mass)
+        throws OrekitException;
+
+    protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
+                                                        final double checkTolerance, final boolean print)
+        throws OrekitException {
+        FieldSpacecraftState<DerivativeStructure> fState = toDS(state);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState);
-        FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState);
+        FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
+                                                                           fState.getFrame(),
+                                                                           fState.getPVCoordinates().getPosition(),
+                                                                           fState.getPVCoordinates().getVelocity(),
+                                                                           fState.getAttitude().getRotation(),
+                                                                           fState.getMass());
         Vector3D dFdPXRef = new Vector3D(dsOld.getX().getPartialDerivative(1, 0, 0, 0, 0, 0),
                                          dsOld.getY().getPartialDerivative(1, 0, 0, 0, 0, 0),
                                          dsOld.getZ().getPartialDerivative(1, 0, 0, 0, 0, 0));

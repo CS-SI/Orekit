@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -73,8 +72,11 @@ import org.orekit.utils.ParameterObserver;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @deprecated as of 9.0, this class is deprecated, it has been obsoleted by {@link HolmesFeatherstoneAttractionModel}
+ * for years
  */
 
+@Deprecated
 public class DrozinerAttractionModel extends AbstractForceModel implements TideSystemProvider {
 
     /** Central attraction scaling factor.
@@ -460,17 +462,6 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         return bodyToInertial.transformVector(new FieldVector3D<>(aX, aY, aZ));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-        return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
     }
 
     /** {@inheritDoc} */

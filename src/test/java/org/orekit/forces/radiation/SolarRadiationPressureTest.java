@@ -18,11 +18,13 @@ package org.orekit.forces.radiation;
 
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -45,6 +47,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -75,6 +78,47 @@ import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
+            kRefField.setAccessible(true);
+            double kRef = kRefField.getDouble(forceModel);
+            java.lang.reflect.Field sunField = SolarRadiationPressure.class.getDeclaredField("sun");
+            sunField.setAccessible(true);
+            PVCoordinatesProvider sun = (PVCoordinatesProvider) sunField.get(forceModel);
+            java.lang.reflect.Field spacecraftField = SolarRadiationPressure.class.getDeclaredField("spacecraft");
+            spacecraftField.setAccessible(true);
+            RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
+            java.lang.reflect.Method getLightingRatioMethod = SolarRadiationPressure.class.getDeclaredMethod("getLightingRatio",
+                                                                                                             FieldVector3D.class,
+                                                                                                             Frame.class,
+                                                                                                             FieldAbsoluteDate.class);
+            getLightingRatioMethod.setAccessible(true);
+
+            final Field<DerivativeStructure> field = position.getX().getField();
+            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final DerivativeStructure r2  = sunSatVector.getNormSq();
+
+            // compute flux
+            final DerivativeStructure ratio = (DerivativeStructure) getLightingRatioMethod.invoke(forceModel, position, frame, new FieldAbsoluteDate<>(field, date));
+            final DerivativeStructure rawP = ratio.multiply(kRef).divide(r2);
+            final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
+
+            // compute acceleration with all its partial derivatives
+            return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
+                 SecurityException | NoSuchMethodException | InvocationTargetException e) {
+            return null;
+        }
+    }
 
     @Test
     public void testLightingInterplanetary() throws OrekitException, ParseException {

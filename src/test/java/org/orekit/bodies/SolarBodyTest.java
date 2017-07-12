@@ -28,7 +28,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -476,25 +475,6 @@ public class SolarBodyTest {
 
             // compute absolute acceleration
             return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody);
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                          final FieldVector3D<DerivativeStructure> position,
-                                                                          final FieldVector3D<DerivativeStructure> velocity,
-                                                                          final FieldRotation<DerivativeStructure> rotation,
-                                                                          final DerivativeStructure mass)
-            throws OrekitException {
-
-            // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
-            final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
-            final DerivativeStructure r2Sat = satToBody.getNormSq();
-
-            // compute absolute acceleration
-            return new FieldVector3D<>(r2Sat.pow(-1.5).multiply(gm), satToBody);
 
         }
 

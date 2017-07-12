@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -295,29 +294,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-
-        final Field<DerivativeStructure> field = position.getX().getField();
-        final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
-        final DerivativeStructure r2  = sunSatVector.getNormSq();
-
-        // compute flux
-        final DerivativeStructure ratio = getLightingRatio(position, frame, new FieldAbsoluteDate<>(field, date));
-        final DerivativeStructure rawP = ratio.multiply(kRef).divide(r2);
-        final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
-
-        // compute acceleration with all its partial derivatives
-        return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
-
     }
 
     /** {@inheritDoc} */
