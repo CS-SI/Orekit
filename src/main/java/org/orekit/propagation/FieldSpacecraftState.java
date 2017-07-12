@@ -31,7 +31,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldLofOffset;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -104,7 +104,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -129,7 +129,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -154,7 +154,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -181,7 +181,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 

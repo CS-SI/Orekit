@@ -142,7 +142,7 @@ public class FieldAttitudeTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        propagator.setAttitudeProvider(new FieldBodyCenterPointing<>(initialOrbit.getFrame(), earth));
+        propagator.setAttitudeProvider(new BodyCenterPointing(initialOrbit.getFrame(), earth));
         FieldAttitude<T> initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
 
 

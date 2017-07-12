@@ -28,12 +28,13 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
@@ -83,7 +84,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @param attitudeProvider provider for attitude computation
      * @param field field used as default
      */
-    protected FieldAbstractAnalyticalPropagator(final Field<T> field, final FieldAttitudeProvider<T> attitudeProvider) {
+    protected FieldAbstractAnalyticalPropagator(final Field<T> field, final AttitudeProvider attitudeProvider) {
         super(field);
         setAttitudeProvider(attitudeProvider);
         pvProvider           = new FieldLocalPVProvider();

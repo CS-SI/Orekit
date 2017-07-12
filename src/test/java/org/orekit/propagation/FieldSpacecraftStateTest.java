@@ -36,8 +36,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldBodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -215,7 +215,7 @@ public class FieldSpacecraftStateTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), date, mu);
 
-        FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<>(orbit.getFrame(), earth);
+        BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
@@ -272,7 +272,7 @@ public class FieldSpacecraftStateTest {
 
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), date, mu);
-        FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<>(orbit.getFrame(), earth);
+        BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         new FieldSpacecraftState<>(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(zero.add(10.0)),
                                                                   orbit.getDate().shiftedBy(10.0),
@@ -308,8 +308,7 @@ public class FieldSpacecraftStateTest {
         }
         final FieldOrbit<T> orbit1Shift = orbit.shiftedBy(one);
 
-        FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<>(orbit.getFrame(), earth);
-
+        BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldAttitude<T> shiftedAttitude = attitudeLaw
                 .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
@@ -368,7 +367,7 @@ public class FieldSpacecraftStateTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), date, mu);
 
-        FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<>(orbit.getFrame(), earth);
+        BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldKeplerianPropagator<T> propagator =
                         new FieldKeplerianPropagator<>(orbit, attitudeLaw, mu, mass);
@@ -411,7 +410,7 @@ public class FieldSpacecraftStateTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), date, mu);
 
-        FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<>(orbit.getFrame(), earth);
+        BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldKeplerianPropagator<T> propagator =
                         new FieldKeplerianPropagator<>(orbit, attitudeLaw, mu, mass);

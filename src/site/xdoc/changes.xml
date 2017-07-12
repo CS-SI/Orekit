@@ -22,6 +22,9 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="update">
+        Merged FieldAttitudeProvider into AttitudeProvider.
+      </action>
+      <action dev="luc" type="update">
         Simplified ForceModel interface. It does not require a dedicated method for
         computing state derivatives anymore.
       </action>

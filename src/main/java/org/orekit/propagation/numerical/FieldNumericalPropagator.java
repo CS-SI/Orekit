@@ -22,13 +22,11 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldAttitudeProvider;
-import org.orekit.attitudes.FieldInertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -163,9 +161,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         super(field, integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
-        final FieldInertialProvider<T> default_law =
-                        new FieldInertialProvider<>(FieldRotation.getIdentity(field));
-        setAttitudeProvider(default_law);
+        setAttitudeProvider(DEFAULT_LAW);
         setMu(Double.NaN);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -280,7 +276,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** {@inheritDoc} */
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
-                                       final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
+                                       final AttitudeProvider attitudeProvider, final Frame frame) {
         return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
 
@@ -302,8 +298,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
          * @param frame inertial frame
          */
         FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                         final OrbitType orbitType, final PositionAngle positionAngleType,
-                         final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
+                              final OrbitType orbitType, final PositionAngle positionAngleType,
+                              final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
 

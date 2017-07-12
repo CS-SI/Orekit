@@ -23,8 +23,7 @@ import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.attitudes.FieldAttitudeProvider;
-import org.orekit.attitudes.FieldInertialProvider;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -75,9 +74,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
+                                          final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
+        this(initialOrbit, DEFAULT_LAW, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
@@ -91,12 +90,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @exception OrekitException if the zonal coefficients cannot be retrieved
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final FieldAttitudeProvider<T> attitude,
-                                     final T mass,
-                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                     final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics)
+                                          final  AttitudeProvider attitude,
+                                          final T mass,
+                                          final UnnormalizedSphericalHarmonicsProvider provider,
+                                          final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics)
         throws OrekitException {
-        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
+        this(initialOrbit, attitude,  mass, provider.getAe(), provider.getMu(),
              mass.getField().getZero().add(harmonics.getUnnormalizedCnm(2, 0)),
              mass.getField().getZero().add(harmonics.getUnnormalizedCnm(3, 0)),
              mass.getField().getZero().add(harmonics.getUnnormalizedCnm(4, 0)),
@@ -127,11 +126,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @see org.orekit.utils.Constants
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final double referenceRadius, final double mu,
-                                     final T c20, final T c30, final T c40,
-                                     final T c50, final T c60)
+                                          final double referenceRadius, final double mu,
+                                          final T c20, final T c30, final T c40,
+                                          final T c50, final T c60)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, DEFAULT_LAW, c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, mass and potential provider.
@@ -143,9 +142,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
+                                          final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit<T>, mass and potential.
@@ -171,11 +170,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
-                                     final double referenceRadius, final double mu,
-                                     final T c20, final T c30, final T c40,
-                                     final T c50, final T c60)
+                                          final double referenceRadius, final double mu,
+                                          final T c20, final T c30, final T c40,
+                                          final T c50, final T c60)
         throws OrekitException {
-        this(initialOrbit, new FieldInertialProvider<>(initialOrbit.getA().getField()), mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, attitude provider and potential provider.
@@ -187,8 +186,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final FieldAttitudeProvider<T> attitudeProv,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
+                                          final AttitudeProvider attitudeProv,
+                                          final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
         this(initialOrbit, attitudeProv, initialOrbit.getA().getField().getZero().add(DEFAULT_MASS), provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
@@ -216,10 +215,10 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final FieldAttitudeProvider<T> attitudeProv,
-                                     final double referenceRadius, final double mu,
-                                     final T c20, final T c30, final T c40,
-                                     final T c50, final T c60)
+                                          final AttitudeProvider attitudeProv,
+                                          final double referenceRadius, final double mu,
+                                          final T c20, final T c30, final T c40,
+                                          final T c50, final T c60)
         throws OrekitException {
         this(initialOrbit, attitudeProv, c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
     }
@@ -233,9 +232,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * or if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final FieldAttitudeProvider<T> attitudeProv,
-                                     final T mass,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
+                                          final AttitudeProvider attitudeProv,
+                                          final T mass,
+                                          final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
         this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
@@ -263,11 +262,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @exception OrekitException if the mean parameters cannot be computed
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
-                                     final FieldAttitudeProvider<T> attitudeProv,
-                                     final T mass,
-                                     final double referenceRadius, final double mu,
-                                     final T c20, final T c30, final T c40,
-                                     final T c50, final T c60)
+                                          final AttitudeProvider attitudeProv,
+                                          final T mass,
+                                          final double referenceRadius, final double mu,
+                                          final T c20, final T c30, final T c40,
+                                          final T c50, final T c60)
         throws OrekitException {
 
         super(mass.getField(), attitudeProv);
