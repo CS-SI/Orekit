@@ -404,7 +404,8 @@ public class TurnAroundRangeAnalyticTest {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
-                }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                   OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
                 jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);

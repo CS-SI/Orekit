@@ -144,8 +144,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
         //      (i.e. derivatives for example). Tests pass, but why? We *think* we should simply
         //      compute ratio = getLightingRatio(position, frame, date), with all derivatives
         //      preserved, but then tests fail...
-        final T                ratio = date.getField().getZero().add(getLightingRatio(position, frame, date).getReal());
-//        final T                ratio = getLightingRatio(position, frame, date);
+//        final T                ratio = date.getField().getZero().add(getLightingRatio(position, frame, date).getReal());
+        final T                ratio = getLightingRatio(position, frame, date);
         final T                rawP  = ratio.divide(r2).multiply(kRef);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 

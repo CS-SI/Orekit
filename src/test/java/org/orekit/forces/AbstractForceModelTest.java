@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -171,7 +172,7 @@ public abstract class AbstractForceModelTest {
         Vector3D dFdPZRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsOld.getY().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsOld.getZ().getPartialDerivative(0, 0, 1, 0, 0, 0));
-        Vector3D dFdZRes  = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
+        Vector3D dFdPZRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsNew.getY().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsNew.getZ().getPartialDerivative(0, 0, 1, 0, 0, 0));
         Vector3D dFdVXRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 0, 1, 0, 0),
@@ -195,40 +196,29 @@ public abstract class AbstractForceModelTest {
         if (print) {
             System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));
             System.out.println("dF/dPY ref norm: " + dFdPYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPYRef, dFdPYRes) + ", rel error: " + (Vector3D.distance(dFdPYRef, dFdPYRes) / dFdPYRef.getNorm()));
-            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdZRes)  + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdZRes)  / dFdPZRef.getNorm()));
+            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdPZRes) + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdPZRes) / dFdPZRef.getNorm()));
             System.out.println("dF/dVX ref norm: " + dFdVXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVXRef, dFdVXRes) + ", rel error: " + (Vector3D.distance(dFdVXRef, dFdVXRes) / dFdVXRef.getNorm()));
             System.out.println("dF/dVY ref norm: " + dFdVYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVYRef, dFdVYRes) + ", rel error: " + (Vector3D.distance(dFdVYRef, dFdVYRes) / dFdVYRef.getNorm()));
             System.out.println("dF/dVZ ref norm: " + dFdVZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVZRef, dFdVZRes) + ", rel error: " + (Vector3D.distance(dFdVZRef, dFdVZRes) / dFdVZRef.getNorm()));
         }
-        Assert.assertEquals(0, Vector3D.distance(dFdPXRef, dFdPXRes), checkTolerance * dFdPXRef.getNorm());
-        Assert.assertEquals(0, Vector3D.distance(dFdPYRef, dFdPYRes), checkTolerance * dFdPYRef.getNorm());
-        Assert.assertEquals(0, Vector3D.distance(dFdPZRef, dFdZRes), checkTolerance * dFdPZRef.getNorm());
-        if (dFdVXRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVXRes.getNorm(), Precision.SAFE_MIN);
-        } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVXRef, dFdVXRes), checkTolerance * dFdVXRef.getNorm());
-        }
-        if (dFdVYRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVYRes.getNorm(), Precision.SAFE_MIN);
-        } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVYRef, dFdVYRes), checkTolerance * dFdVYRef.getNorm());
-        }
-        if (dFdVZRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVZRes.getNorm(), Precision.SAFE_MIN);
-        } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVZRef, dFdVZRes), checkTolerance * dFdVZRef.getNorm());
-        }
+        checkdFdP(dFdPXRef, dFdPXRes, checkTolerance);
+        checkdFdP(dFdPYRef, dFdPYRes, checkTolerance);
+        checkdFdP(dFdPZRef, dFdPZRes, checkTolerance);
+        checkdFdP(dFdVXRef, dFdVXRes, checkTolerance);
+        checkdFdP(dFdVYRef, dFdVYRes, checkTolerance);
+        checkdFdP(dFdVZRef, dFdVZRes, checkTolerance);
 
     }
 
     protected void checkStateJacobianVsFiniteDifferences(final  SpacecraftState state0, final ForceModel forceModel,
-                                                         final double dP,
+                                                         final AttitudeProvider provider, final double dP,
                                                          final double checkTolerance, final boolean print)
         throws OrekitException {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state).toArray(),
-                                                      3, OrbitType.CARTESIAN, PositionAngle.MEAN, dP, 5).
+                                                      3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                                      dP, 5).
                         value(state0);
 
         DSFactory factory = new DSFactory(6, 1);
@@ -274,7 +264,7 @@ public abstract class AbstractForceModelTest {
         Vector3D dFdPZRef = new Vector3D(finiteDifferencesJacobian[0][2],
                                          finiteDifferencesJacobian[1][2],
                                          finiteDifferencesJacobian[2][2]);
-        Vector3D dFdZRes = new Vector3D(dsJacobian.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
+        Vector3D dFdPZRes = new Vector3D(dsJacobian.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsJacobian.getY().getPartialDerivative(0, 0, 1, 0, 0, 0),
                                          dsJacobian.getZ().getPartialDerivative(0, 0, 1, 0, 0, 0));
         Vector3D dFdVXRef = new Vector3D(finiteDifferencesJacobian[0][3],
@@ -296,32 +286,31 @@ public abstract class AbstractForceModelTest {
                                          dsJacobian.getY().getPartialDerivative(0, 0, 0, 0, 0, 1),
                                          dsJacobian.getZ().getPartialDerivative(0, 0, 0, 0, 0, 1));
         if (print) {
+            System.out.println("dF/dPZ ref: " + dFdPZRef.getX() + " " + dFdPZRef.getY() + " " + dFdPZRef.getZ());
+            System.out.println("dF/dPZ res: " + dFdPZRes.getX() + " " + dFdPZRes.getY() + " " + dFdPZRes.getZ());
             System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));
             System.out.println("dF/dPY ref norm: " + dFdPYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPYRef, dFdPYRes) + ", rel error: " + (Vector3D.distance(dFdPYRef, dFdPYRes) / dFdPYRef.getNorm()));
-            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdZRes)  + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdZRes)  / dFdPZRef.getNorm()));
+            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdPZRes) + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdPZRes) / dFdPZRef.getNorm()));
             System.out.println("dF/dVX ref norm: " + dFdVXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVXRef, dFdVXRes) + ", rel error: " + (Vector3D.distance(dFdVXRef, dFdVXRes) / dFdVXRef.getNorm()));
             System.out.println("dF/dVY ref norm: " + dFdVYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVYRef, dFdVYRes) + ", rel error: " + (Vector3D.distance(dFdVYRef, dFdVYRes) / dFdVYRef.getNorm()));
             System.out.println("dF/dVZ ref norm: " + dFdVZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVZRef, dFdVZRes) + ", rel error: " + (Vector3D.distance(dFdVZRef, dFdVZRes) / dFdVZRef.getNorm()));
         }
-        Assert.assertEquals(0, Vector3D.distance(dFdPXRef, dFdPXRes), checkTolerance * dFdPXRef.getNorm());
-        Assert.assertEquals(0, Vector3D.distance(dFdPYRef, dFdPYRes), checkTolerance * dFdPYRef.getNorm());
-        Assert.assertEquals(0, Vector3D.distance(dFdPZRef, dFdZRes), checkTolerance * dFdPZRef.getNorm());
-        if (dFdVXRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVXRes.getNorm(), Precision.SAFE_MIN);
+        checkdFdP(dFdPXRef, dFdPXRes, checkTolerance);
+        checkdFdP(dFdPYRef, dFdPYRes, checkTolerance);
+        checkdFdP(dFdPZRef, dFdPZRes, checkTolerance);
+        checkdFdP(dFdVXRef, dFdVXRes, checkTolerance);
+        checkdFdP(dFdVYRef, dFdVYRes, checkTolerance);
+        checkdFdP(dFdVZRef, dFdVZRes, checkTolerance);
+    }
+
+    private void checkdFdP(final Vector3D reference, final Vector3D result, final double checkTolerance) {
+        if (reference.getNorm() == 0) {
+            // if dF/dP is exactly zero (i.e. no dependency between F and P),
+            // then the result should also be exactly zero
+            Assert.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
         } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVXRef, dFdVXRes), checkTolerance * dFdVXRef.getNorm());
+            Assert.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
         }
-        if (dFdVYRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVYRes.getNorm(), Precision.SAFE_MIN);
-        } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVYRef, dFdVYRes), checkTolerance * dFdVYRef.getNorm());
-        }
-        if (dFdVZRef.getNorm() == 0) {
-            Assert.assertEquals(0, dFdVZRes.getNorm(), Precision.SAFE_MIN);
-        } else {
-            Assert.assertEquals(0, Vector3D.distance(dFdVZRef, dFdVZRes), checkTolerance * dFdVZRef.getNorm());
-        }
-                                        
     }
 
     protected void checkStateJacobian(NumericalPropagator propagator, SpacecraftState state0,

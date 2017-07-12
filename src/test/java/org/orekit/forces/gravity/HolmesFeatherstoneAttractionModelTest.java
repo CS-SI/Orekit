@@ -61,6 +61,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -1002,7 +1003,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferences(state, hfModel, 10.0, 2.0e-10, false);
+        checkStateJacobianVsFiniteDifferences(state, hfModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
 
     }
 

@@ -318,7 +318,8 @@ public class InterSatellitesRangeTest {
                             s[index] = state;
                             return measurement.estimate(0, 0, s).getEstimatedValue();
                         }
-                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
+                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
 
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);

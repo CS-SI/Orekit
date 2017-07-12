@@ -67,6 +67,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -795,7 +796,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferences(state, cuModel, 10.0, 1.0e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, cuModel, Propagator.DEFAULT_LAW, 10.0, 1.0e-9, false);
 
     }
 

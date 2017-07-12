@@ -77,7 +77,8 @@ public class RangeRateTest {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -136,7 +137,8 @@ public class RangeRateTest {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -324,7 +326,8 @@ public class RangeRateTest {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);

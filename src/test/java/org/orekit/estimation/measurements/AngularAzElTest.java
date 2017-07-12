@@ -97,7 +97,7 @@ public class AngularAzElTest {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
-                }, measurement.getDimension(), OrbitType.CARTESIAN,
+                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                    PositionAngle.TRUE, 250.0, 4).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);

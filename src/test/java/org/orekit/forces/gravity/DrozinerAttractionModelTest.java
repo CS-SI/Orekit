@@ -62,6 +62,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -585,7 +586,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         Assert.assertEquals(TideSystem.UNKNOWN, drModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVsFiniteDifferences(state, drModel, 10.0, 1.0e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, drModel, Propagator.DEFAULT_LAW, 10.0, 1.0e-9, false);
 
     }
 

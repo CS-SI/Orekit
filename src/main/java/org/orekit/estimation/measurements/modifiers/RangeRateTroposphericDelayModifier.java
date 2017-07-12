@@ -30,6 +30,7 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -156,7 +157,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
                                     throw new OrekitExceptionWrapper(oe);
                                 }
                             }
-                        }, 1, OrbitType.CARTESIAN,
+                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
 
         return finiteDifferencesJacobian;

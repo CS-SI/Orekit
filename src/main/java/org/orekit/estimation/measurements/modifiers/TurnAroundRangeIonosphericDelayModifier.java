@@ -30,6 +30,7 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.models.earth.IonosphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
@@ -121,7 +122,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
                                     throw new OrekitExceptionWrapper(oe);
                                 }
                             }
-                        }, 1, OrbitType.CARTESIAN,
+                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
 
         return finiteDifferencesJacobian;

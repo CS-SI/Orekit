@@ -55,6 +55,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -249,7 +250,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianIsotropicSingle()
+    public void testGlobalStateJacobianIsotropicSingle()
         throws OrekitException {
 
         // initialization
@@ -298,12 +299,35 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
-        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, false);
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, true);
 
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVsFiniteDifferences()
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight()
+        throws OrekitException {
+        // here, lighting ratio is exactly 1 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra()
+        throws OrekitException {
+        // here, lighting ratio is about 0.57,
+        // and remains strictly between 0 and 1 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, true);
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse()
+        throws OrekitException {
+        // here, lighting ratio is exactly 0 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
+    }
+
+    private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(double deltaT, double dP,
+                                                                          double checkTolerance,
+                                                                          boolean print)
         throws OrekitException {
 
         // initialization
@@ -320,7 +344,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
-        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, 100000.0, 3.0e-10, false);
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
+                                              Propagator.DEFAULT_LAW, dP, checkTolerance, print);
 
     }
 
@@ -357,7 +382,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianIsotropicCnes()
+    public void testGlobalStateJacobianIsotropicCnes()
         throws OrekitException {
 
         // initialization
@@ -410,7 +435,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianBox()
+    public void testGlobalStateJacobianBox()
         throws OrekitException {
 
         // initialization

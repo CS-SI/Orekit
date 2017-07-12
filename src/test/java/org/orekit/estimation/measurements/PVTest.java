@@ -70,7 +70,8 @@ public class PVTest {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
-                                                  }, measurement.getDimension(), OrbitType.CARTESIAN,
+                                                  }, measurement.getDimension(),
+                                                  propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 1.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);

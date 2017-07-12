@@ -36,6 +36,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -221,7 +222,8 @@ public class SolidTidesTest extends AbstractForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, 10.0, 2.0e-10, false);
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
 
     }
 
@@ -247,7 +249,8 @@ public class SolidTidesTest extends AbstractForceModelTest {
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
 
-        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, 10.0, 2.0e-10, false);
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
 
     }
 
