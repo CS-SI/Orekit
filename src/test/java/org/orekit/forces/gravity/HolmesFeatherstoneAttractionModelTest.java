@@ -849,11 +849,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                              SpacecraftState state)
         throws OrekitException {
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        testModel.addContribution(state, accelerationRetriever);
-        final Vector3D testAcceleration = accelerationRetriever.getAcceleration();
-        referenceModel.addContribution(state, accelerationRetriever);
-        final Vector3D referenceAcceleration = accelerationRetriever.getAcceleration();
+        final Vector3D testAcceleration = testModel.acceleration(state);
+        final Vector3D referenceAcceleration = referenceModel.acceleration(state);
 
         return testAcceleration.subtract(referenceAcceleration).getNorm() /
                referenceAcceleration.getNorm();

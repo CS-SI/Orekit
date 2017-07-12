@@ -38,7 +38,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -50,30 +49,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public abstract class AbstractForceModelTest {
-
-    protected static class AccelerationRetriever implements TimeDerivativesEquations {
-
-        private Vector3D acceleration;
-
-        public AccelerationRetriever() {
-            acceleration = Vector3D.ZERO;
-        }
-
-        public void addKeplerContribution(double mu) {
-        }
-
-        public void addNonKeplerianAcceleration(Vector3D gamma) {
-            acceleration = gamma;
-        }
-
-        public void addMassDerivative(double q) {
-        }
-
-        public Vector3D getAcceleration() {
-            return acceleration;
-        }
-
-    }
 
     protected void checkParameterDerivative(SpacecraftState state,
                                             ForceModel forceModel, String name,
@@ -92,7 +67,6 @@ public abstract class AbstractForceModelTest {
                                            accDer.getY().getPartialDerivative(1),
                                            accDer.getZ().getPartialDerivative(1));
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         ParameterDriver driver = null;
         for (ParameterDriver d : forceModel.getParametersDrivers()) {
             if (d.getName().equals(name)) {
@@ -103,12 +77,10 @@ public abstract class AbstractForceModelTest {
         double hParam = hFactor * p0;
         driver.setValue(p0 - 1 * hParam);
         Assert.assertEquals(p0 - 1 * hParam, driver.getValue(), 1.0e-10);
-        forceModel.addContribution(state, accelerationRetriever);
-        final Vector3D gammaM1h = accelerationRetriever.getAcceleration();
+        final Vector3D gammaM1h = forceModel.acceleration(state);
         driver.setValue(p0 + 1 * hParam);
         Assert.assertEquals(p0 + 1 * hParam, driver.getValue(), 1.0e-10);
-        forceModel.addContribution(state, accelerationRetriever);
-        final Vector3D gammaP1h = accelerationRetriever.getAcceleration();
+        final Vector3D gammaP1h = forceModel.acceleration(state);
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);

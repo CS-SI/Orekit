@@ -85,7 +85,6 @@ public class RelativityTest extends AbstractForceModelTest {
     public void testAcceleration() throws OrekitException {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
-        AccelerationRetriever adder = new AccelerationRetriever();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
@@ -96,7 +95,7 @@ public class RelativityTest extends AbstractForceModelTest {
         ));
 
         //action
-        relativity.addContribution(s, adder);
+        Vector3D acceleration = relativity.acceleration(s);
 
         //verify
         //force is ~1e-8 so this give ~3 sig figs.
@@ -105,7 +104,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
         Assert.assertEquals(
                 0,
-                adder.getAcceleration().subtract(circularApproximation).getNorm(),
+                acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
         final DerivativeStructure mass = new DSFactory(7, 1).constant(0.0);
@@ -128,7 +127,6 @@ public class RelativityTest extends AbstractForceModelTest {
         double gm = Constants.EIGEN5C_EARTH_MU;
         double re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Relativity relativity = new Relativity(gm);
-        AccelerationRetriever adder = new AccelerationRetriever();
         final CircularOrbit orbit = new CircularOrbit(
                 re + 500e3, 0, 0, FastMath.toRadians(41.2), -1, 3, PositionAngle.TRUE,
                 frame,
@@ -138,7 +136,7 @@ public class RelativityTest extends AbstractForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit);
 
         //action
-        relativity.addContribution(state, adder);
+        Vector3D acceleration = relativity.acceleration(state);
 
         //verify
         //force is ~1e-8 so this give ~7 sig figs.
@@ -150,7 +148,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
         Assert.assertEquals(
                 0,
-                adder.getAcceleration().subtract(circularApproximation).getNorm(),
+                acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
         DerivativeStructure mass = new DSFactory(7, 1).variable(6, 1);

@@ -607,7 +607,6 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
                                                        GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         for (int i = 2; i <= 69; i++) {
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
@@ -620,10 +619,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             /**
              * Compute acceleration
              */
-            cunModel.addContribution(spacecraftState, accelerationRetriever);
-            final Vector3D cunGamma = accelerationRetriever.getAcceleration();
-            droModel.addContribution(spacecraftState, accelerationRetriever);
-            final Vector3D droGamma = accelerationRetriever.getAcceleration();
+            final Vector3D cunGamma = cunModel.acceleration(spacecraftState);
+            final Vector3D droGamma = droModel.acceleration(spacecraftState);
             Assert.assertEquals(0.0, cunGamma.subtract(droGamma).getNorm(), 2.2e-9 * droGamma.getNorm());
 
         }
