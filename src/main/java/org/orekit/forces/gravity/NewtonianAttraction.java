@@ -22,21 +22,18 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -90,18 +87,45 @@ public class NewtonianAttraction extends AbstractForceModel {
         this.factory = new DSFactory(1, 1);
     }
 
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
-        throws OrekitException {
-
-        final DerivativeStructure r2 = position.getNormSq();
-        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
-
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return mu;
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
+        throws OrekitException {
+        final double r2 = s.getPVCoordinates().getPosition().getNormSq();
+        return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+        final T r2 = s.getPVCoordinates().getPosition().getNormSq();
+        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), s.getPVCoordinates().getPosition());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
@@ -114,37 +138,20 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     }
 
-    /** Get the central attraction coefficient μ.
-     * @return mu central attraction coefficient (m³/s²)
-     */
-    public double getMu() {
-        return mu;
-    }
-
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
-        adder.addKeplerContribution(mu);
-    }
-
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
-        adder.addKeplerContribution(mu);
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
     }

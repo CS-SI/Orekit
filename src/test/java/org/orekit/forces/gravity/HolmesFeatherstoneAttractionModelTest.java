@@ -17,13 +17,20 @@
 package org.orekit.forces.gravity;
 
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.dfp.Dfp;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -48,6 +55,7 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -61,6 +69,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -79,6 +88,273 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTest {
+
+    private static final int SCALING = 930;
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
+            bodyFrameField.setAccessible(true);
+            Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
+
+            // get the position in body frame
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+            final Transform toBodyFrame   = fromBodyFrame.getInverse();
+            final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+
+            // compute gradient and Hessian
+            final GradientHessian gh   = gradientHessian((HolmesFeatherstoneAttractionModel) forceModel,
+                                                         date, positionBody);
+
+            // gradient of the non-central part of the gravity field
+            final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
+
+            // Hessian of the non-central part of the gravity field
+            final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
+            final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
+            final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
+
+            // distribute all partial derivatives in a compact acceleration vector
+            final double[] derivatives = new double[1 + mass.getFreeParameters()];
+            final DerivativeStructure[] accDer = new DerivativeStructure[3];
+            for (int i = 0; i < 3; ++i) {
+
+                // first element is value of acceleration (i.e. gradient of field)
+                derivatives[0] = gInertial[i];
+
+                // next three elements are one row of the Jacobian of acceleration (i.e. Hessian of field)
+                derivatives[1] = hInertial.getEntry(i, 0);
+                derivatives[2] = hInertial.getEntry(i, 1);
+                derivatives[3] = hInertial.getEntry(i, 2);
+
+                // next elements (three or four depending on mass being used or not) are left as 0
+
+                accDer[i] = mass.getFactory().build(derivatives);
+
+            }
+
+            return new FieldVector3D<>(accDer);
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
+    private GradientHessian gradientHessian(final HolmesFeatherstoneAttractionModel hfModel,
+                                           final AbsoluteDate date, final Vector3D position)
+        throws OrekitException {
+        try {
+
+        java.lang.reflect.Field providerField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("provider");
+        providerField.setAccessible(true);
+        NormalizedSphericalHarmonicsProvider provider = (NormalizedSphericalHarmonicsProvider) providerField.get(hfModel);
+        java.lang.reflect.Method createDistancePowersArrayMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("createDistancePowersArray", Double.TYPE);
+        createDistancePowersArrayMethod.setAccessible(true);
+        java.lang.reflect.Method createCosSinArraysMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("createCosSinArrays", Double.TYPE, Double.TYPE);
+        createCosSinArraysMethod.setAccessible(true);
+        java.lang.reflect.Method computeTesseralMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("computeTesseral",
+                                                                                  Integer.TYPE, Integer.TYPE, Integer.TYPE,
+                                                                                  Double.TYPE, Double.TYPE, Double.TYPE,
+                                                                                  double[].class, double[].class, double[].class,
+                                                                                  double[].class, double[].class, double[].class);
+        computeTesseralMethod.setAccessible(true);
+
+        final int degree = provider.getMaxDegree();
+        final int order  = provider.getMaxOrder();
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
+
+        // allocate the columns for recursion
+        double[] pnm0Plus2  = new double[degree + 1];
+        double[] pnm0Plus1  = new double[degree + 1];
+        double[] pnm0       = new double[degree + 1];
+        double[] pnm1Plus1  = new double[degree + 1];
+        double[] pnm1       = new double[degree + 1];
+        final double[] pnm2 = new double[degree + 1];
+
+        // compute polar coordinates
+        final double x    = position.getX();
+        final double y    = position.getY();
+        final double z    = position.getZ();
+        final double x2   = x * x;
+        final double y2   = y * y;
+        final double z2   = z * z;
+        final double r2   = x2 + y2 + z2;
+        final double r    = FastMath.sqrt (r2);
+        final double rho2 = x2 + y2;
+        final double rho  = FastMath.sqrt(rho2);
+        final double t    = z / r;   // cos(theta), where theta is the polar angle
+        final double u    = rho / r; // sin(theta), where theta is the polar angle
+        final double tOu  = z / rho;
+
+        // compute distance powers
+        final double[] aOrN = (double[]) createDistancePowersArrayMethod.invoke(hfModel, provider.getAe() / r);
+
+        // compute longitude cosines/sines
+        final double[][] cosSinLambda = (double[][]) createCosSinArraysMethod.invoke(hfModel, position.getX() / rho, position.getY() / rho);
+
+        // outer summation over order
+        int    index = 0;
+        double value = 0;
+        final double[]   gradient = new double[3];
+        final double[][] hessian  = new double[3][3];
+        for (int m = degree; m >= 0; --m) {
+
+            // compute tesseral terms
+            index = ((Integer) computeTesseralMethod.invoke(hfModel, m, degree, index, t, u, tOu,
+                                                            pnm0Plus2, pnm0Plus1, pnm1Plus1, pnm0, pnm1, pnm2)).intValue();
+
+            if (m <= order) {
+                // compute contribution of current order to field (equation 5 of the paper)
+
+                // inner summation over degree, for fixed order
+                double sumDegreeS               = 0;
+                double sumDegreeC               = 0;
+                double dSumDegreeSdR            = 0;
+                double dSumDegreeCdR            = 0;
+                double dSumDegreeSdTheta        = 0;
+                double dSumDegreeCdTheta        = 0;
+                double d2SumDegreeSdRdR         = 0;
+                double d2SumDegreeSdRdTheta     = 0;
+                double d2SumDegreeSdThetadTheta = 0;
+                double d2SumDegreeCdRdR         = 0;
+                double d2SumDegreeCdRdTheta     = 0;
+                double d2SumDegreeCdThetadTheta = 0;
+                for (int n = FastMath.max(2, m); n <= degree; ++n) {
+                    final double qSnm         = aOrN[n] * harmonics.getNormalizedSnm(n, m);
+                    final double qCnm         = aOrN[n] * harmonics.getNormalizedCnm(n, m);
+                    final double nOr          = n / r;
+                    final double nnP1Or2      = nOr * (n + 1) / r;
+                    final double s0           = pnm0[n] * qSnm;
+                    final double c0           = pnm0[n] * qCnm;
+                    final double s1           = pnm1[n] * qSnm;
+                    final double c1           = pnm1[n] * qCnm;
+                    final double s2           = pnm2[n] * qSnm;
+                    final double c2           = pnm2[n] * qCnm;
+                    sumDegreeS               += s0;
+                    sumDegreeC               += c0;
+                    dSumDegreeSdR            -= nOr * s0;
+                    dSumDegreeCdR            -= nOr * c0;
+                    dSumDegreeSdTheta        += s1;
+                    dSumDegreeCdTheta        += c1;
+                    d2SumDegreeSdRdR         += nnP1Or2 * s0;
+                    d2SumDegreeSdRdTheta     -= nOr * s1;
+                    d2SumDegreeSdThetadTheta += s2;
+                    d2SumDegreeCdRdR         += nnP1Or2 * c0;
+                    d2SumDegreeCdRdTheta     -= nOr * c1;
+                    d2SumDegreeCdThetadTheta += c2;
+                }
+
+                // contribution to outer summation over order
+                final double sML = cosSinLambda[1][m];
+                final double cML = cosSinLambda[0][m];
+                value            = value         * u + sML * sumDegreeS + cML * sumDegreeC;
+                gradient[0]      = gradient[0]   * u + sML * dSumDegreeSdR + cML * dSumDegreeCdR;
+                gradient[1]      = gradient[1]   * u + m * (cML * sumDegreeS - sML * sumDegreeC);
+                gradient[2]      = gradient[2]   * u + sML * dSumDegreeSdTheta + cML * dSumDegreeCdTheta;
+                hessian[0][0]    = hessian[0][0] * u + sML * d2SumDegreeSdRdR + cML * d2SumDegreeCdRdR;
+                hessian[1][0]    = hessian[1][0] * u + m * (cML * dSumDegreeSdR - sML * dSumDegreeCdR);
+                hessian[2][0]    = hessian[2][0] * u + sML * d2SumDegreeSdRdTheta + cML * d2SumDegreeCdRdTheta;
+                hessian[1][1]    = hessian[1][1] * u - m * m * (sML * sumDegreeS + cML * sumDegreeC);
+                hessian[2][1]    = hessian[2][1] * u + m * (cML * dSumDegreeSdTheta - sML * dSumDegreeCdTheta);
+                hessian[2][2]    = hessian[2][2] * u + sML * d2SumDegreeSdThetadTheta + cML * d2SumDegreeCdThetadTheta;
+
+            }
+
+            // rotate the recursion arrays
+            final double[] tmp0 = pnm0Plus2;
+            pnm0Plus2 = pnm0Plus1;
+            pnm0Plus1 = pnm0;
+            pnm0      = tmp0;
+            final double[] tmp1 = pnm1Plus1;
+            pnm1Plus1 = pnm1;
+            pnm1      = tmp1;
+
+        }
+
+        // scale back
+        value = FastMath.scalb(value, SCALING);
+        for (int i = 0; i < 3; ++i) {
+            gradient[i] = FastMath.scalb(gradient[i], SCALING);
+            for (int j = 0; j <= i; ++j) {
+                hessian[i][j] = FastMath.scalb(hessian[i][j], SCALING);
+            }
+        }
+
+
+        // apply the global mu/r factor
+        final double muOr = provider.getMu() / r;
+        value         *= muOr;
+        gradient[0]    = muOr * gradient[0] - value / r;
+        gradient[1]   *= muOr;
+        gradient[2]   *= muOr;
+        hessian[0][0]  = muOr * hessian[0][0] - 2 * gradient[0] / r;
+        hessian[1][0]  = muOr * hessian[1][0] -     gradient[1] / r;
+        hessian[2][0]  = muOr * hessian[2][0] -     gradient[2] / r;
+        hessian[1][1] *= muOr;
+        hessian[2][1] *= muOr;
+        hessian[2][2] *= muOr;
+
+        // convert gradient and Hessian from spherical to Cartesian
+        final SphericalCoordinates sc = new SphericalCoordinates(position);
+        return new GradientHessian(sc.toCartesianGradient(gradient),
+                                   sc.toCartesianHessian(hessian, gradient));
+
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
+                 SecurityException | InvocationTargetException | NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    /** Container for gradient and Hessian. */
+    private static class GradientHessian implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130219L;
+
+        /** Gradient. */
+        private final double[] gradient;
+
+        /** Hessian. */
+        private final double[][] hessian;
+
+        /** Simple constructor.
+         * <p>
+         * A reference to the arrays is stored, they are <strong>not</strong> cloned.
+         * </p>
+         * @param gradient gradient
+         * @param hessian hessian
+         */
+        public GradientHessian(final double[] gradient, final double[][] hessian) {
+            this.gradient = gradient;
+            this.hessian  = hessian;
+        }
+
+        /** Get a reference to the gradient.
+         * @return gradient (a reference to the internal array is returned)
+         */
+        public double[] getGradient() {
+            return gradient;
+        }
+
+        /** Get a reference to the Hessian.
+         * @return Hessian (a reference to the internal array is returned)
+         */
+        public double[][] getHessian() {
+            return hessian;
+        }
+
+    }
 
     @Test
     public void testRelativeNumericPrecision() throws OrekitException {
@@ -407,7 +683,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double[][] refHessian = hessian(model, null, position, 1.0e-3);
-                double[][] hessian = model.gradientHessian(null, position).getHessian();
+                double[][] hessian = gradientHessian(model, null, position).getHessian();
                 double normH2 = 0;
                 double normE2 = 0;
                 for (int i = 0; i < 3; ++i) {
@@ -701,6 +977,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
     // test the difference with the Cunningham model
     @Test
+    @Deprecated
     public void testZonalWithCunninghamReference()
         throws OrekitException {
         // initialization
@@ -752,6 +1029,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     }
 
     @Test
+    @Deprecated
     public void testCompleteWithCunninghamReference()
         throws OrekitException {
 
@@ -793,6 +1071,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     }
 
     @Test
+    @Deprecated
     public void testIssue97() throws OrekitException {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -848,11 +1127,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                              SpacecraftState state)
         throws OrekitException {
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        testModel.addContribution(state, accelerationRetriever);
-        final Vector3D testAcceleration = accelerationRetriever.getAcceleration();
-        referenceModel.addContribution(state, accelerationRetriever);
-        final Vector3D referenceAcceleration = accelerationRetriever.getAcceleration();
+        final Vector3D testAcceleration = testModel.acceleration(state);
+        final Vector3D referenceAcceleration = referenceModel.acceleration(state);
 
         return testAcceleration.subtract(referenceAcceleration).getNorm() /
                referenceAcceleration.getNorm();
@@ -952,6 +1228,59 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
                            50000, tolerances[0], 7.8e-6);
+    }
+
+    @Test
+    public void testStateJacobianVs80Implementation()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVs80Implementation(state, hfModel, 2.0e-15, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVsFiniteDifferences()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVsFiniteDifferences(state, hfModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
+
     }
 
     @Before

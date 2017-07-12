@@ -32,7 +32,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -1498,15 +1497,18 @@ public class NumericalPropagatorTest {
                         FieldTimeDerivativesEquations<T> adder) {
         }
 
+        /** {@inheritDoc} */
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-                AbsoluteDate date,
-                Frame frame,
-                FieldVector3D<DerivativeStructure> position,
-                FieldVector3D<DerivativeStructure> velocity,
-                FieldRotation<DerivativeStructure> rotation,
-                DerivativeStructure mass) throws OrekitException {
-            return position.scalarMultiply(0);
+        public Vector3D acceleration(final SpacecraftState s)
+            throws OrekitException {
+            return Vector3D.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+            throws OrekitException {
+            return FieldVector3D.getZero(s.getDate().getField());
         }
 
         @Override

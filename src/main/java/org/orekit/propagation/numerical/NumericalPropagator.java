@@ -35,7 +35,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -493,6 +492,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             orbit = state.getOrbit();
@@ -511,27 +511,22 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void addKeplerContribution(final double mu) {
             orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }
 
         /** {@inheritDoc} */
-        public void addXYZAcceleration(final double x, final double y, final double z) {
+        public void addNonKeplerianAcceleration(final Vector3D gamma)
+            throws OrekitException {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
-                yDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
+                yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
             }
         }
 
         /** {@inheritDoc} */
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
-            throws OrekitException {
-            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
-            final Vector3D gammInRefFrame = t.transformVector(gamma);
-            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public void addMassDerivative(final double q) {
             if (q > 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);

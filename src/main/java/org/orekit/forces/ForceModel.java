@@ -21,10 +21,9 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -67,10 +66,10 @@ public interface ForceModel {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
-     * before any calls to {@link #addContribution(SpacecraftState,
-     * TimeDerivativesEquations)} or {@link #accelerationDerivatives(AbsoluteDate, Frame,
-     * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)} or {@link
-     * #accelerationDerivatives(SpacecraftState, String)}.
+     * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
+     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations),
+     * {@link #acceleration(SpacecraftState)}, {@link #acceleration(FieldSpacecraftState)}
+     * or {@link #accelerationDerivatives(SpacecraftState, String)}
      *
      * <p> The default implementation of this method does nothing.
      *
@@ -80,52 +79,53 @@ public interface ForceModel {
      *                         takes some action that throws an {@link OrekitException}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target)
-            throws OrekitException {
+        throws OrekitException {
+    }
+
+    /** Compute the contribution of the force model to the perturbing
+     * acceleration.
+     * <p>
+     * The default implementation simply adds the {@link #acceleration(SpacecraftState) acceleration}
+     * as a non-Keplerian acceleration.
+     * </p>
+     * @param s current state information: date, kinematics, attitude
+     * @param adder object where the contribution should be added
+     * @exception OrekitException if some specific error occurs
+     */
+    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
+        throws OrekitException {
+        adder.addNonKeplerianAcceleration(acceleration(s));
     }
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
+     * @param <T> type of the elements
      * @exception OrekitException if some specific error occurs
      */
-    void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
-        throws OrekitException;
+    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addNonKeplerianAcceleration(acceleration(s));
+    }
 
-    /** Compute the contribution of the force model to the perturbing
-     * acceleration.
+    /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param adder object where the contribution should be added
-     * @param <T> extends RealFieldElement
+     * @return acceleration in same frame as state
      * @exception OrekitException if some specific error occurs
+     * @since 9.0
      */
-    <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+    Vector3D acceleration(SpacecraftState s)
         throws OrekitException;
 
-    /** Compute acceleration derivatives with respect to state parameters.
-     * <p>
-     * The derivatives should be computed with respect to position, velocity
-     * and optionnaly mass. The input parameters already take into account the
-     * free parameters (6 or 7 depending on derivation with respect to mass
-     * being considered or not) and order (always 1). Free parameters at indices
-     * 0, 1 and 2 correspond to derivatives with respect to position. Free
-     * parameters at indices 3, 4 and 5 correspond to derivatives with respect
-     * to velocity. Free parameter at index 6 (if present) corresponds to
-     * to derivatives with respect to mass.
-     * </p>
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param velocity velocity of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass spacecraft mass
-     * @return acceleration with all derivatives specified by the input parameters own derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 6.0
+    /** Compute acceleration.
+     * @param s current state information: date, kinematics, attitude
+     * @return acceleration in same frame as state
+     * @param <T> type of the elements
+     * @exception OrekitException if some specific error occurs
+     * @since 9.0
      */
-    FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame,
-                                       FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity,
-                                       FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
+    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s)
         throws OrekitException;
 
     /** Compute acceleration derivatives with respect to additional parameters.

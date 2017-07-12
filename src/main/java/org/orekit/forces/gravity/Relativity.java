@@ -22,21 +22,16 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -100,9 +95,10 @@ public class Relativity extends AbstractForceModel {
         this.gm = gm;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder) throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s)
+        throws OrekitException {
 
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D p = pv.getPosition();
@@ -114,38 +110,37 @@ public class Relativity extends AbstractForceModel {
         final double s2 = v.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
-        final Vector3D accel = new Vector3D(
+        return new Vector3D(
                 4 * this.gm / r - s2,
                 p,
                 4 * p.dotProduct(v),
                 v)
                 .scalarMultiply(this.gm / (r2 * r * c2));
-        adder.addAcceleration(accel, s.getFrame());
+
     }
 
+    /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-            final AbsoluteDate date,
-            final Frame frame,
-            final FieldVector3D<DerivativeStructure> position,
-            final FieldVector3D<DerivativeStructure> velocity,
-            final FieldRotation<DerivativeStructure> rotation,
-            final DerivativeStructure mass) {
-
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
+        final FieldPVCoordinates<T> pv = s.getPVCoordinates();
+        final FieldVector3D<T> p = pv.getPosition();
+        final FieldVector3D<T> v = pv.getVelocity();
         //radius
-        final DerivativeStructure r2 = position.getNormSq();
-        final DerivativeStructure r = r2.sqrt();
-        //speed squared
-        final DerivativeStructure s2 = velocity.getNormSq();
+        final T r2 = p.getNormSq();
+        final T r = r2.sqrt();
+        //speed
+        final T s2 = v.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
         return new FieldVector3D<>(r.reciprocal().multiply(4 * this.gm).subtract(s2),
-                                   position,
-                                   position.dotProduct(velocity).multiply(4),
-                                   velocity).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
+                                   p,
+                                   p.dotProduct(v).multiply(4),
+                                   v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(
             final SpacecraftState s,
@@ -169,43 +164,22 @@ public class Relativity extends AbstractForceModel {
                scalarMultiply(gmDS.divide(r2 * r * c2));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
     }
 
-
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        final FieldPVCoordinates<T> pv = s.getPVCoordinates();
-        final FieldVector3D<T> p = pv.getPosition();
-        final FieldVector3D<T> v = pv.getVelocity();
-        //radius
-        final T r2 = p.getNormSq();
-        final T r = r2.sqrt();
-        //speed
-        final T s2 = v.getNormSq();
-        final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
-        //eq. 3.146
-        final FieldVector3D<T> accel = new FieldVector3D<>(r.reciprocal().multiply(4 * this.gm).subtract(s2),
-                                                           p,
-                                                           p.dotProduct(v).multiply(4),
-                                                           v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
-        adder.addAcceleration(accel, s.getFrame()); //TODO NOT TESTED
     }
 
 }

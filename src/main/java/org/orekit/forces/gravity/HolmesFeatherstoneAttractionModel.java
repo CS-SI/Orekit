@@ -17,19 +17,15 @@
 package org.orekit.forces.gravity;
 
 
-import java.io.Serializable;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
@@ -45,8 +41,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -539,198 +533,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
     }
 
-    /** Compute both the gradient and the hessian of the non-central part of the gravity field.
-     * @param date current date
-     * @param position position at which gravity field is desired in body frame
-     * @return gradient and hessian of the non-central part of the gravity field
-     * @exception OrekitException if position cannot be converted to central body frame
-     */
-    public GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position)
-        throws OrekitException {
-
-        final int degree = provider.getMaxDegree();
-        final int order  = provider.getMaxOrder();
-        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
-
-        // allocate the columns for recursion
-        double[] pnm0Plus2  = new double[degree + 1];
-        double[] pnm0Plus1  = new double[degree + 1];
-        double[] pnm0       = new double[degree + 1];
-        double[] pnm1Plus1  = new double[degree + 1];
-        double[] pnm1       = new double[degree + 1];
-        final double[] pnm2 = new double[degree + 1];
-
-        // compute polar coordinates
-        final double x    = position.getX();
-        final double y    = position.getY();
-        final double z    = position.getZ();
-        final double x2   = x * x;
-        final double y2   = y * y;
-        final double z2   = z * z;
-        final double r2   = x2 + y2 + z2;
-        final double r    = FastMath.sqrt (r2);
-        final double rho2 = x2 + y2;
-        final double rho  = FastMath.sqrt(rho2);
-        final double t    = z / r;   // cos(theta), where theta is the polar angle
-        final double u    = rho / r; // sin(theta), where theta is the polar angle
-        final double tOu  = z / rho;
-
-        // compute distance powers
-        final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
-
-        // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
-
-        // outer summation over order
-        int    index = 0;
-        double value = 0;
-        final double[]   gradient = new double[3];
-        final double[][] hessian  = new double[3][3];
-        for (int m = degree; m >= 0; --m) {
-
-            // compute tesseral terms
-            index = computeTesseral(m, degree, index, t, u, tOu,
-                                    pnm0Plus2, pnm0Plus1, pnm1Plus1, pnm0, pnm1, pnm2);
-
-            if (m <= order) {
-                // compute contribution of current order to field (equation 5 of the paper)
-
-                // inner summation over degree, for fixed order
-                double sumDegreeS               = 0;
-                double sumDegreeC               = 0;
-                double dSumDegreeSdR            = 0;
-                double dSumDegreeCdR            = 0;
-                double dSumDegreeSdTheta        = 0;
-                double dSumDegreeCdTheta        = 0;
-                double d2SumDegreeSdRdR         = 0;
-                double d2SumDegreeSdRdTheta     = 0;
-                double d2SumDegreeSdThetadTheta = 0;
-                double d2SumDegreeCdRdR         = 0;
-                double d2SumDegreeCdRdTheta     = 0;
-                double d2SumDegreeCdThetadTheta = 0;
-                for (int n = FastMath.max(2, m); n <= degree; ++n) {
-                    final double qSnm         = aOrN[n] * harmonics.getNormalizedSnm(n, m);
-                    final double qCnm         = aOrN[n] * harmonics.getNormalizedCnm(n, m);
-                    final double nOr          = n / r;
-                    final double nnP1Or2      = nOr * (n + 1) / r;
-                    final double s0           = pnm0[n] * qSnm;
-                    final double c0           = pnm0[n] * qCnm;
-                    final double s1           = pnm1[n] * qSnm;
-                    final double c1           = pnm1[n] * qCnm;
-                    final double s2           = pnm2[n] * qSnm;
-                    final double c2           = pnm2[n] * qCnm;
-                    sumDegreeS               += s0;
-                    sumDegreeC               += c0;
-                    dSumDegreeSdR            -= nOr * s0;
-                    dSumDegreeCdR            -= nOr * c0;
-                    dSumDegreeSdTheta        += s1;
-                    dSumDegreeCdTheta        += c1;
-                    d2SumDegreeSdRdR         += nnP1Or2 * s0;
-                    d2SumDegreeSdRdTheta     -= nOr * s1;
-                    d2SumDegreeSdThetadTheta += s2;
-                    d2SumDegreeCdRdR         += nnP1Or2 * c0;
-                    d2SumDegreeCdRdTheta     -= nOr * c1;
-                    d2SumDegreeCdThetadTheta += c2;
-                }
-
-                // contribution to outer summation over order
-                final double sML = cosSinLambda[1][m];
-                final double cML = cosSinLambda[0][m];
-                value            = value         * u + sML * sumDegreeS + cML * sumDegreeC;
-                gradient[0]      = gradient[0]   * u + sML * dSumDegreeSdR + cML * dSumDegreeCdR;
-                gradient[1]      = gradient[1]   * u + m * (cML * sumDegreeS - sML * sumDegreeC);
-                gradient[2]      = gradient[2]   * u + sML * dSumDegreeSdTheta + cML * dSumDegreeCdTheta;
-                hessian[0][0]    = hessian[0][0] * u + sML * d2SumDegreeSdRdR + cML * d2SumDegreeCdRdR;
-                hessian[1][0]    = hessian[1][0] * u + m * (cML * dSumDegreeSdR - sML * dSumDegreeCdR);
-                hessian[2][0]    = hessian[2][0] * u + sML * d2SumDegreeSdRdTheta + cML * d2SumDegreeCdRdTheta;
-                hessian[1][1]    = hessian[1][1] * u - m * m * (sML * sumDegreeS + cML * sumDegreeC);
-                hessian[2][1]    = hessian[2][1] * u + m * (cML * dSumDegreeSdTheta - sML * dSumDegreeCdTheta);
-                hessian[2][2]    = hessian[2][2] * u + sML * d2SumDegreeSdThetadTheta + cML * d2SumDegreeCdThetadTheta;
-
-            }
-
-            // rotate the recursion arrays
-            final double[] tmp0 = pnm0Plus2;
-            pnm0Plus2 = pnm0Plus1;
-            pnm0Plus1 = pnm0;
-            pnm0      = tmp0;
-            final double[] tmp1 = pnm1Plus1;
-            pnm1Plus1 = pnm1;
-            pnm1      = tmp1;
-
-        }
-
-        // scale back
-        value = FastMath.scalb(value, SCALING);
-        for (int i = 0; i < 3; ++i) {
-            gradient[i] = FastMath.scalb(gradient[i], SCALING);
-            for (int j = 0; j <= i; ++j) {
-                hessian[i][j] = FastMath.scalb(hessian[i][j], SCALING);
-            }
-        }
-
-
-        // apply the global mu/r factor
-        final double muOr = mu / r;
-        value         *= muOr;
-        gradient[0]    = muOr * gradient[0] - value / r;
-        gradient[1]   *= muOr;
-        gradient[2]   *= muOr;
-        hessian[0][0]  = muOr * hessian[0][0] - 2 * gradient[0] / r;
-        hessian[1][0]  = muOr * hessian[1][0] -     gradient[1] / r;
-        hessian[2][0]  = muOr * hessian[2][0] -     gradient[2] / r;
-        hessian[1][1] *= muOr;
-        hessian[2][1] *= muOr;
-        hessian[2][2] *= muOr;
-
-        // convert gradient and Hessian from spherical to Cartesian
-        final SphericalCoordinates sc = new SphericalCoordinates(position);
-        return new GradientHessian(sc.toCartesianGradient(gradient),
-                                   sc.toCartesianHessian(hessian, gradient));
-
-
-    }
-
-    /** Container for gradient and Hessian. */
-    public static class GradientHessian implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130219L;
-
-        /** Gradient. */
-        private final double[] gradient;
-
-        /** Hessian. */
-        private final double[][] hessian;
-
-        /** Simple constructor.
-         * <p>
-         * A reference to the arrays is stored, they are <strong>not</strong> cloned.
-         * </p>
-         * @param gradient gradient
-         * @param hessian hessian
-         */
-        public GradientHessian(final double[] gradient, final double[][] hessian) {
-            this.gradient = gradient;
-            this.hessian  = hessian;
-        }
-
-        /** Get a reference to the gradient.
-         * @return gradient (a reference to the internal array is returned)
-         */
-        public double[] getGradient() {
-            return gradient;
-        }
-
-        /** Get a reference to the Hessian.
-         * @return Hessian (a reference to the internal array is returned)
-         */
-        public double[][] getHessian() {
-            return hessian;
-        }
-
-    }
-
     /** Compute a/r powers array.
      * @param aOr a/r
      * @return array containing (a/r)<sup>n</sup>
@@ -971,9 +773,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return new value for index
      */
     private <T extends RealFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
-                                final T t, final T u, final T tOu,
-                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
-                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
+                                                                final T t, final T u, final T tOu,
+                                                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
+                                                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
 
         final T u2 = u.multiply(u);
         final T zero = u.getField().getZero();
@@ -1043,7 +845,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         // get the position in body frame
@@ -1053,12 +856,12 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        return fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
+
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
         throws OrekitException {
 
         // get the position in body frame
@@ -1068,8 +871,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
+
     }
 
     /** {@inheritDoc} */
@@ -1081,51 +884,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
-        throws OrekitException {
-
-        // get the position in body frame
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
-
-        // compute gradient and Hessian
-        final GradientHessian gh   = gradientHessian(date, positionBody);
-
-        // gradient of the non-central part of the gravity field
-        final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
-
-        // Hessian of the non-central part of the gravity field
-        final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
-        final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
-        final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
-
-        // distribute all partial derivatives in a compact acceleration vector
-        final double[] derivatives = new double[1 + mass.getFreeParameters()];
-        final DerivativeStructure[] accDer = new DerivativeStructure[3];
-        for (int i = 0; i < 3; ++i) {
-
-            // first element is value of acceleration (i.e. gradient of field)
-            derivatives[0] = gInertial[i];
-
-            // next three elements are one row of the Jacobian of acceleration (i.e. Hessian of field)
-            derivatives[1] = hInertial.getEntry(i, 0);
-            derivatives[2] = hInertial.getEntry(i, 1);
-            derivatives[3] = hInertial.getEntry(i, 2);
-
-            // next elements (three or four depending on mass being used or not) are left as 0
-
-            accDer[i] = mass.getFactory().build(derivatives);
-
-        }
-
-        return new FieldVector3D<>(accDer);
-
     }
 
     /** {@inheritDoc} */

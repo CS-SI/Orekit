@@ -25,6 +25,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -67,9 +68,11 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
+import org.orekit.propagation.numerical.Jacobianizer;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -84,8 +87,31 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-
+@Deprecated
 public class CunninghamAttractionModelTest extends AbstractForceModelTest {
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            
+            java.lang.reflect.Field providerField = CunninghamAttractionModel.class.getDeclaredField("provider");
+            providerField.setAccessible(true);
+            UnnormalizedSphericalHarmonicsProvider provider =
+                            (UnnormalizedSphericalHarmonicsProvider) providerField.get(forceModel);
+            
+            Jacobianizer jacobianizer = new Jacobianizer(forceModel, provider.getMu(), 0.1);
+            return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
 
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
@@ -606,7 +632,6 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
                                                        GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         for (int i = 2; i <= 69; i++) {
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
@@ -619,10 +644,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             /**
              * Compute acceleration
              */
-            cunModel.addContribution(spacecraftState, accelerationRetriever);
-            final Vector3D cunGamma = accelerationRetriever.getAcceleration();
-            droModel.addContribution(spacecraftState, accelerationRetriever);
-            final Vector3D droGamma = accelerationRetriever.getAcceleration();
+            final Vector3D cunGamma = cunModel.acceleration(spacecraftState);
+            final Vector3D droGamma = droModel.acceleration(spacecraftState);
             Assert.assertEquals(0.0, cunGamma.subtract(droGamma).getNorm(), 2.2e-9 * droGamma.getNorm());
 
         }
@@ -745,6 +768,58 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         propagator.setInitialState(state0);
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
                            40000, tolerances[0], 7.9e-6);
+    }
+
+    @Test
+    public void testStateJacobianVs80Implementation()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        CunninghamAttractionModel cuModel =
+                        new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50), 0.1);
+        Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVs80Implementation(state, cuModel, 6.0e-8, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVsFiniteDifferences()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        CunninghamAttractionModel cuModel =
+                        new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50), 1.0);
+        Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVsFiniteDifferences(state, cuModel, Propagator.DEFAULT_LAW, 10.0, 1.0e-9, false);
+
     }
 
     @Before

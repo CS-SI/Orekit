@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
@@ -39,6 +40,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
@@ -57,6 +59,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.OutlierFilter;
@@ -127,7 +130,7 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odLageos2 = run(input);
+        ResultOD odLageos2 = run(input, false);
 
         //test
         //definition of the accuracy for the test
@@ -191,11 +194,11 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odsatW3 = run(input);
+        ResultOD odsatW3 = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 1e-1;
+        final double distanceAccuracy = 0.15;
         final double velocityAccuracy = 1e-4;
         // angle unit is radian
         final double angleAccuracy = 1e-5;
@@ -203,7 +206,7 @@ public class OrbitDeterminationTest {
 
         //test on the convergence (with some margins)
         Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
-        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
+        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 15);
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();
@@ -369,7 +372,7 @@ public class OrbitDeterminationTest {
 
    }
 
-    private ResultOD run(final File input)
+    private ResultOD run(final File input, final boolean print)
         throws IOException, IllegalArgumentException, OrekitException, ParseException {
 
         // read input parameters
@@ -428,6 +431,70 @@ public class OrbitDeterminationTest {
             estimator.addMeasurement(measurement);
         }
 
+        if (print) {
+            estimator.setObserver(new BatchLSObserver() {
+
+                private PVCoordinates previousPV;
+                {
+                    previousPV = initialGuess.getPVCoordinates();
+                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate  nb Angular     nb PV%n";
+                    System.out.format(Locale.US, header);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public void evaluationPerformed(final int iterationsCount, final int evaluationsCount,
+                                                final Orbit[] orbits,
+                                                final ParameterDriversList estimatedOrbitalParameters,
+                                                final ParameterDriversList estimatedPropagatorParameters,
+                                                final ParameterDriversList estimatedMeasurementsParameters,
+                                                final EstimationsProvider  evaluationsProvider,
+                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
+                    PVCoordinates currentPV = orbits[0].getPVCoordinates();
+                    final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
+                    final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
+                    final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
+                    final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
+                    final EvaluationCounter<AngularAzEl>   angularCounter   = new EvaluationCounter<AngularAzEl>();
+                    final EvaluationCounter<PV>        pvCounter        = new EvaluationCounter<PV>();
+                    for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
+                        if (entry.getKey() instanceof Range) {
+                            @SuppressWarnings("unchecked")
+                            EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
+                            rangeCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof RangeRate) {
+                            @SuppressWarnings("unchecked")
+                            EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
+                            rangeRateCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof AngularAzEl) {
+                            @SuppressWarnings("unchecked")
+                            EstimatedMeasurement<AngularAzEl> evaluation = (EstimatedMeasurement<AngularAzEl>) entry.getValue();
+                            angularCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof PV) {
+                            @SuppressWarnings("unchecked")
+                            EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
+                            pvCounter.add(evaluation);
+                        }
+                    }
+                    if (evaluationsCount == 1) {
+                        System.out.format(Locale.US, format0,
+                                          iterationsCount, evaluationsCount,
+                                          lspEvaluation.getRMS(),
+                                          rangeCounter.format(8), rangeRateCounter.format(8),
+                                          angularCounter.format(8), pvCounter.format(8));
+                    } else {
+                        System.out.format(Locale.US, format,
+                                          iterationsCount, evaluationsCount,
+                                          Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                          Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                          lspEvaluation.getRMS(),
+                                          rangeCounter.format(8), rangeRateCounter.format(8),
+                                          angularCounter.format(8), pvCounter.format(8));
+                    }
+                    previousPV = currentPV;
+                }
+            });
+        }
         Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
@@ -1781,6 +1848,48 @@ public class OrbitDeterminationTest {
             final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
                                      new Vector3D(observed[3],    observed[4],    observed[5]));
+        }
+
+    }
+
+    private static class EvaluationCounter<T extends ObservedMeasurement<T>> {
+
+        /** Total number of measurements. */
+        private int total;
+
+        /** Number of active (i.e. positive weight) measurements. */
+        private int active;
+
+        /** Add a measurement evaluation.
+         * @param evaluation measurement evaluation to add
+         */
+        public void add(EstimatedMeasurement<T> evaluation) {
+            ++total;
+            double max = 0;
+            for (final double w : evaluation.getCurrentWeight()) {
+                max = FastMath.max(max, w);
+            }
+            if (max > 0) {
+                ++active;
+            }
+        }
+
+        /** Format an active/total count.
+         * @param size field minimum size
+         */
+        public String format(final int size) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(active);
+            builder.append('/');
+            builder.append(total);
+            while (builder.length() < size) {
+                if (builder.length() % 2 == 0) {
+                    builder.insert(0, ' ');
+                } else {
+                    builder.append(' ');
+                }
+            }
+            return builder.toString();
         }
 
     }

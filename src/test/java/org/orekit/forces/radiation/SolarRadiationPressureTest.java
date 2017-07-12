@@ -18,11 +18,13 @@ package org.orekit.forces.radiation;
 
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -45,6 +47,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -55,6 +58,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -74,6 +78,47 @@ import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field kRefField = SolarRadiationPressure.class.getDeclaredField("kRef");
+            kRefField.setAccessible(true);
+            double kRef = kRefField.getDouble(forceModel);
+            java.lang.reflect.Field sunField = SolarRadiationPressure.class.getDeclaredField("sun");
+            sunField.setAccessible(true);
+            PVCoordinatesProvider sun = (PVCoordinatesProvider) sunField.get(forceModel);
+            java.lang.reflect.Field spacecraftField = SolarRadiationPressure.class.getDeclaredField("spacecraft");
+            spacecraftField.setAccessible(true);
+            RadiationSensitive spacecraft = (RadiationSensitive) spacecraftField.get(forceModel);
+            java.lang.reflect.Method getLightingRatioMethod = SolarRadiationPressure.class.getDeclaredMethod("getLightingRatio",
+                                                                                                             FieldVector3D.class,
+                                                                                                             Frame.class,
+                                                                                                             FieldAbsoluteDate.class);
+            getLightingRatioMethod.setAccessible(true);
+
+            final Field<DerivativeStructure> field = position.getX().getField();
+            final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+            final DerivativeStructure r2  = sunSatVector.getNormSq();
+
+            // compute flux
+            final DerivativeStructure ratio = (DerivativeStructure) getLightingRatioMethod.invoke(forceModel, position, frame, new FieldAbsoluteDate<>(field, date));
+            final DerivativeStructure rawP = ratio.multiply(kRef).divide(r2);
+            final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
+
+            // compute acceleration with all its partial derivatives
+            return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
+                 SecurityException | NoSuchMethodException | InvocationTargetException e) {
+            return null;
+        }
+    }
 
     @Test
     public void testLightingInterplanetary() throws OrekitException, ParseException {
@@ -249,7 +294,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianIsotropicSingle()
+    public void testGlobalStateJacobianIsotropicSingle()
         throws OrekitException {
 
         // initialization
@@ -276,12 +321,80 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e3, tolerances[0], 2.0e-5);
 
     }
 
     @Test
-    public void testStateJacobianIsotropicClassical()
+    public void testLocalJacobianIsotropicClassicalVs80Implementation()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final SolarRadiationPressure forceModel =
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                           new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
+
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, false);
+
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight()
+        throws OrekitException {
+        // here, lighting ratio is exactly 1 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesPenumbra()
+        throws OrekitException {
+        // here, lighting ratio is about 0.57,
+        // and remains strictly between 0 and 1 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
+    }
+
+    @Test
+    public void testLocalJacobianIsotropicClassicalVsFiniteDifferencesEclipse()
+        throws OrekitException {
+        // here, lighting ratio is exactly 0 for all points used for finite differences
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(300.0, 1000.0, 1.0e-50, false);
+    }
+
+    private void doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(double deltaT, double dP,
+                                                                          double checkTolerance,
+                                                                          boolean print)
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final SolarRadiationPressure forceModel =
+                new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                           new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
+
+        checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit.shiftedBy(deltaT)), forceModel,
+                                              Propagator.DEFAULT_LAW, dP, checkTolerance, print);
+
+    }
+
+    @Test
+    public void testGlobalStateJacobianIsotropicClassical()
         throws OrekitException {
 
         // initialization
@@ -308,12 +421,12 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e6, tolerances[0], 2.0e-5);
 
     }
 
     @Test
-    public void testStateJacobianIsotropicCnes()
+    public void testGlobalStateJacobianIsotropicCnes()
         throws OrekitException {
 
         // initialization
@@ -340,7 +453,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e3, tolerances[0], 3.0e-5);
 
     }
 
@@ -366,7 +479,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianBox()
+    public void testGlobalStateJacobianBox()
         throws OrekitException {
 
         // initialization
@@ -394,7 +507,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-5);
+                           1e3, tolerances[0], 5.0e-4);
 
     }
 

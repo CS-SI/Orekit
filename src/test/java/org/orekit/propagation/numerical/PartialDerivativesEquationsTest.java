@@ -121,26 +121,24 @@ public class PartialDerivativesEquationsTest {
         public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
 
         @Override
-        public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) throws OrekitException {
-        }
-
-        @Override
         public <T extends RealFieldElement<T>> void
             addContribution(FieldSpacecraftState<T> s,
                             FieldTimeDerivativesEquations<T> adder) {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
-                                                                          Frame frame,
-                                                                          FieldVector3D<DerivativeStructure> position,
-                                                                          FieldVector3D<DerivativeStructure> velocity,
-                                                                          FieldRotation<DerivativeStructure> rotation,
-                                                                          DerivativeStructure mass)
+        public Vector3D acceleration(final SpacecraftState s)
             throws OrekitException {
-            this.accelerationDerivativesPosition = position;
-            this.accelerationDerivativesVelocity = velocity;
-            return position;
+            return s.getPVCoordinates().getPosition();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+            throws OrekitException {
+            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
+            return s.getPVCoordinates().getPosition();
         }
 
         @Override

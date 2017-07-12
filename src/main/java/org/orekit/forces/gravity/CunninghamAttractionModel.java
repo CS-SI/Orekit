@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -38,9 +37,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -75,8 +72,11 @@ import org.orekit.utils.ParameterObserver;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @deprecated as of 9.0, this class is deprecated, it has been obsoleted by {@link HolmesFeatherstoneAttractionModel}
+ * for years
  */
 
+@Deprecated
 public class CunninghamAttractionModel extends AbstractForceModel implements TideSystemProvider {
 
     /** Central attraction scaling factor.
@@ -136,12 +136,14 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
     }
 
     /** {@inheritDoc} */
+    @Override
     public TideSystem getTideSystem() {
         return provider.getTideSystem();
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s)
         throws OrekitException {
 
         // get the position in body frame
@@ -377,49 +379,14 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         }
 
         // compute acceleration in inertial frame
-        final Vector3D acceleration =
-            fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
-        adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
+        return fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
 
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-        return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException {
-        return jacobianizer.accelerationDerivatives(s, paramName);
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
     @Override
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        throws OrekitException {
         // get the position in body frame
         final FieldAbsoluteDate<T> date = s.getDate();
         final Field<T> field = date.getField();
@@ -661,9 +628,33 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         }
 
         // compute acceleration in inertial frame
-        final FieldVector3D<T> acceleration =
-            fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
-        adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
+        return fromBodyFrame.transformVector(new FieldVector3D<>(vdX.multiply(mu), vdY.multiply(mu), vdZ.multiply(mu)));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+        throws OrekitException {
+        return jacobianizer.accelerationDerivatives(s, paramName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

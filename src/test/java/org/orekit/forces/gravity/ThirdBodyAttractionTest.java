@@ -20,6 +20,7 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -40,6 +41,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -66,6 +68,41 @@ import org.orekit.utils.PVCoordinates;
 public class ThirdBodyAttractionTest extends AbstractForceModelTest {
 
     private double mu;
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
+            bodyField.setAccessible(true);
+            CelestialBody body = (CelestialBody) bodyField.get(forceModel);
+            java.lang.reflect.Field gmField = ThirdBodyAttraction.class.getDeclaredField("gm");
+            gmField.setAccessible(true);
+            double gm = gmField.getDouble(forceModel);
+
+            // compute bodies separation vectors and squared norm
+            final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
+            final double r2Central          = centralToBody.getNormSq();
+            final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
+            final DerivativeStructure r2Sat = satToBody.getNormSq();
+
+            // compute relative acceleration
+            final FieldVector3D<DerivativeStructure> satAcc =
+                    new FieldVector3D<>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
+            final Vector3D centralAcc =
+                    new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
+            return satAcc.subtract(centralAcc);
+
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
 
     @Test(expected= OrekitException.class)
     public void testSunContrib() throws OrekitException {
@@ -394,7 +431,24 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobian()
+    public void testJacobianVs80Implementation() throws OrekitException {
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-50, false);
+    }
+
+    @Test
+    public void testGlobalStateJacobian()
         throws OrekitException {
 
         // initialization

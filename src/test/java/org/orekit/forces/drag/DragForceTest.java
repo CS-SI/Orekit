@@ -20,6 +20,7 @@ package org.orekit.forces.drag;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -42,13 +43,16 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -56,6 +60,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -72,6 +77,82 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DragForceTest extends AbstractForceModelTest {
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+
+            java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
+            atmosphereField.setAccessible(true);
+            Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
+            java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");
+            spacecraftField.setAccessible(true);
+            DragSensitive spacecraft = (DragSensitive) spacecraftField.get(forceModel);
+
+            // retrieve derivation properties
+            final DSFactory factory = mass.getFactory();
+
+            // get atmosphere properties in atmosphere own frame
+            final Frame      atmFrame  = atmosphere.getFrame();
+            final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+            final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position);
+            final Vector3D   posBody   = posBodyDS.toVector3D();
+            final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
+
+            // estimate density model by finite differences and composition
+            // the following implementation works only for first order derivatives.
+            // this could be improved by adding a new method
+            // getDensity(AbsoluteDate, DerivativeStructure, Frame)
+            // to the Atmosphere interface
+            if (factory.getCompiler().getOrder() > 1) {
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, factory.getCompiler().getOrder());
+            }
+            final double delta  = 1.0;
+            final double x      = posBody.getX();
+            final double y      = posBody.getY();
+            final double z      = posBody.getZ();
+            final double rho0   = atmosphere.getDensity(date, posBody, atmFrame);
+            final double dRhodX = (atmosphere.getDensity(date, new Vector3D(x + delta, y,         z),         atmFrame) - rho0) / delta;
+            final double dRhodY = (atmosphere.getDensity(date, new Vector3D(x,         y + delta, z),         atmFrame) - rho0) / delta;
+            final double dRhodZ = (atmosphere.getDensity(date, new Vector3D(x,         y,         z + delta), atmFrame) - rho0) / delta;
+            final double[] dXdQ = posBodyDS.getX().getAllDerivatives();
+            final double[] dYdQ = posBodyDS.getY().getAllDerivatives();
+            final double[] dZdQ = posBodyDS.getZ().getAllDerivatives();
+            final double[] rhoAll = new double[dXdQ.length];
+            rhoAll[0] = rho0;
+            for (int i = 1; i < rhoAll.length; ++i) {
+                rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
+            }
+            final DerivativeStructure rho = factory.build(rhoAll);
+
+            // we consider that at first order the atmosphere velocity in atmosphere frame
+            // does not depend on local position; however atmosphere velocity in inertial
+            // frame DOES depend on position since the transform between the frames depends
+            // on it, due to central body rotation rate and velocity composition.
+            // So we use the transform to get the correct partial derivatives on vAtm
+            final FieldVector3D<DerivativeStructure> vAtmBodyDS =
+                            new FieldVector3D<>(factory.constant(vAtmBody.getX()),
+                                            factory.constant(vAtmBody.getY()),
+                                            factory.constant(vAtmBody.getZ()));
+            final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<>(posBodyDS, vAtmBodyDS);
+            final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
+
+            // now we can compute relative velocity, it takes into account partial derivatives with respect to position
+            final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
+
+            // compute acceleration with all its partial derivatives
+            return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
 
     @Test
     public void testParameterDerivativeSphere() throws OrekitException {
@@ -156,7 +237,61 @@ public class DragForceTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianBox()
+    public void testJacobianBoxVs80Implementation()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final DragForce forceModel =
+                new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVs80Implementation(state, forceModel, 5e-6, false);
+
+    }
+
+    @Test
+    public void testJacobianBoxVsFiniteDifferences()
+        throws OrekitException {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final DragForce forceModel =
+                new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+                              new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 7.0e-9, false);
+
+    }
+
+    @Test
+    public void testGlobalStateJacobianBox()
         throws OrekitException {
 
         // initialization
@@ -246,6 +381,7 @@ public class DragForceTest extends AbstractForceModelTest {
         }
 
     }
+
     /**Testing if the propagation between the FieldPropagation and the propagation
      * is equivalent.
      * Also testing if propagating X+dX with the propagation is equivalent to
