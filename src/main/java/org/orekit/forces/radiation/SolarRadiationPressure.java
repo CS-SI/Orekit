@@ -119,8 +119,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
-        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
+        final double   ratio = getLightingRatio(position, frame, date);
+        final double   rawP  = ratio  * kRef / r2;
+        final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                         s.getMass(), flux);
@@ -139,12 +140,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final T                    r2           = sunSatVector.getNormSq();
 
         // compute flux
-        // TODO there is something shady here
-        //      in order for tests to pass, we have to compute ratio but *remove* non-real part
-        //      (i.e. derivatives for example). Tests pass, but why? We *think* we should simply
-        //      compute ratio = getLightingRatio(position, frame, date), with all derivatives
-        //      preserved, but then tests fail...
-//        final T                ratio = date.getField().getZero().add(getLightingRatio(position, frame, date).getReal());
         final T                ratio = getLightingRatio(position, frame, date);
         final T                rawP  = ratio.divide(r2).multiply(kRef);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
@@ -202,7 +197,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
             // Protection against numerical inaccuracy at boundaries
             final double almost0 = Precision.SAFE_MIN;
-            final double almost1 = 1.0 - Precision.EPSILON;
+            final double almost1 = FastMath.nextDown(1.0);
             final double a1oaS   = FastMath.min(almost1, FastMath.max(-almost1, alpha1 / alphaSun));
             final double aS2ma12 = FastMath.max(almost0, aS2 - alpha1 * alpha1);
             final double a2oaE   = FastMath.min(almost1, FastMath.max(-almost1, alpha2 / alphaCentral));
@@ -269,7 +264,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
             // Protection against numerical inaccuracy at boundaries
             final double almost0 = Precision.SAFE_MIN;
-            final double almost1 = 1.0 - Precision.EPSILON;
+            final double almost1 = FastMath.nextDown(1.0);
             final T a1oaS   = min(almost1, max(-almost1, alpha1.divide(alphaSun)));
             final T aS2ma12 = max(almost0, aS2.subtract(alpha1.multiply(alpha1)));
             final T a2oaE   = min(almost1, max(-almost1, alpha2.divide(alphaCentral)));
@@ -430,6 +425,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
 
+        /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
+        private static final double ANGULAR_MARGIN = 1.0e-10;
+
         /** Build a new instance. */
         UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
@@ -476,7 +474,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         public double g(final SpacecraftState s) throws OrekitException {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
-            return angle[0] - angle[1] + angle[2];
+            return angle[0] - angle[1] + angle[2] - ANGULAR_MARGIN;
         }
 
     }
@@ -486,6 +484,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
+
+        /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
+        private static final double ANGULAR_MARGIN = 1.0e-10;
 
         /** Build a new instance. */
         PenumbraDetector() {
@@ -533,7 +534,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         public double g(final SpacecraftState s) throws OrekitException {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
-            return angle[0] - angle[1] - angle[2];
+            return angle[0] - angle[1] - angle[2] + ANGULAR_MARGIN;
         }
 
     }

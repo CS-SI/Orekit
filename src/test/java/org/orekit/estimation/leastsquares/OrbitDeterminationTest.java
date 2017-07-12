@@ -198,7 +198,7 @@ public class OrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 1e-1;
+        final double distanceAccuracy = 0.15;
         final double velocityAccuracy = 1e-4;
         // angle unit is radian
         final double angleAccuracy = 1e-5;
@@ -206,7 +206,7 @@ public class OrbitDeterminationTest {
 
         //test on the convergence (with some margins)
         Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
-        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
+        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 15);
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();

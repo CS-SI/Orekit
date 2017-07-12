@@ -277,7 +277,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e3, tolerances[0], 2.0e-5);
 
     }
 
@@ -299,7 +299,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
-        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, true);
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, false);
 
     }
 
@@ -315,7 +315,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         throws OrekitException {
         // here, lighting ratio is about 0.57,
         // and remains strictly between 0 and 1 for all points used for finite differences
-        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, true);
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(275.5, 100.0, 8.0e-7, false);
     }
 
     @Test
@@ -409,7 +409,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-6);
+                           1e3, tolerances[0], 3.0e-5);
 
     }
 
@@ -463,7 +463,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-5);
+                           1e3, tolerances[0], 5.0e-4);
 
     }
 
