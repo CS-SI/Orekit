@@ -374,6 +374,46 @@ public class AbsoluteDate
              timeScale);
     }
 
+    /** Build a date from its internal components.
+     * <p>
+     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
+     * </p>
+     * @param epoch reference epoch in seconds from 2000-01-01T12:00:00 TAI.
+     * (beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT)
+     * @param offset offset from the reference epoch in seconds (must be
+     * between 0.0 included and 1.0 excluded)
+     * @since 9.0
+     */
+    AbsoluteDate(final long epoch, final double offset) {
+        this.epoch  = epoch;
+        this.offset = offset;
+    }
+
+    /** Get the reference epoch in seconds from 2000-01-01T12:00:00 TAI.
+     * <p>
+     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
+     * </p>
+     * <p>
+     * Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.
+     * </p>
+     * @return reference epoch in seconds from 2000-01-01T12:00:00 TAI
+     * @since 9.0
+     */
+    long getEpoch() {
+        return epoch;
+    }
+
+    /** Get the offset from the reference epoch in seconds.
+     * <p>
+     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
+     * </p>
+     * @return offset from the reference epoch in seconds
+     * @since 9.0
+     */
+    double getOffset() {
+        return offset;
+    }
+
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
      * <p>
      * CCSDS Unsegmented Time Code is defined in the blue book:
