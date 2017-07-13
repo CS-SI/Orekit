@@ -1293,13 +1293,13 @@ public class FieldKeplerianOrbitTest {
                                                                      double shiftEccentricityErrorSlightlyPast, double interpolationEccentricityErrorSlightlyPast)
         throws OrekitException {
         final T zero = field.getZero();
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final T c20 = zero.add(-1.08263e-3);
-        final T c30 = zero.add(2.54e-6);
-        final T c40 = zero.add( 1.62e-6);
-        final T c50 = zero.add(2.3e-7);
-        final T c60 = zero.add(-5.5e-7);
+        final double ehMu = 3.9860047e14;
+        final double ae   = 6.378137e6;
+        final double c20  = -1.08263e-3;
+        final double c30  =  2.54e-6;
+        final double c40  =  1.62e-6;
+        final double c50  =  2.3e-7;
+        final double c60  =  -5.5e-7;
 
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
         final FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(3220103.), field.getZero().add(69623.), field.getZero().add(6449822.));

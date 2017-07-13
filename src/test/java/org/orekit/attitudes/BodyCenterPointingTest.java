@@ -358,26 +358,20 @@ public class BodyCenterPointingTest {
 
         final double ehMu  = 3.9860047e14;
         final double ae= 6.378137e6;
-        final double c20_D= -1.08263e-3;
-        final double c30_D= 2.54e-6;
-        final double c40_D= 1.62e-6;
-        final double c50_D= 2.3e-7;
-        final double c60_D= -5.5e-7;
-
-        T zero = field.getZero();
-        T  c20  = zero.add( c20_D );
-        T  c30  = zero.add( c30_D );
-        T  c40  = zero.add( c40_D );
-        T  c50  = zero.add( c50_D );
-        T  c60  = zero.add( c60_D );
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
 
         // Satellite position as circular parameters
+        T zero = field.getZero();
+        final T a    = zero.add(7178000.0);
+        final T e    = zero.add(7e-5);
+        final T i    = zero.add(FastMath.toRadians(50.));
+        final T pa   = zero.add(FastMath.toRadians(45.));
         final T raan = zero.add(FastMath.toRadians(270.));
-        final T a =zero.add(7178000.0);
-        final T e =zero.add(7e-5);
-        final T i =zero.add(FastMath.toRadians(50.));
-        final T pa=zero.add(FastMath.toRadians(45.));
-        final T m =zero.add(FastMath.toRadians(5.3-270));
+        final T m    = zero.add(FastMath.toRadians(5.3-270));
 
      // Computation date
         FieldAbsoluteDate<T> date_comp= new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),
@@ -449,24 +443,20 @@ public class BodyCenterPointingTest {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
-        final double c20_D = -1.08263e-3;
-        final double c30_D = 2.54e-6;
-        final double c40_D = 1.62e-6;
-        final double c50_D = 2.3e-7;
-        final double c60_D = -5.5e-7;
-        T zero = field.getZero();
-        T  c20  = zero.add( c20_D );
-        T  c30  = zero.add( c30_D );
-        T  c40  = zero.add( c40_D );
-        T  c50  = zero.add( c50_D );
-        T  c60  = zero.add( c60_D );
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+
         // Satellite position as circular parameters
+        final T zero = field.getZero();
+        final T a    = zero.add(7178000.0);
+        final T e    = zero.add(7e-5);
+        final T i    = zero.add(FastMath.toRadians(50.));
+        final T pa   = zero.add(FastMath.toRadians(45.));
         final T raan = zero.add(FastMath.toRadians(270.));
-        final T a =zero.add(7178000.0);
-        final T e =zero.add(7e-5);
-        final T i =zero.add(FastMath.toRadians(50.));
-        final T pa=zero.add(FastMath.toRadians(45.));
-        final T m =zero.add(FastMath.toRadians(5.3-270));
+        final T m    =zero.add(FastMath.toRadians(5.3-270));
 
      // Computation date
         FieldAbsoluteDate<T> date_R = new FieldAbsoluteDate<>(field, new DateComponents(2008, 04, 07),

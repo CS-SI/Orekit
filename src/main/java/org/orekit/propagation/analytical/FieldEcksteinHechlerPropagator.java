@@ -64,7 +64,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     private double mu;
 
     /** Un-normalized zonal coefficients. */
-    private T[] ck0;
+    private double[] ck0;
 
     /** Build a propagator from FieldOrbit<T> and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
@@ -96,11 +96,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                           final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics)
         throws OrekitException {
         this(initialOrbit, attitude,  mass, provider.getAe(), provider.getMu(),
-             mass.getField().getZero().add(harmonics.getUnnormalizedCnm(2, 0)),
-             mass.getField().getZero().add(harmonics.getUnnormalizedCnm(3, 0)),
-             mass.getField().getZero().add(harmonics.getUnnormalizedCnm(4, 0)),
-             mass.getField().getZero().add(harmonics.getUnnormalizedCnm(5, 0)),
-             mass.getField().getZero().add(harmonics.getUnnormalizedCnm(6, 0)));
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             harmonics.getUnnormalizedCnm(6, 0));
     }
 
     /** Build a propagator from FieldOrbit<T> and potential.
@@ -127,10 +127,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final double referenceRadius, final double mu,
-                                          final T c20, final T c30, final T c40,
-                                          final T c50, final T c60)
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60)
         throws OrekitException {
-        this(initialOrbit, DEFAULT_LAW, c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, DEFAULT_LAW, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+             referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, mass and potential provider.
@@ -171,8 +172,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final double referenceRadius, final double mu,
-                                          final T c20, final T c30, final T c40,
-                                          final T c50, final T c60)
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60)
         throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
@@ -217,10 +218,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final AttitudeProvider attitudeProv,
                                           final double referenceRadius, final double mu,
-                                          final T c20, final T c30, final T c40,
-                                          final T c50, final T c60)
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60)
         throws OrekitException {
-        this(initialOrbit, attitudeProv, c20.getField().getZero().add(DEFAULT_MASS), referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, attitudeProv, initialOrbit.getDate().getField().getZero().add(DEFAULT_MASS),
+             referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit<T>, attitude provider, mass and potential provider.
@@ -265,27 +267,21 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                           final AttitudeProvider attitudeProv,
                                           final T mass,
                                           final double referenceRadius, final double mu,
-                                          final T c20, final T c30, final T c40,
-                                          final T c50, final T c60)
+                                          final double c20, final double c30, final double c40,
+                                          final double c50, final double c60)
         throws OrekitException {
 
         super(mass.getField(), attitudeProv);
         final Field<T> field = mass.getField();
-        final T zero = field.getZero();
         factory = new FDSFactory<>(field, 1, 2);
         try {
 
             // store model coefficients
             this.referenceRadius = referenceRadius;
             this.mu  = mu;
-            this.ck0 = MathArrays.buildArray(field, 7);
-            this.ck0[0] = zero;
-            this.ck0[1] = zero;
-            this.ck0[2] = c20;
-            this.ck0[3] = c30;
-            this.ck0[4] = c40;
-            this.ck0[5] = c50;
-            this.ck0[6] = c60;
+            this.ck0 = new double[] {
+                0.0, 0.0, c20, c30, c40, c50, c60
+            };
 
             // compute mean parameters
             // transform into circular adapted parameters used by the Eckstein-Hechler model
@@ -480,7 +476,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @exception OrekitException if mean FieldOrbit<T> is not within model supported domain
          */
         FieldEHModel(final FDSFactory<T> factory, final FieldCircularOrbit<T> mean, final T mass,
-                     final double referenceRadius, final double mu, final T[] ck0)
+                     final double referenceRadius, final double mu, final double[] ck0)
             throws OrekitException {
 
             this.factory         = factory;
@@ -491,15 +487,15 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             // preliminary processing
             T q =  zero.add(referenceRadius).divide(mean.getA());
             T ql = q.multiply(q);
-            final T g2 = ck0[2].multiply(ql);
+            final T g2 = ql.multiply(ck0[2]);
             ql = ql.multiply(q);
-            final T g3 = ck0[3].multiply(ql);
+            final T g3 = ql.multiply(ck0[3]);
             ql = ql.multiply(q);
-            final T g4 = ck0[4].multiply(ql);
+            final T g4 = ql.multiply(ck0[4]);
             ql = ql.multiply(q);
-            final T g5 = ck0[5].multiply(ql);
+            final T g5 = ql.multiply(ck0[5]);
             ql = ql.multiply(q);
-            final T g6 = ck0[6].multiply(ql);
+            final T g6 = ql.multiply(ck0[6]);
 
             final T cosI1 = mean.getI().cos();
             final T sinI1 = mean.getI().sin();

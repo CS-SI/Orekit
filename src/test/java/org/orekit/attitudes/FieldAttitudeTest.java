@@ -125,11 +125,11 @@ public class FieldAttitudeTest {
         Utils.setDataRoot("regular-data");
         final double ehMu = 3.9860047e14;
         final double ae   = 6.378137e6;
-        final T c20  = zero.add(-1.08263e-3);
-        final T c30  = zero.add( 2.54e-6);
-        final T c40  = zero.add( 1.62e-6);
-        final T c50  = zero.add( 2.3e-7);
-        final T c60  = zero.add( -5.5e-7);
+        final double c20  = -1.08263e-3;
+        final double c30  =  2.54e-6;
+        final double c40  =  1.62e-6;
+        final double c50  =  2.3e-7;
+        final double c60  =  -5.5e-7;
 
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));

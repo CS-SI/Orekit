@@ -174,12 +174,12 @@ public class FieldSpacecraftStateTest {
         T pa = zero.add(1.9674147913622104);
         T raan = zero.add(FastMath.toRadians(261));
         T lv = zero.add(0);
-        double ae  = 6.378137e6;
-        T c20 = zero.add(-1.08263e-3);
-        T c30 = zero.add(2.54e-6);
-        T c40 = zero.add(1.62e-6);
-        T c50 = zero.add(2.3e-7);
-        T c60 = zero.add(-5.5e-7);
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 =  2.54e-6;
+        final double c40 =  1.62e-6;
+        final double c50 =  2.3e-7;
+        final double c60 =  -5.5e-7;
 
 
         // polynomial models for interpolation error in position, velocity, acceleration and attitude
