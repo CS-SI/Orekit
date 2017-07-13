@@ -47,6 +47,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
@@ -59,6 +60,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -1252,7 +1254,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVs80Implementation(state, hfModel, 2.0e-15, false);
+        checkStateJacobianVs80Implementation(state, hfModel,
+                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             2.0e-15, false);
 
     }
 

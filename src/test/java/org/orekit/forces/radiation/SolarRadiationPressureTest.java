@@ -41,6 +41,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -50,6 +51,7 @@ import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -343,7 +345,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
-        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel, 1.0e-15, false);
+        checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
+                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             1.0e-15, false);
 
     }
 

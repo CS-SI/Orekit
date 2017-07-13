@@ -88,7 +88,9 @@ public abstract class AbstractForceModelTest {
 
     }
 
-    protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state) {
+    protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state,
+                                                             final AttitudeProvider attitudeProvider)
+        throws OrekitException {
 
         final Vector3D p = state.getPVCoordinates().getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
@@ -107,14 +109,13 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(factory.constant(a.getX()),
                                                             factory.constant(a.getY()),
                                                             factory.constant(a.getZ())));
-        final TimeStampedFieldAngularCoordinates<DerivativeStructure> fAC =
-                        new TimeStampedFieldAngularCoordinates<>(fDate,
-                                        new FieldRotation<>(field, state.getAttitude().getRotation()),
-                                        new FieldVector3D<>(field, state.getAttitude().getSpin()),
-                                        new FieldVector3D<>(field, state.getAttitude().getRotationAcceleration()));
-        return new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state.getFrame(), state.getMu()),
-                                          new FieldAttitude<>(state.getFrame(), fAC),
-                                          field.getZero().add(state.getMass()));
+        final FieldCartesianOrbit<DerivativeStructure> orbit =
+                        new FieldCartesianOrbit<>(fPVA, state.getFrame(), state.getMu());
+        final FieldAttitude<DerivativeStructure> attitude =
+                        attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+
+        return new FieldSpacecraftState<>(orbit, attitude, field.getZero().add(state.getMass()));
+
     }
 
     protected abstract FieldVector3D<DerivativeStructure> accelerationDerivatives(ForceModel forceModel,
@@ -126,9 +127,10 @@ public abstract class AbstractForceModelTest {
         throws OrekitException;
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
+                                                        final AttitudeProvider attitudeProvider,
                                                         final double checkTolerance, final boolean print)
         throws OrekitException {
-        FieldSpacecraftState<DerivativeStructure> fState = toDS(state);
+        FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState);
         FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
                                                                            fState.getFrame(),

@@ -140,15 +140,13 @@ public class ConstantThrustManeuverTest extends AbstractForceModelTest {
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
 
         // before maneuver (Jacobian wrt. state is zero)
-        checkStateJacobianVs80Implementation(initialState, maneuver, 1.0e-50, false);
+        checkStateJacobianVs80Implementation(initialState, maneuver, law, 1.0e-50, false);
 
         // in maneuver
-        // TODO maneuver currently does not depend on position/velocity, as attitude dependency is broken
-        //      if *should* depend on them for a LOF-aligned attitude law
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
         maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
-        checkStateJacobianVs80Implementation(midState, maneuver, 1.0e-50, false);
+        checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
 
     }
 

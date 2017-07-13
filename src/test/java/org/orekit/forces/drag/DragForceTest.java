@@ -39,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -52,6 +53,7 @@ import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -259,7 +261,9 @@ public class DragForceTest extends AbstractForceModelTest {
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVs80Implementation(state, forceModel, 5e-6, false);
+        checkStateJacobianVs80Implementation(state, forceModel,
+                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             5e-6, false);
 
     }
 

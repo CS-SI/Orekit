@@ -46,6 +46,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
@@ -57,6 +58,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -792,7 +794,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
-        checkStateJacobianVs80Implementation(state, cuModel, 6.0e-8, false);
+        checkStateJacobianVs80Implementation(state, cuModel,
+                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             6.0e-8, false);
 
     }
 

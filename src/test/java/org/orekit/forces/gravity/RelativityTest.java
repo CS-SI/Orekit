@@ -36,11 +36,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -135,7 +137,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 tol);
         //check derivatives
         final Vector3D actualDerivatives = relativity
-                .acceleration(toDS(s))
+                .acceleration(toDS(s, new LofOffset(s.getFrame(), LOFType.VVLH)))
                 .toVector3D();
         Assert.assertEquals(
                 0,
@@ -156,7 +158,9 @@ public class RelativityTest extends AbstractForceModelTest {
                 gm
         ));
 
-        checkStateJacobianVs80Implementation(s, relativity, 1.0e-50, false);
+        checkStateJacobianVs80Implementation(s, relativity,
+                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             1.0e-50, false);
     }
 
     /**
@@ -194,7 +198,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 tol);
         //check derivatives
         FieldVector3D<DerivativeStructure> gradient =
-                relativity.acceleration(toDS(state));
+                relativity.acceleration(toDS(state, new LofOffset(state.getFrame(), LOFType.VVLH)));
         Assert.assertEquals(
                 0,
                 gradient.toVector3D().subtract(circularApproximation).getNorm(),
