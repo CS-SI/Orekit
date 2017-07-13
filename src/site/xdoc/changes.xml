@@ -22,6 +22,10 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="update">
+        Take orbit to attitude coupling into account in the partial derivatives for all attitude modes.
+        Fixes issue #200.
+      </action>
+      <action dev="luc" type="update">
         Merged FieldAttitudeProvider into AttitudeProvider.
       </action>
       <action dev="luc" type="update">

@@ -22,9 +22,7 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -33,13 +31,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
@@ -331,29 +329,15 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                         factory.constant(s.getMass()) :
                                         factory.variable(6, s.getMass());
 
-        // we should compute attitude partial derivatives with respect to position/velocity
-        // see issue #200
-        final Rotation rotation = s.getAttitude().getRotation();
-        final Vector3D rr = s.getAttitude().getSpin();
-        final Vector3D ra = s.getAttitude().getRotationAcceleration();
-        final TimeStampedFieldAngularCoordinates<DerivativeStructure> dsAC =
-                        new TimeStampedFieldAngularCoordinates<>(dsDate,
-                                                                 new FieldRotation<>(factory.constant(rotation.getQ0()),
-                                                                                     factory.constant(rotation.getQ1()),
-                                                                                     factory.constant(rotation.getQ2()),
-                                                                                     factory.constant(rotation.getQ3()),
-                                                                                     false),
-                                                                 new FieldVector3D<>(factory.constant(rr.getX()),
-                                                                                     factory.constant(rr.getY()),
-                                                                                     factory.constant(rr.getZ())),
-                                                                 new FieldVector3D<>(factory.constant(ra.getX()),
-                                                                                     factory.constant(ra.getY()),
-                                                                                     factory.constant(ra.getZ())));
+        final FieldOrbit<DerivativeStructure> dsOrbit =
+                        new FieldCartesianOrbit<>(dsPV, s.getFrame(), s.getMu());
+
+        // compute attitude partial derivatives with respect to position/velocity
+        final FieldAttitude<DerivativeStructure> dsAttitude =
+                        propagator.getAttitudeProvider().getAttitude(dsOrbit, dsDate, dsOrbit.getFrame());
 
         final FieldSpacecraftState<DerivativeStructure> dsState =
-                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(dsPV, s.getFrame(), s.getMu()),
-                                                   new FieldAttitude<>(s.getAttitude().getReferenceFrame(), dsAC),
-                                                   dsM);
+                        new FieldSpacecraftState<>(dsOrbit, dsAttitude, dsM);
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
