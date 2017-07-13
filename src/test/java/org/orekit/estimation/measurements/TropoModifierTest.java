@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -108,11 +109,16 @@ public class TropoModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
-        for (final GroundStation station : context.stations) {
-            station.getEastOffsetDriver().setSelected(true);
-            station.getNorthOffsetDriver().setSelected(true);
-            station.getZenithOffsetDriver().setSelected(true);
+        // Create perfect turn-around measurements
+        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
+            final GroundStation    masterStation = entry.getKey();
+            final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getEastOffsetDriver().setSelected(true);
+            masterStation.getNorthOffsetDriver().setSelected(true);
+            masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getEastOffsetDriver().setSelected(true);
+            slaveStation.getNorthOffsetDriver().setSelected(true);
+            slaveStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);

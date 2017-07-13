@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
@@ -136,11 +137,16 @@ public class IonoModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect turn-around range measurements
-        for (final GroundStation station : context.stations) {
-            station.getEastOffsetDriver().setSelected(true);
-            station.getNorthOffsetDriver().setSelected(true);
-            station.getZenithOffsetDriver().setSelected(true);
+        // Create perfect turn-around measurements
+        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
+            final GroundStation    masterStation = entry.getKey();
+            final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getEastOffsetDriver().setSelected(true);
+            masterStation.getNorthOffsetDriver().setSelected(true);
+            masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getEastOffsetDriver().setSelected(true);
+            slaveStation.getNorthOffsetDriver().setSelected(true);
+            slaveStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -171,7 +177,7 @@ public class IonoModifierTest {
             }
             Assert.assertTrue(found);
             //
-            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
             final double w = evalNoMod.getCurrentWeight()[0];
             Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
             eval.setCurrentWeight(new double[] { w + 2 });
