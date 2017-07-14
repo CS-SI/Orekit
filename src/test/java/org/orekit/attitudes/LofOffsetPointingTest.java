@@ -17,10 +17,13 @@
 package org.orekit.attitudes;
 
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -34,17 +37,23 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class LofOffsetPointingTest {
@@ -152,6 +161,64 @@ public class LofOffsetPointingTest {
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testTypesField() throws OrekitException {
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+                                             new TimeComponents(3, 25, 45.6789),
+                                             TimeScalesFactory.getUTC());
+        KeplerianOrbit orbit =
+            new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
+                              FastMath.toRadians(10.), FastMath.toRadians(20.),
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FramesFactory.getEME2000(), date, 3.986004415e14);
+
+        for (final LOFType type : LOFType.values()) {
+            RotationOrder order = RotationOrder.ZXY;
+            double alpha1 = 0.123;
+            double alpha2 = 0.456;
+            double alpha3 = 0.789;
+            LofOffset law = new LofOffset(orbit.getFrame(), type, order, alpha1, alpha2, alpha3);
+            final Vector3D dir;
+            switch (type) {
+                case TNW:
+                    dir = Vector3D.PLUS_J;
+                    break;
+                case QSW:
+                case LVLH:
+                    dir = Vector3D.MINUS_I;
+                    break;
+                case VVLH:
+                    dir = Vector3D.PLUS_K;
+                    break;
+                default : // VNC
+                    dir = Vector3D.MINUS_K;
+            }
+            LofOffsetPointing lop = new LofOffsetPointing(orbit.getFrame(), earthSpheric, law, dir);
+            checkField(Decimal64Field.getInstance(), lop, orbit, date, orbit.getFrame());
+        }
+    }
+
+    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
+                                                            final Orbit orbit, final AbsoluteDate date,
+                                                            final Frame frame)
+        throws OrekitException {
+
+        final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
+        final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
+        final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
+        final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
+        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+
+        final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
+        final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     9.0e-9);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-9);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 4.0e-5);
 
     }
 

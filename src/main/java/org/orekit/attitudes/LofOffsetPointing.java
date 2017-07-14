@@ -91,33 +91,48 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+        return attitudeLaw.getAttitude(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // transform from specified reference frame to spacecraft frame
-        final Transform refToSc =
-                new Transform(date,
-                              new Transform(date, pvProv.getPVCoordinates(date, frame).negate()),
-                              new Transform(date, attitudeLaw.getAttitude(pvProv, date, frame).getOrientation()));
-
-        // transform from specified reference frame to body frame
-        final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
-
         // sample intersection points in current date neighborhood
-        final Transform scToBody  = new Transform(date, refToSc.getInverse(), refToBody);
         final double h  = 0.1;
         final List<TimeStampedPVCoordinates> sample = new ArrayList<>();
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(-h)));
-        sample.add(losIntersectionWithBody(scToBody));
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(+h)));
+        Transform centralRefToBody = null;
+        for (int i = -1; i < 2; ++i) {
+
+            final AbsoluteDate shifted = date.shiftedBy(i * h);
+
+            // transform from specified reference frame to spacecraft frame
+            final Transform refToSc =
+                            new Transform(shifted,
+                                          new Transform(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
+                                          new Transform(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+
+            // transform from specified reference frame to body frame
+            final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            if (i == 0) {
+                centralRefToBody = refToBody;
+            }
+
+            sample.add(losIntersectionWithBody(new Transform(shifted, refToSc.getInverse(), refToBody)));
+
+        }
 
         // use interpolation to compute properly the time-derivatives
         final TimeStampedPVCoordinates targetBody =
                 TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
 
         // convert back to caller specified frame
-        return refToBody.getInverse().transformPVCoordinates(targetBody);
+        return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
 
     }
 
@@ -127,29 +142,36 @@ public class LofOffsetPointing extends GroundPointing {
                                                                                         final Frame frame)
         throws OrekitException {
 
-        // transform from specified reference frame to spacecraft frame
-        final FieldTransform<T> refToSc =
-                new FieldTransform<>(date,
-                                     new FieldTransform<>(date, pvProv.getPVCoordinates(date, frame).negate()),
-                                     new FieldTransform<>(date, attitudeLaw.getAttitude(pvProv, date, frame).getOrientation()));
-
-        // transform from specified reference frame to body frame
-        final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
-
         // sample intersection points in current date neighborhood
-        final FieldTransform<T> scToBody  = new FieldTransform<>(date, refToSc.getInverse(), refToBody);
         final double h  = 0.1;
         final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(-h)));
-        sample.add(losIntersectionWithBody(scToBody));
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(+h)));
+        FieldTransform<T> centralRefToBody = null;
+        for (int i = -1; i < 2; ++i) {
+
+            final FieldAbsoluteDate<T> shifted = date.shiftedBy(i * h);
+
+            // transform from specified reference frame to spacecraft frame
+            final FieldTransform<T> refToSc =
+                            new FieldTransform<>(shifted,
+                                                 new FieldTransform<>(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
+                                                 new FieldTransform<>(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+
+            // transform from specified reference frame to body frame
+            final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            if (i == 0) {
+                centralRefToBody = refToBody;
+            }
+
+            sample.add(losIntersectionWithBody(new FieldTransform<>(shifted, refToSc.getInverse(), refToBody)));
+
+        }
 
         // use interpolation to compute properly the time-derivatives
         final TimeStampedFieldPVCoordinates<T> targetBody =
-                TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
 
         // convert back to caller specified frame
-        return refToBody.getInverse().transformPVCoordinates(targetBody);
+        return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
 
     }
 

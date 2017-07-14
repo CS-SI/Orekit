@@ -21,15 +21,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.FieldPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -109,6 +114,80 @@ public class AttitudesSequence implements AttitudeProvider {
     public void registerSwitchEvents(final Propagator propagator) {
         for (final Switch<?> s : switches) {
             propagator.addEventDetector(s);
+        }
+    }
+
+    /** Register all wrapped switch events to the propagator.
+     * <p>
+     * This method must be called once before propagation, after the
+     * switching conditions have been set up by calls to {@link
+     * #addSwitchingCondition(AttitudeProvider, AttitudeProvider, EventDetector,
+     * boolean, boolean, double, AngularDerivativesFilter, SwitchHandler)
+     * addSwitchingCondition}.
+     * </p>
+     * @param field field to which the elements belong
+     * @param propagator propagator that will handle the events
+     * @param <T> type of the field elements
+     */
+    public <T extends RealFieldElement<T>> void registerSwitchEvents(final Field<T> field, final FieldPropagator<T> propagator) {
+        for (final Switch<?> sw : switches) {
+            propagator.addEventDetector(new FieldEventDetector<T>() {
+
+                /** {@inheritDoc} */
+                @Override
+                public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+                    sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public T g(final FieldSpacecraftState<T> s)
+                    throws OrekitException {
+                    return field.getZero().add(sw.g(s.toSpacecraftState()));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public T getThreshold() {
+                    return field.getZero().add(sw.getThreshold());
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public T getMaxCheckInterval() {
+                    return field.getZero().add(sw.getMaxCheckInterval());
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public int getMaxIterationCount() {
+                    return sw.getMaxIterationCount();
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing)
+                    throws OrekitException {
+                    switch(sw.eventOccurred(s.toSpacecraftState(), increasing)) {
+                        case STOP :
+                            return FieldEventHandler.Action.STOP;
+                        case RESET_DERIVATIVES :
+                            return FieldEventHandler.Action.RESET_DERIVATIVES;
+                        case RESET_STATE :
+                            return FieldEventHandler.Action.RESET_STATE;
+                        default :
+                            return FieldEventHandler.Action.CONTINUE;
+                    }
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState)
+                    throws OrekitException {
+                    return new FieldSpacecraftState<>(field, sw.resetState(oldState.toSpacecraftState()));
+                }
+
+            });
         }
     }
 
@@ -328,10 +407,10 @@ public class AttitudesSequence implements AttitudeProvider {
          * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
         Switch(final T event,
-                      final boolean switchOnIncrease, final boolean switchOnDecrease,
-                      final AttitudeProvider past, final AttitudeProvider future,
-                      final double transitionTime, final AngularDerivativesFilter transitionFilter,
-                      final SwitchHandler switchHandler) {
+               final boolean switchOnIncrease, final boolean switchOnDecrease,
+               final AttitudeProvider past, final AttitudeProvider future,
+               final double transitionTime, final AngularDerivativesFilter transitionFilter,
+               final SwitchHandler switchHandler) {
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
