@@ -108,7 +108,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s)
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
 
         final AbsoluteDate date         = s.getDate();
@@ -123,13 +123,14 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux);
+                                                        s.getMass(), flux, parameters);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
@@ -144,7 +145,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux);
+                                                        s.getMass(), flux, parameters);
 
     }
 
@@ -298,7 +299,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                      final double[] parameters,
+                                                                      final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);
@@ -313,7 +316,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux, paramName);
+                                                        s.getMass(), flux, parameters, paramName);
 
     }
 

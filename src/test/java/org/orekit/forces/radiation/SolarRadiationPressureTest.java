@@ -116,7 +116,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
 
             // compute acceleration with all its partial derivatives
             return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
-                                                            frame, position, rotation, mass, flux);
+                                                            frame, position, rotation, mass, flux,
+                                                            forceModel.getParameters(field));
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
                  SecurityException | NoSuchMethodException | InvocationTargetException e) {
             return null;
@@ -221,6 +222,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                              state.getPVCoordinates().getPosition(),
                                              state.getAttitude().getRotation(),
                                              state.getMass(), Vector3D.ZERO,
+                                             new double[2],
                                              RadiationSensitive.ABSORPTION_COEFFICIENT);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -256,6 +258,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                              state.getPVCoordinates().getPosition(),
                                              state.getAttitude().getRotation(),
                                              state.getMass(), Vector3D.ZERO,
+                                             new double[2],
                                              "UNKNOWN");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -288,6 +291,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                              state.getPVCoordinates().getPosition(),
                                              state.getAttitude().getRotation(),
                                              state.getMass(), Vector3D.ZERO,
+                                             new double[2],
                                              "UNKNOWN");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

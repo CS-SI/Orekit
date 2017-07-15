@@ -31,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class models isotropic drag effects.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -59,9 +58,6 @@ public class IsotropicDrag implements DragSensitive {
     /** Cross section (m²). */
     private final double crossSection;
 
-    /** Drag coefficient. */
-    private double dragCoeff;
-
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
@@ -88,19 +84,11 @@ public class IsotropicDrag implements DragSensitive {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
                                                            dragCoeff, SCALE,
                                                            dragCoeffMin, dragCoeffMax);
-            dragParametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    IsotropicDrag.this.dragCoeff = driver.getValue();
-                }
-            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
         this.crossSection = crossSection;
-        this.dragCoeff    = dragCoeff;
         this.factory      = new DSFactory(1, 1);
     }
 
@@ -114,7 +102,9 @@ public class IsotropicDrag implements DragSensitive {
     @Override
     public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                      final Rotation rotation, final double mass,
-                                     final double density, final Vector3D relativeVelocity) {
+                                     final double density, final Vector3D relativeVelocity,
+                                     final double[] parameters) {
+        final double dragCoeff = parameters[0];
         return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * mass),
                             relativeVelocity);
     }
@@ -125,9 +115,11 @@ public class IsotropicDrag implements DragSensitive {
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final T density,
-                         final FieldVector3D<T> relativeVelocity)
+                         final FieldVector3D<T> relativeVelocity,
+                         final T[] parameters)
         throws OrekitException {
-        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
+        final T dragCoeff = parameters[0];
+        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff).multiply(crossSection / 2)).divide(mass),
                                    relativeVelocity);
     }
 
@@ -135,7 +127,8 @@ public class IsotropicDrag implements DragSensitive {
     @Override
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                final Rotation rotation, final double mass,
-                                                               final  double density, final Vector3D relativeVelocity,
+                                                               final double density, final Vector3D relativeVelocity,
+                                                               final double[] parameters,
                                                                final String paramName)
         throws OrekitException {
 
@@ -143,7 +136,7 @@ public class IsotropicDrag implements DragSensitive {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
         }
 
-        final DerivativeStructure dragCoeffDS = factory.variable(0, dragCoeff);
+        final DerivativeStructure dragCoeffDS = factory.variable(0, parameters[0]);
 
         return new FieldVector3D<>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
                                    relativeVelocity);

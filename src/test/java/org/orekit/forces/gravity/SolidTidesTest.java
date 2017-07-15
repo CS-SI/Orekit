@@ -89,7 +89,7 @@ public class SolidTidesTest extends AbstractForceModelTest {
                                                                                                                zero,
                                                                                                                zero)),
                                                       mass);
-            return attractionModel.acceleration(dState);
+            return attractionModel.acceleration(dState, attractionModel.getParameters(field));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;

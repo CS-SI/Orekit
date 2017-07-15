@@ -132,28 +132,30 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s)
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
         // delegate to underlying model
-        return attractionModel.acceleration(s);
+        return attractionModel.acceleration(s, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
         // delegate to underlying model
-        return attractionModel.acceleration(s);
+        return attractionModel.acceleration(s, parameters);
     }
 
 
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                      final double[] parameters,
                                                                       final String paramName)
         throws OrekitException {
-        // this should never be called as there are no tunable parameters
-        return attractionModel.accelerationDerivatives(s, paramName);
+        // delegate to underlying attraction model
+        return attractionModel.accelerationDerivatives(s, parameters, paramName);
     }
 
     /** {@inheritDoc} */
@@ -166,13 +168,15 @@ public class OceanTides extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        // delegate to underlying attraction model
         return attractionModel.getFieldEventsDetectors(field);
     }
 
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+        // delegate to underlying attraction model
+        return attractionModel.getParametersDrivers();
     }
 
 }

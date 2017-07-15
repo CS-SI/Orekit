@@ -83,9 +83,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
             java.lang.reflect.Field bodyField = ThirdBodyAttraction.class.getDeclaredField("body");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
-            java.lang.reflect.Field gmField = ThirdBodyAttraction.class.getDeclaredField("gm");
-            gmField.setAccessible(true);
-            double gm = gmField.getDouble(forceModel);
+            double gm = forceModel.getParameterDriver(body.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX).getValue();
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();

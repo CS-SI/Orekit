@@ -70,7 +70,7 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s)
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
 
         final AbsoluteDate date     = s.getDate();
@@ -82,13 +82,14 @@ public class DragForce extends AbstractForceModel {
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity);
+                                           s.getMass(), rho, relativeVelocity, parameters);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
@@ -99,7 +100,7 @@ public class DragForce extends AbstractForceModel {
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity);
+                                           s.getMass(), rho, relativeVelocity, parameters);
 
     }
 
@@ -123,7 +124,9 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                      final double[] parameters,
+                                                                      final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);
@@ -138,7 +141,7 @@ public class DragForce extends AbstractForceModel {
 
         // compute acceleration with all its partial derivatives
         return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, paramName);
+                                           s.getMass(), rho, relativeVelocity, parameters, paramName);
 
     }
 

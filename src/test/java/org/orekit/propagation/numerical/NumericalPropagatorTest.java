@@ -1473,9 +1473,10 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-                SpacecraftState s,
-                String name) throws OrekitException {
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s,
+                                                                          double[] parameters,
+                                                                          String name)
+            throws OrekitException {
             final ParameterDriver[] drivers =  getParametersDrivers();
             final String[] names = new String[drivers.length];
             for (int i = 0; i < names.length; ++i) {
@@ -1499,14 +1500,15 @@ public class NumericalPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public Vector3D acceleration(final SpacecraftState s)
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             throws OrekitException {
             return Vector3D.ZERO;
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters)
             throws OrekitException {
             return FieldVector3D.getZero(s.getDate().getField());
         }

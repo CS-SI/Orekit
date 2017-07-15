@@ -166,7 +166,7 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        Assert.assertEquals(1, fm.getParametersDrivers().length);
         try {
             fm.getParameterDriver("unknown");
             Assert.fail("an exception should have been thrown");
@@ -190,7 +190,7 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        Assert.assertEquals(1, fm.getParametersDrivers().length);
         try {
             fm.getParameterDriver("unknown").setValue(0.0);
             Assert.fail("an exception should have been thrown");

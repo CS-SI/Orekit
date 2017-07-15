@@ -150,7 +150,8 @@ public class DragForceTest extends AbstractForceModelTest {
 
             // compute acceleration with all its partial derivatives
             return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
-                                               frame, position, rotation, mass, rho, relativeVelocity);
+                                               frame, position, rotation, mass, rho, relativeVelocity,
+                                               forceModel.getParameters(factory.getDerivativeField()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;

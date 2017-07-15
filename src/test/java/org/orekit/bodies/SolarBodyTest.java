@@ -60,7 +60,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 public class SolarBodyTest {
 
@@ -420,9 +419,6 @@ public class SolarBodyTest {
         /** The body to consider. */
         private final CelestialBody body;
 
-        /** Local value for body attraction coefficient. */
-        private double gm;
-
         /** Simple constructor.
          * @param body the third body to consider
          * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
@@ -434,25 +430,19 @@ public class SolarBodyTest {
                 parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
                                                            body.getGM(), 1.0e-5 * body.getGM(),
                                                            0.0, Double.POSITIVE_INFINITY);
-                parametersDrivers[0].addObserver(new ParameterObserver() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public void valueChanged(double previousValue, final ParameterDriver driver) {
-                        BodyAttraction.this.gm = driver.getValue();
-                    }
-                });
             } catch (OrekitException oe) {
                 // this should never occur as valueChanged above never throws an exception
                 throw new OrekitInternalError(oe);
             }
             this.body = body;
-            this.gm   = body.getGM();
         }
 
         /** {@inheritDoc} */
         @Override
-        public Vector3D acceleration(final SpacecraftState s)
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             throws OrekitException {
+
+            final double gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
@@ -466,8 +456,12 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters)
             throws OrekitException {
+
+            final T gm = parameters[0];
+
             // compute bodies separation vectors and squared norm
             final FieldVector3D<T> centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
             final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
@@ -480,10 +474,14 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                          final double[] parameters,
+                                                                          final String paramName)
             throws OrekitException {
 
             complainIfNotSupported(paramName);
+
+            final double gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
             final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();

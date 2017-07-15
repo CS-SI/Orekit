@@ -79,9 +79,7 @@ public class RelativityTest extends AbstractForceModelTest {
                                                                          final DerivativeStructure mass)
         throws OrekitException {
         try {
-            java.lang.reflect.Field gmField = Relativity.class.getDeclaredField("gm");
-            gmField.setAccessible(true);
-            double gm = gmField.getDouble(forceModel);
+            double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
             //radius
             final DerivativeStructure r2 = position.getNormSq();
             final DerivativeStructure r = r2.sqrt();
@@ -94,7 +92,7 @@ public class RelativityTest extends AbstractForceModelTest {
                                        position.dotProduct(velocity).multiply(4),
                                        velocity).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(gm));
 
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+        } catch (IllegalArgumentException | SecurityException e) {
             return null;
         }
     }
@@ -124,7 +122,7 @@ public class RelativityTest extends AbstractForceModelTest {
         ));
 
         //action
-        Vector3D acceleration = relativity.acceleration(s);
+        Vector3D acceleration = relativity.acceleration(s, relativity.getParameters());
 
         //verify
         //force is ~1e-8 so this give ~3 sig figs.
@@ -136,8 +134,9 @@ public class RelativityTest extends AbstractForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(s, new LofOffset(s.getFrame(), LOFType.VVLH));
         final Vector3D actualDerivatives = relativity
-                .acceleration(toDS(s, new LofOffset(s.getFrame(), LOFType.VVLH)))
+                .acceleration(sDS, relativity.getParameters(sDS.getDate().getField()))
                 .toVector3D();
         Assert.assertEquals(
                 0,
@@ -182,7 +181,7 @@ public class RelativityTest extends AbstractForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit);
 
         //action
-        Vector3D acceleration = relativity.acceleration(state);
+        Vector3D acceleration = relativity.acceleration(state, relativity.getParameters());
 
         //verify
         //force is ~1e-8 so this give ~7 sig figs.
@@ -197,8 +196,9 @@ public class RelativityTest extends AbstractForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.VVLH));
         FieldVector3D<DerivativeStructure> gradient =
-                relativity.acceleration(toDS(state, new LofOffset(state.getFrame(), LOFType.VVLH)));
+                relativity.acceleration(sDS, relativity.getParameters(sDS.getDate().getField()));
         Assert.assertEquals(
                 0,
                 gradient.toVector3D().subtract(circularApproximation).getNorm(),

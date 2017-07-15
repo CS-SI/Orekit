@@ -52,6 +52,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.AbstractForceModelTest;
@@ -393,7 +394,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         for (double theta = 0.01; theta < 3.14; theta += 0.1) {
             Vector3D position = new Vector3D(r * FastMath.sin(theta), 0.0, r * FastMath.cos(theta));
             Dfp refValue = refModel.nonCentralPart(null, position);
-            double value = model.nonCentralPart(null, position);
+            double value = model.nonCentralPart(null, position, model.getMu());
             double relativeError = error(refValue, value).divide(refValue).toDouble();
             Assert.assertEquals(0, relativeError, 7.0e-15);
         }
@@ -415,8 +416,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double refValue = provider.getMu() / position.getNorm() +
-                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position);
-                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position);
+                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position, model.getMu());
+                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position, model.getMu());
                 Assert.assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
             }
         }
@@ -667,7 +668,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                 double norm  = FastMath.sqrt(refGradient[0] * refGradient[0] +
                                              refGradient[1] * refGradient[1] +
                                              refGradient[2] * refGradient[2]);
-                double[] gradient = model.gradient(null, position);
+                double[] gradient = model.gradient(null, position, model.getMu());
                 double errorX = refGradient[0] - gradient[0];
                 double errorY = refGradient[1] - gradient[1];
                 double errorZ = refGradient[2] - gradient[2];
@@ -718,32 +719,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                               final AbsoluteDate date, final Vector3D position, final double h)
         throws OrekitException {
         return new double[] {
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
                           h)
         };
     }
@@ -752,32 +753,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                final AbsoluteDate date, final Vector3D position, final double h)
         throws OrekitException {
         return new double[][] {
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
                           h)
         };
     }
@@ -1137,8 +1138,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                              SpacecraftState state)
         throws OrekitException {
 
-        final Vector3D testAcceleration = testModel.acceleration(state);
-        final Vector3D referenceAcceleration = referenceModel.acceleration(state);
+        final Vector3D testAcceleration = testModel.acceleration(state, testModel.getParameters());
+        final Vector3D referenceAcceleration = referenceModel.acceleration(state, referenceModel.getParameters());
 
         return testAcceleration.subtract(referenceAcceleration).getNorm() /
                referenceAcceleration.getNorm();
@@ -1363,20 +1364,27 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         /** Provider for the spherical harmonics. */
         private final UnnormalizedSphericalHarmonicsProvider provider;
 
-        /** Central attraction coefficient. */
-        private double mu;
-
         /** Rotating body. */
         private final Frame bodyFrame;
 
-       /** Creates a new instance.
+        /** Driver for gravitational parameter. */
+        private final ParameterDriver gmParameterDriver;
+
+        /** Creates a new instance.
        * @param centralBodyFrame rotating body frame
        * @param provider provider for spherical harmonics
        */
         public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                         final UnnormalizedSphericalHarmonicsProvider provider) {
+                                         final UnnormalizedSphericalHarmonicsProvider provider)
+            throws OrekitException {
             this.provider     = provider;
-            this.mu           = provider.getMu();
+            try {
+                gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                        provider.getMu(), FastMath.scalb(1.0, 32), 0.0, Double.POSITIVE_INFINITY);
+            } catch (OrekitException oe) {
+                // this should never occur as valueChanged above never throws an exception
+                throw new OrekitInternalError(oe);
+            }
             this.bodyFrame    = centralBodyFrame;
         }
 
@@ -1388,8 +1396,10 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         /** {@inheritDoc} */
         @Override
-        public Vector3D acceleration(final SpacecraftState s)
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             throws OrekitException {
+
+            final double mu = parameters[0];
 
             // get the position in body frame
             final AbsoluteDate date = s.getDate();
@@ -1630,13 +1640,16 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s) {
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters) {
             throw new UnsupportedOperationException();
         }
 
         /** {@inheritDoc} */
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName) {
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                          final double[] parameters,
+                                                                          final String paramName) {
             throw new UnsupportedOperationException();
         }
 
@@ -1655,7 +1668,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         /** {@inheritDoc} */
         @Override
         public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+            return new ParameterDriver[] {
+                gmParameterDriver
+            };
         }
 
     }

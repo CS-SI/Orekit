@@ -20,11 +20,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -304,9 +306,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
         final DSFactory factory = new DSFactory((dAccdM == null) ? 6 : 7, 1);
+        final Field<DerivativeStructure> field = factory.getDerivativeField();
 
-        final FieldAbsoluteDate<DerivativeStructure> dsDate =
-                        new FieldAbsoluteDate<>(factory.getDerivativeField(), s.getDate());
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, s.getDate());
 
         // position and velocity count for six free parameters
         final Vector3D pos = s.getPVCoordinates().getPosition();
@@ -341,7 +343,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
-            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState);
+            final ParameterDriver[] drivers = forceModel.getParametersDrivers();
+            final DerivativeStructure[] parameters = MathArrays.buildArray(field, drivers.length);
+            for (int i = 0; i < drivers.length; ++i) {
+                parameters[i] = field.getZero().add(drivers[i].getValue());
+            }
+            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
             addToRow(acceleration.getX(), 0);
             addToRow(acceleration.getY(), 1);
             addToRow(acceleration.getZ(), 2);
@@ -416,7 +423,14 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             dAccdParam[1] = 0.0;
             dAccdParam[2] = 0.0;
             for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                final FieldVector3D<DerivativeStructure> accDer = map.get(driver).accelerationDerivatives(s, driver.getName());
+                final ForceModel forceModel = map.get(driver);
+                final ParameterDriver[] drivers = forceModel.getParametersDrivers();
+                final double[] parameters = new double[drivers.length];
+                for (int i = 0; i < drivers.length; ++i) {
+                    parameters[i] = drivers[i].getValue();
+                }
+                final FieldVector3D<DerivativeStructure> accDer =
+                                forceModel.accelerationDerivatives(s, parameters, driver.getName());
                 dAccdParam[0] += accDer.getX().getPartialDerivative(1);
                 dAccdParam[1] += accDer.getY().getPartialDerivative(1);
                 dAccdParam[2] += accDer.getZ().getPartialDerivative(1);

@@ -35,7 +35,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
@@ -53,11 +52,8 @@ public class NewtonianAttraction extends AbstractForceModel {
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
-    /** Drivers for force model parameters. */
-    private final ParameterDriver[] parametersDrivers;
-
-    /** Central attraction coefficient (m^3/s^2). */
-    private double mu;
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
 
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
@@ -66,70 +62,70 @@ public class NewtonianAttraction extends AbstractForceModel {
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public NewtonianAttraction(final double mu) {
-        this.parametersDrivers = new ParameterDriver[1];
         try {
-            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       mu, MU_SCALE,
-                                                       0.0, Double.POSITIVE_INFINITY);
-            parametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    NewtonianAttraction.this.mu = driver.getValue();
-                }
-            });
+            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    mu, MU_SCALE,
+                                                    0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
 
-        this.mu = mu;
         this.factory = new DSFactory(1, 1);
+
     }
 
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu() {
-        return mu;
+        return gmParameterDriver.getValue();
     }
 
     /** {@inheritDoc} */
     @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
-        adder.addKeplerContribution(mu);
+        adder.addKeplerContribution(getMu());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+                                                                final FieldTimeDerivativesEquations<T> adder)
         throws OrekitException {
-        adder.addKeplerContribution(mu);
+        adder.addKeplerContribution(getMu());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s)
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
+        final double mu = parameters[0];
         final double r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
+        final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
-        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), s.getPVCoordinates().getPosition());
+        return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPVCoordinates().getPosition());
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                      final double[] parameters,
+                                                                      final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);
+
+        final double mu = parameters[0];
 
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
@@ -153,7 +149,9 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
 }

@@ -23,6 +23,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -94,7 +95,7 @@ public interface ForceModel {
      */
     default void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
         throws OrekitException {
-        adder.addNonKeplerianAcceleration(acceleration(s));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -106,36 +107,67 @@ public interface ForceModel {
      */
     default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
         throws OrekitException {
-        adder.addNonKeplerianAcceleration(acceleration(s));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
+    }
+
+    /** Get force model parameters.
+     * @return force model parameters
+     * @since 9.0
+     */
+    default double[] getParameters() {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return force model parameters
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
     }
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
+     * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
      * @exception OrekitException if some specific error occurs
      * @since 9.0
      */
-    Vector3D acceleration(SpacecraftState s)
+    Vector3D acceleration(SpacecraftState s, double[] parameters)
         throws OrekitException;
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
+     * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
      * @param <T> type of the elements
      * @exception OrekitException if some specific error occurs
      * @since 9.0
      */
-    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s)
+    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters)
         throws OrekitException;
 
     /** Compute acceleration derivatives with respect to additional parameters.
      * @param s spacecraft state
+     * @param parameters values of the force model parameters
      * @param paramName name of the parameter with respect to which derivatives are required
      * @return acceleration with all derivatives specified by the input parameters own derivatives
      * @exception OrekitException if derivatives cannot be computed
      * @since 6.0
      */
-    FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName)
+    FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, double[] parameters, String paramName)
         throws OrekitException;
 
     /** Get the discrete events related to the model.

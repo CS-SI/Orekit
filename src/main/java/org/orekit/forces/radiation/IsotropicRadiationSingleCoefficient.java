@@ -31,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses a single coefficient cr, considered to be
@@ -54,14 +53,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
      */
     private final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Drivers for radiation pressure coefficient parameter. */
-    private final ParameterDriver[] radiationParametersDrivers;
+    /** Driver for reflection coefficient. */
+    private final ParameterDriver reflectionParameterDriver;
 
     /** Cross section (m²). */
     private final double crossSection;
-
-    /** Reflection coefficient. */
-    private double cr;
 
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
@@ -82,20 +78,12 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr,
                                                final double crMin, final double crMax) {
-        this.radiationParametersDrivers = new ParameterDriver[1];
         try {
             // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
             // the single coefficient may be arbitrary, and even negative
-            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                cr, SCALE,
-                                                                crMin, crMax);
-            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    IsotropicRadiationSingleCoefficient.this.cr = driver.getValue();
-                }
-            });
+            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                            cr, SCALE,
+                                                            crMin, crMax);
             factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
@@ -103,19 +91,23 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         }
 
         this.crossSection = crossSection;
-        this.cr           = cr;
+
     }
 
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getRadiationParametersDrivers() {
-        return radiationParametersDrivers.clone();
+        return new ParameterDriver[] {
+            reflectionParameterDriver
+        };
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux) {
+                                                  final Rotation rotation, final double mass, final Vector3D flux,
+                                                  final double[] parameters) {
+        final double cr = parameters[0];
         return new Vector3D(crossSection * cr / mass, flux);
     }
 
@@ -125,9 +117,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
-                                      final FieldVector3D<T> flux)
+                                      final FieldVector3D<T> flux,
+                                      final T[] parameters)
         throws OrekitException {
-        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection * cr), flux);
+        final T cr = parameters[0];
+        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
 
     }
 
@@ -135,12 +129,13 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     @Override
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
-                                                                            final Vector3D flux, final String paramName)
+                                                                            final Vector3D flux, final double[] parameters,
+                                                                            final String paramName)
         throws OrekitException {
 
         final DerivativeStructure crDS;
         if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            crDS = factory.variable(0, cr);
+            crDS = factory.variable(0, parameters[0]);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);

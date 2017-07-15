@@ -31,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients
@@ -60,17 +59,14 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      */
     private final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Drivers for radiation pressure coefficient parameter. */
-    private final ParameterDriver[] radiationParametersDrivers;
+    /** Driver for absorption coefficient. */
+    private final ParameterDriver absorptionParameterDriver;
+
+    /** Driver for specular reflection coefficient. */
+    private final ParameterDriver reflectionParameterDriver;
 
     /** Cross section (m²). */
     private final double crossSection;
-
-    /** Absorption coefficient. */
-    private double ca;
-
-    /** Specular reflection coefficient. */
-    private double cs;
 
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
@@ -81,46 +77,34 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      * @param cs specular reflection coefficient Cs between 0.0 an 1.0
      */
     public IsotropicRadiationClassicalConvention(final double crossSection, final double ca, final double cs) {
-        this.radiationParametersDrivers = new ParameterDriver[2];
         try {
-            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                ca, SCALE, 0.0, 1.0);
-            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    IsotropicRadiationClassicalConvention.this.ca = driver.getValue();
-                }
-            });
-            radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                cs, SCALE, 0.0, 1.0);
-            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    IsotropicRadiationClassicalConvention.this.cs = driver.getValue();
-                }
-            });
+            absorptionParameterDriver = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
+                                                            ca, SCALE, 0.0, 1.0);
+            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                            cs, SCALE, 0.0, 1.0);
             factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
         this.crossSection = crossSection;
-        this.ca           = ca;
-        this.cs           = cs;
     }
 
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getRadiationParametersDrivers() {
-        return radiationParametersDrivers.clone();
+        return new ParameterDriver[] {
+            absorptionParameterDriver, reflectionParameterDriver
+        };
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux) {
+                                                  final Rotation rotation, final double mass, final Vector3D flux,
+                                                  final double[] parameters) {
+        final double ca = parameters[0];
+        final double cs = parameters[1];
         final double kP = crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
         return new Vector3D(kP / mass, flux);
     }
@@ -131,9 +115,12 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
         radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
-                                      final FieldVector3D<T> flux)
+                                      final FieldVector3D<T> flux,
+                                      final T[] parameters)
         throws OrekitException {
-        final double kP = crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
+        final T ca = parameters[0];
+        final T cs = parameters[1];
+        final T kP = ca.add(cs).negate().add(1).multiply(4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
@@ -141,17 +128,18 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
     @Override
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
-                                                                            final Vector3D flux, final String paramName)
+                                                                            final Vector3D flux, final double[] parameters,
+                                                                            final String paramName)
         throws OrekitException {
 
         final DerivativeStructure caDS;
         final DerivativeStructure csDS;
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            caDS = factory.variable(0, ca);
-            csDS = factory.constant(cs);
+            caDS = factory.variable(0, parameters[0]);
+            csDS = factory.constant(parameters[1]);
         } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            caDS = factory.constant(ca);
-            csDS = factory.variable(0, cs);
+            caDS = factory.constant(parameters[0]);
+            csDS = factory.variable(0, parameters[1]);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);

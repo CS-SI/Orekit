@@ -86,9 +86,7 @@ public class ConstantThrustManeuverTest extends AbstractForceModelTest {
             java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
             firingField.setAccessible(true);
             boolean firing = firingField.getBoolean(forceModel);
-            java.lang.reflect.Field thrustField = ConstantThrustManeuver.class.getDeclaredField("thrust");
-            thrustField.setAccessible(true);
-            double thrust = thrustField.getDouble(forceModel);
+            double thrust = forceModel.getParameterDriver(ConstantThrustManeuver.THRUST).getValue();
             java.lang.reflect.Field directionField = ConstantThrustManeuver.class.getDeclaredField("direction");
             directionField.setAccessible(true);
             Vector3D direction;

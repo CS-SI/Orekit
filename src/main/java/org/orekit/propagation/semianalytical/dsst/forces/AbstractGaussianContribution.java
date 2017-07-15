@@ -458,7 +458,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 final SpacecraftState shiftedState =
                         new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState);
+                acc = contribution.acceleration(shiftedState, contribution.getParameters());
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
