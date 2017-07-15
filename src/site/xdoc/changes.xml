@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="remove">
+        Removed obsoletes Cunningham and Droziner attraction models. These models have
+        been superseded by Holmes-Featherstone attraction model available since 2013
+        in Orekit.
+      </action>
       <action dev="luc" type="update">
         Take orbit to attitude coupling into account in the partial derivatives for all attitude modes.
         Fixes issue #200.
