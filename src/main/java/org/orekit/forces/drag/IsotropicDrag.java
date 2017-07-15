@@ -111,6 +111,7 @@ public class IsotropicDrag implements DragSensitive {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                      final Rotation rotation, final double mass,
                                      final double density, final Vector3D relativeVelocity) {
@@ -119,14 +120,19 @@ public class IsotropicDrag implements DragSensitive {
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
-                                                               final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
-                                                               final DerivativeStructure density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                         final FieldVector3D<T> position, final FieldRotation<T> rotation,
+                         final T mass, final T density,
+                         final FieldVector3D<T> relativeVelocity)
+        throws OrekitException {
         return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
                                    relativeVelocity);
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                final Rotation rotation, final double mass,
                                                                final  double density, final Vector3D relativeVelocity,
@@ -142,17 +148,6 @@ public class IsotropicDrag implements DragSensitive {
         return new FieldVector3D<>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
                                    relativeVelocity);
 
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                         final FieldVector3D<T> position, final FieldRotation<T> rotation,
-                         final T mass, final T density,
-                         final FieldVector3D<T> relativeVelocity)
-            throws OrekitException {
-        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
-                                   relativeVelocity);
     }
 
 }

@@ -113,19 +113,26 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                   final Rotation rotation, final double mass, final Vector3D flux) {
         return new Vector3D(crossSection * cr / mass, flux);
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
-                                                                            final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
-                                                                            final FieldVector3D<DerivativeStructure> flux) {
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux)
+        throws OrekitException {
         return new FieldVector3D<>(mass.reciprocal().multiply(crossSection * cr), flux);
+
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final String paramName)
@@ -140,17 +147,6 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         }
 
         return new FieldVector3D<>(crDS.multiply(crossSection / mass), flux);
-
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                                      final FieldVector3D<T> position,
-                                      final FieldRotation<T> rotation, final T mass,
-                                      final FieldVector3D<T> flux)
-        throws OrekitException {
-        return new FieldVector3D<>(mass.reciprocal().multiply(crossSection * cr), flux);
 
     }
 

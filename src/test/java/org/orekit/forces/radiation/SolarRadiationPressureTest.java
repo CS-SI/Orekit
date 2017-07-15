@@ -115,7 +115,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
+            return spacecraft.radiationPressureAcceleration(new FieldAbsoluteDate<>(field, date),
+                                                            frame, position, rotation, mass, flux);
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
                  SecurityException | NoSuchMethodException | InvocationTargetException e) {
             return null;

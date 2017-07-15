@@ -74,22 +74,7 @@ public interface RadiationSensitive {
      * @throws OrekitException if acceleration cannot be computed
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
-                                           FieldRotation<T> rotation, T mass, FieldVector3D<T> flux)
-        throws OrekitException;
-
-    /** Compute the acceleration due to radiation pressure, with state derivatives.
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass spacecraft mass
-     * @param flux radiation flux in the same inertial frame as spacecraft orbit
-     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-     * @throws OrekitException if acceleration cannot be computed
-     */
-    FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
-                                                                     FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
-                                                                     FieldVector3D<DerivativeStructure> flux)
+                                                                                   FieldRotation<T> rotation, T mass, FieldVector3D<T> flux)
         throws OrekitException;
 
     /** Compute the acceleration due to radiation pressure, with parameters derivatives.

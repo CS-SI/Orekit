@@ -149,7 +149,8 @@ public class DragForceTest extends AbstractForceModelTest {
             final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
+            return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
+                                               frame, position, rotation, mass, rho, relativeVelocity);
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
