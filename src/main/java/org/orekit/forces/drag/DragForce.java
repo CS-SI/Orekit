@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -120,29 +119,6 @@ public class DragForce extends AbstractForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
-
-        final double rho    = atmosphere.getDensity(date, position, frame);
-        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
-
-        // compute acceleration with all its partial derivatives
-        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, parameters, paramName);
-
     }
 
 }

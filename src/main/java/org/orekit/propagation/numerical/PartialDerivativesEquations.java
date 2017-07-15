@@ -415,6 +415,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         }
 
         final int paramDim = selected.getNbParams();
+        final DSFactory factory11 = new DSFactory(1, 1);
+        final FieldSpacecraftState<DerivativeStructure> s11 =
+                        new FieldSpacecraftState<>(factory11.getDerivativeField(), s);
         for (int k = 0; k < paramDim; ++k) {
 
             // compute the acceleration gradient with respect to current parameter
@@ -425,12 +428,15 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             for (final ParameterDriver driver : delegating.getRawDrivers()) {
                 final ForceModel forceModel = map.get(driver);
                 final ParameterDriver[] drivers = forceModel.getParametersDrivers();
-                final double[] parameters = new double[drivers.length];
+                final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
                 for (int i = 0; i < drivers.length; ++i) {
-                    parameters[i] = drivers[i].getValue();
+                    if (drivers[i].getName().equals(driver.getName())) {
+                        parameters[i] = factory11.variable(0, drivers[i].getValue());
+                    } else {
+                        parameters[i] = factory.constant(drivers[i].getValue());
+                    }
                 }
-                final FieldVector3D<DerivativeStructure> accDer =
-                                forceModel.accelerationDerivatives(s, parameters, driver.getName());
+                final FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(s11, parameters);
                 dAccdParam[0] += accDer.getX().getPartialDerivative(1);
                 dAccdParam[1] += accDer.getY().getPartialDerivative(1);
                 dAccdParam[2] += accDer.getZ().getPartialDerivative(1);

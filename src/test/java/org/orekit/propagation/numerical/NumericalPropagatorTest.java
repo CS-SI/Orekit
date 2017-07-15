@@ -29,9 +29,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -1470,22 +1468,6 @@ public class NumericalPropagatorTest {
         @Override
         public boolean isSupported(String name) {
             return false;
-        }
-
-        @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s,
-                                                                          double[] parameters,
-                                                                          String name)
-            throws OrekitException {
-            final ParameterDriver[] drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.length];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers[i].getName();
-            }
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    names);
         }
 
         @Override

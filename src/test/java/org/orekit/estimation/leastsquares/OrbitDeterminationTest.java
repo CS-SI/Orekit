@@ -194,7 +194,7 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odsatW3 = run(input, false);
+        ResultOD odsatW3 = run(input, true);
 
         //test
         //definition of the accuracy for the test
@@ -205,7 +205,7 @@ public class OrbitDeterminationTest {
         final double dimensionLessCoef = 1e-3;
 
         //test on the convergence (with some margins)
-        Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
+        Assert.assertTrue(odsatW3.getNumberOfIteration()  < 10);
         Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 15);
 
         //test on the estimated position and velocity

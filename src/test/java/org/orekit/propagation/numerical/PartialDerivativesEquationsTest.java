@@ -143,14 +143,6 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s,
-                                                                          double[] parameters,
-                                                                          String paramName)
-            throws OrekitException {
-            return null;
-        }
-
-        @Override
         public Stream<EventDetector> getEventsDetectors() {
             return Stream.empty();
         }

@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -60,9 +58,6 @@ public class Relativity extends AbstractForceModel {
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /**
      * Create a force model to add post-Newtonian acceleration corrections to an Earth
      * orbit.
@@ -74,7 +69,6 @@ public class Relativity extends AbstractForceModel {
             gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                     gm, MU_SCALE,
                                                     0.0, Double.POSITIVE_INFINITY);
-            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -131,30 +125,6 @@ public class Relativity extends AbstractForceModel {
                                    p.dotProduct(v).multiply(4),
                                    v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(gm));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-            final SpacecraftState s, final double[] parameters,
-            final String paramName) throws OrekitException {
-
-        complainIfNotSupported(paramName);
-        final DerivativeStructure gmDS = factory.variable(0, parameters[0]);
-
-        final PVCoordinates pv = s.getPVCoordinates();
-        final Vector3D p = pv.getPosition();
-        final Vector3D v = pv.getVelocity();
-        //radius
-        final double r2 = p.getNormSq();
-        final double r = FastMath.sqrt(r2);
-        //speed
-        final double s2 = v.getNormSq();
-        final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
-        //eq. 3.146
-        return new FieldVector3D<>(gmDS.multiply(4 / r).subtract(s2),     p,
-                                   factory.constant(4 * p.dotProduct(v)), v).
-               scalarMultiply(gmDS.divide(r2 * r * c2));
     }
 
     /** {@inheritDoc} */

@@ -21,8 +21,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -110,9 +108,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Scaled sectorial Pbar<sub>m,m</sub>/u<sup>m</sup> &times; 2<sup>-SCALING</sup>. */
     private final double[] sectorial;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Creates a new instance.
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
@@ -163,8 +158,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         for (int m = 2; m < sectorial.length; ++m) {
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
-
-        factory = new DSFactory(1, 1);
 
     }
 
@@ -889,31 +882,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException, IllegalArgumentException {
-
-        complainIfNotSupported(paramName);
-
-        final double mu = parameters[0];
-
-        // get the position in body frame
-        final AbsoluteDate date       = s.getDate();
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
-
-        // gradient of the non-central part of the gravity field
-        final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position, mu)));
-
-        return new FieldVector3D<>(factory.build(gInertial.getX(), gInertial.getX() / mu),
-                                   factory.build(gInertial.getY(), gInertial.getY() / mu),
-                                   factory.build(gInertial.getZ(), gInertial.getZ() / mu));
-
     }
 
     /** {@inheritDoc} */

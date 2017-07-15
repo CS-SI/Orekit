@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -55,9 +53,6 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
    /** Simple constructor.
      * @param mu central attraction coefficient (m^3/s^2)
      */
@@ -70,8 +65,6 @@ public class NewtonianAttraction extends AbstractForceModel {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
-
-        this.factory = new DSFactory(1, 1);
 
     }
 
@@ -114,24 +107,6 @@ public class NewtonianAttraction extends AbstractForceModel {
         final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPVCoordinates().getPosition());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        final double mu = parameters[0];
-
-        final Vector3D            position = s.getPVCoordinates().getPosition();
-        final double              r2       = position.getNormSq();
-        final DerivativeStructure muds     = factory.variable(0, mu);
-        return new FieldVector3D<>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
-
     }
 
     /** {@inheritDoc} */

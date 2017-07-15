@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -295,29 +294,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-        final AbsoluteDate date         = s.getDate();
-        final Frame        frame        = s.getFrame();
-        final Vector3D     position     = s.getPVCoordinates().getPosition();
-        final Vector3D     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
-        final double       r2           = sunSatVector.getNormSq();
-
-        // compute flux
-        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
-        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
-
-        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux, parameters, paramName);
-
     }
 
     /** Get the useful angles for eclipse computation.

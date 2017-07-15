@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -59,9 +57,6 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     /** The body to consider. */
     private final CelestialBody body;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
      * @param body the third body to consider
      * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
@@ -77,8 +72,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
             throw new OrekitInternalError(oe);
         }
 
-        this.body    = body;
-        this.factory = new DSFactory(1, 1);
+        this.body = body;
 
     }
 
@@ -119,31 +113,6 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         // compute relative acceleration
         return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
                                    r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(gm).negate(), centralToBody);
-
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        final double gm = parameters[0];
-
-        // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double r2Central       = centralToBody.getNormSq();
-        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final double r2Sat           = satToBody.getNormSq();
-
-        final DerivativeStructure gmds = factory.variable(0, gm);
-
-        // compute relative acceleration
-        return new FieldVector3D<>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,
-                                   gmds.divide(-r2Central * FastMath.sqrt(r2Central)), centralToBody);
 
     }
 

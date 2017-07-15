@@ -20,14 +20,11 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -97,9 +94,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
      * Calling this constructor is equivalent to call {@link
@@ -163,7 +157,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                                       0.0, Double.POSITIVE_INFINITY);
             fpd = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
                                       Double.NEGATIVE_INFINITY, 0.0 );
-            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -274,38 +267,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             // constant (and null) acceleration when not firing
             return FieldVector3D.getZero(s.getMass().getField());
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        if (firing) {
-
-            if (thrustDriver.getName().equals(paramName)) {
-                final DerivativeStructure thrustDS = factory.variable(0, parameters[0]);
-                return new FieldVector3D<>(thrustDS.divide(s.getMass()),
-                                           s.getAttitude().getRotation().applyInverseTo(direction));
-            } else if (flowRateDriver.getName().equals(paramName)) {
-                // parameter is flow rate
-                // acceleration does not depend on flow rate (only mass decrease does)
-                return FieldVector3D.getZero(factory.getDerivativeField());
-            } else {
-                throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                          thrustDriver.getName() + ", " +
-                                          flowRateDriver.getName());
-            }
-
-        } else {
-            // constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(factory.getDerivativeField());
-        }
-
     }
 
     /** {@inheritDoc} */

@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.OrbitType;
@@ -55,22 +54,24 @@ public abstract class AbstractForceModelTest {
                                             double hFactor, double tol)
         throws OrekitException {
 
-        try {
-            forceModel.accelerationDerivatives(state, forceModel.getParameters(), "not a parameter");
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            // expected
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
+        final DSFactory factory11 = new DSFactory(1, 1);
+        final Field<DerivativeStructure> field = factory11.getDerivativeField();
+        final FieldSpacecraftState<DerivativeStructure> stateF = new FieldSpacecraftState<DerivativeStructure>(field, state);
+        final ParameterDriver[] drivers = forceModel.getParametersDrivers();
+        final DerivativeStructure[] parametersDS = new DerivativeStructure[drivers.length];
+        for (int i = 0; i < parametersDS.length; ++i) {
+            if (drivers[i].getName().equals(name)) {
+                parametersDS[i] = factory11.variable(0, drivers[i].getValue());
+            } else {
+                parametersDS[i] = factory11.constant(drivers[i].getValue());
+            }
         }
-        FieldVector3D<DerivativeStructure> accDer = forceModel.accelerationDerivatives(state,
-                                                                                       forceModel.getParameters(),
-                                                                                       name);
+        FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(stateF, parametersDS);
         Vector3D derivative = new Vector3D(accDer.getX().getPartialDerivative(1),
                                            accDer.getY().getPartialDerivative(1),
                                            accDer.getZ().getPartialDerivative(1));
 
         int selected = -1;
-        final ParameterDriver[] drivers = forceModel.getParametersDrivers();
         final double[] parameters = new double[drivers.length];
         for (int i = 0; i < drivers.length; ++i) {
             parameters[i] = drivers[i].getValue();

@@ -34,8 +34,8 @@
         Merged FieldAttitudeProvider into AttitudeProvider.
       </action>
       <action dev="luc" type="update">
-        Simplified ForceModel interface. It does not require a dedicated method for
-        computing state derivatives anymore.
+        Simplified ForceModel interface. It does not require dedicated methods anymore for
+        computing derivatives with respect to either state or parameters.
       </action>
       <action dev="luc" type="remove">
         Removed Jacchia-Bowman 2006 now completely superseded by Jacchia-Bowman 2008.

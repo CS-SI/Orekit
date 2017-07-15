@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
@@ -157,17 +156,6 @@ public interface ForceModel {
      * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters)
-        throws OrekitException;
-
-    /** Compute acceleration derivatives with respect to additional parameters.
-     * @param s spacecraft state
-     * @param parameters values of the force model parameters
-     * @param paramName name of the parameter with respect to which derivatives are required
-     * @return acceleration with all derivatives specified by the input parameters own derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 6.0
-     */
-    FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, double[] parameters, String paramName)
         throws OrekitException;
 
     /** Get the discrete events related to the model.

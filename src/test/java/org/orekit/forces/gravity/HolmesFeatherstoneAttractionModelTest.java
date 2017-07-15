@@ -1647,14 +1647,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         /** {@inheritDoc} */
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                          final double[] parameters,
-                                                                          final String paramName) {
-            throw new UnsupportedOperationException();
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Stream<EventDetector> getEventsDetectors() {
             return Stream.empty();
         }

@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
@@ -138,16 +137,6 @@ public class SolidTides extends AbstractForceModel {
         throws OrekitException {
         // delegate to underlying attraction model
         return attractionModel.acceleration(s, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final double[] parameters,
-                                                                      final String paramName)
-        throws OrekitException {
-        // delegate to underlying attraction model
-        return attractionModel.accelerationDerivatives(s, parameters, paramName);
     }
 
     /** {@inheritDoc} */
