@@ -194,7 +194,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
@@ -284,8 +284,8 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
             maxA = FastMath.max(maxA, FastMath.abs((ay_DS - ay) / ay));
             maxA = FastMath.max(maxA, FastMath.abs((az_DS - az) / az));
         }
-        Assert.assertEquals(0, maxP, 1.0e-10);
-        Assert.assertEquals(0, maxV, 2.0e-11);
+        Assert.assertEquals(0, maxP, 5.0e-9);
+        Assert.assertEquals(0, maxV, 3.0e-10);
         Assert.assertEquals(0, maxA, 8.0e-8);
 
     }
@@ -344,7 +344,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         FNP.addForceModel(forceModel);
      //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();

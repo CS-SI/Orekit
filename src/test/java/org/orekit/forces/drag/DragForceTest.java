@@ -443,7 +443,7 @@ public class DragForceTest extends AbstractForceModelTest {
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
@@ -599,7 +599,7 @@ public class DragForceTest extends AbstractForceModelTest {
         FNP.addForceModel(forceModel);
      //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
