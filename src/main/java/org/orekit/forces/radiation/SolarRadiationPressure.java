@@ -62,7 +62,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Centrl body model. */
+    /** Central body model. */
     private final double equatorialRadius;
 
     /** Spacecraft. */
