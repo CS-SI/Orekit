@@ -37,9 +37,11 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -354,6 +356,17 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
                 forceModel.getFieldEventsDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
+            throws OrekitException {
+            final SpacecraftState stateD  = initialState.toSpacecraftState();
+            final AbsoluteDate    targetD = target.toAbsoluteDate();
+            for (final ForceModel forceModel : forceModels) {
+                forceModel.init(stateD, targetD);
+            }
         }
 
         /** {@inheritDoc} */
