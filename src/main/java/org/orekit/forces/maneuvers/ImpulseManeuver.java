@@ -65,7 +65,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
 
-    /** The attitude to override during the maneuver, if set. **/
+    /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
 
     /** Triggering event. */
