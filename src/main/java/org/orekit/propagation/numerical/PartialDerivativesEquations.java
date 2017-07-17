@@ -433,7 +433,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                     if (drivers[i].getName().equals(driver.getName())) {
                         parameters[i] = factory11.variable(0, drivers[i].getValue());
                     } else {
-                        parameters[i] = factory.constant(drivers[i].getValue());
+                        parameters[i] = factory11.constant(drivers[i].getValue());
                     }
                 }
                 final FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(s11, parameters);
