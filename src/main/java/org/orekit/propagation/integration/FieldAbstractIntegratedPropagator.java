@@ -659,9 +659,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
-            throws OrekitException {
-        }
+        void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
+            throws OrekitException;
 
         /** Compute differential equations for main state.
          * @param state current state
