@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,13 +119,16 @@ public class DSSTPropagation {
             }
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.addProvider(new DirectoryCrawler(orekitData));
-
+            
             // input/output (in user's home directory)
-            File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
+            File input  = new File(DSSTPropagation.class.getResource("/dsst-propagation.in").toURI().getPath());
             File output = new File(input.getParentFile(), "dsst-propagation.out");
 
             new DSSTPropagation().run(input, output);
-
+            
+        } catch (URISyntaxException use) {
+                System.err.println(use.getLocalizedMessage());
+                System.exit(1);
         } catch (IOException ioe) {
             System.err.println(ioe.getLocalizedMessage());
             System.exit(1);
