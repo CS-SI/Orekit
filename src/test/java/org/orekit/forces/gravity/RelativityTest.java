@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -61,7 +61,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 /** Unit tests for {@link Relativity}. */
-public class RelativityTest extends AbstractForceModelTest {
+public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /** speed of light */
     private static final double c = Constants.SPEED_OF_LIGHT;

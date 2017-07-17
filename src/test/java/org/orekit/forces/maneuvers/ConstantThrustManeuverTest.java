@@ -42,7 +42,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -69,7 +69,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class ConstantThrustManeuverTest extends AbstractForceModelTest {
+public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
     // Body mu
     private double mu;

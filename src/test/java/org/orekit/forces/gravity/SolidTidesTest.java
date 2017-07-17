@@ -32,7 +32,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -59,7 +59,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
-public class SolidTidesTest extends AbstractForceModelTest {
+public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,

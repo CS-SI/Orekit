@@ -46,7 +46,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -79,7 +79,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
 
-public class SolarRadiationPressureTest extends AbstractForceModelTest {
+public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,

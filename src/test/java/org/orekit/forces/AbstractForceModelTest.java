@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -124,80 +123,6 @@ public abstract class AbstractForceModelTest {
                         attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
         return new FieldSpacecraftState<>(orbit, attitude, field.getZero().add(state.getMass()));
-
-    }
-
-    protected abstract FieldVector3D<DerivativeStructure> accelerationDerivatives(ForceModel forceModel,
-                                                                                  final AbsoluteDate date, final  Frame frame,
-                                                                                  final FieldVector3D<DerivativeStructure> position,
-                                                                                  final FieldVector3D<DerivativeStructure> velocity,
-                                                                                  final FieldRotation<DerivativeStructure> rotation,
-                                                                                  final DerivativeStructure mass)
-        throws OrekitException;
-
-    protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
-                                                        final AttitudeProvider attitudeProvider,
-                                                        final double checkTolerance, final boolean print)
-        throws OrekitException {
-        FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
-        FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
-                                                                           forceModel.getParameters(fState.getDate().getField()));
-        FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
-                                                                           fState.getFrame(),
-                                                                           fState.getPVCoordinates().getPosition(),
-                                                                           fState.getPVCoordinates().getVelocity(),
-                                                                           fState.getAttitude().getRotation(),
-                                                                           fState.getMass());
-        Vector3D dFdPXRef = new Vector3D(dsOld.getX().getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                         dsOld.getY().getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                         dsOld.getZ().getPartialDerivative(1, 0, 0, 0, 0, 0));
-        Vector3D dFdPXRes = new Vector3D(dsNew.getX().getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                         dsNew.getY().getPartialDerivative(1, 0, 0, 0, 0, 0),
-                                         dsNew.getZ().getPartialDerivative(1, 0, 0, 0, 0, 0));
-        Vector3D dFdPYRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                         dsOld.getY().getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                         dsOld.getZ().getPartialDerivative(0, 1, 0, 0, 0, 0));
-        Vector3D dFdPYRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                         dsNew.getY().getPartialDerivative(0, 1, 0, 0, 0, 0),
-                                         dsNew.getZ().getPartialDerivative(0, 1, 0, 0, 0, 0));
-        Vector3D dFdPZRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
-                                         dsOld.getY().getPartialDerivative(0, 0, 1, 0, 0, 0),
-                                         dsOld.getZ().getPartialDerivative(0, 0, 1, 0, 0, 0));
-        Vector3D dFdPZRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 1, 0, 0, 0),
-                                         dsNew.getY().getPartialDerivative(0, 0, 1, 0, 0, 0),
-                                         dsNew.getZ().getPartialDerivative(0, 0, 1, 0, 0, 0));
-        Vector3D dFdVXRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                         dsOld.getY().getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                         dsOld.getZ().getPartialDerivative(0, 0, 0, 1, 0, 0));
-        Vector3D dFdVXRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                         dsNew.getY().getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                         dsNew.getZ().getPartialDerivative(0, 0, 0, 1, 0, 0));
-        Vector3D dFdVYRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                         dsOld.getY().getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                         dsOld.getZ().getPartialDerivative(0, 0, 0, 0, 1, 0));
-        Vector3D dFdVYRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                         dsNew.getY().getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                         dsNew.getZ().getPartialDerivative(0, 0, 0, 0, 1, 0));
-        Vector3D dFdVZRef = new Vector3D(dsOld.getX().getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                         dsOld.getY().getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                         dsOld.getZ().getPartialDerivative(0, 0, 0, 0, 0, 1));
-        Vector3D dFdVZRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                         dsNew.getY().getPartialDerivative(0, 0, 0, 0, 0, 1),
-                                         dsNew.getZ().getPartialDerivative(0, 0, 0, 0, 0, 1));
-        if (print) {
-            System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));
-            System.out.println("dF/dPY ref norm: " + dFdPYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPYRef, dFdPYRes) + ", rel error: " + (Vector3D.distance(dFdPYRef, dFdPYRes) / dFdPYRef.getNorm()));
-            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdPZRes) + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdPZRes) / dFdPZRef.getNorm()));
-            System.out.println("dF/dVX ref norm: " + dFdVXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVXRef, dFdVXRes) + ", rel error: " + (Vector3D.distance(dFdVXRef, dFdVXRes) / dFdVXRef.getNorm()));
-            System.out.println("dF/dVY ref norm: " + dFdVYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVYRef, dFdVYRes) + ", rel error: " + (Vector3D.distance(dFdVYRef, dFdVYRes) / dFdVYRef.getNorm()));
-            System.out.println("dF/dVZ ref norm: " + dFdVZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVZRef, dFdVZRes) + ", rel error: " + (Vector3D.distance(dFdVZRef, dFdVZRes) / dFdVZRef.getNorm()));
-        }
-        checkdFdP(dFdPXRef, dFdPXRes, checkTolerance);
-        checkdFdP(dFdPYRef, dFdPYRes, checkTolerance);
-        checkdFdP(dFdPZRef, dFdPZRes, checkTolerance);
-        checkdFdP(dFdVXRef, dFdVXRes, checkTolerance);
-        checkdFdP(dFdVYRef, dFdVYRes, checkTolerance);
-        checkdFdP(dFdVZRef, dFdVZRes, checkTolerance);
 
     }
 

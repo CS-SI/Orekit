@@ -55,7 +55,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -99,7 +99,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
 
-public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTest {
+public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
 
     private static final int SCALING = 930;
 

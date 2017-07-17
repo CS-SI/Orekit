@@ -41,7 +41,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -67,7 +67,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class ThirdBodyAttractionTest extends AbstractForceModelTest {
+public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     private double mu;
 

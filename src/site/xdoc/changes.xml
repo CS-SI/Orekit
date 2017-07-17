@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added parametric acceleration force models, where acceleration amplitude is a
+        simple parametric function. Acceleration direction is fixed in either inertial
+        frame, or spacecraft frame, or in a dedicated attitude frame overriding spacecraft
+        attitude. The latter could for example be used to model solar arrays orientation if
+        the force is related to solar arrays). Two predefined implementations are provided,
+        one for polynomial amplitude and one for harmonic amplitude. Users can add other
+        cases at will. This allows for example to model the infamous GPS Y-bias, which is
+        thought to be related to a radiator thermal radiation.
+      </action>
       <action dev="luc" type="remove">
         Removed obsoletes Cunningham and Droziner attraction models. These models have
         been superseded by Holmes-Featherstone attraction model available since 2013
