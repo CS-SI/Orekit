@@ -17,7 +17,9 @@
 package org.orekit.forces;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -28,6 +30,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -40,10 +43,14 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -51,6 +58,8 @@ import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
@@ -61,6 +70,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
 
@@ -299,12 +309,12 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
 
     @Test
     public void testParameterDerivative2T() throws OrekitException {
-        doTestParameterDerivative(2, 7.0e-14, 5.0e-12);
+        doTestParameterDerivative(2, 3.0e-14, 7.0e-12);
     }
 
     @Test
     public void testParameterDerivative3T() throws OrekitException {
-        doTestParameterDerivative(3, 3.0e-14, 2.0e-12);
+        doTestParameterDerivative(3, 2.0e-14, 2.0e-11);
     }
 
     private void doTestParameterDerivative(final int harmonicMultiplier,
@@ -328,9 +338,122 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         hpa.init(state, state.getDate().shiftedBy(3600.0));
         hpa.getParametersDrivers()[0].setValue(0.00001);
         hpa.getParametersDrivers()[1].setValue(0.00002);
-        checkParameterDerivative(state, hpa, "kT amplitude parametric acceleration", 1.0e-3, amplitudeDerivativeTolerance);
-        checkParameterDerivative(state, hpa, "kT phase parametric acceleration",     1.0e-3, phaseDerivativeTolerance);
+        checkParameterDerivative(state, hpa, "kT γ", 1.0e-3, amplitudeDerivativeTolerance);
+        checkParameterDerivative(state, hpa, "kT φ",     1.0e-3, phaseDerivativeTolerance);
 
+    }
+
+    @Test
+    public void testCoefficientsDetermination() throws OrekitException {
+
+        final double mass = 2500;
+        final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngle.TRUE,
+                                        FramesFactory.getEME2000(),
+                                        new AbsoluteDate(new DateComponents(2004, 2, 3), TimeComponents.H00,
+                                                         TimeScalesFactory.getUTC()),
+                                        Constants.EIGEN5C_EARTH_MU);
+        final double period = orbit.getKeplerianPeriod();
+        AttitudeProvider maneuverLaw = new LofOffset(orbit.getFrame(), LOFType.VNC);
+        SpacecraftState initialState = new SpacecraftState(orbit,
+                                                           maneuverLaw.getAttitude(orbit,
+                                                                                   orbit.getDate(),
+                                                                                   orbit.getFrame()),
+                                                           mass);
+
+        double dP      = 10.0;
+        double minStep = 0.001;
+        double maxStep = 100;
+        double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, orbit.getType());
+
+        // generate PV measurements corresponding to a tangential maneuver
+        AdaptiveStepsizeIntegrator integrator0 =
+            new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
+        integrator0.setInitialStepSize(60);
+        final NumericalPropagator propagator0 = new NumericalPropagator(integrator0);
+        propagator0.setInitialState(initialState);
+        propagator0.setAttitudeProvider(maneuverLaw);
+        ForceModel hpaRefX1 = new HarmonicParametricAcceleration(Vector3D.PLUS_I, true, "refX1", null, period, 1);
+        ForceModel hpaRefY1 = new HarmonicParametricAcceleration(Vector3D.PLUS_J, true, "refY1", null, period, 1);
+        ForceModel hpaRefZ2 = new HarmonicParametricAcceleration(Vector3D.PLUS_K, true, "refZ2", null, period, 2);
+        hpaRefX1.getParametersDrivers()[0].setValue(2.4e-2);
+        hpaRefX1.getParametersDrivers()[1].setValue(3.1);
+        hpaRefY1.getParametersDrivers()[0].setValue(4.0e-2);
+        hpaRefY1.getParametersDrivers()[1].setValue(0.3);
+        hpaRefZ2.getParametersDrivers()[0].setValue(1.0e-2);
+        hpaRefZ2.getParametersDrivers()[1].setValue(1.8);
+        propagator0.addForceModel(hpaRefX1);
+        propagator0.addForceModel(hpaRefY1);
+        propagator0.addForceModel(hpaRefZ2);
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
+        propagator0.setMasterMode(10.0,
+                                  (state, isLast) ->
+                                  measurements.add(new PV(state.getDate(),
+                                                          state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
+                                                          1.0e-3, 1.0e-6, 1.0)));
+        propagator0.propagate(orbit.getDate().shiftedBy(900));
+
+        // set up an estimator to retrieve the maneuver as several harmonic accelerations in inertial frame
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        new NumericalPropagatorBuilder(orbit,
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
+                                                       PositionAngle.TRUE, dP);
+        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_I, true, "X1", null, period, 1));
+        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_J, true, "Y1", null, period, 1));
+        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_K, true, "Z2", null, period, 2));
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(), propagatorBuilder);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(20);
+        estimator.setMaxEvaluations(100);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+
+        // we will estimate only the force model parameters, not the orbit
+        for (final ParameterDriver d : estimator.getOrbitalParametersDrivers(false).getDrivers()) {
+            d.setSelected(false);
+        }
+        setParameter(estimator, "X1 γ", 1.0e-2);
+        setParameter(estimator, "X1 φ", 4.0);
+        setParameter(estimator, "Y1 γ", 1.0e-2);
+        setParameter(estimator, "Y1 φ", 0.0);
+        setParameter(estimator, "Z2 γ", 1.0e-2);
+        setParameter(estimator, "Z2 φ", 1.0);
+
+        estimator.estimate();
+        Assert.assertTrue(estimator.getIterationsCount()  < 15);
+        Assert.assertTrue(estimator.getEvaluationsCount() < 15);
+        Assert.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.0e-5);
+
+        Assert.assertEquals(hpaRefX1.getParametersDrivers()[0].getValue(), getParameter(estimator, "X1 γ"), 1.e-12);
+        Assert.assertEquals(hpaRefX1.getParametersDrivers()[1].getValue(), getParameter(estimator, "X1 φ"), 1.e-12);
+        Assert.assertEquals(hpaRefY1.getParametersDrivers()[0].getValue(), getParameter(estimator, "Y1 γ"), 1.e-12);
+        Assert.assertEquals(hpaRefY1.getParametersDrivers()[1].getValue(), getParameter(estimator, "Y1 φ"), 1.e-12);
+        Assert.assertEquals(hpaRefZ2.getParametersDrivers()[0].getValue(), getParameter(estimator, "Z2 γ"), 1.e-12);
+        Assert.assertEquals(hpaRefZ2.getParametersDrivers()[1].getValue(), getParameter(estimator, "Z2 φ"), 1.e-12);
+
+    }
+
+    private void setParameter(BatchLSEstimator estimator, String name, double value)
+        throws OrekitException {
+        for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+            if (driver.getName().equals(name)) {
+                driver.setSelected(true);
+                driver.setValue(value);
+                return;
+            }
+        }
+        Assert.fail("unknown parameter " + name);
+    }
+
+    private double getParameter(BatchLSEstimator estimator, String name)
+        throws OrekitException {
+        for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+            if (driver.getName().equals(name)) {
+                return driver.getValue();
+            }
+        }
+        Assert.fail("unknown parameter " + name);
+        return Double.NaN;
     }
 
     @Before

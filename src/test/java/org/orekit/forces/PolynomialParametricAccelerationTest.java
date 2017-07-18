@@ -302,10 +302,10 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
         ppa.getParametersDrivers()[2].setValue(0.00003);
         ppa.getParametersDrivers()[3].setValue(0.00004);
 
-        checkParameterDerivative(state, ppa, "ppa[0] parametric acceleration", 1.0e-3, 7.0e-12);
-        checkParameterDerivative(state, ppa, "ppa[1] parametric acceleration", 1.0e-3, 9.0e-13);
-        checkParameterDerivative(state, ppa, "ppa[2] parametric acceleration", 1.0e-3, 2.0e-12);
-        checkParameterDerivative(state, ppa, "ppa[3] parametric acceleration", 1.0e-3, 3.0e-12);
+        checkParameterDerivative(state, ppa, "ppa[0]", 1.0e-3, 7.0e-12);
+        checkParameterDerivative(state, ppa, "ppa[1]", 1.0e-3, 9.0e-13);
+        checkParameterDerivative(state, ppa, "ppa[2]", 1.0e-3, 2.0e-12);
+        checkParameterDerivative(state, ppa, "ppa[3]", 1.0e-3, 3.0e-12);
 
     }
 

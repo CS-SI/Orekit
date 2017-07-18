@@ -60,9 +60,6 @@ import org.orekit.propagation.events.FieldEventDetector;
  */
 public abstract class AbstractParametricAcceleration extends AbstractForceModel {
 
-    /** Suffix for parameter name. */
-    public static final String PARAMETER_SUFFIX = " parametric acceleration";
-
     /** Direction of the acceleration in defining frame. */
     private final Vector3D direction;
 

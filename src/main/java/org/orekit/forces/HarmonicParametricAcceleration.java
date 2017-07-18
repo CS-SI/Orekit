@@ -64,15 +64,15 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
     /** Reference date for computing phase. */
     private AbsoluteDate referenceDate;
 
-    /** Angular frequency ω = 2π/(kT). */
+    /** Angular frequency ω = 2kπ/T. */
     private final double omega;
 
     /** Simple constructor.
      * <p>
-     * The signed amplitude of the acceleration is a sin[2π(t-t₀)/(kT) + φ₀], where
-     * a is parameter {@code 0} and represents the full amplitude, t is current
+     * The signed amplitude of the acceleration is γ sin[2kπ(t-t₀)/T + φ], where
+     * γ is parameter {@code 0} and represents the full amplitude, t is current
      * date, t₀ is reference date, {@code T} is fundamental period, {@code k} is
-     * harmonic multiplier, and φ₀ is parameter {@code 1} and represents phase at t₀.
+     * harmonic multiplier, and φ is parameter {@code 1} and represents phase at t₀.
      * The value t-t₀ is in seconds.
      * </p>
      * <p>
@@ -112,10 +112,10 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
 
     /** Simple constructor.
      * <p>
-     * The signed amplitude of the acceleration is a sin[2π(t-t₀)/(kT) + φ₀], where
-     * a is parameter {@code 0} and represents the full amplitude, t is current
+     * The signed amplitude of the acceleration is γ sin[2kπ(t-t₀)/T + φ], where
+     * γ is parameter {@code 0} and represents the full amplitude, t is current
      * date, t₀ is reference date, {@code T} is fundamental period, {@code k} is
-     * harmonic multiplier, and φ₀ is parameter {@code 1} and represents phase at t₀.
+     * harmonic multiplier, and φ is parameter {@code 1} and represents phase at t₀.
      * The value t-t₀ is in seconds.
      * </p>
      * <p>
@@ -143,8 +143,8 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
      * fundamental period)
      */
     public HarmonicParametricAcceleration(final Vector3D direction, final AttitudeProvider attitudeOverride,
-                                            final String prefix, final AbsoluteDate referenceDate,
-                                            final double fundamentalPeriod, final int harmonicMultiplier) {
+                                          final String prefix, final AbsoluteDate referenceDate,
+                                          final double fundamentalPeriod, final int harmonicMultiplier) {
         this(direction, false, attitudeOverride, prefix, referenceDate,
              fundamentalPeriod, harmonicMultiplier);
     }
@@ -168,17 +168,17 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
      * fundamental period)
      */
     private HarmonicParametricAcceleration(final Vector3D direction, final boolean isInertial,
-                                             final AttitudeProvider attitudeOverride,
-                                             final String prefix, final AbsoluteDate referenceDate,
-                                             final double fundamentalPeriod, final int harmonicMultiplier) {
+                                           final AttitudeProvider attitudeOverride,
+                                           final String prefix, final AbsoluteDate referenceDate,
+                                           final double fundamentalPeriod, final int harmonicMultiplier) {
         super(direction, isInertial, attitudeOverride);
         this.referenceDate = referenceDate;
-        this.omega         = MathUtils.TWO_PI / (harmonicMultiplier * fundamentalPeriod);
+        this.omega         = harmonicMultiplier * MathUtils.TWO_PI / fundamentalPeriod;
         try {
             drivers = new ParameterDriver[] {
-                new ParameterDriver(prefix + " amplitude" + PARAMETER_SUFFIX,
-                                    0.0, AMPLITUDE_SCALE, 0.0, Double.POSITIVE_INFINITY),
-                new ParameterDriver(prefix + " phase" + PARAMETER_SUFFIX,
+                new ParameterDriver(prefix + " γ",
+                                    0.0, AMPLITUDE_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+                new ParameterDriver(prefix + " φ",
                                     0.0, PHASE_SCALE, -MathUtils.TWO_PI, MathUtils.TWO_PI),
             };
         } catch (OrekitException oe) {
@@ -197,10 +197,10 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
     }
 
     /** {@inheritDoc}.
-     * The signed amplitude of the acceleration is a sin[2π(t-t₀)/(kT) + φ₀], where
-     * a is parameter {@code 0} and represents the full amplitude, t is current
+     * The signed amplitude of the acceleration is γ sin[2kπ(t-t₀)/T + φ], where
+     * γ is parameter {@code 0} and represents the full amplitude, t is current
      * date, t₀ is reference date, {@code T} is fundamental period, {@code k} is
-     * harmonic multiplier, and φ₀ is parameter {@code 1} and represents phase at t₀.
+     * harmonic multiplier, and φ is parameter {@code 1} and represents phase at t₀.
      * The value t-t₀ is in seconds.
      */
     @Override
@@ -210,10 +210,10 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
     }
 
     /** {@inheritDoc}
-     * The signed amplitude of the acceleration is a sin[2π(t-t₀)/(kT) + φ₀], where
-     * a is parameter {@code 0} and represents the full amplitude, t is current
+     * The signed amplitude of the acceleration is γ sin[2kπ(t-t₀)/T + φ], where
+     * γ is parameter {@code 0} and represents the full amplitude, t is current
      * date, t₀ is reference date, {@code T} is fundamental period, {@code k} is
-     * harmonic multiplier, and φ₀ is parameter {@code 1} and represents phase at t₀.
+     * harmonic multiplier, and φ is parameter {@code 1} and represents phase at t₀.
      * The value t-t₀ is in seconds.
      */
     @Override

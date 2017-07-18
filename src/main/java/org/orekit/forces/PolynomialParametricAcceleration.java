@@ -133,8 +133,7 @@ public class PolynomialParametricAcceleration extends AbstractParametricAccelera
         this.drivers       = new ParameterDriver[degree + 1];
         try {
             for (int i = 0; i < drivers.length; ++i) {
-                drivers[i] = new ParameterDriver(prefix + "[" + i + "]" + PARAMETER_SUFFIX,
-                                                 0.0, ACCELERATION_SCALE,
+                drivers[i] = new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
                                                  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             }
         } catch (OrekitException oe) {
