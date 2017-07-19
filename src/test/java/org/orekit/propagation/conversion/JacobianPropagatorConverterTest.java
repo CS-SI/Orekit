@@ -99,7 +99,7 @@ public class JacobianPropagatorConverterTest {
 
     @Test
     public void testDerivativesDrag() throws OrekitException  {
-        doTestDerivatives(3.2e9, 3.2e-12,
+        doTestDerivatives(3.2e-9, 3.2e-12,
                           DragSensitive.DRAG_COEFFICIENT);
     }
 
