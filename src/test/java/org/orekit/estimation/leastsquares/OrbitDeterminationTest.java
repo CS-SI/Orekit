@@ -68,6 +68,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -112,6 +113,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OrbitDeterminationTest {
 
@@ -198,34 +200,31 @@ public class OrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 0.15;
+        final double distanceAccuracy = 0.1;
         final double velocityAccuracy = 1e-4;
-        // angle unit is radian
-        final double angleAccuracy = 1e-5;
-        final double dimensionLessCoef = 1e-3;
+        final double angleAccuracy    = 1e-5;
 
         //test on the convergence (with some margins)
-        Assert.assertTrue(odsatW3.getNumberOfIteration()  < 10);
-        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 15);
+        Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
+        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odsatW3.getEstimatedPV().getVelocity();
-        //final Vector3D refPos = new Vector3D( -40541691.15225173, -9903912.495473776, 208037.5511875451);
-        //final Vector3D refVel = new Vector3D( 759.0248098953, -1476.58298279, 54.7065550778);
-        final Vector3D refPos = new Vector3D(-40541685.3377149, -9903888.062911, 208037.467088);
-        final Vector3D refVel = new Vector3D(759.023626, -1476.584449, 54.706458);
+        final Vector3D refPos = new Vector3D(-40541629.7, -9904274.0, 207770.5);
+        final Vector3D refVel = new Vector3D(759.0343, -1476.5744, 54.7207);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
 
         //test on propagator parameters
-        //final double dragCoef  = 0.215421;
-        //final double SRPCoef = 112.336693;
-        final double dragCoef  = 0.207956;
-        final double SRPCoef = 112.594333;
-        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.getDrivers().get(0).getValue(), 3e-3);
-        Assert.assertEquals(SRPCoef,  odsatW3.propagatorParameters.getDrivers().get(1).getValue(), dimensionLessCoef);
+        final double dragCoef  = 0.408358;
+        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        final Vector3D leakAcceleration =
+                        new Vector3D(odsatW3.propagatorParameters.getDrivers().get(1).getValue(),
+                                     odsatW3.propagatorParameters.getDrivers().get(3).getValue(),
+                                     odsatW3.propagatorParameters.getDrivers().get(4).getValue());
+        Assert.assertEquals(7.215e-6, leakAcceleration.getNorm(), 1.0e-8);
 
         //test on measurements parameters
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
@@ -233,46 +232,36 @@ public class OrbitDeterminationTest {
         sortParametersChanges(list);
 
         //station CastleRock
-        //final double[] CastleAzElBias = { 0.061500,  -0.004955};
-        //final double CastleRangeBias = 11461.679992;
-        final double[] CastleAzElBias = { 0.061477, -0.004973 };
-        final double CastleRangeBias = 11471.067175;
+        final double[] CastleAzElBias = { 0.061472524615, -0.004761243392 };
+        final double CastleRangeBias = 11469.549393108811;
         Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
         Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         //station Fucino
-        //final double[] FucAzElBias = {-0.055555,  0.075471};
-        //final double FucRangeBias = 13461.362346;
-        final double[] FucAzElBias = { -0.055586, 0.075496 };
-        final double FucRangeBias = 13466.821080;
+        final double[] FucAzElBias = { -0.055300168766, 0.075768776364 };
+        final double FucRangeBias = 13457.554093564330;
         Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
         Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
         Assert.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         //station Kumsan
-        //final double[] KumAzElBias = { -0.025227,  -0.054883};
-        //final double KumRangeBias = 13521.236722;
-        final double[] KumAzElBias = { -0.025248, -0.054878 };
-        final double KumRangeBias = 13531.442475;
+        final double[] KumAzElBias = { -0.024747914185, -0.054937823198 };
+        final double KumRangeBias = 13518.787261329808;
         Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
         Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
         Assert.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         //station Pretoria
-        //final double[] PreAzElBias = { 0.029580,  0.011505};
-        //final double PreRangeBias = 13373.739538;
-        final double[] PreAzElBias = { 0.029601, 0.011545 };
-        final double PreRangeBias = 13377.798326;
+        final double[] PreAzElBias = { 0.030017901957, 0.011381284221 };
+        final double PreRangeBias = 13422.150783526642;
         Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
         Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
         Assert.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         //station Uralla
-        //final double[] UraAzElBias = { 0.168236,  -0.121083};
-        //final double UraRangeBias = 13294.762426;
-        final double[] UraAzElBias = { 0.168239, -0.121073 };
-        final double UraRangeBias = 13307.383858;
+        final double[] UraAzElBias = { 0.168045618837, -0.121592982492 };
+        final double UraRangeBias = 13329.028440092245;
         Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
         Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
         Assert.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
@@ -280,8 +269,7 @@ public class OrbitDeterminationTest {
         //test on statistic for the range residuals
         final long nbRange = 182;
         //statistics for the range residual (min, max, mean, std)
-        //final double[] RefStatRange = { -18.407301888801157, 11.21531879529357, -1.3004374373196126E-5, 4.396892027885725 };
-        final double[] RefStatRange = { -16.029335, 10.942767, 1.754929E-07, 4.307982 };
+        final double[] RefStatRange = { -13.193153858184814, 8.188527315855026, -4.0660929551995795E-7, 3.439086337255479 };
         Assert.assertEquals(nbRange, odsatW3.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odsatW3.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], odsatW3.getRangeStat().getMax(),               distanceAccuracy);
@@ -291,19 +279,16 @@ public class OrbitDeterminationTest {
         //test on statistic for the azimuth residuals
         final long nbAzi = 339;
         //statistics for the azimuth residual (min, max, mean, std)
-        //final double[] RefStatAzi = { -0.04334642535664204, 0.025348556908738606, -3.471009794826308E-11, 0.010532646772836074 };
-        final double[] RefStatAzi = { -0.043356, 0.025344, -2.470110E-12, 0.010527 };
+        final double[] RefStatAzi = { -0.043318505013854106, 0.02526746996454656, 2.2139823069484976E-13, 0.010408428825158049 };
         Assert.assertEquals(nbAzi, odsatW3.getAzimStat().getN());
         Assert.assertEquals(RefStatAzi[0], odsatW3.getAzimStat().getMin(),               angleAccuracy);
         Assert.assertEquals(RefStatAzi[1], odsatW3.getAzimStat().getMax(),               angleAccuracy);
         Assert.assertEquals(RefStatAzi[2], odsatW3.getAzimStat().getMean(),              angleAccuracy);
         Assert.assertEquals(RefStatAzi[3], odsatW3.getAzimStat().getStandardDeviation(), angleAccuracy);
 
-        //test on statistic for the azimuth residuals
+        //test on statistic for the elevation residuals
         final long nbEle = 339;
-        //statistics for the azimuth residual (min, max, mean, std)
-        //final double[] RefStatEle = { -0.024901037294786422, 0.0549815182281244, -1.2496574162566745E-11, 0.011712542337682996 };
-        final double[] RefStatEle = { -0.024898, 0.054944, 7.320358E-13, 0.011715 };
+        final double[] RefStatEle = { -0.02486136476874614, 0.055464518813990386, -2.4339641630302666E-12, 0.011702113027469822 };
         Assert.assertEquals(nbEle, odsatW3.getElevStat().getN());
         Assert.assertEquals(RefStatEle[0], odsatW3.getElevStat().getMin(),               angleAccuracy);
         Assert.assertEquals(RefStatEle[1], odsatW3.getElevStat().getMax(),               angleAccuracy);
@@ -315,7 +300,7 @@ public class OrbitDeterminationTest {
    private class ResultOD {
        private int numberOfIteration;
        private int numberOfEvaluation;
-       private PVCoordinates estimatedPV;
+       private TimeStampedPVCoordinates estimatedPV;
        private StreamingStatistics rangeStat;
        private StreamingStatistics azimStat;
        private StreamingStatistics elevStat;
@@ -323,7 +308,7 @@ public class OrbitDeterminationTest {
        private  ParameterDriversList measurementsParameters;
        ResultOD(ParameterDriversList  propagatorParameters,
                 ParameterDriversList  measurementsParameters,
-                int numberOfIteration, int numberOfEvaluation, PVCoordinates estimatedPV,
+                int numberOfIteration, int numberOfEvaluation, TimeStampedPVCoordinates estimatedPV,
                 StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
                 StreamingStatistics azimStat, StreamingStatistics elevStat,
                 StreamingStatistics posStat, StreamingStatistics velStat) {
@@ -695,6 +680,29 @@ public class OrbitDeterminationTest {
         // post-Newtonian correction force due to general relativity
         if (parser.containsKey(ParameterKey.GENERAL_RELATIVITY) && parser.getBoolean(ParameterKey.GENERAL_RELATIVITY)) {
             propagatorBuilder.addForceModel(new Relativity(gravityField.getMu()));
+        }
+
+        // extra polynomial accelerations
+        if (parser.containsKey(ParameterKey.POLYNOMIAL_ACCELERATION_NAME)) {
+            final String[]       names        = parser.getStringArray(ParameterKey.POLYNOMIAL_ACCELERATION_NAME);
+            final Vector3D[]     directions   = parser.getVectorArray(ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_X,
+                                                                      ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_Y,
+                                                                      ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_Z);
+            final List<String>[] coefficients = parser.getStringsListArray(ParameterKey.POLYNOMIAL_ACCELERATION_COEFFICIENTS, ',');
+            final boolean[]      estimated    = parser.getBooleanArray(ParameterKey.POLYNOMIAL_ACCELERATION_ESTIMATED);
+
+            for (int i = 0; i < names.length; ++i) {
+
+                final PolynomialParametricAcceleration ppa =
+                                new PolynomialParametricAcceleration(directions[i], true, names[i], null,
+                                                                     coefficients[i].size() - 1);
+                for (int k = 0; k < coefficients[i].size(); ++k) {
+                    final ParameterDriver driver = ppa.getParameterDriver(names[i] + "[" + k + "]");
+                    driver.setValue(Double.parseDouble(coefficients[i].get(k)));
+                    driver.setSelected(estimated[i]);
+                }
+                propagatorBuilder.addForceModel(ppa);
+            }
         }
 
         return propagatorBuilder;
@@ -1950,6 +1958,12 @@ public class OrbitDeterminationTest {
         SOLAR_RADIATION_PRESSURE_CR_ESTIMATED,
         SOLAR_RADIATION_PRESSURE_AREA,
         GENERAL_RELATIVITY,
+        POLYNOMIAL_ACCELERATION_NAME,
+        POLYNOMIAL_ACCELERATION_DIRECTION_X,
+        POLYNOMIAL_ACCELERATION_DIRECTION_Y,
+        POLYNOMIAL_ACCELERATION_DIRECTION_Z,
+        POLYNOMIAL_ACCELERATION_COEFFICIENTS,
+        POLYNOMIAL_ACCELERATION_ESTIMATED,
         TRANSPONDER_DELAY_BIAS,
         TRANSPONDER_DELAY_BIAS_MIN,
         TRANSPONDER_DELAY_BIAS_MAX,
