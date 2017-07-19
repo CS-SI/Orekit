@@ -43,6 +43,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -150,8 +151,8 @@ public class testCaseRotatingEarth {
             System.out.print("2- Propagation in ITRF (pseudo_inertial: " + integrationFrame2.isPseudoInertial() + ")\n");
 
             // Define orbits with and without central body
-            final Orbit initialOrbit2 = new CartesianOrbit(rotatedInitialPV, integrationFrame2, initialDate, mu);
-
+            final AbsolutePVCoordinates initialOrbit2 = new AbsolutePVCoordinates(integrationFrame2, initialDate, rotatedInitialPV);
+            
             // Initial spacecraft state definition
             // Arbitrary attitude to define SpacecraftState (not yet modified to provide default attitude in non-inertial frames)
             Attitude arbitraryAttitude2 = new Attitude( integrationFrame2,
@@ -160,13 +161,13 @@ public class testCaseRotatingEarth {
             SpacecraftState initialState2 = new SpacecraftState(initialOrbit2, arbitraryAttitude2);
 
             // Create integrator
-            double[][] tolerances2 = NumericalPropagator.tolerances(positionTolerance, initialOrbit2, propagationType);
+            double[][] tolerances2 = NumericalPropagator.tolerances(positionTolerance, referenceOrbit, propagationType);
             AdaptiveStepsizeIntegrator integrator2 =
                     new DormandPrince853Integrator(minStep, maxstep, tolerances2[0], tolerances2[1]);
 
             // Create propagator
             NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
-            propagator2.setOrbitType(propagationType);
+            propagator2.setOrbitType(null);
             propagator2.setInitialState(initialState2);
             propagator2.setMasterMode(integrationStep, new TutorialStepHandler("testEarth2.txt", outputFrame));
 

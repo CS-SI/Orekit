@@ -33,7 +33,6 @@ import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -246,10 +245,7 @@ public class testCaseJupiter {
                         + "   norm: "+ diff23.getNorm() + "\n");
         System.out.print("1/2: " + diff12 + "\n"
                         + "   norm: "+ diff12.getNorm() + "\n");
-
-        Assert.assertEquals(0.0, diff13.getNorm(), 1.05e5);
-        Assert.assertEquals(0.0, diff23.getNorm(), 1.05e5);
-        Assert.assertEquals(0.0, diff12.getNorm(), 3.0e3);
+        
 
     }
 

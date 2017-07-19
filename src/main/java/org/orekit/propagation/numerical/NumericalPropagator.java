@@ -385,9 +385,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 // propagation uses absolute position-velocity-acceleration
                 final Vector3D p = new Vector3D(y[0],    y[1],    y[2]);
                 final Vector3D v = new Vector3D(y[3],    y[4],    y[5]);
-                final Vector3D a = new Vector3D(yDot[3], yDot[4], yDot[5]);
-                final AbsolutePVCoordinates absPva =
-                                new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                final Vector3D a;
+                final AbsolutePVCoordinates absPva;
+                if (yDot == null){
+                	absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v));
+                }else{
+                	a = new Vector3D(yDot[3], yDot[4], yDot[5]);
+                	absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                }
+                
                 final Attitude attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
                 return new SpacecraftState(absPva, attitude, mass);
             } else {

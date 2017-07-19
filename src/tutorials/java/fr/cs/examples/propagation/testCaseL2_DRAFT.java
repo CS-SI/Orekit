@@ -180,7 +180,7 @@ public class testCaseL2_DRAFT {
                 new DormandPrince853Integrator(minStep, maxstep, tolerances2[0], tolerances2[1]);
 
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
-        propagator2.setOrbitType(propagationType);
+        propagator2.setOrbitType(null);
         propagator2.setInitialState(initialState);
 
         propagator2.setMasterMode(integrationStep, new TutorialStepHandler("L2sc2.txt", "L2earth2.txt", "L2moon2.txt", outputFrame, earth, moon));
@@ -189,6 +189,7 @@ public class testCaseL2_DRAFT {
         final ForceModel moonAttraction2 = new ThirdBodyAttraction(moon);
         propagator2.addForceModel(earthAttraction2);
         propagator2.addForceModel(moonAttraction2);
+        
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
@@ -214,7 +215,7 @@ public class testCaseL2_DRAFT {
                 new DormandPrince853Integrator(minStep, maxstep, tolerances3[0], tolerances3[1]);
 
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
-        propagator3.setOrbitType(propagationType);
+        propagator3.setOrbitType(null);
         propagator3.setInitialState(initialState3);
 
         final ForceModel earthAttraction3 = new ThirdBodyAttraction(moon);
