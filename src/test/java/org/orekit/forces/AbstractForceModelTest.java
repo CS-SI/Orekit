@@ -203,6 +203,10 @@ public abstract class AbstractForceModelTest {
                                          dsJacobian.getY().getPartialDerivative(0, 0, 0, 0, 0, 1),
                                          dsJacobian.getZ().getPartialDerivative(0, 0, 0, 0, 0, 1));
         if (print) {
+            System.out.println("dF/dPX ref: " + dFdPXRef.getX() + " " + dFdPXRef.getY() + " " + dFdPXRef.getZ());
+            System.out.println("dF/dPX res: " + dFdPXRes.getX() + " " + dFdPXRes.getY() + " " + dFdPXRes.getZ());
+            System.out.println("dF/dPY ref: " + dFdPYRef.getX() + " " + dFdPYRef.getY() + " " + dFdPYRef.getZ());
+            System.out.println("dF/dPY res: " + dFdPYRes.getX() + " " + dFdPYRes.getY() + " " + dFdPYRes.getZ());
             System.out.println("dF/dPZ ref: " + dFdPZRef.getX() + " " + dFdPZRef.getY() + " " + dFdPZRef.getZ());
             System.out.println("dF/dPZ res: " + dFdPZRes.getX() + " " + dFdPZRes.getY() + " " + dFdPZRes.getZ());
             System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));

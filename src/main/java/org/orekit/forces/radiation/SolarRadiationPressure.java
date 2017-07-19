@@ -56,6 +56,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** Reference solar radiation pressure at D_REF (N/m²). */
     private static final double P_REF = 4.56e-6;
 
+    /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
+    private static final double ANGULAR_MARGIN = 1.0e-10;
+
     /** Reference flux normalized for a 1m distance (N). */
     private final double kRef;
 
@@ -181,9 +184,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
         double result = 1.0;
 
         // Is the satellite in complete umbra ?
-        if (sunSatCentralBodyAngle - alphaCentral + alphaSun <= 0.0) {
+        if (sunSatCentralBodyAngle - alphaCentral + alphaSun <= ANGULAR_MARGIN) {
             result = 0.0;
-        } else if (sunSatCentralBodyAngle - alphaCentral - alphaSun < 0.0) {
+        } else if (sunSatCentralBodyAngle - alphaCentral - alphaSun < -ANGULAR_MARGIN) {
             // Compute a lighting ratio in penumbra
             final double sEA2    = sunSatCentralBodyAngle * sunSatCentralBodyAngle;
             final double oo2sEA  = 1.0 / (2. * sunSatCentralBodyAngle);
@@ -209,6 +212,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         }
 
         return result;
+
     }
 
     /** Get the lighting ratio ([0-1]).
@@ -248,9 +252,9 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
         T result = one;
         // Is the satellite in complete umbra ?
-        if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= 0.0) {
+        if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= ANGULAR_MARGIN) {
             result = date.getField().getZero();
-        } else if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < 0.0) {
+        } else if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < -ANGULAR_MARGIN) {
             // Compute a lighting ratio in penumbra
             final T sEA2    = sunsatCentralBodyAngle.multiply(sunsatCentralBodyAngle);
             final T oo2sEA  = sunsatCentralBodyAngle.multiply(2).reciprocal();
@@ -380,9 +384,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
 
-        /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
-        private static final double ANGULAR_MARGIN = 1.0e-10;
-
         /** Build a new instance. */
         UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
@@ -439,9 +440,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
-
-        /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
-        private static final double ANGULAR_MARGIN = 1.0e-10;
 
         /** Build a new instance. */
         PenumbraDetector() {
