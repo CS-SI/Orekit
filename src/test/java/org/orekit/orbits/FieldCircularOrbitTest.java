@@ -215,6 +215,11 @@ public class FieldCircularOrbitTest {
         doTestEquatorialRetrograde(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+        doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
+    }
+
     private <T extends RealFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {
 
         T zero =  field.getZero();
@@ -1329,6 +1334,42 @@ public class FieldCircularOrbitTest {
                                                                FieldAbsoluteDate.getJ2000Epoch(field), mu);
         Assert.assertEquals("circular parameters: {a: 4.225517000282565E7, ex: 0.002082917137146049, ey: 5.173980074371024E-4, i: 0.20189257051515358, raan: -87.91788415673473, alphaV: -137.84099636616548;}",
                             orbit.toString());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
+        throws OrekitException {
+
+        final Frame eme2000     = FramesFactory.getEME2000();
+
+        // Define GEO satellite position
+        final FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(42164140),
+                        field.getZero(),
+                        field.getZero());
+        // Build PVCoodrinates starting from its position and computing the corresponding circular velocity
+        final FieldPVCoordinates<T> pv  =
+                        new FieldPVCoordinates<>(position,
+                                        new FieldVector3D<>(field.getZero(),
+                                                        position.getNorm().reciprocal().multiply(mu).sqrt(),
+                                                        field.getZero()));
+        // Build a KeplerianOrbit in eme2000
+        final FieldOrbit<T> orbit = new FieldCircularOrbit<>(pv, eme2000, FieldAbsoluteDate.getJ2000Epoch(field), mu);
+
+        // Build another KeplerianOrbit as a copy of the first one
+        final FieldOrbit<T> orbitCopy = new FieldCircularOrbit<>(orbit);
+
+        // Shift the orbit of a time-interval
+        final FieldOrbit<T> shiftedOrbit     = orbit.shiftedBy(10); // This works good
+        final FieldOrbit<T> shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
+
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
+                                                   shiftedOrbitCopy.getPVCoordinates().getPosition()).getReal(),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
+                                                   shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
+                            1.0e-10);
+
     }
 
 }

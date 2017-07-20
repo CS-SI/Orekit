@@ -312,6 +312,28 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public FieldKeplerianOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
                                final Frame frame, final double mu)
         throws IllegalArgumentException {
+        this(pvCoordinates, frame, mu, hasNonKeplerianAcceleration(pvCoordinates, mu));
+    }
+
+    /** Constructor from Cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
+     *
+     * @param pvCoordinates the PVCoordinates of the satellite
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param mu central attraction coefficient (m³/s²)
+     * @param reliableAcceleration if true, the acceleration is considered to be reliable
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    private FieldKeplerianOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
+                                final Frame frame, final double mu,
+                                final boolean reliableAcceleration)
+        throws IllegalArgumentException {
 
         super(pvCoordinates, frame, mu);
 
@@ -372,7 +394,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
         }
 
-        if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
+        if (reliableAcceleration) {
             // we have a relevant acceleration, we can compute derivatives
 
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
@@ -432,7 +454,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldKeplerianOrbit(final FieldPVCoordinates<T> FieldPVCoordinates,
-                          final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates), frame, mu);
     }
@@ -441,7 +463,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param op orbital parameters to copy
      */
     public FieldKeplerianOrbit(final FieldOrbit<T> op) {
-        this(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
+        this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasDerivatives());
     }
 
     /** {@inheritDoc} */

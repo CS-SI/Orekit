@@ -282,6 +282,28 @@ public class KeplerianOrbit extends Orbit {
     public KeplerianOrbit(final TimeStampedPVCoordinates pvCoordinates,
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
+        this(pvCoordinates, frame, mu, hasNonKeplerianAcceleration(pvCoordinates, mu));
+    }
+
+    /** Constructor from Cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
+     * @param pvCoordinates the PVCoordinates of the satellite
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param mu central attraction coefficient (m³/s²)
+     * @param reliableAcceleration if true, the acceleration is considered to be reliable
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    private KeplerianOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                           final Frame frame, final double mu,
+                           final boolean reliableAcceleration)
+        throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
         // compute inclination
@@ -328,7 +350,7 @@ public class KeplerianOrbit extends Orbit {
 
         partialPV = pvCoordinates;
 
-        if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
+        if (reliableAcceleration) {
             // we have a relevant acceleration, we can compute derivatives
 
             final double[][] jacobian = new double[6][6];
@@ -395,7 +417,7 @@ public class KeplerianOrbit extends Orbit {
      * @param op orbital parameters to copy
      */
     public KeplerianOrbit(final Orbit op) {
-        this(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
+        this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasDerivatives());
     }
 
     /** {@inheritDoc} */

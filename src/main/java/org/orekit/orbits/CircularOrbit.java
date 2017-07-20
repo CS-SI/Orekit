@@ -429,8 +429,8 @@ public class CircularOrbit
         final double h2 = hx * hx + hy * hy;
         final double h  = FastMath.sqrt(h2);
         raan = FastMath.atan2(hy, hx);
-        final double cosRaan = hx / h;
-        final double sinRaan = hy / h;
+        final double cosRaan = h == 0 ? FastMath.cos(raan) : hx / h;
+        final double sinRaan = h == 0 ? FastMath.sin(raan) : hy / h;
         final double equiEx = op.getEquinoctialEx();
         final double equiEy = op.getEquinoctialEy();
         ex     = equiEx * cosRaan + equiEy * sinRaan;
