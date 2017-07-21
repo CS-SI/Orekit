@@ -17,14 +17,14 @@
 package org.orekit.propagation.numerical;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -67,6 +67,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * gravity field}, and {@link org.orekit.forces.gravity.Relativity relativity}.
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Luc Maisonobe
  */
 public class PartialDerivativesEquations implements AdditionalEquations {
 
@@ -76,8 +77,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
 
+    /** Max number of selected parameters per force model. */
+    private int maxParamsPerForceModel;
+
     /** Parameters map. */
-    private Map<ParameterDriver, ForceModel> map;
+    private Map<ParameterDriver, Integer> map;
 
     /** Name. */
     private final String name;
@@ -99,11 +103,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      */
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
         throws OrekitException {
-        this.name       = name;
-        this.selected   = null;
-        this.map        = null;
-        this.propagator = propagator;
-        this.stateDim   = -1;
+        this.name                   = name;
+        this.selected               = null;
+        this.maxParamsPerForceModel = 0;
+        this.map                    = null;
+        this.propagator             = propagator;
+        this.stateDim               = -1;
         propagator.addAdditionalEquations(this);
     }
 
@@ -123,10 +128,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // first pass: gather all parameters, binding similar names together
             selected = new ParameterDriversList();
-            map = new HashMap<ParameterDriver, ForceModel>();
             for (final ForceModel provider : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : provider.getParametersDrivers()) {
-                    map.put(driver, provider);
                     selected.add(driver);
                 }
             }
@@ -137,6 +140,32 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // third pass: sort parameters lexicographically
             selected.sort();
+
+            // fourth pass: set up a map between parameters drivers and matrices columns
+            map = new IdentityHashMap<ParameterDriver, Integer>();
+            int parameterIndex = 0;
+            for (final ParameterDriver selectedDriver : selected.getDrivers()) {
+                for (final ForceModel provider : propagator.getAllForceModels()) {
+                    for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                        if (driver.getName().equals(selectedDriver.getName())) {
+                            map.put(driver, parameterIndex);
+                        }
+                    }
+                }
+                ++parameterIndex;
+            }
+
+            // fifth pass: count selected parameters per force model
+            maxParamsPerForceModel = 0;
+            for (final ForceModel provider : propagator.getAllForceModels()) {
+                int nbSelected = 0;
+                for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                    if (driver.isSelected()) {
+                        ++nbSelected;
+                    }
+                }
+                maxParamsPerForceModel = FastMath.max(maxParamsPerForceModel, nbSelected);
+            }
 
         }
     }
@@ -263,21 +292,40 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
 
         // initialize acceleration Jacobians to zero
+        final int paramDim = selected.getNbParams();
         final int dim = 3;
-        final double[]   dAccdParam = new double[dim];
+        final double[][] dAccdParam = new double[dim][paramDim];
         final double[][] dAccdPos   = new double[dim][dim];
         final double[][] dAccdVel   = new double[dim][dim];
         final double[]   dAccdM     = (stateDim > 6) ? new double[dim] : null;
 
-        final FieldSpacecraftState<DerivativeStructure> dsStateFull = convertState(s, stateDim);
+        final FieldSpacecraftState<DerivativeStructure> dsState = convertState(s);
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
-            final DerivativeStructure[] parameters = convertParameters(dsStateFull.getDate().getField(), forceModel);
-            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsStateFull, parameters);
-            addToRow(acceleration.getX(), 0, dAccdPos, dAccdVel, dAccdM);
-            addToRow(acceleration.getY(), 1, dAccdPos, dAccdVel, dAccdM);
-            addToRow(acceleration.getZ(), 2, dAccdPos, dAccdVel, dAccdM);
+
+            final DerivativeStructure[] parameters = convertParameters(dsState.getMass().getFactory(), forceModel);
+            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
+            final double[] derivativesX = acceleration.getX().getAllDerivatives();
+            final double[] derivativesY = acceleration.getY().getAllDerivatives();
+            final double[] derivativesZ = acceleration.getZ().getAllDerivatives();
+
+            // update Jacobians with respect to state
+            addToRow(derivativesX, 0, dAccdPos, dAccdVel, dAccdM);
+            addToRow(derivativesY, 1, dAccdPos, dAccdVel, dAccdM);
+            addToRow(derivativesZ, 2, dAccdPos, dAccdVel, dAccdM);
+
+            int index = stateDim;
+            for (ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    final int parameterIndex = map.get(driver);
+                    ++index;
+                    dAccdParam[0][parameterIndex] += derivativesX[index];
+                    dAccdParam[1][parameterIndex] += derivativesY[index];
+                    dAccdParam[2][parameterIndex] += derivativesZ[index];
+                }
+            }
+
         }
 
         // the variational equations of the complete state Jacobian matrix have the
@@ -338,34 +386,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             Arrays.fill(pDot, 6 * stateDim, 7 * stateDim, 0.0);
         }
 
-        final int paramDim = selected.getNbParams();
-        final DSFactory factory11 = new DSFactory(1, 1);
-        final FieldSpacecraftState<DerivativeStructure> s11 =
-                        new FieldSpacecraftState<>(factory11.getDerivativeField(), s);
         for (int k = 0; k < paramDim; ++k) {
-
-            // compute the acceleration gradient with respect to current parameter
-            final ParameterDriversList.DelegatingDriver delegating = selected.getDrivers().get(k);
-            dAccdParam[0] = 0.0;
-            dAccdParam[1] = 0.0;
-            dAccdParam[2] = 0.0;
-            for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                final ForceModel forceModel = map.get(driver);
-                final ParameterDriver[] drivers = forceModel.getParametersDrivers();
-                final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
-                for (int i = 0; i < drivers.length; ++i) {
-                    if (drivers[i].getName().equals(driver.getName())) {
-                        parameters[i] = factory11.variable(0, drivers[i].getValue());
-                    } else {
-                        parameters[i] = factory11.constant(drivers[i].getValue());
-                    }
-                }
-                final FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(s11, parameters);
-                dAccdParam[0] += accDer.getX().getPartialDerivative(1);
-                dAccdParam[1] += accDer.getY().getPartialDerivative(1);
-                dAccdParam[2] += accDer.getZ().getPartialDerivative(1);
-            }
-
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
             // [      ]   [                 |                  |               ]   [   ]   [                  ]
@@ -403,7 +424,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                 final double[] dAdPi = dAccdPos[i];
                 final double[] dAdVi = dAccdVel[i];
                 pDot[columnTop + (dim + i) * paramDim] =
-                    dAccdParam[i] +
+                    dAccdParam[i][k] +
                     dAdPi[0] * p[columnTop]                + dAdPi[1] * p[columnTop +     paramDim] + dAdPi[2] * p[columnTop + 2 * paramDim] +
                     dAdVi[0] * p[columnTop + 3 * paramDim] + dAdVi[1] * p[columnTop + 4 * paramDim] + dAdVi[2] * p[columnTop + 5 * paramDim] +
                     ((dAccdM == null) ? 0.0 : dAccdM[i] * p[columnTop + 6 * paramDim]);
@@ -422,16 +443,15 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Fill Jacobians rows.
-     * @param accelerationComponent component of acceleration (along either x, y or z)
+     * @param derivatives derivatives of a component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)
      * @param dAccdPos Jacobian of acceleration with respect to spacecraft position
      * @param dAccdVel Jacobian of acceleration with respect to spacecraft velocity
      * @param dAccdM Jacobian of acceleration with respect to spacecraft mass
      */
-    private void addToRow(final DerivativeStructure accelerationComponent, final int index,
+    private void addToRow(final double[] derivatives, final int index,
                           final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM) {
 
-        final double[] derivatives = accelerationComponent.getAllDerivatives();
         for (int i = 0; i < 3; ++i) {
             dAccdPos[index][i] += derivatives[i + 1];
             dAccdVel[index][i] += derivatives[i + 4];
@@ -444,18 +464,15 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** Convert state to derivative structures.
      * @param state regular state
-     * @param freeParameters number of free parameters, either 3 (position),
-     * 6 (position-velocity) or 7 (position-velocity-mass)
      * @return converted state
      * @exception OrekitException if attitude cannot be computed
      * @since 9.0
      */
-    private FieldSpacecraftState<DerivativeStructure> convertState(final SpacecraftState state,
-                                                                   final int freeParameters)
+    private FieldSpacecraftState<DerivativeStructure> convertState(final SpacecraftState state)
         throws OrekitException {
 
-        // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
-        final DSFactory factory = new DSFactory(freeParameters, 1);
+        // prepare derivation variables, position, velocity, optionally mass and parameters
+        final DSFactory factory = new DSFactory(stateDim + maxParamsPerForceModel, 1);
 
         // position always has derivatives
         final Vector3D pos = state.getPVCoordinates().getPosition();
@@ -463,18 +480,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                                                              factory.variable(1, pos.getY()),
                                                                              factory.variable(2, pos.getZ()));
 
-        // velocity may have derivatives or not
+        // velocity always has derivatives
         final Vector3D vel = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> velDS;
-        if (freeParameters > 3) {
-            velDS = new FieldVector3D<>(factory.variable(3, vel.getX()),
-                                        factory.variable(4, vel.getY()),
-                                        factory.variable(5, vel.getZ()));
-        } else {
-            velDS = new FieldVector3D<>(factory.constant(vel.getX()),
-                                        factory.constant(vel.getY()),
-                                        factory.constant(vel.getZ()));
-        }
+        final FieldVector3D<DerivativeStructure> velDS = new FieldVector3D<>(factory.variable(3, vel.getX()),
+                                                                             factory.variable(4, vel.getY()),
+                                                                             factory.variable(5, vel.getZ()));
 
         // acceleration never has derivatives
         final Vector3D acc = state.getPVCoordinates().getAcceleration();
@@ -483,7 +493,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                                                              factory.constant(acc.getZ()));
 
         // mass may have derivatives or not
-        final DerivativeStructure dsM = (freeParameters > 6) ?
+        final DerivativeStructure dsM = (stateDim > 6) ?
                                         factory.variable(6, state.getMass()) :
                                         factory.constant(state.getMass());
 
@@ -501,17 +511,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Convert state to derivative structures.
-     * @param dsField of the derivative structures
+     * @param factory for the derivative structures
      * @param forceModel force model associated with the parameters
      * @return force model parameters
      * @since 9.0
      */
-    private DerivativeStructure[] convertParameters(final Field<DerivativeStructure> dsField,
+    private DerivativeStructure[] convertParameters(final DSFactory factory,
                                                     final ForceModel forceModel) {
         final ParameterDriver[] drivers = forceModel.getParametersDrivers();
         final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
+        int index = stateDim;
         for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = dsField.getZero().add(drivers[i].getValue());
+            parameters[i] = drivers[i].isSelected() ?
+                            factory.variable(index++, drivers[i].getValue()) :
+                            factory.constant(drivers[i].getValue());
         }
         return parameters;
     }
