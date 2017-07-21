@@ -139,6 +139,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Maxime Journot</name>
+      <id>maxime</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
