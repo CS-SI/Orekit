@@ -137,6 +137,14 @@ public interface ForceModel {
         return parameters;
     }
 
+    /** Check if force models depends on position only.
+     * @return true if force model depends on position only, false
+     * if it depends on velocity, either directly or due to a dependency
+     * on attitude
+     * @since 9.0
+     */
+    boolean dependsOnPositionOnly();
+
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param parameters values of the force model parameters

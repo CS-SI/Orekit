@@ -378,6 +378,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
                 new HolmesFeatherstoneAttractionModel(itrf, provider);
+        Assert.assertTrue(model.dependsOnPositionOnly());
+
 
         // Note that despite it uses adjustable high accuracy, the reference model
         // uses unstable formulas and hence loses lots of digits near poles.
@@ -1386,6 +1388,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                 throw new OrekitInternalError(oe);
             }
             this.bodyFrame    = centralBodyFrame;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return true;
         }
 
         /** {@inheritDoc} */

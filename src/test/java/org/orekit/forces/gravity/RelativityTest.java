@@ -112,6 +112,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     public void testAcceleration() throws OrekitException {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
+        Assert.assertFalse(relativity.dependsOnPositionOnly());
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(

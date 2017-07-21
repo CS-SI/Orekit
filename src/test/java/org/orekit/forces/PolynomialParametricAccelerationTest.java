@@ -82,6 +82,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
         final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
         final PolynomialParametricAcceleration inertialAcceleration =
                         new PolynomialParametricAcceleration(direction, true, "", AbsoluteDate.J2000_EPOCH, 0);
+        Assert.assertTrue(inertialAcceleration.dependsOnPositionOnly());
         inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
     }
@@ -98,6 +99,7 @@ public class PolynomialParametricAccelerationTest extends AbstractForceModelTest
                                                                      duration, f, isp, Vector3D.PLUS_I);
         final PolynomialParametricAcceleration lofAcceleration =
                         new PolynomialParametricAcceleration(Vector3D.PLUS_I, false, "", null, 0);
+        Assert.assertFalse(lofAcceleration.dependsOnPositionOnly());
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         doTestEquivalentManeuver(mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }

@@ -437,6 +437,12 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
+        public boolean dependsOnPositionOnly() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             throws OrekitException {
 

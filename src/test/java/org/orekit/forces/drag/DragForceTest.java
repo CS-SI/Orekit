@@ -176,6 +176,8 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new IsotropicDrag(2.5, 1.2));
 
+        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+
         checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
     }

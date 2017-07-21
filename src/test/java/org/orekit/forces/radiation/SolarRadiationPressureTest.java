@@ -137,6 +137,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
                                        (RadiationSensitive) new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        Assert.assertFalse(srp.dependsOnPositionOnly());
 
         Vector3D position = orbit.getPVCoordinates().getPosition();
         Frame frame       = orbit.getFrame();

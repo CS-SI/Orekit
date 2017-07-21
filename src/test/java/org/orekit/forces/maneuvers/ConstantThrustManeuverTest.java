@@ -155,6 +155,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
+        Assert.assertFalse(maneuver.dependsOnPositionOnly());
         ParameterDriver[] drivers = maneuver.getParametersDrivers();
         Assert.assertEquals(2, drivers.length);
         Assert.assertEquals("thrust", drivers[0].getName());

@@ -166,6 +166,7 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
+        Assert.assertTrue(fm.dependsOnPositionOnly());
         Assert.assertEquals(1, fm.getParametersDrivers().length);
         try {
             fm.getParameterDriver("unknown");

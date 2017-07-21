@@ -425,6 +425,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
+        Assert.assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 

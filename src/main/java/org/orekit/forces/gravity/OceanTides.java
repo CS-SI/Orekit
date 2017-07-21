@@ -131,6 +131,12 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public boolean dependsOnPositionOnly() {
+        return attractionModel.dependsOnPositionOnly();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
         // delegate to underlying model

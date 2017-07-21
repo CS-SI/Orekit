@@ -120,6 +120,12 @@ public class PartialDerivativesEquationsTest {
          */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
 
+        /** {@inheritDoc} */
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return false;
+        }
+
         @Override
         public <T extends RealFieldElement<T>> void
             addContribution(FieldSpacecraftState<T> s,

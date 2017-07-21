@@ -216,6 +216,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                IERSConventions.IERS_2010, ut1,
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
+        Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.VVLH),

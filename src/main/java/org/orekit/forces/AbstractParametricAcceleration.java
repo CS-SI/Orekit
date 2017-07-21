@@ -87,6 +87,13 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
         this.attitudeOverride = attitudeOverride;
     }
 
+    /** Check if direction is inertial.
+     * @return true if direction is inertial
+     */
+    protected boolean isInertial() {
+        return isInertial;
+    }
+
     /** Compute the signed amplitude of the acceleration.
      * <p>
      * The acceleration is the direction multiplied by the signed amplitude. So if

@@ -162,6 +162,12 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
     public TideSystem getTideSystem() {
         return provider.getTideSystem();
     }

@@ -169,6 +169,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public boolean dependsOnPositionOnly() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         // set the initial value of firing
         final AbsoluteDate sDate = s0.getDate();

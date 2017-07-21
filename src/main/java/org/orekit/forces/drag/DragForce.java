@@ -69,6 +69,12 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public boolean dependsOnPositionOnly() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
 

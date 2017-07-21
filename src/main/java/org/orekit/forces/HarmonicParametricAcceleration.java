@@ -189,6 +189,12 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
 
     /** {@inheritDoc} */
     @Override
+    public boolean dependsOnPositionOnly() {
+        return isInertial();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target)
         throws OrekitException {
         if (referenceDate == null) {

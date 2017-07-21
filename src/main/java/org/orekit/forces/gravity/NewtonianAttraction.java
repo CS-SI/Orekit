@@ -68,6 +68,12 @@ public class NewtonianAttraction extends AbstractForceModel {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return true;
+    }
+
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
      */

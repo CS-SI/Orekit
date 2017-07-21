@@ -93,6 +93,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final HarmonicParametricAcceleration inertialAcceleration =
                         new HarmonicParametricAcceleration(direction, true, "", AbsoluteDate.J2000_EPOCH,
                                                            Double.POSITIVE_INFINITY, 1);
+        Assert.assertTrue(inertialAcceleration.dependsOnPositionOnly());
         inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
         inertialAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
@@ -111,6 +112,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final HarmonicParametricAcceleration lofAcceleration =
                         new HarmonicParametricAcceleration(Vector3D.PLUS_I, false, "", null,
                                                            Double.POSITIVE_INFINITY, 1);
+        Assert.assertFalse(lofAcceleration.dependsOnPositionOnly());
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         lofAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);

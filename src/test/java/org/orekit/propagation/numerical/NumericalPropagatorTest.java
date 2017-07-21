@@ -1466,6 +1466,11 @@ public class NumericalPropagatorTest {
     private static class ForceModelAdapter implements ForceModel {
 
         @Override
+        public boolean dependsOnPositionOnly() {
+            return false;
+        }
+
+        @Override
         public boolean isSupported(String name) {
             return false;
         }
