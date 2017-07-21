@@ -88,18 +88,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * (either 6 or 7 depending on mass derivatives being included or not). */
     private int stateDim;
 
-    /** Jacobian of acceleration with respect to spacecraft position. */
-    private transient double[][] dAccdPos;
-
-    /** Jacobian of acceleration with respect to spacecraft velocity. */
-    private transient double[][] dAccdVel;
-
-    /** Jacobian of acceleration with respect to spacecraft mass. */
-    private transient double[]   dAccdM;
-
-    /** Jacobian of acceleration with respect to one force model parameter (array reused for all parameters). */
-    private transient double[]   dAccdParam;
-
     /** Simple constructor.
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
@@ -246,12 +234,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                                           dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
         }
 
-        final int dim = 3;
-        dAccdParam = new double[dim];
-        dAccdPos   = new double[dim][dim];
-        dAccdVel   = new double[dim][dim];
-        dAccdM     = (stateDim > 6) ? new double[dim] : null;
-
         // store the matrices as a single dimension array
         final JacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
@@ -283,6 +265,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
 
         // initialize acceleration Jacobians to zero
+        final int dim = 3;
+        final double[]   dAccdParam = new double[dim];
+        final double[][] dAccdPos   = new double[dim][dim];
+        final double[][] dAccdVel   = new double[dim][dim];
+        final double[]   dAccdM     = (stateDim > 6) ? new double[dim] : null;
+
         for (final double[] row : dAccdPos) {
             Arrays.fill(row, 0.0);
         }
@@ -338,9 +326,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                 parameters[i] = field.getZero().add(drivers[i].getValue());
             }
             final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
-            addToRow(acceleration.getX(), 0);
-            addToRow(acceleration.getY(), 1);
-            addToRow(acceleration.getZ(), 2);
+            addToRow(acceleration.getX(), 0, dAccdPos, dAccdVel, dAccdM);
+            addToRow(acceleration.getY(), 1, dAccdPos, dAccdVel, dAccdM);
+            addToRow(acceleration.getZ(), 2, dAccdPos, dAccdVel, dAccdM);
         }
 
         // the variational equations of the complete state Jacobian matrix have the
@@ -379,8 +367,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // The following loops compute these expressions taking care of the mapping of the
         // (A, B, ... I) matrices into the single dimension array p and of the mapping of the
         // (Adot, Bdot, ... Idot) matrices into the single dimension array pDot.
-
-        final int dim = 3;
 
        // copy D, E and F into Adot, Bdot and Cdot
         final double[] p = s.getAdditionalState(getName());
@@ -489,8 +475,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Fill Jacobians rows.
      * @param accelerationComponent component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)
+     * @param dAccdPos Jacobian of acceleration with respect to spacecraft position
+     * @param dAccdVel Jacobian of acceleration with respect to spacecraft velocity
+     * @param dAccdM Jacobian of acceleration with respect to spacecraft mass
      */
-    private void addToRow(final DerivativeStructure accelerationComponent, final int index) {
+    private void addToRow(final DerivativeStructure accelerationComponent, final int index,
+                          final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM) {
 
         final double[] derivatives = accelerationComponent.getAllDerivatives();
         for (int i = 0; i < 3; ++i) {
