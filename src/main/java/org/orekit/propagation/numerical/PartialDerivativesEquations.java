@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -35,7 +34,6 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -271,61 +269,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         final double[][] dAccdVel   = new double[dim][dim];
         final double[]   dAccdM     = (stateDim > 6) ? new double[dim] : null;
 
-        for (final double[] row : dAccdPos) {
-            Arrays.fill(row, 0.0);
-        }
-        for (final double[] row : dAccdVel) {
-            Arrays.fill(row, 0.0);
-        }
-        if (dAccdM != null) {
-            Arrays.fill(dAccdM, 0.0);
-        }
-
-        // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
-        final DSFactory factory = new DSFactory((dAccdM == null) ? 6 : 7, 1);
-        final Field<DerivativeStructure> field = factory.getDerivativeField();
-
-        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, s.getDate());
-
-        // position and velocity count for six free parameters
-        final Vector3D pos = s.getPVCoordinates().getPosition();
-        final Vector3D vel = s.getPVCoordinates().getVelocity();
-        final Vector3D acc = s.getPVCoordinates().getAcceleration();
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> dsPV =
-                        new TimeStampedFieldPVCoordinates<>(dsDate,
-                                                            new FieldVector3D<>(factory.variable(0, pos.getX()),
-                                                                                factory.variable(1, pos.getY()),
-                                                                                factory.variable(2, pos.getZ())),
-                                                            new FieldVector3D<>(factory.variable(3, vel.getX()),
-                                                                                factory.variable(4, vel.getY()),
-                                                                                factory.variable(5, vel.getZ())),
-                                                            new FieldVector3D<>(factory.constant(acc.getX()),
-                                                                                factory.constant(acc.getY()),
-                                                                                factory.constant(acc.getZ())));
-
-        // mass corresponds either to a constant or to one free parameter
-        final DerivativeStructure dsM = (dAccdM == null) ?
-                                        factory.constant(s.getMass()) :
-                                        factory.variable(6, s.getMass());
-
-        final FieldOrbit<DerivativeStructure> dsOrbit =
-                        new FieldCartesianOrbit<>(dsPV, s.getFrame(), s.getMu());
-
-        // compute attitude partial derivatives with respect to position/velocity
-        final FieldAttitude<DerivativeStructure> dsAttitude =
-                        propagator.getAttitudeProvider().getAttitude(dsOrbit, dsDate, dsOrbit.getFrame());
-
-        final FieldSpacecraftState<DerivativeStructure> dsState =
-                        new FieldSpacecraftState<>(dsOrbit, dsAttitude, dsM);
+        final FieldSpacecraftState<DerivativeStructure> dsStateFull = convertState(s, stateDim);
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
-            final ParameterDriver[] drivers = forceModel.getParametersDrivers();
-            final DerivativeStructure[] parameters = MathArrays.buildArray(field, drivers.length);
-            for (int i = 0; i < drivers.length; ++i) {
-                parameters[i] = field.getZero().add(drivers[i].getValue());
-            }
-            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
+            final DerivativeStructure[] parameters = convertParameters(dsStateFull.getDate().getField(), forceModel);
+            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsStateFull, parameters);
             addToRow(acceleration.getX(), 0, dAccdPos, dAccdVel, dAccdM);
             addToRow(acceleration.getY(), 1, dAccdPos, dAccdVel, dAccdM);
             addToRow(acceleration.getZ(), 2, dAccdPos, dAccdVel, dAccdM);
@@ -491,6 +440,80 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             dAccdM[index] += derivatives[7];
         }
 
+    }
+
+    /** Convert state to derivative structures.
+     * @param state regular state
+     * @param freeParameters number of free parameters, either 3 (position),
+     * 6 (position-velocity) or 7 (position-velocity-mass)
+     * @return converted state
+     * @exception OrekitException if attitude cannot be computed
+     * @since 9.0
+     */
+    private FieldSpacecraftState<DerivativeStructure> convertState(final SpacecraftState state,
+                                                                   final int freeParameters)
+        throws OrekitException {
+
+        // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
+        final DSFactory factory = new DSFactory(freeParameters, 1);
+
+        // position always has derivatives
+        final Vector3D pos = state.getPVCoordinates().getPosition();
+        final FieldVector3D<DerivativeStructure> posDS = new FieldVector3D<>(factory.variable(0, pos.getX()),
+                                                                             factory.variable(1, pos.getY()),
+                                                                             factory.variable(2, pos.getZ()));
+
+        // velocity may have derivatives or not
+        final Vector3D vel = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<DerivativeStructure> velDS;
+        if (freeParameters > 3) {
+            velDS = new FieldVector3D<>(factory.variable(3, vel.getX()),
+                                        factory.variable(4, vel.getY()),
+                                        factory.variable(5, vel.getZ()));
+        } else {
+            velDS = new FieldVector3D<>(factory.constant(vel.getX()),
+                                        factory.constant(vel.getY()),
+                                        factory.constant(vel.getZ()));
+        }
+
+        // acceleration never has derivatives
+        final Vector3D acc = state.getPVCoordinates().getAcceleration();
+        final FieldVector3D<DerivativeStructure> accDS = new FieldVector3D<>(factory.constant(acc.getX()),
+                                                                             factory.constant(acc.getY()),
+                                                                             factory.constant(acc.getZ()));
+
+        // mass may have derivatives or not
+        final DerivativeStructure dsM = (freeParameters > 6) ?
+                                        factory.variable(6, state.getMass()) :
+                                        factory.constant(state.getMass());
+
+        final FieldOrbit<DerivativeStructure> dsOrbit =
+                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
+                                                  state.getFrame(), state.getMu());
+
+        // compute attitude partial derivatives with respect to position/velocity
+        final FieldAttitude<DerivativeStructure> dsAttitude =
+                        propagator.getAttitudeProvider().getAttitude(dsOrbit, dsOrbit.getDate(), dsOrbit.getFrame());
+
+        // we don't convert additional states
+        return new FieldSpacecraftState<>(dsOrbit, dsAttitude, dsM);
+
+    }
+
+    /** Convert state to derivative structures.
+     * @param dsField of the derivative structures
+     * @param forceModel force model associated with the parameters
+     * @return force model parameters
+     * @since 9.0
+     */
+    private DerivativeStructure[] convertParameters(final Field<DerivativeStructure> dsField,
+                                                    final ForceModel forceModel) {
+        final ParameterDriver[] drivers = forceModel.getParametersDrivers();
+        final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = dsField.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
     }
 
 }
