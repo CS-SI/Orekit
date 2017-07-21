@@ -25,9 +25,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.Precision;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -90,9 +88,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * (either 6 or 7 depending on mass derivatives being included or not). */
     private int stateDim;
 
-    /** Step used for finite difference computation with respect to spacecraft position. */
-    private double hPos;
-
     /** Jacobian of acceleration with respect to spacecraft position. */
     private transient double[][] dAccdPos;
 
@@ -123,7 +118,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         this.map        = null;
         this.propagator = propagator;
         this.stateDim   = -1;
-        this.hPos       = Double.NaN;
         propagator.addAdditionalEquations(this);
     }
 
@@ -287,11 +281,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
         throws OrekitException {
-
-        // if step has not been set by user, set a default value
-        if (Double.isNaN(hPos)) {
-            hPos = FastMath.sqrt(Precision.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
-        }
 
         // initialize acceleration Jacobians to zero
         for (final double[] row : dAccdPos) {
