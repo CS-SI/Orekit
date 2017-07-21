@@ -94,7 +94,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
         thetamin = getMinimalElevation(altitude);
         theta0   = thetamin - getTau(thetamin);
 
-        UnivariateFunction refrac = new UnivariateFunction() {
+        final UnivariateFunction refrac = new UnivariateFunction() {
             public double value (final double elev) {
                 return elev + getBaseRefraction(elev);
             }
