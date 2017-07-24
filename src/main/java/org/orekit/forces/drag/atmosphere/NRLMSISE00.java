@@ -1951,19 +1951,6 @@ public class NRLMSISE00 implements Atmosphere {
             return densities[index];
         }
 
-        /** Get one of the stored temperatures.
-         * @param index one of the two elements :
-         * <ul>
-         * <li>{@link #EXOSPHERIC}</li>
-         * <li>{@link #ALTITUDE}</li>
-         * </ul>
-         * @return the requested temperature
-         */
-        @SuppressWarnings("unused")
-        public double getTemperature(final int index) {
-            return temperatures[index];
-        }
-
         /** Calculate G(L) function with upper thermosphere parameters.
          *  @param p array of parameters
          *  @return G(L) value
