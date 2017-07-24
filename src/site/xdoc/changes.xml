@@ -22,6 +22,9 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
      <action dev="luc" type="update">
+       Moved Bias and OutlierFilter classes together with the other estimation modifiers.
+     </action>
+     <action dev="luc" type="update">
        Forced states derivatives to be dimension 6 rather than either 6 or 7. The
        additional mass was not really useful, it was intended for maneuvers calibration,
        but in fact during maneuver calibration we adjust either flow rate or specific

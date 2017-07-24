@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.modifiers;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
 
 /** Modifier that sets estimated measurement weight to 0 if residual is too far from expected domain.
