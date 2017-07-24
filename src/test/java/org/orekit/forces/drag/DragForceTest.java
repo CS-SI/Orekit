@@ -294,7 +294,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 7.0e-9, false);
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
 
     }
 
