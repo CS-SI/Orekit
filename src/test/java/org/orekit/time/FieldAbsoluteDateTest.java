@@ -592,6 +592,7 @@ public class FieldAbsoluteDateTest {
         }
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     private <T extends RealFieldElement<T>> void doTestEquals(final Field<T> field) {
         FieldAbsoluteDate<T> d1 =
             new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),

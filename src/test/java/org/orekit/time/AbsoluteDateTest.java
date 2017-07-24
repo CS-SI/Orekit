@@ -375,6 +375,7 @@ public class AbsoluteDateTest {
         }
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     public void testEquals() {
         AbsoluteDate d1 =
