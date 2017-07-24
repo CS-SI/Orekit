@@ -74,9 +74,9 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * name conflict occurs
      */
     public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
-                               final boolean twoWay,
-                               final AbsoluteDate date, final double range,
-                               final double sigma, final double baseWeight)
+                                final boolean twoWay,
+                                final AbsoluteDate date, final double range,
+                                final double sigma, final double baseWeight)
         throws OrekitException {
         super(date, range, sigma, baseWeight, Arrays.asList(satellite1Index, satellite2Index));
         this.twoway = twoWay;
@@ -109,8 +109,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final Field<DerivativeStructure>         field   = factory.getDerivativeField();
 
         // coordinates of both satellites
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva1 = getCoordinates(states[0], 0, factory);
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva2 = getCoordinates(states[1], 6, factory);
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva1 =
+                        getCoordinates(states[getPropagatorsIndices().get(0)], 0, factory);
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva2 =
+                        getCoordinates(states[getPropagatorsIndices().get(1)], 6, factory);
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,

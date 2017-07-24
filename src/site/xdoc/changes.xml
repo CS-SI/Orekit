@@ -41,7 +41,7 @@
         thought to be related to a radiator thermal radiation.
       </action>
       <action dev="luc" type="remove">
-        Removed obsoletes Cunningham and Droziner attraction models. These models have
+        Removed obsolete Cunningham and Droziner attraction models. These models have
         been superseded by Holmes-Featherstone attraction model available since 2013
         in Orekit.
       </action>

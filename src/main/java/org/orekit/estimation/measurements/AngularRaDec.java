@@ -123,7 +123,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                                                                        final SpacecraftState[] states)
         throws OrekitException {
 
-        final SpacecraftState state = states[0];
+        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
         // Right Ascension/elevation (in reference frame )derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
