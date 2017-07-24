@@ -25,6 +25,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Ev
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -33,8 +34,11 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -163,6 +167,102 @@ public class BatchLSEstimatorTest {
                                      0.0, 2.8e-6,
                                      0.0, 4.0e-7,
                                      0.0, 2.2e-10);
+
+        // after the call to estimate, the parameters lacking a user-specified reference date
+        // got a default one
+        for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
+            if ("a".equals(driver.getName())) {
+                // user-specified reference date
+                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+            } else {
+                // default reference date
+                Assert.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void testKeplerRangeWithOnBoardAntennaOffset() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
+
+        // create perfect range measurements with antenna offset
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               1.0, 3.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
+        for (final ObservedMeasurement<?> range : measurements) {
+            ((Range) range).addModifier(obaModifier);
+            estimator.addMeasurement(range);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+        estimator.setObserver(new BatchLSObserver() {
+            int lastIter = 0;
+            int lastEval = 0;
+            /** {@inheritDoc} */
+            @Override
+            public void evaluationPerformed(int iterationsCount, int evaluationscount,
+                                            Orbit[] orbits,
+                                            ParameterDriversList estimatedOrbitalParameters,
+                                            ParameterDriversList estimatedPropagatorParameters,
+                                            ParameterDriversList estimatedMeasurementsParameters,
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
+                throws OrekitException {
+                if (iterationsCount == lastIter) {
+                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                } else {
+                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                }
+                lastIter = iterationsCount;
+                lastEval = evaluationscount;
+                Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                try {
+                    evaluationsProvider.getEstimatedMeasurement(-1);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                }
+                try {
+                    evaluationsProvider.getEstimatedMeasurement(measurements.size());
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                }
+                AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
+                for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
+                    AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
+                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    previous = current;
+                }
+            }
+        });
+
+        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        Assert.assertEquals("a", aDriver.getName());
+        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                     0.0, 2.0e-5,
+                                     0.0, 5.2e-5,
+                                     0.0, 2.6e-5,
+                                     0.0, 1.1e-8);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

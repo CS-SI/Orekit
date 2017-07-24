@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+     <action dev="luc" type="add">
+       Added on-board antenna phase center effect on range measurements.
+     </action>
      <action dev="luc" type="update">
        Moved Bias and OutlierFilter classes together with the other estimation modifiers.
      </action>
