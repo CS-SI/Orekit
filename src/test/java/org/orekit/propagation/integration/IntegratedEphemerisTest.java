@@ -120,7 +120,7 @@ public class IntegratedEphemerisTest {
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
         final SpacecraftState initialState =
-                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit));
         final JacobiansMapper mapper = derivatives.getMapper();
         numericalPropagator.setInitialState(initialState);
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));

@@ -300,7 +300,7 @@ class Model implements MultivariateJacobianFunction {
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState, 6);
+        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
         propagator.resetInitialState(stateWithDerivatives);
 
         return partials.getMapper();

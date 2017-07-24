@@ -82,7 +82,7 @@ public class PartialDerivativesEquationsTest {
         pv = new PVCoordinates(p, v);
         state = new SpacecraftState(new CartesianOrbit(pv, eci, date, gm))
                 .addAdditionalState("pde", new double[2 * 3 * 6]);
-        pde.setInitialJacobians(state, 6);
+        pde.setInitialJacobians(state);
 
     }
 
