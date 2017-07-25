@@ -23,7 +23,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -55,22 +57,26 @@ public class OnBoardAntennaRangeModifier implements EstimationModifier<Range> {
 
         // the participants are ground station at emission, spacecraft, ground station at reception
         final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-        final Vector3D pEmission  = participants[0].getPosition();
-        final Vector3D pSpaceraft = participants[1].getPosition();
-        final Vector3D pReception = participants[2].getPosition();
+        final Vector3D                   pEmission    = participants[0].getPosition();
+        final AbsoluteDate               transitDate  = participants[1].getDate();
+        final Vector3D                   pReception   = participants[2].getPosition();
+
+        // transform from spacecraft to inertial frame at transit date
+        final int             index             = estimated.getObservedMeasurement().getPropagatorsIndices().get(0);
+        final SpacecraftState refState          = estimated.getStates()[index];
+        final SpacecraftState transitState      = refState.shiftedBy(transitDate.durationFrom(refState.getDate()));
+        final Transform       spacecraftToInert = transitState.toTransform().getInverse();
 
         // compute the geometrical value of the range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),
         // because other modifiers may already have been taken into account
+        final Vector3D pSpacecraft = spacecraftToInert.transformPosition(Vector3D.ZERO);
         final double rangeUsingSpacecraftCenter =
-                        0.5 * (Vector3D.distance(pEmission, pSpaceraft) + Vector3D.distance(pSpaceraft, pReception));
+                        0.5 * (Vector3D.distance(pEmission, pSpacecraft) + Vector3D.distance(pSpacecraft, pReception));
 
         // compute the geometrical value of the range replacing
         // the spacecraft position with antenna phase center position
-        // position of the antenna phase center in inertial frame
-        final int             index = estimated.getObservedMeasurement().getPropagatorsIndices().get(0);
-        final SpacecraftState state = estimated.getStates()[index];
-        final Vector3D        pAPC  = state.toTransform().getInverse().transformPosition(antennaPhaseCenter);
+        final Vector3D pAPC = spacecraftToInert.transformPosition(antennaPhaseCenter);
         final double rangeUsingAntennaPhaseCenter =
                         0.5 * (Vector3D.distance(pEmission, pAPC) + Vector3D.distance(pAPC, pReception));
 

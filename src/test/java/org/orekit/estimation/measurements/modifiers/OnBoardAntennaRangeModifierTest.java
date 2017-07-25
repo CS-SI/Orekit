@@ -38,7 +38,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.Constants;
 
-public class OnBoardAntenneRangeModifierTest {
+public class OnBoardAntennaRangeModifierTest {
 
     @Test
     public void testPreliminary() throws OrekitException {
