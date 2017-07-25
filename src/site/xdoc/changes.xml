@@ -22,6 +22,12 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
      <action dev="luc" type="add">
+       Added on-board antenna phase center effect on inter-satellites range measurements.
+     </action>
+     <action dev="luc" type="add">
+       Added on-board antenna phase center effect on turn-around range measurements.
+     </action>
+     <action dev="luc" type="add">
        Added on-board antenna phase center effect on range measurements.
      </action>
      <action dev="luc" type="update">

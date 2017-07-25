@@ -43,7 +43,7 @@ public class OnBoardAntennaRangeModifierTest {
     @Test
     public void testPreliminary() throws OrekitException {
 
-        // this test does not check OnBoardAntenneRangeModifier at all,
+        // this test does not check OnBoardAntennaRangeModifier at all,
         // it just checks RangeMeasurementCreator behaves as necessary for the other test
         // the *real* test is testEffect below
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

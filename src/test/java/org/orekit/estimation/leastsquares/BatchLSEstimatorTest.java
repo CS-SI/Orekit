@@ -401,7 +401,7 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 2.2e-06,
+                                     0.0, 2.6e-06,
                                      0.0, 7.4e-06,
                                      0.0, 5.2e-07,
                                      0.0, 2.1e-10);
@@ -419,7 +419,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            8.0e-7);
+                            1.1e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),

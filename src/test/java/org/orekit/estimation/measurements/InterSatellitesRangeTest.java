@@ -243,8 +243,8 @@ public class InterSatellitesRangeTest {
         Assert.assertEquals(0.0, absErrorsMedian, 1.3e-7);
         Assert.assertEquals(0.0, absErrorsMin,    7.3e-7);
         Assert.assertEquals(0.0, absErrorsMax,    1.8e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 9.0e-13);
-        Assert.assertEquals(0.0, relErrorsMax,    3.1e-12);
+        Assert.assertEquals(0.0, relErrorsMedian, 1.0e-12);
+        Assert.assertEquals(0.0, relErrorsMax,    3.2e-12);
 
 
     }

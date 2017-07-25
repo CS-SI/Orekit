@@ -41,7 +41,7 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
     @Test
     public void testPreliminary() throws OrekitException {
 
-        // this test does not check OnBoardAntenneTurnAroundRangeModifier at all,
+        // this test does not check OnBoardAntennaTurnAroundRangeModifier at all,
         // it just checks TurnAroundRangeMeasurementCreator behaves as necessary for the other test
         // the *real* test is testEffect below
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

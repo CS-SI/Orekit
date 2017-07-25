@@ -65,8 +65,7 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
         final Vector3D                   pMasterReception = participants[4].getPosition();
 
         // transforms from spacecraft to inertial frame at transit dates
-        final int             index                 = estimated.getObservedMeasurement().getPropagatorsIndices().get(0);
-        final SpacecraftState refState              = estimated.getStates()[index];
+        final SpacecraftState refState              = estimated.getStates()[0];
         final SpacecraftState transitStateLeg1      = refState.shiftedBy(transitDateLeg1.durationFrom(refState.getDate()));
         final Transform       spacecraftToInertLeg1 = transitStateLeg1.toTransform().getInverse();
         final SpacecraftState transitStateLeg2      = refState.shiftedBy(transitDateLeg2.durationFrom(refState.getDate()));

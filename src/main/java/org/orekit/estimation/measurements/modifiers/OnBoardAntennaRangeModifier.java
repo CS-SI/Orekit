@@ -62,8 +62,7 @@ public class OnBoardAntennaRangeModifier implements EstimationModifier<Range> {
         final Vector3D                   pReception   = participants[2].getPosition();
 
         // transform from spacecraft to inertial frame at transit date
-        final int             index             = estimated.getObservedMeasurement().getPropagatorsIndices().get(0);
-        final SpacecraftState refState          = estimated.getStates()[index];
+        final SpacecraftState refState          = estimated.getStates()[0];
         final SpacecraftState transitState      = refState.shiftedBy(transitDate.durationFrom(refState.getDate()));
         final Transform       spacecraftToInert = transitState.toTransform().getInverse();
 
