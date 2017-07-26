@@ -34,6 +34,7 @@ import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.events.ODEEventHandler;
+import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.Precision;
@@ -41,6 +42,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -82,9 +84,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Equations mapper. */
     private EquationsMapper equationsMapper;
-
-    /** Underlying raw rawInterpolator. */
-    private ODEStateInterpolator mathInterpolator;
 
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
@@ -457,7 +456,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final ODEState mathInitialState = createInitialState(getInitialIntegrationState());
             final ExpandableODE mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
-            mathInterpolator = null;
 
             // initialize mode handler
             if (modeHandler != null) {
@@ -524,7 +522,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         final double[][] secondary = new double[additionalEquations.size()][];
         for (int i = 0; i < additionalEquations.size(); ++i) {
             final AdditionalEquations additional = additionalEquations.get(i);
-            secondary[i] = getInitialState().getAdditionalState(additional.getName());
+            secondary[i] = initialState.getAdditionalState(additional.getName());
         }
 
         return new ODEState(0.0, primary, secondary);
@@ -875,8 +873,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * to Hipparchus {@link ODEStepHandler} interface.
      * @author Luc Maisonobe
      */
-    private class AdaptedStepHandler
-        implements OrekitStepInterpolator, ODEStepHandler, ModeHandler {
+    private class AdaptedStepHandler implements ODEStepHandler, ModeHandler {
 
         /** Underlying handler. */
         private final OrekitStepHandler handler;
@@ -900,8 +897,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
             try {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                             stateMapper.mapDoubleToDate(t));
+                if (activate) {
+                    handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                                 stateMapper.mapDoubleToDate(t));
+                }
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -910,13 +909,30 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
             try {
-                mathInterpolator = interpolator;
                 if (activate) {
-                    handler.handleStep(this, isLast);
+                    handler.handleStep(new AdaptedStepInterpolator(interpolator), isLast);
                 }
             } catch (OrekitException pe) {
                 throw new OrekitExceptionWrapper(pe);
             }
+        }
+
+    }
+
+    /** Adapt an Hipparchus {@link ODEStateInterpolator}
+     * to an orekit {@link OrekitStepInterpolator} interface.
+     * @author Luc Maisonobe
+     */
+    private class AdaptedStepInterpolator implements OrekitStepInterpolator {
+
+        /** Underlying raw rawInterpolator. */
+        private final ODEStateInterpolator mathInterpolator;
+
+        /** Simple constructor.
+         * @param mathInterpolator underlying raw interpolator
+         */
+        AdaptedStepInterpolator(final ODEStateInterpolator mathInterpolator) {
+            this.mathInterpolator = mathInterpolator;
         }
 
         /** {@inheritDoc}} */
@@ -949,17 +965,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
             throws OrekitException {
-            return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
+            return convert(mathInterpolator.getInterpolatedState(date.durationFrom(stateMapper.getReferenceDate())));
         }
 
-        /** Get the interpolated state.
+        /** Convert a state from mathematical world to space flight dynamics world.
          * @param os mathematical state
-         * @return interpolated state at the current interpolation date
-         * @exception OrekitException if state cannot be interpolated or converted
-         * @exception OrekitException if underlying interpolator cannot handle
-         * the date
-         * @see #getInterpolatedDate()
-         * @see #setInterpolatedDate(AbsoluteDate)
+         * @return space flight dynamics state
+         * @exception OrekitException if arrays are inconsistent
          */
         private SpacecraftState convert(final ODEStateAndDerivative os)
             throws OrekitException {
@@ -979,11 +991,51 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         }
 
-        /** Check is integration direction is forward in date.
-         * @return true if integration is forward in date
+        /** Convert a state from space flight dynamics world to mathematical world.
+         * @param state space flight dynamics state
+         * @return mathematical state
+         * @exception OrekitException if arrays are inconsistent
          */
+        private ODEStateAndDerivative convert(final SpacecraftState state)
+            throws OrekitException {
+
+            // retrieve initial state
+            final double[] primary    = new double[getBasicDimension()];
+            final double[] primaryDot = new double[getBasicDimension()];
+            stateMapper.mapStateToArray(state, primary, primaryDot);
+
+            // secondary part of the ODE
+            final double[][] secondary    = new double[additionalEquations.size()][];
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final AdditionalEquations additional = additionalEquations.get(i);
+                secondary[i] = state.getAdditionalState(additional.getName());
+            }
+
+            return new ODEStateAndDerivative(stateMapper.mapDateToDouble(state.getDate()),
+                                             primary, primaryDot,
+                                             secondary, null);
+
+        }
+
+        /** {@inheritDoc}} */
+        @Override
         public boolean isForward() {
             return mathInterpolator.isForward();
+        }
+
+        /** {@inheritDoc}} */
+        @Override
+        public AdaptedStepInterpolator restrictStep(final SpacecraftState newPreviousState,
+                                                    final SpacecraftState newCurrentState)
+            throws OrekitException {
+            try {
+                final AbstractODEStateInterpolator aosi = (AbstractODEStateInterpolator) mathInterpolator;
+                return new AdaptedStepInterpolator(aosi.restrictStep(convert(newPreviousState),
+                                                                     convert(newCurrentState)));
+            } catch (ClassCastException cce) {
+                // this should never happen
+                throw new OrekitInternalError(cce);
+            }
         }
 
     }

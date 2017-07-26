@@ -20,12 +20,11 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
@@ -36,8 +35,6 @@ import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -59,13 +56,16 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** Reference solar radiation pressure at D_REF (N/m²). */
     private static final double P_REF = 4.56e-6;
 
+    /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
+    private static final double ANGULAR_MARGIN = 1.0e-10;
+
     /** Reference flux normalized for a 1m distance (N). */
     private final double kRef;
 
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Earth model. */
+    /** Central body model. */
     private final double equatorialRadius;
 
     /** Spacecraft. */
@@ -109,7 +109,14 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
 
         final AbsoluteDate date         = s.getDate();
@@ -119,14 +126,34 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
-        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
+        final double   ratio = getLightingRatio(position, frame, date);
+        final double   rawP  = ratio  * kRef / r2;
+        final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
-        final Vector3D acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                               s.getMass(), flux);
+        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                        s.getMass(), flux, parameters);
 
-        // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(acceleration, s.getFrame());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
+        throws OrekitException {
+
+        final FieldAbsoluteDate<T> date         = s.getDate();
+        final Frame                frame        = s.getFrame();
+        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
+        final T                    r2           = sunSatVector.getNormSq();
+
+        // compute flux
+        final T                ratio = getLightingRatio(position, frame, date);
+        final T                rawP  = ratio.divide(r2).multiply(kRef);
+        final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
+
+        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                        s.getMass(), flux, parameters);
 
     }
 
@@ -135,17 +162,24 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param frame in which is defined the position
      * @param date the date
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      * @since 7.1
      */
     public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
+        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
+            // we are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet,we consider lighting ratio is always 1
+            return 1.0;
+        }
+
         // Compute useful angles
-        final double[] angle = getEclipseAngles(position, frame, date);
+        final double[] angle = getEclipseAngles(sunPosition, position);
 
         // Sat-Sun / Sat-CentralBody angle
-        final double sunEarthAngle = angle[0];
+        final double sunSatCentralBodyAngle = angle[0];
 
         // Central Body apparent radius
         final double alphaCentral = angle[1];
@@ -156,12 +190,12 @@ public class SolarRadiationPressure extends AbstractForceModel {
         double result = 1.0;
 
         // Is the satellite in complete umbra ?
-        if (sunEarthAngle - alphaCentral + alphaSun <= 0.0) {
+        if (sunSatCentralBodyAngle - alphaCentral + alphaSun <= ANGULAR_MARGIN) {
             result = 0.0;
-        } else if (sunEarthAngle - alphaCentral - alphaSun < 0.0) {
+        } else if (sunSatCentralBodyAngle - alphaCentral - alphaSun < -ANGULAR_MARGIN) {
             // Compute a lighting ratio in penumbra
-            final double sEA2    = sunEarthAngle * sunEarthAngle;
-            final double oo2sEA  = 1.0 / (2. * sunEarthAngle);
+            final double sEA2    = sunSatCentralBodyAngle * sunSatCentralBodyAngle;
+            final double oo2sEA  = 1.0 / (2. * sunSatCentralBodyAngle);
             final double aS2     = alphaSun * alphaSun;
             final double aE2     = alphaCentral * alphaCentral;
             final double aE2maS2 = aE2 - aS2;
@@ -170,10 +204,12 @@ public class SolarRadiationPressure extends AbstractForceModel {
             final double alpha2  = (sEA2 + aE2maS2) * oo2sEA;
 
             // Protection against numerical inaccuracy at boundaries
-            final double a1oaS   = FastMath.min(1.0, FastMath.max(-1.0, alpha1 / alphaSun));
-            final double aS2ma12 = FastMath.max(0.0, aS2 - alpha1 * alpha1);
-            final double a2oaE   = FastMath.min(1.0, FastMath.max(-1.0, alpha2 / alphaCentral));
-            final double aE2ma22 = FastMath.max(0.0, aE2 - alpha2 * alpha2);
+            final double almost0 = Precision.SAFE_MIN;
+            final double almost1 = FastMath.nextDown(1.0);
+            final double a1oaS   = FastMath.min(almost1, FastMath.max(-almost1, alpha1 / alphaSun));
+            final double aS2ma12 = FastMath.max(almost0, aS2 - alpha1 * alpha1);
+            final double a2oaE   = FastMath.min(almost1, FastMath.max(-almost1, alpha2 / alphaCentral));
+            final double aE2ma22 = FastMath.max(almost0, aE2 - alpha2 * alpha2);
 
             final double P1 = aS2 * FastMath.acos(a1oaS) - alpha1 * FastMath.sqrt(aS2ma12);
             final double P2 = aE2 * FastMath.acos(a2oaE) - alpha2 * FastMath.sqrt(aE2ma22);
@@ -182,6 +218,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         }
 
         return result;
+
     }
 
     /** Get the lighting ratio ([0-1]).
@@ -190,7 +227,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param date the date
      * @param <T> extends RealFieldElement
      * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      * @since 7.1
      */
     public <T extends RealFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
@@ -198,11 +235,20 @@ public class SolarRadiationPressure extends AbstractForceModel {
                                                               final FieldAbsoluteDate<T> date)
         throws OrekitException {
 
+        final T one = date.getField().getOne();
+
+        final Vector3D sunPosition = sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition();
+        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
+            // we are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet,we consider lighting ratio is always 1
+            return one;
+        }
+
         // Compute useful angles
-        final T[] angle = getEclipseAngles(position, frame, date);
+        final T[] angle = getEclipseAngles(sunPosition, position);
 
         // Sat-Sun / Sat-CentralBody angle
-        final T sunEarthAngle = angle[0];
+        final T sunsatCentralBodyAngle = angle[0];
 
         // Central Body apparent radius
         final T alphaCentral = angle[1];
@@ -210,16 +256,14 @@ public class SolarRadiationPressure extends AbstractForceModel {
         // Sun apparent radius
         final T alphaSun = angle[2];
 
-        final T one = date.getField().getOne();
-        final T zero = date.getField().getZero();
         T result = one;
         // Is the satellite in complete umbra ?
-        if (sunEarthAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= 0.0) {
+        if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() + alphaSun.getReal() <= ANGULAR_MARGIN) {
             result = date.getField().getZero();
-        } else if (sunEarthAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < 0.0) {
+        } else if (sunsatCentralBodyAngle.getReal() - alphaCentral.getReal() - alphaSun.getReal() < -ANGULAR_MARGIN) {
             // Compute a lighting ratio in penumbra
-            final T sEA2    = sunEarthAngle.multiply(sunEarthAngle);
-            final T oo2sEA  = sunEarthAngle.multiply(2).reciprocal();
+            final T sEA2    = sunsatCentralBodyAngle.multiply(sunsatCentralBodyAngle);
+            final T oo2sEA  = sunsatCentralBodyAngle.multiply(2).reciprocal();
             final T aS2     = alphaSun.multiply(alphaSun);
             final T aE2     = alphaCentral.multiply(alphaCentral);
             final T aE2maS2 = aE2.subtract(aS2);
@@ -228,16 +272,12 @@ public class SolarRadiationPressure extends AbstractForceModel {
             final T alpha2  = sEA2.add(aE2maS2).multiply(oo2sEA);
 
             // Protection against numerical inaccuracy at boundaries
-            final T a1oaS   = -1.0 > alpha1.getReal() / alphaSun.getReal() ? one.negate() : 1.0 <  alpha1.getReal() / alphaSun.getReal() ?
-                                                             one : alpha1.divide(alphaSun);
-            //FastMath.min(1.0, FastMath.max(-1.0, alpha1 / alphaSun));
-            final T aS2ma12 = 0.0 > aS2.getReal() - alpha1.getReal() * alpha1.getReal() ? zero : aS2.subtract(alpha1.multiply(alpha1));
-            //FastMath.max(0.0, aS2 - alpha1 * alpha1);
-            final T a2oaE   = -1.0 > alpha2.getReal() / alphaCentral.getReal() ? one.negate() : 1.0 < alpha2.getReal() / alphaCentral.getReal() ?
-                                                              one : alpha2.divide(alphaCentral);
-            //FastMath.min(1.0, FastMath.max(-1.0, alpha2 / alphaCentral));
-            final T aE2ma22 = 0.0 > aE2.getReal() - alpha2.getReal() * alpha2.getReal() ? zero : aE2.subtract(alpha2.multiply(alpha2));
-            //FastMath.max(0.0, aE2 - alpha2 * alpha2);
+            final double almost0 = Precision.SAFE_MIN;
+            final double almost1 = FastMath.nextDown(1.0);
+            final T a1oaS   = min(almost1, max(-almost1, alpha1.divide(alphaSun)));
+            final T aS2ma12 = max(almost0, aS2.subtract(alpha1.multiply(alpha1)));
+            final T a2oaE   = min(almost1, max(-almost1, alpha2.divide(alphaCentral)));
+            final T aE2ma22 = max(almost0, aE2.subtract(alpha2.multiply(alpha2)));
 
             final T P1 = aS2.multiply(a1oaS.acos()).subtract(alpha1.multiply(aS2ma12.sqrt()));
             final T P2 = aE2.multiply(a2oaE.acos()).subtract(alpha2.multiply(aE2ma22.sqrt()));
@@ -249,70 +289,34 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.of(new UmbraDetector(), new PenumbraDetector());
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
     }
 
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-
-        final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
-        final DerivativeStructure r2  = sunSatVector.getNormSq();
-
-        // compute flux
-        final double ratio = getLightingRatio(position.toVector3D(), frame, date);
-        final DerivativeStructure rawP = r2.reciprocal().multiply(kRef * ratio);
-        final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
-
-        // compute acceleration with all its partial derivatives
-        return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
-
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-        final AbsoluteDate date         = s.getDate();
-        final Frame        frame        = s.getFrame();
-        final Vector3D     position     = s.getPVCoordinates().getPosition();
-        final Vector3D     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
-        final double       r2           = sunSatVector.getNormSq();
-
-        // compute flux
-        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
-        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
-
-        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                        s.getMass(), flux, paramName);
-
-    }
-
     /** Get the useful angles for eclipse computation.
-     * @param position the satellite's position in the selected frame.
-     * @param frame in which is defined the position
-     * @param date the date
+     * @param sunPosition Sun position in the selected frame
+     * @param position the satellite's position in the selected frame
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      */
-    private double[] getEclipseAngles(final Vector3D position,
-                                      final Frame frame,
-                                      final AbsoluteDate date)
+    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position)
         throws OrekitException {
         final double[] angle = new double[3];
 
-        final Vector3D satSunVector = sun.getPVCoordinates(date, frame).getPosition().subtract(position);
+        final Vector3D satSunVector = sunPosition.subtract(position);
 
         // Sat-Sun / Sat-CentralBody angle
         angle[0] = Vector3D.angle(satSunVector, position.negate());
@@ -331,23 +335,21 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** Get the useful angles for eclipse computation.
+     * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame.
-     * @param frame in which is defined the position
-     * @param date the date
      * @param <T> extends RealFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     * @exception OrekitException if the trajectory is inside the Earth
+     * @exception OrekitException if the trajectory is inside the central body
      */
-    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> position,
-                                                                 final Frame frame,
-                                                                 final FieldAbsoluteDate<T> date)
+    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final Vector3D sunPosition, final FieldVector3D<T> position)
         throws OrekitException {
-        final T[] angle = MathArrays.buildArray(date.getField(), 3);
+        final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
-        final FieldVector3D<T> satSunVector = position.negate().add(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
+        final FieldVector3D<T> mP           = position.negate();
+        final FieldVector3D<T> satSunVector = mP.add(sunPosition);
 
         // Sat-Sun / Sat-CentralBody angle
-        angle[0] = FieldVector3D.angle(satSunVector, position.negate());
+        angle[0] = FieldVector3D.angle(satSunVector, mP);
 
         // Central body apparent radius
         final T r = position.getNorm();
@@ -360,6 +362,26 @@ public class SolarRadiationPressure extends AbstractForceModel {
         angle[2] = satSunVector.getNorm().reciprocal().multiply(Constants.SUN_RADIUS).asin();
 
         return angle;
+    }
+
+    /** Compute min of two values, one double and one field element.
+     * @param d double value
+     * @param f field element
+     * @param <T> type fo the field elements
+     * @return min value
+     */
+    private <T extends RealFieldElement<T>> T min(final double d, final T f) {
+        return (f.getReal() > d) ? f.getField().getZero().add(d) : f;
+    }
+
+    /** Compute max of two values, one double and one field element.
+     * @param d double value
+     * @param f field element
+     * @param <T> type fo the field elements
+     * @return max value
+     */
+    private <T extends RealFieldElement<T>> T max(final double d, final T f) {
+        return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
     }
 
     /** This class defines the umbra entry/exit detector. */
@@ -405,16 +427,16 @@ public class SolarRadiationPressure extends AbstractForceModel {
             return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
-        /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the Earth's apparent radius.
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the central body apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
         public double g(final SpacecraftState s) throws OrekitException {
-            final double[] angle = getEclipseAngles(s.getPVCoordinates().getPosition(),
-                                                    s.getFrame(), s.getDate());
-            return angle[0] - angle[1] + angle[2];
+            final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                                    s.getPVCoordinates().getPosition());
+            return angle[0] - angle[1] + angle[2] - ANGULAR_MARGIN;
         }
 
     }
@@ -462,46 +484,18 @@ public class SolarRadiationPressure extends AbstractForceModel {
             return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
-        /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
-         * the sum of the Earth's and Sun's apparent radius.
+        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
+         * the sum of the central body and Sun's apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
          * @exception OrekitException if sun or spacecraft position cannot be computed
          */
         public double g(final SpacecraftState s) throws OrekitException {
-            final double[] angle = getEclipseAngles(s.getPVCoordinates().getPosition(),
-                                                    s.getFrame(), s.getDate());
-            return angle[0] - angle[1] - angle[2];
+            final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
+                                                    s.getPVCoordinates().getPosition());
+            return angle[0] - angle[1] - angle[2] + ANGULAR_MARGIN;
         }
 
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-
-        final FieldAbsoluteDate<T> date         = s.getDate();
-        final Frame        frame        = s.getFrame();
-        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
-        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
-        final T     r2           = sunSatVector.getNormSq();
-
-        // compute flux
-        final T   rawP = getLightingRatio(position, frame, date).divide(r2).multiply(kRef);
-        final FieldVector3D<T> flux = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
-
-        final FieldVector3D<T> acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                                                               s.getMass(), flux);
-
-        // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(acceleration, s.getFrame());
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
 }

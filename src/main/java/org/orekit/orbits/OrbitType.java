@@ -201,7 +201,7 @@ public enum OrbitType {
                     stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = circularOrbit.getAlphaDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
                 }
             }
 
@@ -257,7 +257,7 @@ public enum OrbitType {
                     stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = circularOrbit.getAlphaDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
                 }
             }
 
@@ -339,7 +339,7 @@ public enum OrbitType {
                     stateVectorDot[4] = equinoctialOrbit.getHyDot();
                     stateVectorDot[5] = equinoctialOrbit.getLDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
                 }
             }
 
@@ -396,7 +396,7 @@ public enum OrbitType {
                     stateVectorDot[4] = equinoctialOrbit.getHyDot();
                     stateVectorDot[5] = equinoctialOrbit.getLDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
                 }
             }
 
@@ -480,7 +480,7 @@ public enum OrbitType {
                     stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
                 }
             }
 
@@ -536,7 +536,7 @@ public enum OrbitType {
                     stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
                 }
             }
 

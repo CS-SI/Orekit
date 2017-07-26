@@ -118,6 +118,7 @@ Math to Hipparchus
   Orekit 7.1   | Apache Commons Math 3.6
   Orekit 7.2   | Apache Commons Math 3.6.1
   Orekit 8.0   | Hipparchus          1.0
+  Orekit 9.0   | Hipparchus          1.1
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
@@ -160,7 +161,7 @@ data for the IERS convention 2003, they have switched to IERS conventions 2010. 
 (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
 the IERS publish them.
 
-Concerning UTC leap seconds, as of mid 2016, the last one was introduced at the end of June 2015.
+Concerning UTC leap seconds, as of mid 2017, the last one was introduced at the end of December 2016.
 
 ## Runtime errors
 

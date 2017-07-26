@@ -407,8 +407,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T h2 = hx.multiply(hx).add(hy.multiply(hy));
         final T h  = h2.sqrt();
         raan = hy.atan2(hx);
-        final T cosRaan = hx.divide(h);
-        final T sinRaan = hy.divide(h);
+        final T cosRaan = h.getReal() == 0 ? raan.cos() : hx.divide(h);
+        final T sinRaan = h.getReal() == 0 ? raan.sin() : hy.divide(h);
         final T equiEx = op.getEquinoctialEx();
         final T equiEy = op.getEquinoctialEy();
         ex   = equiEx.multiply(cosRaan).add(equiEy.multiply(sinRaan));

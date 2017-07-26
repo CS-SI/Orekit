@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -41,6 +42,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -74,9 +76,11 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -405,6 +409,11 @@ public class KeplerianPropagatorTest {
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
+            public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                FieldAbsoluteDate<T> date, Frame frame)
+                throws OrekitException {
+                throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
+            }
         };
         KeplerianPropagator propagator = new KeplerianPropagator(orbit, wrongLaw);
         propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
@@ -443,6 +452,12 @@ public class KeplerianPropagatorTest {
                                                                     private static final long serialVersionUID = 1L;
                                                                     public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date,
                                                                                                 Frame frame)
+                                                                        throws OrekitException {
+                                                                        throw new OrekitException((Throwable) null,
+                                                                                                  new DummyLocalizable("dummy error"));
+                                                                    }
+                                                                    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                                                                        FieldAbsoluteDate<T> date, Frame frame)
                                                                         throws OrekitException {
                                                                         throw new OrekitException((Throwable) null,
                                                                                                   new DummyLocalizable("dummy error"));
@@ -795,8 +810,8 @@ public class KeplerianPropagatorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(propagator.getGeneratedEphemeris());
 
-        Assert.assertTrue(bos.size() > 2400);
-        Assert.assertTrue(bos.size() < 2500);
+        Assert.assertTrue(bos.size() > 2300);
+        Assert.assertTrue(bos.size() < 2400);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

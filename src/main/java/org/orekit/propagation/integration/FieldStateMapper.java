@@ -17,7 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.attitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
@@ -40,7 +40,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     private final PositionAngle angleType;
 
     /** Attitude provider. */
-    private final FieldAttitudeProvider<T> attitudeProvider;
+    private final AttitudeProvider attitudeProvider;
 
     /** Central attraction coefficient. */
     private final double mu;
@@ -64,7 +64,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      */
     protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
                           final OrbitType orbitType, final PositionAngle positionAngleType,
-                          final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
+                          final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
         this.orbitType        = orbitType;
@@ -116,7 +116,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Get the attitude provider.
      * @return attitude provider
      */
-    public FieldAttitudeProvider<T> getAttitudeProvider() {
+    public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
     }
 

@@ -46,11 +46,12 @@ public class ModelTest {
     @Test
     public void testPerfectValue() throws OrekitException {
 
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
+        final NumericalPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -72,19 +73,20 @@ public class ModelTest {
         final ModelObserver modelObserver = new ModelObserver() {
             /** {@inheritDoc} */
             @Override
-            public void modelCalled(final Orbit newOrbit,
+            public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
+                Assert.assertEquals(1, newOrbits.length);
                 Assert.assertEquals(0,
-                                    context.initialOrbit.getDate().durationFrom(newOrbit.getDate()),
+                                    context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                                     1.0e-15);
                 Assert.assertEquals(0,
                                     Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                                      newOrbit.getPVCoordinates().getPosition()),
+                                                      newOrbits[0].getPVCoordinates().getPosition()),
                                     1.0e-15);
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters, modelObserver);
+        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
 

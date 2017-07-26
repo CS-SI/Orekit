@@ -40,6 +40,7 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
@@ -53,8 +54,8 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class BatchLSEstimator {
 
-    /** Builder for propagator. */
-    private final NumericalPropagatorBuilder propagatorBuilder;
+    /** Builders for propagator. */
+    private final NumericalPropagatorBuilder[] builders;
 
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
@@ -68,14 +69,14 @@ public class BatchLSEstimator {
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
 
-    /** Oberver for iterations. */
+    /** Observer for iterations. */
     private BatchLSObserver observer;
 
     /** Last estimations. */
     private Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> estimations;
 
-    /** Last orbit. */
-    private Orbit orbit;
+    /** Last orbits. */
+    private Orbit[] orbits;
 
     /** Optimum found. */
     private Optimum optimum;
@@ -87,21 +88,37 @@ public class BatchLSEstimator {
     private Incrementor iterationsCounter;
 
     /** Simple constructor.
-     * @param propagatorBuilder builder to user for propagation
+     * <p>
+     * If multiple {@link PropagatorBuilder propagator builders} are set up,
+     * the orbits of several spacecrafts will be used simultaneously.
+     * This is useful if the propagators share some model or measurements
+     * parameters (typically pole motion, prime meridian correction or
+     * ground stations positions).
+     * </p>
+     * <p>
+     * Setting up multiple {@link PropagatorBuilder propagator builders} is
+     * also useful when inter-satellite measurements are used, even if only one
+     * of the orbit is estimated and the other ones are fixed. This is typically
+     * used when very high accuracy GNSS measurements are needed and the
+     * navigation bulletins are not considered accurate enough and the navigation
+     * constellation must be propagated numerically.
+     * </p>
      * @param optimizer solver for least squares problem
+     * @param propagatorBuilder builders to use for propagation
      * @exception OrekitException if some propagator parameter cannot be retrieved
      */
-    public BatchLSEstimator(final NumericalPropagatorBuilder propagatorBuilder,
-                            final LeastSquaresOptimizer optimizer)
+    public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
+                            final NumericalPropagatorBuilder... propagatorBuilder)
         throws OrekitException {
 
-        this.propagatorBuilder              = propagatorBuilder;
+        this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
         this.optimizer                      = optimizer;
         this.parametersConvergenceThreshold = Double.NaN;
         this.lsBuilder                      = new LeastSquaresBuilder();
-        this.estimations                    = null;
         this.observer                       = null;
+        this.estimations                    = null;
+        this.orbits                         = new Orbit[builders.length];
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -169,6 +186,14 @@ public class BatchLSEstimator {
     }
 
     /** Get the orbital parameters supported by this estimator.
+     * <p>
+     * If there are more than one propagator builder, then the names
+     * of the drivers have an index marker in square brackets appended
+     * to them in order to distinguish the various orbits. So for example
+     * with one builder generating Keplerian orbits the names would be
+     * simply "a", "e", "i"... but if there are several builders the
+     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
+     * </p>
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
@@ -176,19 +201,23 @@ public class BatchLSEstimator {
     public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
         throws OrekitException {
 
-        if (estimatedOnly) {
-            final ParameterDriversList estimated = new ParameterDriversList();
-            for (final DelegatingDriver delegating : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-                if (delegating.isSelected()) {
+        final ParameterDriversList estimated = new ParameterDriversList();
+        for (int i = 0; i < builders.length; ++i) {
+            final String suffix = builders.length > 1 ? "[" + i + "]" : null;
+            for (final DelegatingDriver delegating : builders[i].getOrbitalParametersDrivers().getDrivers()) {
+                if (delegating.isSelected() || !estimatedOnly) {
                     for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        if (suffix != null && !driver.getName().endsWith(suffix)) {
+                            // we add suffix only conditionally because the method may already have been called
+                            // and suffixes may have already been appended
+                            driver.setName(driver.getName() + suffix);
+                        }
                         estimated.add(driver);
                     }
                 }
             }
-            return estimated;
-        } else {
-            return propagatorBuilder.getOrbitalParametersDrivers();
         }
+        return estimated;
 
     }
 
@@ -200,19 +229,17 @@ public class BatchLSEstimator {
     public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly)
         throws OrekitException {
 
-        if (estimatedOnly) {
-            final ParameterDriversList estimated = new ParameterDriversList();
-            for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected()) {
+        final ParameterDriversList estimated = new ParameterDriversList();
+        for (PropagatorBuilder builder : builders) {
+            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected() || !estimatedOnly) {
                     for (final ParameterDriver driver : delegating.getRawDrivers()) {
                         estimated.add(driver);
                     }
                 }
             }
-            return estimated;
-        } else {
-            return propagatorBuilder.getPropagationParametersDrivers();
         }
+        return estimated;
 
     }
 
@@ -278,6 +305,14 @@ public class BatchLSEstimator {
      * setting the values} of the parameters.
      * </p>
      * <p>
+     * For parameters whose reference date has not been set to a non-null date beforehand (i.e.
+     * the parameters for which {@link ParameterDriver#getReferenceDate()} returns {@code null},
+     * a default reference date will be set automatically at the start of the estimation to the
+     * {@link NumericalPropagatorBuilder#getInitialOrbitDate() initial orbit date} of the first
+     * propagator builder. For parameters whose reference date has been set to a non-null date,
+     * this reference date is untouched.
+     * </p>
+     * <p>
      * After this method returns, the estimated parameters can be retrieved using
      * {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
      * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#getValue()
@@ -287,12 +322,34 @@ public class BatchLSEstimator {
      * As a convenience, the method also returns a fully configured and ready to use
      * propagator set up with all the estimated values.
      * </p>
-     * @return propagator configured with estimated orbit as initial state, and all
-     * propagator estimated parameters also set
+     * <p>
+     * For even more in-depth information, the {@link #getOptimum()} method provides detailed
+     * elements (covariance matrix, estimated parameters standard deviation, weighted Jacobian, RMS,
+     * χ², residuals and more).
+     * </p>
+     * @return propagators configured with estimated orbits as initial states, and all
+     * propagators estimated parameters also set
      * @exception OrekitException if there is a conflict in parameters names
      * or if orbit cannot be determined
      */
-    public NumericalPropagator estimate() throws OrekitException {
+    public NumericalPropagator[] estimate() throws OrekitException {
+
+        // set reference date for all parameters that lack one (including the not estimated parameters)
+        for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+            }
+        }
+        for (final ParameterDriver driver : getPropagatorParametersDrivers(false).getDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+            }
+        }
+        for (final ParameterDriver driver : getMeasurementsParametersDrivers(false).getDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+            }
+        }
 
         // get all estimated parameters
         final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParametersDrivers(true);
@@ -329,13 +386,13 @@ public class BatchLSEstimator {
         final ModelObserver modelObserver = new ModelObserver() {
             /** {@inheritDoc} */
             @Override
-            public void modelCalled(final Orbit newOrbit,
+            public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEstimations) {
-                BatchLSEstimator.this.orbit       = newOrbit;
+                BatchLSEstimator.this.orbits      = newOrbits;
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters,
+        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
                                       modelObserver);
         lsBuilder.model(model);
 
@@ -368,7 +425,7 @@ public class BatchLSEstimator {
             optimum = optimizer.optimize(problem);
 
             // create a new configured propagator with all estimated parameters
-            return model.createPropagator(optimum.getPoint());
+            return model.createPropagators(optimum.getPoint());
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
@@ -386,6 +443,10 @@ public class BatchLSEstimator {
     }
 
     /** Get the optimum found.
+     * <p>
+     * The {@link Optimum} object contains detailed elements (covariance matrix, estimated
+     * parameters standard deviation, weighted Jacobian, RMS, χ², residuals and more).
+     * </p>
      * @return optimum found after last call to {@link #estimate()}
      */
     public Optimum getOptimum() {
@@ -499,7 +560,7 @@ public class BatchLSEstimator {
                 try {
                     observer.evaluationPerformed(iterationsCounter.getCount(),
                                                  evaluationsCounter.getCount(),
-                                                 orbit,
+                                                 orbits,
                                                  estimatedOrbitalParameters,
                                                  estimatedPropagatorParameters,
                                                  estimatedMeasurementsParameters,

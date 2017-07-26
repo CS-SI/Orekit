@@ -64,13 +64,14 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
 
-    public static Context eccentricContext() throws OrekitException {
+    public static Context eccentricContext(final String dataRoot) throws OrekitException {
 
-        Utils.setDataRoot("regular-data:potential:tides");
+        Utils.setDataRoot(dataRoot);
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -119,9 +120,9 @@ public class EstimationTestUtils {
 
     }
 
-    public static Context geoStationnaryContext() throws OrekitException {
+    public static Context geoStationnaryContext(final String dataRoot) throws OrekitException {
 
-        Utils.setDataRoot("regular-data:potential:tides");
+        Utils.setDataRoot(dataRoot);
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
         context.utc = TimeScalesFactory.getUTC();
@@ -181,7 +182,7 @@ public class EstimationTestUtils {
 
         // Compute the frames transformation from station frame to EME2000
         Transform topoToEME =
-        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+        context.stations.get(0).getBaseFrame().getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
         // Station position in EME2000 at reference date
         Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
@@ -246,7 +247,17 @@ public class EstimationTestUtils {
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
         propagator.propagate(start, end);
 
-        return creator.getMeasurements();
+        final List<ObservedMeasurement<?>> measurements = creator.getMeasurements();
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+                if (driver.getReferenceDate() == null) {
+                    driver.setReferenceDate(propagator.getInitialState().getDate());
+                }
+            }
+        }
+
+        return measurements;
 
     }
 
@@ -258,7 +269,7 @@ public class EstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps)
         throws OrekitException {
 
-        final Orbit estimatedOrbit = estimator.estimate().getInitialState().getOrbit();
+        final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 

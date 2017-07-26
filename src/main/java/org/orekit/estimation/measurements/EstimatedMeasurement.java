@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -25,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -42,8 +44,11 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Evaluations counter. */
     private final int count;
 
-    /** State of the spacecraft. */
-    private final SpacecraftState state;
+    /** States of the spacecrafts. */
+    private final SpacecraftState[] states;
+
+    /** Coordinates of the participants in signal travel order. */
+    private final TimeStampedPVCoordinates[] participants;
 
     /** Estimated value. */
     private double[] estimatedValue;
@@ -51,8 +56,8 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
     /** Current weight. */
     private double[] currentWeight;
 
-    /** Partial derivatives with respect to state. */
-    private double[][] stateDerivatives;
+    /** Partial derivatives with respect to states. */
+    private double[][][] stateDerivatives;
 
     /** Partial derivatives with respect to parameters. */
     private final Map<ParameterDriver, double[]> parametersDerivatives;
@@ -61,15 +66,20 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      * @param observedMeasurement associated observed measurement
      * @param iteration iteration number
      * @param count evaluations counter
-     * @param state state of the spacecraft
+     * @param states states of the spacecrafts
+     * @param participants coordinates of the participants in signal travel order
+     * in inertial frame
      */
     public EstimatedMeasurement(final T observedMeasurement,
                                 final int iteration, final int count,
-                                final SpacecraftState state) {
-        this.observedMeasurement           = observedMeasurement;
+                                final SpacecraftState[] states,
+                                final TimeStampedPVCoordinates[] participants) {
+        this.observedMeasurement   = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
-        this.state                 = state;
+        this.states                = states.clone();
+        this.participants          = participants.clone();
+        this.stateDerivatives      = new double[states.length][][];
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
 
@@ -100,18 +110,33 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         return count;
     }
 
-    /** Get the state of the spacecraft.
-     * @return state of the spacecraft
+    /** Get the states of the spacecrafts.
+     * @return states of the spacecrafts
      */
-    public SpacecraftState getState() {
-        return state;
+    public SpacecraftState[] getStates() {
+        return states.clone();
     }
 
-    /** Get the time offset from state date to measurement date.
-     * @return time offset from state date to measurement date
+    /** Get the coordinates of the measurements participants in signal travel order.
+     * <p>
+     * First participant (at index 0) emits the signal (it is for example a ground
+     * station for two-way range measurement). Last participant receives the signal
+     * (it is also the ground station for two-way range measurement, but a few
+     * milliseconds later). Intermediate participants relfect the signal (it is the
+     * spacecraft for two-way range measurement).
+     * </p>
+     * @return coordinates of the measurements participants in signal travel order
+     * in inertial frame
+     */
+    public TimeStampedPVCoordinates[] getParticipants() {
+        return participants.clone();
+    }
+
+    /** Get the time offset from first state date to measurement date.
+     * @return time offset from first state date to measurement date
      */
     public double getTimeOffset() {
-        return observedMeasurement.getDate().durationFrom(state.getDate());
+        return observedMeasurement.getDate().durationFrom(states[0].getDate());
     }
 
     /** Get the estimated value.
@@ -148,26 +173,38 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
+     * @param index index of the state, according to the {@code states}
+     * passed at construction
      * @return partial derivatives of the simulated value (array of size
      * {@link ObservedMeasurement#getDimension() dimension} x 6)
      */
-    public double[][] getStateDerivatives() {
+    public double[][] getStateDerivatives(final int index) {
         final double[][] sd = new double[observedMeasurement.getDimension()][];
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
-            sd[i] = stateDerivatives[i].clone();
+            sd[i] = stateDerivatives[index][i].clone();
         }
         return sd;
     }
 
     /** Set the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
-     * @param stateDerivatives partial derivatives with respect to state
+     * @param index index of the state, according to the {@code states}
+     * passed at construction
+     * @param derivatives partial derivatives with respect to state
      */
-    public void setStateDerivatives(final double[]... stateDerivatives) {
-        this.stateDerivatives = new double[observedMeasurement.getDimension()][];
+    public void setStateDerivatives(final int index, final double[]... derivatives) {
+        this.stateDerivatives[index] = new double[observedMeasurement.getDimension()][];
         for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
-            this.stateDerivatives[i] = stateDerivatives[i].clone();
+            this.stateDerivatives[index][i] = derivatives[i].clone();
         }
+    }
+
+    /** Get all the drivers with set derivatives.
+     * @return all the drivers with set derivatives
+     * @since 9.0
+     */
+    public Stream<ParameterDriver> getDerivativesDrivers() {
+        return parametersDerivatives.entrySet().stream().map(entry -> entry.getKey());
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()

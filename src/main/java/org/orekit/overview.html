@@ -43,7 +43,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Geometry
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
-      <li>predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008 and
+      <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014 and
           intermediate frames, TOD, MOD, GTOD and TEME frames, Veis, topocentric, tnw and qsw local orbital
           frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecraft)</li>
@@ -88,8 +88,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
               EGM and GRGS gravity field files formats, even compressed)</li>
-              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
-              and Marshall solar Activity Future Estimation</li>
+              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models),
+              and Marshall solar Activity Future Estimation, optionally with lift component</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
               <li>solid tides, with or without solid pole tide</li>
@@ -112,7 +112,11 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>integration based</li>
         </ul>
       </li>
-      <li>specialized GPS propagation, using SEM or YUMA files
+      <li>specialized GPS propagation, using SEM or YUMA files</li>
+      <li>Taylor-algebra (or any other real field) version of most of the above propagators,
+            with all force models, events detection, orbits types, coordinates types and frames
+           allowing allowing high order uncertainties and derivatives computation or very fast
+           Monte-Carlo analyzes
       </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
@@ -140,8 +144,8 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
               as seen from an observer (typically a ground station)</li>
           <li>raising/setting with respect to a ground location
-              (with customizable triggering elevation and ground mask)</li>
-          <li>date</li>
+              (with customizable triggering elevation and ground mask, optionally considering refraction)</li>
+          <li>date and on-the-fly resetting countdown</li>
           <li>latitude, longitude, altitude crossing</li>
           <li>latitude, longitude extremum</li>
           <li>elevation extremum</li>
@@ -156,10 +160,13 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>possibility of slightly shifting events in time (for example to switch from
           solar pointing mode to something else a few minutes before eclipse entry and
           reverting to solar pointing mode a few minutes after eclipse exit)</li>
-      <li>possibility of filtering events based on their direction (for example to detect
+      <li>events filtering  based on their direction (for example to detect
           only eclipse entries and not eclipse exits)</li>
-      <li>possibility of filtering events based on an external enabling function (for
+      <li>events filtering  based on an external enabling function (for
           example to detect events only during selected orbits and not others)</li>
+      <li>events combination with boolean operators</li>
+      <li>ability to run several propagators in parallel and manage their states
+          simultaneously throughout propagation</li>
     </ul>
   </li>
   <li>Attitude
@@ -179,14 +186,26 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
   <li>Orbit determination
     <ul>
-      <li>batch least squares fitting of orbit</li>
+      <li>batch least squares fitting
+        <ul>
+          <li>orbital parameters estimation (or only a subset if desired)</li>
+          <li>force model parameters estimation (drag coefficients, radiation pressure coefficients,
+              central attraction, maneuver thrust or flow rate)</li>
+          <li>measurements parameters estimation (biases, station position, pole motion and rate,
+              prime meridian correction and rate)</li>
+        </ul>
+      </li>
+      <li>multi-satellites orbit determination
+       </li>
       <li>several predefined measurements
         <ul>
           <li>range</li>
-          <li>range rate</li>
-          <li>azimuth</li>
-          <li>elevation</li>
+          <li>range rate (one way and two way)</li>
+          <li>turn-around range</li>
+          <li>azimuth/elevation</li>
+          <li>right ascension/declination</li>
           <li>position-velocity</li>
+          <li>inter-satellites range (one way and two way)</li>
         </ul>
       </li>
       <li>possibility to add custom measurements</li>
@@ -197,8 +216,10 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>station offsets</li>
           <li>biases</li>
           <li>delays</li>
+          <li>Antenna Phase Center</li>
         </ul>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
+      <li>possibility to parse CCSDS Tracking Data Message files</li>
     </ul>
   </li>
   <li>Orbit file handling
@@ -213,6 +234,7 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>tropospheric delay (modified Saastamoinen)</li>
       <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)</li>
+      <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)</li>
       <li>geomagnetic field (WMM, IGRF)</li>
       <li>geoid model from any gravity field</li>
       <li>tessellation of zones of interest as tiles</li>

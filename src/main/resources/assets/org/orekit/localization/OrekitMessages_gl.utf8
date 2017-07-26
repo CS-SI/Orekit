@@ -268,8 +268,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matriz xacobiana asociada ao tipo {0} é sing
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = a xacobiana do estado non foi aínda inicializada
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = a xacobiana do estado es una matriz {0}x{1}, y debería ser una matriz 6x6 o 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = a xacobiana do estado es una matriz {0}x{1}, y debería ser una matriz 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = a xacobiana do estado ten {0} liñas mentres que a xacobiana de parámetros ten {1}
@@ -312,6 +312,24 @@ CCSDS_INVALID_FRAME = o sistema de referencia {0} non é válido neste contexto 
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporais inconsistentes nos bloques de efemérides: {0} ≠ {1}
+
+# Inconsistent time systems in the observations blocks: {0} ≠ {1}
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+CCSDS_TDM_INCONSISTENT_DATA_LINE = <MISSING TRANSLATION>
+
+# No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
+CCSDS_TDM_KEYWORD_NOT_FOUND = <MISSING TRANSLATION>
+
+# Parameter {0} needs a time system to be interpreted
+CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+
+# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = <MISSING TRANSLATION>
+
+# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+CCSDS_TDM_UNKNOWN_FORMAT = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = o nome {0} xa está empregado por un estado adicional
@@ -382,9 +400,6 @@ OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
 
-# body shape is not an ellipsoid
-BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>
-
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
 
@@ -403,7 +418,7 @@ NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
 # the CCSDS time system {0} has no corresponding Orekit TimeScale.
 CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
 
-# use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
+# use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
@@ -417,3 +432,15 @@ VALUE_NOT_FOUND = <MISSING TRANSLATION>
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = <MISSING TRANSLATION>
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
+
+# no reference date set for parameter {0}
+NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>

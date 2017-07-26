@@ -24,9 +24,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -36,57 +33,67 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class RangeRateTest {
 
     @Test
     public void testStateDerivativesOneWay() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
+        for (final ObservedMeasurement<?> m : measurements) {
+            Assert.assertFalse(((RangeRate) m).isTwoWay());
+        }
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final double          meanDelay = 1; // measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            Assert.assertEquals(2, estimated.getParticipants().length);
+            final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 1.4e-8);
 
     }
 
@@ -94,21 +101,25 @@ public class RangeRateTest {
     @Test
     public void testStateDerivativesTwoWays() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, true),
                                                                1.0, 3.0, 300.0);
+        for (final ObservedMeasurement<?> m : measurements) {
+            Assert.assertTrue(((RangeRate) m).isTwoWay());
+        }
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             //
@@ -117,42 +128,45 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            Assert.assertEquals(3, estimated.getParticipants().length);
+            final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 2.6e-5);
 
     }
 
     @Test
     public void testParameterDerivativesOneWay() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -166,6 +180,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
@@ -187,36 +202,37 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 9.1e-9);
 
     }
 
     @Test
     public void testParameterDerivativesTwoWays() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -230,6 +246,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
@@ -251,36 +268,37 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 5.2e-5);
 
     }
 
     @Test
     public void testStateDerivativesWithModifier() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -289,6 +307,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
@@ -300,29 +319,30 @@ public class RangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state = propagator.propagate(date);
 
-            final double[][] jacobian = measurement.estimate(0, 0, state).getStateDerivatives();
+            final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
-                    return measurement.estimate(0, 0, state).getEstimatedValue();
+                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     // check the values returned by getStateDerivatives() are correct
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    maxRelativeError = FastMath.max(maxRelativeError,
+                                                    FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                                 finiteDifferencesJacobian[i][j]));
                 }
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 1.5e-7);
 
     }
 
@@ -330,13 +350,13 @@ public class RangeRateTest {
     @Test
     public void testParameterDerivativesWithModifier() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -350,6 +370,7 @@ public class RangeRateTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
@@ -374,25 +395,27 @@ public class RangeRateTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                        return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
                 final double ref = dMkdP.value(drivers[i]);
-                Assert.assertEquals(ref, gradient[0], 5.0e-3 * FastMath.abs(ref));
+                maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
 
         }
+        Assert.assertEquals(0, maxRelativeError, 1.1e-8);
 
     }
+
 }
 
 

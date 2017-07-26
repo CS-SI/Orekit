@@ -21,9 +21,8 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
@@ -36,9 +35,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -135,34 +131,27 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder)
-        throws OrekitException {
-        // delegate to underlying attraction model
-        attractionModel.addContribution(s, adder);
+    public boolean dependsOnPositionOnly() {
+        return attractionModel.dependsOnPositionOnly();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date,
-                                                                      final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
-        // delegate to underlying attraction model
-        return attractionModel.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
+        // delegate to underlying model
+        return attractionModel.acceleration(s, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final String paramName)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
-        // this should never be called as there are no tunable parameters
-        return attractionModel.accelerationDerivatives(s, paramName);
+        // delegate to underlying model
+        return attractionModel.acceleration(s, parameters);
     }
+
 
     /** {@inheritDoc} */
     @Override
@@ -171,25 +160,18 @@ public class OceanTides extends AbstractForceModel {
         return attractionModel.getEventsDetectors();
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        // delegate to underlying attraction model
         return attractionModel.getFieldEventsDetectors(field);
     }
 
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // delegate to underlying attraction model
-        attractionModel.addContribution(s, adder);
-    }
-
-
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+        // delegate to underlying attraction model
+        return attractionModel.getParametersDrivers();
     }
 
 }

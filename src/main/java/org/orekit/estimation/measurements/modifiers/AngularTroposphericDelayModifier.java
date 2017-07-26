@@ -20,8 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.Angular;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -44,7 +45,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularTroposphericDelayModifier implements EstimationModifier<Angular> {
+public class AngularTroposphericDelayModifier implements EstimationModifier<AngularAzEl> {
 
     /** Tropospheric delay model. */
     private final TroposphericModel tropoModel;
@@ -107,11 +108,11 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Angular> estimated)
+    public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
         throws OrekitException {
-        final Angular         measure = estimated.getObservedMeasurement();
+        final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = estimated.getState();
+        final SpacecraftState state   = estimated.getStates()[0];
 
         final double delay = angularErrorTroposphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position
@@ -125,12 +126,14 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         final Vector3D     position  = transitState.getPVCoordinates().getPosition();
         final Frame        inertial  = transitState.getFrame();
 
-        // elevation and azimuth in radians
-        final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
-        final double azimuth   = station.getBaseFrame().getAzimuth(position, inertial, date);
+        // Elevation and azimuth in radians
+        final double elevation   = station.getBaseFrame().getElevation(position, inertial, date);
+        final double baseAzimuth = station.getBaseFrame().getAzimuth(position, inertial, date);
+        final double twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth, measure.getObservedValue()[0]) - baseAzimuth;
+        final double azimuth     = baseAzimuth + twoPiWrap;
 
-        // update estimated value taking into account the tropospheric delay.
-        // azimuth - elevation values
+        // Update estimated value taking into account the tropospheric delay.
+        // Azimuth - elevation values
         estimated.setEstimatedValue(azimuth, elevation);
     }
 }

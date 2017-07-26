@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -30,10 +29,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -1470,43 +1466,13 @@ public class NumericalPropagatorTest {
     private static class ForceModelAdapter implements ForceModel {
 
         @Override
-        @Deprecated
-        public List<String> getParametersNames() {
-            return Collections.emptyList();
+        public boolean dependsOnPositionOnly() {
+            return false;
         }
 
         @Override
         public boolean isSupported(String name) {
             return false;
-        }
-
-        @Override
-        @Deprecated
-        public double getParameter(String name) throws MathIllegalArgumentException {
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    getParametersNames());
-        }
-
-        @Override
-        @Deprecated
-        public void setParameter(String name, double value)
-                throws MathIllegalArgumentException {
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    getParametersNames());
-        }
-
-        @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-                SpacecraftState s,
-                String name) throws OrekitException {
-            throw new MathIllegalArgumentException(
-                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                    name,
-                    getParametersNames());
         }
 
         @Override
@@ -1519,15 +1485,19 @@ public class NumericalPropagatorTest {
                         FieldTimeDerivativesEquations<T> adder) {
         }
 
+        /** {@inheritDoc} */
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
-                AbsoluteDate date,
-                Frame frame,
-                FieldVector3D<DerivativeStructure> position,
-                FieldVector3D<DerivativeStructure> velocity,
-                FieldRotation<DerivativeStructure> rotation,
-                DerivativeStructure mass) throws OrekitException {
-            return position.scalarMultiply(0);
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
+            throws OrekitException {
+            return Vector3D.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters)
+            throws OrekitException {
+            return FieldVector3D.getZero(s.getDate().getField());
         }
 
         @Override
@@ -1548,8 +1518,13 @@ public class NumericalPropagatorTest {
         @Override
         public ParameterDriver getParameterDriver(String name)
             throws OrekitException {
+            final ParameterDriver[] drivers =  getParametersDrivers();
+            final String[] names = new String[drivers.length];
+            for (int i = 0; i < names.length; ++i) {
+                names[i] = drivers[i].getName();
+            }
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, getParametersNames());
+                                      name, names);
         }
 
     }

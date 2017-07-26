@@ -15,7 +15,7 @@
 # Propagation
 
 This package provides tools to propagate orbital states with different methods.
-	
+
 ## Overview
 
 Propagation is the prediction of the evolution of a system from an initial state.
@@ -149,8 +149,9 @@ There are also several predefined events detectors already available, amongst wh
 * `LatitudeCrossingDetector`, `LatitudeExtremumDetector`, `LongitudeCrossingDetector`,
   `LongitudeExtremumDetector`, which are triggered when satellite position with respect
   to central body reaches some predefined values, 
-* an `AlignmentDetector`, which is triggered when satellite and some body are aligned
-  in the orbital plane,
+* an `AlignmentDetector`, which is triggered when satellite and some body projected
+  in the orbital plane have a specified angular separation (the term `AlignmentDetector`
+  is clearly a misnomer as the angular separation may be non-zero),
 * an `AngularSeparationDetector`, which is triggered when angular separation between satellite and
   some beacon as seen by an observer goes below a threshold. The beacon is typically the Sun, the
   observer is typically a ground station
@@ -174,6 +175,10 @@ time derivative (i.e. one elevation maximum) but only when elevation itself is a
 some threshold. The filter does not simply ignore events after they have been detected,
 it filters them before they are located and hence save some computation time by not doing
 an accurate search for events that will ultimately be ignored.
+
+A `BooleanDetector` is provided to combine several other detectors with boolean
+operators `and`, `or` and `not`. This allows for example to detect when a satellite
+is both visible from a ground station and out of eclipse.
 
 Event occurring can be automatically logged using the `EventsLogger` class.
 
@@ -214,7 +219,7 @@ The following class diagram shows the available propagators
 
 The `KeplerianPropagator` is based on Keplerian-only motion. It depends only on µ.
 
-### Eckstein-Hechler propagation	
+### Eckstein-Hechler propagation
 
 This analytical model is suited for near-circular orbits and inclination neither 
 equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
@@ -256,7 +261,7 @@ to a pre-computed ephemeris or reference orbit which does not take these maneuve
 into account. The additive maneuvers can take both the direct effect (Keplerian part)
 and the induced effect due for example to J2 which changes ascending node rate when
 a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite.
-	
+
 ## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.
@@ -354,3 +359,52 @@ Semianalytical propagation is implemented using Draper Semianalytical Satellite 
 
 Since version 7.0, both mean elements equations of motion models and short periodic terms
 have been implemented and validated.
+
+## Field propagation and Taylor Algebra
+
+Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
+version the propagates states based on classical real numbers (i.e. double precision numbers)
+and a more general version that propagates states based on any class that implements the
+`RealFieldElement` interface from Hipparchus. Such classes mimic real numbers in the way they
+support all operations from the real field (addition, subtraction, multiplication, division,
+but also direct and inverse trigonometric functions, direct and inverse hyperbolic functions,
+logarithms, powers, roots...).
+
+A very important implementation of the `RealFieldElement` interface is the `DerivativeStructure`
+class, which in addition to compute the result of the canonical operation (add, multiply, sin,
+atanh...) also computes its derivatives, with respect to any number of variables and to any
+derivation order. If for example a user starts a computation with 6 canonical variables px,
+py, pz, vx, vy, vz to represent an initial state and then performs a propagation. At the
+end for all produced results (final position, final velocity but also geodetic altitude
+with respect to an ellipsoid body or anything that Orekit computes), then for these results
+one can retrieve its partial derivatives up to the computed order with respect to the 6
+canonical variables. So if for example in a step handler you compute a geodetic altitude h,
+you also have ∂³h/∂px²∂vz or any of the 84 components computed at order 3 for each value
+(1 value, 6 first order derivatives, 14 second order derivatives, 56 third order derivatives).
+The `DerivativeStructure` class also provides Taylor expansion, which allow to extrapolate
+the result accurately to close values. This is an implementation of Taylor Algebra. Its two
+main uses in space flight dynamics are
+
+  * accurate propagation of uncertainties (to much higher accuracy than simple covariance matrices)
+  * very fast Monte-Carlo analyses
+
+Orekit implementations of field propagators support all features from classical propagators:
+propagation modes, events (all events detectors), frames transforms, geodetic points. The
+propagators available are Keplerian propagator, Eckstein-Heschler propagator, SGP4/SDP4
+propagator, and numerical propagator with all Hipparchus integrators (fixed steps or adaptive
+stepsizes) and all force models (including all atmosphere models). All attitude modes are
+supported.
+
+One must be aware however of the combinatorial explosion of computation size. For p derivation
+parameters and o order, the number of components computed for each value is given by the
+binomial coefficient (o+p¦p). As an example 6 parameters and order 6 implies every single
+double in a regular propagation will be replaced by 924 numbers in field propagation. These
+numbers are all combined together linearly in addition and subtraction, but quadratically
+in multiplication and divisions. The `DerivativeStructure` class is highly optimized, but having
+both high order and high number of parameters remains inherently costly.
+
+Once the propagation has been performed, however, evaluating a Taylor expansion, for example in
+a Monte-Carlo application is *very* fast. So even if the propagation ends up to be for example a
+hundred of times slower than regular propagation, depending on the number of derivatives, the
+payoff is still very important as soon as we evaluate a few hundreds of points. As Monte-Carlo
+analyses more often use several thousands of evaluations, the payoff is really interesting.

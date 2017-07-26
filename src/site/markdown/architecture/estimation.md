@@ -47,7 +47,10 @@ methods of this interface allow to:
 * compute the time offset between measurement and spacecraft state
 
 The estimated measurements can be modified by registering one or several `EstimationModifier`
-objects. These objects will manage notions like tropospheric delays, biases, ground antennas position offsets ...
+objects. These objects will manage notions like ionospheric or tropospheric delays, biases,
+ground antennas position offsets, Antenna Phase Center... One specific modifier `OutlierFilter`
+can be used to reject outliers at run time if the current residuals exceed the theoretical
+standard deviation by some user-defined factor.
 
 A typical operational case from a ground stations network would create distance and angular measurements, create
 one bias modifier for the on-board delay for distance measurements, a few modifiers for each ground station
@@ -76,9 +79,9 @@ neverthelesss selected, it should be configured to use `QR` decomposition rather
 stability in case of poor observability. During the resolution, the selected Hipparchus algorithm will call the `evaluate`
 method of the local `LeastSquaresProblem` model at each algorithm test point. This will trigger one orbit propagation with
 some test values for the orbit state and the parameters (for example biases from the measurements modifiers parameters
-or drag coefficients from the force models parameters). During the propagation, the Orekit event mechanism is used to
-collect the state and its Jacobians at measurements dates. A `MeasurementsHandler` class performs the binding between the
-generic events handling mechanism and the orbit determination framework. At each measurement date, it gets the state
+or drag coefficients from the force models parameters). During the propagation, the Orekit step handler mechanism is used to
+collect the state and its Jacobians at measurements dates. A `MeasurementHandler` class performs the binding between the
+generic step handling mechanism and the orbit determination framework. At each measurement date, it gets the state
 and Jacobians from the propagator side, calls the measurement methods to get the residuals and the partial
 derivatives on the measurements side, and fetches the least squares estimator with the combined values, to be
 provided back to the Hipparchus least squares solver, thus closing the loop.
@@ -87,12 +90,13 @@ provided back to the Hipparchus least squares solver, thus closing the loop.
 
 Users can decide what they want to estimate. The 6 orbital parameters are typically always estimated and are selected
 by default, but it is possible to fix some or all of these parameters. Users can also estimate some propagator parameters
-(like drag coefficient or radiation pressure coefficient) and measurements parameters (like biases or stations position
-offsets). One use case for estimating only a subset of the orbital parameters is when observations are very scarce (say
-the first few measurements on a newly detected debris or asteroid). One use case for not estimating any orbital parameters
-at all is when calibrating measurements biases from a reference orbit considered to be perfect Selecting which parameters
-should be estimates and which parameters should remain fixed is done thanks to the `ParameterDriver` class. During setup,
-the user can retrieve three different `ParametersDriversList` from the `BatchLSEstimator`:
+(like drag coefficient or radiation pressure coefficients) and measurements parameters (like biases, stations position
+offsets or Earth Orientation parameters). One use case for estimating only a subset of the orbital parameters is when
+observations are very scarce (say the first few measurements on a newly detected debris or asteroid). One use case for
+not estimating any orbital parameters at all is when calibrating measurements biases from a reference orbit considered
+to be perfect. Selecting which parameters should be estimates and which parameters should remain fixed is done thanks
+to the `ParameterDriver` class. During setup, the user can retrieve three different `ParametersDriversList` from the
+`BatchLSEstimator`:
 
 * one list containing the 6 orbital parameters, which are estimated by default
 * one list containing the propagator parameters, which depends on the force models used and
@@ -100,7 +104,7 @@ the user can retrieve three different `ParametersDriversList` from the `BatchLSE
 * one list containing the measurements parameters, which are not estimated by default
 
 Then, looping on the elements of these lists, the user can change the default settings depending on his/her needs
-and for example fix a dew orbital parameters while estimating a few propagation and measurements parameters.
+and for example fix a few orbital parameters while estimating a few propagation and measurements parameters.
 
 #### Parameters values changes
 
@@ -153,7 +157,7 @@ been set to 2⁻³ whereas the scale factor for central attraction coefficient h
 #### Parameters bounds
 
 Some parameters values are forbidden and should not be used by the least squares estimator. Unfortunately, as of
-early 2016 the Hipparchus library does not support simple bounds constraints for these algorithms. There is
+mid 2017 the Hipparchus library does not support simple bounds constraints for these algorithms. There is
 however a workaround with parameters validator. Orekit uses this workaround and set up a validator for the full
 set of parameters. This validator checks the test values provided by the least squares solver are within the
 parameters bounds, and if not it simply force them at boundary, effectively clipping the values. Just like

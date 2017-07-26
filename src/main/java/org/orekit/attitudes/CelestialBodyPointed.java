@@ -16,12 +16,20 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -131,6 +139,53 @@ public class CelestialBodyPointed implements AttitudeProvider {
 
         // build the attitude
         return new Attitude(date, frame, transform.getRotation(), transform.getRotationRate(), transform.getRotationAcceleration());
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date,
+                                                                        final Frame frame)
+        throws OrekitException {
+
+        final Field<T> field = date.getField();
+        final FieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, celestialFrame);
+
+        // compute celestial references at the specified date
+        final FieldPVCoordinates<T> bodyPV    = new FieldPVCoordinates<>(field,
+                                                                         pointedBody.getPVCoordinates(date.toAbsoluteDate(),
+                                                                                                      celestialFrame));
+        final FieldPVCoordinates<T> pointing  = new FieldPVCoordinates<>(satPV, bodyPV);
+        final FieldVector3D<T>      pointingP = pointing.getPosition();
+        final T                     r2        = FieldVector3D.dotProduct(pointingP, pointingP);
+
+        // evaluate instant rotation axis due to sat and body motion only (no phasing yet)
+        final FieldVector3D<T> rotAxisCel =
+            new FieldVector3D<>(r2.reciprocal(), FieldVector3D.crossProduct(pointingP, pointing.getVelocity()));
+
+        // fix instant rotation to take phasing constraint into account
+        // (adding a rotation around pointing axis ensuring the motion of the phasing axis
+        //  is constrained in the pointing-phasing plane)
+        final FieldVector3D<T> v1           = FieldVector3D.crossProduct(rotAxisCel, phasingCel);
+        final FieldVector3D<T> v2           = FieldVector3D.crossProduct(pointingP,  phasingCel);
+        final T                compensation = FieldVector3D.dotProduct(v1, v2).negate().divide(v2.getNormSq());
+        final FieldVector3D<T> phasedRotAxisCel = new FieldVector3D<>(field.getOne(), rotAxisCel, compensation, pointingP);
+
+        // compute transform from celestial frame to satellite frame
+        final FieldRotation<T> celToSatRotation =
+            new FieldRotation<>(pointingP, new FieldVector3D<>(field, phasingCel),
+                            new FieldVector3D<>(field, pointingSat), new FieldVector3D<>(field, phasingSat));
+
+        // build transform combining rotation and instant rotation axis
+        FieldTransform<T> transform = new FieldTransform<>(date, celToSatRotation, celToSatRotation.applyTo(phasedRotAxisCel));
+        if (frame != celestialFrame) {
+            // prepend transform from specified frame to celestial frame
+            transform = new FieldTransform<>(date, frame.getTransformTo(celestialFrame, date), transform);
+        }
+
+        // build the attitude
+        return new FieldAttitude<>(date, frame,
+                        transform.getRotation(), transform.getRotationRate(), transform.getRotationAcceleration());
 
     }
 

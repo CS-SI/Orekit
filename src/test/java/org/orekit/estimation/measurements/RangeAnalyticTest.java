@@ -30,8 +30,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +41,9 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.StateFunction;
 
 public class RangeAnalyticTest {
 
@@ -219,7 +219,7 @@ public class RangeAnalyticTest {
     void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -340,7 +340,7 @@ public class RangeAnalyticTest {
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
         throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -387,25 +387,27 @@ public class RangeAnalyticTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
 
-                    final EstimatedMeasurement<Range> range = new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                    final EstimatedMeasurement<Range> range =
+                                    new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
                     if (isModifier) {
                         modifier.modify(range);
                     }
-                    final double[][] jacobian  = range.getStateDerivatives();
+                    final double[][] jacobian  = range.getStateDerivatives(0);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
 
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
-                        jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                        jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
-                                return measurement.estimate(0, 0, state).getEstimatedValue();
+                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }
-                        }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                        }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                           OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
-                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
                     }
 
 //                    //Test: Test point by point with the debugger
@@ -509,7 +511,7 @@ public class RangeAnalyticTest {
     void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -574,12 +576,13 @@ public class RangeAnalyticTest {
                     }
 
                     for (int i = 0; i < 3; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
                         // Compute a reference value using analytical formulas
-                        final EstimatedMeasurement<Range> rangeAnalytic = new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                        final EstimatedMeasurement<Range> rangeAnalytic =
+                                        new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
                         if (isModifier) {
                             modifier.modify(rangeAnalytic);
                         }

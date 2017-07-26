@@ -33,11 +33,11 @@ import org.orekit.orbits.Orbit;
 interface ModelObserver {
 
     /** Notification callback for orbit changes.
-     * @param orbit current estimated orbit
+     * @param orbits current estimated orbits
      * @param estimations map of measurements estimations resulting from
      * the current estimated orbit (this is an unmodifiable view of the
      * current estimations, its content is changed at each iteration)
      */
-    void modelCalled(Orbit orbit, Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> estimations);
+    void modelCalled(Orbit[] orbits, Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> estimations);
 
 }

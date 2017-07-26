@@ -37,6 +37,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -128,7 +129,7 @@ public class EphemerisTest {
         }
 
         int numInterpolationPoints = 2;
-        Ephemeris ephemPropagator = new Ephemeris(states, numInterpolationPoints);
+        Ephemeris ephemPropagator = new Ephemeris(states, numInterpolationPoints, 1.25);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
@@ -140,8 +141,9 @@ public class EphemerisTest {
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         Ephemeris deserialized  = (Ephemeris) ois.readObject();
-        Assert.assertEquals(deserialized.getMinDate(), deserialized.getMinDate());
-        Assert.assertEquals(deserialized.getMaxDate(), deserialized.getMaxDate());
+        Assert.assertEquals(deserialized.getMinDate(), ephemPropagator.getMinDate());
+        Assert.assertEquals(deserialized.getMaxDate(), ephemPropagator.getMaxDate());
+        Assert.assertEquals(deserialized.getExtrapolationThreshold(), ephemPropagator.getExtrapolationThreshold(), 1.0e-15);
         for (double dt = 0; dt < finalDate.durationFrom(initDate); dt += 10.0) {
             AbsoluteDate date = initDate.shiftedBy(dt);
             TimeStampedPVCoordinates pvRef = ephemPropagator.getPVCoordinates(date, inertialFrame);
@@ -238,6 +240,42 @@ public class EphemerisTest {
                             1.0e-15);
         Assert.assertEquals(s.getMass(), m, 1.0e-15);
 
+    }
+
+    @Test
+    public void testExtrapolation() throws OrekitException {
+        double dt = finalDate.durationFrom(initDate);
+        double timeStep = dt / 20.0;
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+
+        for(double t = 0 ; t <= dt; t+=timeStep) {
+            states.add(propagator.propagate(initDate.shiftedBy(t)));
+        }
+
+        final int interpolationPoints = 5;
+        Ephemeris ephemeris = new Ephemeris(states, interpolationPoints);
+        Assert.assertEquals(finalDate, ephemeris.getMaxDate());
+
+        double tolerance = ephemeris.getExtrapolationThreshold();
+
+        ephemeris.propagate(ephemeris.getMinDate());
+        ephemeris.propagate(ephemeris.getMaxDate());
+        ephemeris.propagate(ephemeris.getMinDate().shiftedBy(-tolerance / 2.0));
+        ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(tolerance / 2.0));
+
+        try {
+            ephemeris.propagate(ephemeris.getMinDate().shiftedBy(-2.0 * tolerance));
+            Assert.fail("an exception should have been thrown");
+        } catch (TimeStampedCacheException e) {
+            //supposed to fail since out of bounds
+        }
+
+        try {
+            ephemeris.propagate(ephemeris.getMaxDate().shiftedBy(2.0 * tolerance));
+            Assert.fail("an exception should have been thrown");
+        } catch (TimeStampedCacheException e) {
+            //supposed to fail since out of bounds
+        }
     }
 
     @Before

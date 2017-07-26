@@ -17,14 +17,11 @@
 package org.orekit.forces;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ParameterDriver;
 
-/** Base clas for force models.
+/** Base class for force models.
  * @author Luc Maisonobe
  * @since 8.0
  */
@@ -67,32 +64,6 @@ public abstract class AbstractForceModel implements ForceModel {
         if (!isSupported(name)) {
             throw notSupportedException(name);
         }
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    @Override
-    public List<String> getParametersNames() {
-        final ParameterDriver[] parameters = getParametersDrivers();
-        final List<String> names = new ArrayList<String>(parameters.length);
-        for (final ParameterDriver driver : parameters) {
-            names.add(driver.getName());
-        }
-        return names;
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    public double getParameter(final String name)
-        throws OrekitException {
-        return getParameterDriver(name).getValue();
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    public void setParameter(final String name, final double value)
-        throws OrekitException {
-        getParameterDriver(name).setValue(value);
     }
 
     /** Generate an exception for unsupported parameter.

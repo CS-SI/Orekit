@@ -119,7 +119,7 @@ public class PartialDerivativesTest {
 
                 PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
                 final SpacecraftState initialState =
-                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
@@ -235,7 +235,7 @@ public class PartialDerivativesTest {
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
                 PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
                 final SpacecraftState initialState =
-                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
@@ -303,7 +303,7 @@ public class PartialDerivativesTest {
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
                 PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
                 final SpacecraftState initialState =
-                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit));
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
@@ -403,7 +403,7 @@ public class PartialDerivativesTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
         Assert.assertEquals(1, PDE.getSelectedParameters().getNbParams());
-        propagator.setInitialState(PDE.setInitialJacobians(initialState, 7));
+        propagator.setInitialState(PDE.setInitialJacobians(initialState));
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
         final SpacecraftState finalorb = propagator.propagate(finalDate);
@@ -422,6 +422,22 @@ public class PartialDerivativesTest {
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
         new PartialDerivativesEquations("partials", propagator).getMapper();
+     }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() throws OrekitException {
+        Orbit initialOrbit =
+                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                   Constants.EIGEN5C_EARTH_MU);
+
+        double dP = 0.001;
+        NumericalPropagator propagator =
+                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
+        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+        Assert.assertEquals(6, partials.getMapper().getStateDimension());
      }
 
     @Test(expected=OrekitException.class)
@@ -577,8 +593,8 @@ public class PartialDerivativesTest {
         public PickUpHandler(JacobiansMapper mapper, AbsoluteDate pickUpDate) {
             this.mapper = mapper;
             this.pickUpDate = pickUpDate;
-            dYdY0 = new double[mapper.getStateDimension()][mapper.getStateDimension()];
-            dYdP = new double[mapper.getStateDimension()][mapper.getParameters()];
+            dYdY0 = new double[JacobiansMapper.STATE_DIMENSION][JacobiansMapper.STATE_DIMENSION];
+            dYdP = new double[JacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
         }
 
         public double[][] getdYdY0() {

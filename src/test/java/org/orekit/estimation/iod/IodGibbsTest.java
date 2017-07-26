@@ -33,7 +33,7 @@ public class IodGibbsTest {
 
     @Test
     public void testGibbs1() throws OrekitException {
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();
 
@@ -80,7 +80,7 @@ public class IodGibbsTest {
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-3, p457
 
         //extraction of the context.
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
 
         //initialisation
@@ -114,7 +114,7 @@ public class IodGibbsTest {
         // Remark: the test value in Vallado is performed with an Herrick-Gibbs methods but results are very close with Gibbs method.
 
         //extraction of context
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
 
         //Initialisation

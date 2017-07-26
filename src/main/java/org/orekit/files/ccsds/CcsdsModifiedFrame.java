@@ -34,8 +34,12 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class CcsdsModifiedFrame extends Frame {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20170619L;
+
     /** Value of the REF_FRAME keyword in the ODM file used to create this frame. */
     private final String refFrame;
+
     /** Value of the CENTER_NAME keyword in the ODM file used to create this frame. */
     private final String centerName;
 
@@ -85,8 +89,12 @@ public class CcsdsModifiedFrame extends Frame {
     /** Transform provider for {@link CcsdsModifiedFrame}. */
     private static class OriginTransformProvider implements TransformProvider {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20170619L;
+
         /** The new origin. */
         private final CelestialBody body;
+
         /** The original frame, specifying the orientation. */
         private final Frame frame;
 

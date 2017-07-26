@@ -35,7 +35,7 @@ public interface BatchLSObserver {
     /** Notification callback for the end of each evaluation.
      * @param iterationsCount iterations count
      * @param evaluationsCount evaluations count
-     * @param orbit current estimated orbit
+     * @param orbits current estimated orbits
      * @param estimatedOrbitalParameters estimated orbital parameters
      * @param estimatedPropagatorParameters estimated propagator parameters
      * @param estimatedMeasurementsParameters estimated measurements parameters
@@ -47,7 +47,7 @@ public interface BatchLSObserver {
      * @exception OrekitException if some problem occurs (for example evaluationProviders not
      * being able to provide an evaluation)
      */
-    void evaluationPerformed(int iterationsCount, int evaluationsCount, Orbit orbit,
+    void evaluationPerformed(int iterationsCount, int evaluationsCount, Orbit[] orbits,
                              ParameterDriversList estimatedOrbitalParameters,
                              ParameterDriversList estimatedPropagatorParameters,
                              ParameterDriversList estimatedMeasurementsParameters,

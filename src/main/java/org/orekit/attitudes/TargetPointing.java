@@ -16,14 +16,20 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -79,12 +85,24 @@ public class TargetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         final Transform t = getBodyFrame().getTransformTo(frame, date);
         final TimeStampedPVCoordinates pv =
                 new TimeStampedPVCoordinates(date, target, Vector3D.ZERO, Vector3D.ZERO);
+        return t.transformPVCoordinates(pv);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+        final FieldTransform<T> t = getBodyFrame().getTransformTo(frame, date);
+        final FieldVector3D<T> zero = FieldVector3D.getZero(date.getField());
+        final TimeStampedFieldPVCoordinates<T> pv =
+                new TimeStampedFieldPVCoordinates<>(date, new FieldVector3D<>(date.getField(), target), zero, zero);
         return t.transformPVCoordinates(pv);
     }
 

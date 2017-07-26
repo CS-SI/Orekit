@@ -130,7 +130,7 @@ public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldO
      */
     public double g(final SpacecraftState s) throws OrekitException {
 
-        // Compute target position/velocity at date in spacecraft frame */
+        // Compute target position/velocity at date in spacecraft frame
         final Vector3D targetPosInert = new Vector3D(1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                            -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);

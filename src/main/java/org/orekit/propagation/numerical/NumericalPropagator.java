@@ -35,7 +35,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -275,44 +274,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return Collections.unmodifiableList(forceModels);
     }
 
-    /** Get perturbing force models list.
-     * @return list of perturbing force models
-     * @see #addForceModel(ForceModel)
-     * @see #getNewtonianAttractionForceModel()
-     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public List<ForceModel> getForceModels() {
-        if (hasNewtonianAttraction()) {
-            // take care to not include central attraction
-            return Collections.unmodifiableList(forceModels.subList(0, forceModels.size() - 1));
-        } else {
-            return Collections.unmodifiableList(forceModels);
-        }
-    }
-
-    /** Get the Newtonian attraction from the central body force model.
-     * <p>
-     * This method should be called after either {@link #setMu(double)},
-     * {@link #setInitialState(SpacecraftState)}, or
-     * {@link #resetInitialState(SpacecraftState)} have been called,
-     * or {@link #addForceModel(ForceModel)} has been called with a
-     * {@link NewtonianAttraction} instance.
-     * </p>
-     * @return Newtonian attraction force model, or null if it has
-     * not been set up by one of the methods explained above
-     * @see #setMu(double)
-     * @see #getForceModels()
-     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
-     */
-    @Deprecated
-    public NewtonianAttraction getNewtonianAttractionForceModel() {
-        if (!hasNewtonianAttraction()) {
-            return null;
-        }
-        return (NewtonianAttraction) forceModels.get(forceModels.size() - 1);
-    }
-
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
@@ -531,6 +492,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             orbit = state.getOrbit();
@@ -549,27 +511,22 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void addKeplerContribution(final double mu) {
             orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }
 
         /** {@inheritDoc} */
-        public void addXYZAcceleration(final double x, final double y, final double z) {
+        public void addNonKeplerianAcceleration(final Vector3D gamma)
+            throws OrekitException {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
-                yDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
+                yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
             }
         }
 
         /** {@inheritDoc} */
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
-            throws OrekitException {
-            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
-            final Vector3D gammInRefFrame = t.transformVector(gamma);
-            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public void addMassDerivative(final double q) {
             if (q > 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);

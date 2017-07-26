@@ -57,19 +57,22 @@
       +modify(estimated)
     }
     
+    class "On-board antenna" as Onboard
     ObservedMeasurement *--> "*" EstimationModifier
     ObservedMeasurement --> EstimatedMeasurement : create
     EstimatedMeasurement <-- EstimationModifier : modify
-    class "..." as OtherMeasurement
-    OtherMeasurement   ..|> ObservedMeasurement
     Range              ..|> ObservedMeasurement
     RangeRate          ..|> ObservedMeasurement
-    Angular   ..|> ObservedMeasurement
+    AngularAzEl        ..|> ObservedMeasurement
+    AngularRaDec       ..|> ObservedMeasurement
     PV                 ..|> ObservedMeasurement
+    ObservedMeasurement <|.. TurnAroundRange
+    ObservedMeasurement <|.. InterSatellitesRange
     EstimationModifier <|.. Bias
     EstimationModifier <|.. OutlierFilter
     EstimationModifier <|.. Tropo
     EstimationModifier <|.. Iono
+    EstimationModifier <|.. Onboard
  
   }
 

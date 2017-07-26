@@ -16,13 +16,21 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -109,8 +117,16 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getTargetPV(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
@@ -124,6 +140,21 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
                                  final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getAttitude(pvProv, date, frame);
+    }
+
+    /** Compute the base system state at given date, without compensation.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which state is requested
+     * @param frame reference frame from which attitude is computed
+     * @param <T> type of the field elements
+     * @return satellite base attitude state, i.e without compensation.
+     * @throws OrekitException if some specific error occurs
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                         final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
@@ -152,6 +183,39 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
 
         // add compensation
         return new Attitude(frame, compensation.addOffset(base.getOrientation()));
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+
+        final Field<T>              field = date.getField();
+        final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);
+        final FieldPVCoordinates<T> plusZ = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), zero, zero);
+
+        // attitude from base attitude provider
+        final FieldAttitude<T> base = getBaseState(pvProv, date, frame);
+
+        // Compensation rotation definition :
+        //  . Z satellite axis is unchanged
+        //  . phasing axis shall be aligned to sun direction
+        final FieldPVCoordinates<T> sunDirection =
+                        new FieldPVCoordinates<>(pvProv.getPVCoordinates(date, frame),
+                                                 new FieldPVCoordinates<>(field,
+                                                                          sun.getPVCoordinates(date.toAbsoluteDate(), frame)));
+        final FieldPVCoordinates<T> sunNormal =
+                plusZ.crossProduct(base.getOrientation().applyTo(sunDirection));
+        final TimeStampedFieldAngularCoordinates<T> compensation =
+                new TimeStampedFieldAngularCoordinates<>(date,
+                                                         plusZ, sunNormal.normalize(),
+                                                         plusZ, new FieldPVCoordinates<>(field, phasingNormal),
+                                                         1.0e-9);
+
+        // add compensation
+        return new FieldAttitude<>(frame, compensation.addOffset(base.getOrientation()));
 
     }
 

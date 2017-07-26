@@ -132,14 +132,36 @@ drag.area = 13.12
 ## Solar Radiation Pressure (true/false) [false]
 solar.radiation.pressure = true
 ## SRP coefficient
-solar.radiation.pressure.cr =  500
+solar.radiation.pressure.cr =  2
 ## Estimation flag for SRP coefficient (true/false) [false]
-solar.radiation.pressure.cr.estimated = true
+solar.radiation.pressure.cr.estimated = false
 ## SRP area (m^2)
 solar.radiation.pressure.area = 13.12
 
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = false
+
+# extra accelerations (leaks, thermal radiation, ...)
+polynomial.acceleration.name         [0] = leak-X
+polynomial.acceleration.direction.X  [0] = 1.0
+polynomial.acceleration.direction.Y  [0] = 0.0
+polynomial.acceleration.direction.Z  [0] = 0.0
+polynomial.acceleration.coefficients [0] = 0.0, 0.0
+polynomial.acceleration.estimated    [0] = true
+
+polynomial.acceleration.name         [1] = leak-Y
+polynomial.acceleration.direction.X  [1] = 0.0
+polynomial.acceleration.direction.Y  [1] = 1.0
+polynomial.acceleration.direction.Z  [1] = 0.0
+polynomial.acceleration.coefficients [1] = 0.0, 0.0
+polynomial.acceleration.estimated    [1] = true
+
+polynomial.acceleration.name         [2] = leak-Z
+polynomial.acceleration.direction.X  [2] = 0.0
+polynomial.acceleration.direction.Y  [2] = 0.0
+polynomial.acceleration.direction.Z  [2] = 1.0
+polynomial.acceleration.coefficients [2] = 0.0, 0.0
+polynomial.acceleration.estimated    [2] = true
 
 ## Transponder delay bias (m) [0.0]
 transponder.delay.bias     =   5969.0

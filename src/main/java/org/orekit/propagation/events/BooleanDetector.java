@@ -52,9 +52,9 @@ import org.orekit.time.AbsoluteDate;
  * usually more appropriate.
  *
  * @author Evan Ward
- * @see #and(Collection)
- * @see #or(Collection)
- * @see #not(EventDetector)
+ * @see #andCombine(Collection)
+ * @see #orCombine(Collection)
+ * @see #notCombine(EventDetector)
  * @see EventEnablingPredicateFilter
  * @see EventSlopeFilter
  */
@@ -106,12 +106,12 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @return a new event detector that is the logical AND of the operands.
      * @throws NoSuchElementException if {@code detectors} is empty.
      * @see BooleanDetector
-     * @see #and(Collection)
-     * @see #or(EventDetector...)
-     * @see #not(EventDetector)
+     * @see #andCombine(Collection)
+     * @see #orCombine(EventDetector...)
+     * @see #notCombine(EventDetector)
      */
-    public static BooleanDetector and(final EventDetector... detectors) {
-        return and(Arrays.asList(detectors));
+    public static BooleanDetector andCombine(final EventDetector... detectors) {
+        return andCombine(Arrays.asList(detectors));
     }
 
     /**
@@ -129,12 +129,11 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @return a new event detector that is the logical AND of the operands.
      * @throws NoSuchElementException if {@code detectors} is empty.
      * @see BooleanDetector
-     * @see #and(EventDetector...)
-     * @see #or(Collection)
-     * @see #not(EventDetector)
+     * @see #andCombine(EventDetector...)
+     * @see #orCombine(Collection)
+     * @see #notCombine(EventDetector)
      */
-    public static BooleanDetector and(
-            final Collection<? extends EventDetector> detectors) {
+    public static BooleanDetector andCombine(final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.AND,
@@ -159,12 +158,12 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @return a new event detector that is the logical OR of the operands.
      * @throws NoSuchElementException if {@code detectors} is empty.
      * @see BooleanDetector
-     * @see #or(Collection)
-     * @see #and(EventDetector...)
-     * @see #not(EventDetector)
+     * @see #orCombine(Collection)
+     * @see #andCombine(EventDetector...)
+     * @see #notCombine(EventDetector)
      */
-    public static BooleanDetector or(final EventDetector... detectors) {
-        return or(Arrays.asList(detectors));
+    public static BooleanDetector orCombine(final EventDetector... detectors) {
+        return orCombine(Arrays.asList(detectors));
     }
 
     /**
@@ -182,12 +181,11 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @return a new event detector that is the logical OR of the operands.
      * @throws NoSuchElementException if {@code detectors} is empty.
      * @see BooleanDetector
-     * @see #or(EventDetector...)
-     * @see #and(Collection)
-     * @see #not(EventDetector)
+     * @see #orCombine(EventDetector...)
+     * @see #andCombine(Collection)
+     * @see #notCombine(EventDetector)
      */
-    public static BooleanDetector or(
-            final Collection<? extends EventDetector> detectors) {
+    public static BooleanDetector orCombine(final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.OR,
@@ -209,11 +207,11 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @param detector to negate.
      * @return an new event detector whose g function is the same magnitude but opposite
      * sign of {@code detector}.
-     * @see #and(Collection)
-     * @see #or(Collection)
+     * @see #andCombine(Collection)
+     * @see #orCombine(Collection)
      * @see BooleanDetector
      */
-    public static NegateDetector not(final EventDetector detector) {
+    public static NegateDetector notCombine(final EventDetector detector) {
         return new NegateDetector(detector);
     }
 

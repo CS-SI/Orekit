@@ -20,9 +20,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -30,16 +27,11 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** Third body attraction force model.
  *
@@ -59,17 +51,11 @@ public class ThirdBodyAttraction extends AbstractForceModel {
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
-    /** Drivers for force model parameters. */
-    private final ParameterDriver[] parametersDrivers;
+    /** Drivers for third body attraction coefficient. */
+    private final ParameterDriver gmParameterDriver;
 
     /** The body to consider. */
     private final CelestialBody body;
-
-    /** Local value for body attraction coefficient. */
-    private double gm;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
 
     /** Simple constructor.
      * @param body the third body to consider
@@ -77,112 +63,52 @@ public class ThirdBodyAttraction extends AbstractForceModel {
      * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
-        this.parametersDrivers = new ParameterDriver[1];
         try {
-            parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                       body.getGM(), MU_SCALE,
-                                                       0.0, Double.POSITIVE_INFINITY);
-            parametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    ThirdBodyAttraction.this.gm = driver.getValue();
-                }
-            });
+            gmParameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                    body.getGM(), MU_SCALE,
+                                                    0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
 
-        this.body    = body;
-        this.gm      = body.getGM();
-        this.factory = new DSFactory(1, 1);
+        this.body = body;
 
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
-
-        // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double r2Central       = centralToBody.getNormSq();
-        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final double r2Sat           = satToBody.getNormSq();
-
-        // compute relative acceleration
-        final Vector3D gamma =
-            new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody,
-                        -gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
-
-        // add contribution to the ODE second member
-        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
-
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
-
-        // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
-        final double r2Central          = centralToBody.getNormSq();
-        final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
-        final DerivativeStructure r2Sat = satToBody.getNormSq();
-
-        // compute relative acceleration
-        final FieldVector3D<DerivativeStructure> satAcc =
-                new FieldVector3D<>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
-        final Vector3D centralAcc =
-                new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
-        return satAcc.subtract(centralAcc);
-
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double r2Central       = centralToBody.getNormSq();
-        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final double r2Sat           = satToBody.getNormSq();
-
-        final DerivativeStructure gmds = factory.variable(0, gm);
-
-        // compute relative acceleration
-        return new FieldVector3D<>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,
-                                   gmds.divide(-r2Central * FastMath.sqrt(r2Central)), centralToBody);
-
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
     @Override
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
+    public boolean dependsOnPositionOnly() {
+        return true;
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
+    @Override
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
+        throws OrekitException {
+
+        final double gm = parameters[0];
+
+        // compute bodies separation vectors and squared norm
+        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final double r2Central       = centralToBody.getNormSq();
+        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final double r2Sat           = satToBody.getNormSq();
+
+        // compute relative acceleration
+        return new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody,
+                           -gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
+
     }
 
-    /**{@inheritDoc} */
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
+        throws OrekitException {
+
+        final T gm = parameters[0];
+
         // compute bodies separation vectors and squared norm
         final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
                                                                    body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
@@ -191,11 +117,28 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         final T                r2Sat         = satToBody.getNormSq();
 
         // compute relative acceleration
-        final FieldVector3D<T> gamma =
-            new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
-                                r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
+        return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
+                                   r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(gm).negate(), centralToBody);
 
-        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
+    }
+
+    /** {@inheritDoc} */
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
 }

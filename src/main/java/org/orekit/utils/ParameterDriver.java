@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Class allowing to drive the value of a parameter.
@@ -55,7 +56,7 @@ import org.orekit.errors.OrekitMessages;
 public class ParameterDriver {
 
     /** Name of the parameter. */
-    private final String name;
+    private String name;
 
     /** Reference value. */
     private final double referenceValue;
@@ -68,6 +69,11 @@ public class ParameterDriver {
 
     /** Maximum value. */
     private final double maxValue;
+
+    /** Reference date.
+     * @since 9.0
+     */
+    private AbsoluteDate referenceDate;
 
     /** Current value. */
     private double value;
@@ -86,7 +92,8 @@ public class ParameterDriver {
     /** Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected,
-     * and the value is set to the {@code referenceValue}.
+     * the reference date is set to {@code null} and the value is set to the
+     * {@code referenceValue}.
      * </p>
      * @param name name of the parameter
      * @param referenceValue reference value of the parameter
@@ -110,6 +117,7 @@ public class ParameterDriver {
         this.scale          = scale;
         this.minValue       = minValue;
         this.maxValue       = maxValue;
+        this.referenceDate  = null;
         this.value          = referenceValue;
         this.selected       = false;
         this.observers      = new ArrayList<ParameterObserver>();
@@ -130,6 +138,17 @@ public class ParameterDriver {
         throws OrekitException {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
+    }
+
+    /** Change the name of this parameter driver.
+     * @param name new name
+     */
+    public void setName(final String name) {
+        final String previousName = this.name;
+        this.name = name;
+        for (final ParameterObserver observer : observers) {
+            observer.nameChanged(previousName, this);
+        }
     }
 
     /** Get name.
@@ -192,6 +211,26 @@ public class ParameterDriver {
         setValue(referenceValue + scale * normalized);
     }
 
+    /** Get current reference date.
+     * @return current reference date (null if it was never set)
+     * @since 9.0
+     */
+    public AbsoluteDate getReferenceDate() {
+        return referenceDate;
+    }
+
+    /** Set reference date.
+     * @param newReferenceDate new reference date
+     * @since 9.0
+     */
+    public void setReferenceDate(final AbsoluteDate newReferenceDate) {
+        final AbsoluteDate previousReferenceDate = getReferenceDate();
+        referenceDate = newReferenceDate;
+        for (final ParameterObserver observer : observers) {
+            observer.referenceDateChanged(previousReferenceDate, this);
+        }
+    }
+
     /** Get current parameter value.
      * @return current parameter value
      */
@@ -226,7 +265,11 @@ public class ParameterDriver {
      * otherwise it will be fixed
      */
     public void setSelected(final boolean selected) {
+        final boolean previousSelection = isSelected();
         this.selected = selected;
+        for (final ParameterObserver observer : observers) {
+            observer.selectionChanged(previousSelection, this);
+        }
     }
 
     /** Check if parameter is selected.

@@ -16,17 +16,23 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -49,10 +55,12 @@ public class Range extends AbstractMeasurement<Range> {
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param range observed value
@@ -64,12 +72,35 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, range, sigma, baseWeight,
+        this(station, date, range, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public Range(final GroundStation station, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final int propagatorIndex)
+        throws OrekitException {
+        super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
-              station.getZenithOffsetDriver());
+              station.getZenithOffsetDriver(),
+              station.getPrimeMeridianOffsetDriver(),
+              station.getPrimeMeridianDriftDriver(),
+              station.getPolarOffsetXDriver(),
+              station.getPolarDriftXDriver(),
+              station.getPolarOffsetYDriver(),
+              station.getPolarDriftYDriver());
         this.station = station;
-        this.factory = new DSFactory(9, 1);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -79,100 +110,85 @@ public class Range extends AbstractMeasurement<Range> {
         return station;
     }
 
-    /** Get the DSFactory of this class.
-     * @return DSFactory of this class
-     */
-    protected DSFactory getDSFactory() {
-        return factory;
-    }
-
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
-                                                                final SpacecraftState state)
+                                                                final SpacecraftState[] states)
         throws OrekitException {
 
+        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
-        // and station position in station's offset frame
-        // -------
+        // and station parameters
+        // ----------------------
         //
         // Parameters:
-        //  - 0..2 - Px, Py, Pz   : Position of the spacecraft in inertial frame
-        //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
-        //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
+        //  - 0..2 - Position of the spacecraft in inertial frame
+        //  - 3..5 - Velocity of the spacecraft in inertial frame
+        //  - 6..n - station parameters (station offsets, pole, prime meridian...)
+        int nbParams = 6;
+        final Map<String, Integer> indices = new HashMap<>();
+        for (ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                indices.put(driver.getName(), nbParams++);
+            }
+        }
+        final DSFactory                          factory = new DSFactory(nbParams, 1);
+        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
+        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
 
-        // Position of the spacecraft expressed as a derivative structure
-        // The components of the position are the 3 first derivative parameters
-        final Vector3D stateP = state.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<>(factory.variable(0, stateP.getX()),
-                                            factory.variable(1, stateP.getY()),
-                                            factory.variable(2, stateP.getZ()));
+        // Coordinates of the spacecraft expressed as a derivative structure
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, factory);
 
-        // Velocity of the spacecraft expressed as a derivative structure
-        // The components of the velocity are the 3 second derivative parameters
-        final Vector3D stateV = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<>(factory.variable(3, stateV.getX()),
-                                            factory.variable(4, stateV.getY()),
-                                            factory.variable(5, stateV.getZ()));
-
-        // Acceleration of the spacecraft
-        // The components of the acceleration are not derivative parameters
-        final Vector3D stateA = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<>(factory.constant(stateA.getX()),
-                                            factory.constant(stateA.getY()),
-                                            factory.constant(stateA.getZ()));
-
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
-                        new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
-
-        // Station position in body frame, expressed as a derivative structure
+        // transform between station and inertial frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final GroundStation.OffsetDerivatives od = station.getOffsetDerivatives(factory, 6, 7, 8);
-        final Frame bodyframe = station.getOffsetFrame().getParentShape().getBodyFrame();
+        final AbsoluteDate downlinkDate = getDate();
+        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+                        new FieldAbsoluteDate<>(field, downlinkDate);
+        final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
+                        station.getOffsetToInertial(state.getFrame(), downlinkDateDS, factory, indices);
 
         // Station position in inertial frame at end of the downlink leg
-        final AbsoluteDate downlinkDate = getDate();
-        final Transform bodyToInertDownlink = bodyframe.getTransformTo(state.getFrame(), downlinkDate);
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
-                        bodyToInertDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(
-                                        downlinkDate,
-                                        od.getOrigin(),
-                                        od.getZero(),
-                                        od.getZero()));
+                        offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
+                                                                                                            zero, zero, zero));
 
         // Compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have offset == downlinkDelay and transitState will be
-        //  the same as state)
+        //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = station.signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDate);
+        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
-        final DerivativeStructure   tauDMDelta   = tauD.negate().add(delta);
-        final SpacecraftState       transitState = state.shiftedBy(tauDMDelta.getValue());
+        final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
 
-
-        // Transit state position (re)computed with derivative structures
-        final FieldVector3D<DerivativeStructure> transitStatePosition = pvaDS.shiftedBy(tauDMDelta).getPosition();
+        // Transit state (re)computed with derivative structures
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
 
         // Station at transit state date (derivatives of tauD taken into account)
         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
                         stationDownlink.shiftedBy(tauD.negate());
 
         // Uplink delay
-        final DerivativeStructure tauU = station.signalTimeOfFlight(stationAtTransitDate,
-                                                                    transitStatePosition,
-                                                                    transitState.getDate());
+        final DerivativeStructure tauU =
+                        signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
+                        stationDownlink.shiftedBy(-tauD.getValue() - tauU.getValue());
+
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                                                        new SpacecraftState[] {
+                                                            transitState
+                                                        }, new TimeStampedPVCoordinates[] {
+                                                            stationUplink.toTimeStampedPVCoordinates(),
+                                                            transitStateDS.toTimeStampedPVCoordinates(),
+                                                            stationDownlink.toTimeStampedPVCoordinates()
+                                                        });
 
         // Range value
         final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -181,28 +197,16 @@ public class Range extends AbstractMeasurement<Range> {
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state
-        estimated.setStateDerivatives(new double[] {
-                                          range.getPartialDerivative(1, 0, 0, 0, 0, 0, 0, 0, 0), // dROndPx
-                                          range.getPartialDerivative(0, 1, 0, 0, 0, 0, 0, 0, 0), // dROndPy
-                                          range.getPartialDerivative(0, 0, 1, 0, 0, 0, 0, 0, 0), // dROndPz
-                                          range.getPartialDerivative(0, 0, 0, 1, 0, 0, 0, 0, 0), // dROndVx
-                                          range.getPartialDerivative(0, 0, 0, 0, 1, 0, 0, 0, 0), // dROndVy
-                                          range.getPartialDerivative(0, 0, 0, 0, 0, 1, 0, 0, 0)  // dROndVz
-        });
+        final double[] derivatives = range.getAllDerivatives();
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
 
-
-        // Set parameter drivers partial derivatives with respect to station position in offset topocentric frame
-        if (station.getEastOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getEastOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 1, 0, 0)); // dROndQTx
-        }
-        if (station.getNorthOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 1, 0)); // dROndQTy
-        }
-        if (station.getZenithOffsetDriver().isSelected()) {
-            estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
-                                              range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQTz
+        // set partial derivatives with respect to parameters
+        // (beware element at index 0 is the value, not a derivative)
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+            }
         }
 
         return estimated;

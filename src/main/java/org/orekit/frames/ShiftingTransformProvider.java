@@ -157,7 +157,8 @@ public class ShiftingTransformProvider implements TransformProvider {
                                                                    cache.getMaxSpan(),
                                                                    cache.getNewSlotQuantumGap(),
                                                                    new FieldTransformGenerator<>(date.getField(),
-                                                                                                 cache,
+                                                                                                 cache.getNeighborsSize(),
+                                                                                                 interpolatingProvider,
                                                                                                  interpolatingProvider.getStep()));
                 fieldCaches.put(date.getField(), fieldCache);
             }

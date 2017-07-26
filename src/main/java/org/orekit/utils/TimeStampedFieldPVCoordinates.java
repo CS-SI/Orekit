@@ -707,6 +707,17 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
 
     }
 
+    /** Convert to a constant position-velocity.
+     * @return a constant position-velocity
+     * @since 9.0
+     */
+    public TimeStampedPVCoordinates toTimeStampedPVCoordinates() {
+        return new TimeStampedPVCoordinates(date.toAbsoluteDate(),
+                                            getPosition().toVector3D(),
+                                            getVelocity().toVector3D(),
+                                            getAcceleration().toVector3D());
+    }
+
     /** Return a string representation of this position/velocity pair.
      * @return string representation of this position/velocity pair
      */

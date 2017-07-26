@@ -23,9 +23,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -33,8 +30,12 @@ import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 /** Class modifying theoretical turn-around TurnAroundRange measurement with tropospheric delay.
  * The effect of tropospheric correction on the TurnAroundRange is directly computed
@@ -111,7 +112,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate)
         throws OrekitException {
         final double[][] finiteDifferencesJacobian =
-                        EstimationUtils.differentiate(new StateFunction() {
+                        Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 try {
                                     // evaluate target's elevation with a changed target position
@@ -123,7 +124,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
                                     throw new OrekitExceptionWrapper(oe);
                                 }
                             }
-                        }, 1, OrbitType.CARTESIAN,
+                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
 
         return finiteDifferencesJacobian;
@@ -151,7 +152,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             }
         };
 
-        final ParameterFunction rangeErrorDerivative = EstimationUtils.differentiate(rangeError, driver, 3, 10.0);
+        final ParameterFunction rangeErrorDerivative = Differentiation.differentiate(rangeError, driver, 3, 10.0);
 
         return rangeErrorDerivative.value(driver);
 
@@ -170,7 +171,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final TurnAroundRange measurement   = estimated.getObservedMeasurement();
         final GroundStation   masterStation = measurement.getMasterStation();
         final GroundStation   slaveStation  = measurement.getSlaveStation();
-        final SpacecraftState state         = estimated.getState();
+        final SpacecraftState state         = estimated.getStates()[0];
 
         final double[] oldValue = estimated.getEstimatedValue();
 
@@ -185,7 +186,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // Update estimated derivatives with Jacobian of the measure wrt state
         final double[][] masterDjac = rangeErrorJacobianState(masterStation, state);
         final double[][] slaveDjac = rangeErrorJacobianState(slaveStation, state);
-        final double[][] stateDerivatives = estimated.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] = stateDerivatives[irow][jcol] +
@@ -193,7 +194,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
                                                slaveDjac[irow][jcol];
             }
         }
-        estimated.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(0, stateDerivatives);
 
         // Update derivatives with respect to master station position
         for (final ParameterDriver driver : Arrays.asList(masterStation.getEastOffsetDriver(),

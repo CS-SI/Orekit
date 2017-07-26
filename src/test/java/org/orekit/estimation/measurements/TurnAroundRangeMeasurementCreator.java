@@ -42,9 +42,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final Vector3D antennaPhaseCenter;
 
     public TurnAroundRangeMeasurementCreator(final Context context) {
-        this.context = context;
+        this(context, Vector3D.ZERO);
+    }
+
+    public TurnAroundRangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
+        this.context            = context;
+        this.antennaPhaseCenter = antennaPhaseCenter;
     }
 
     /**
@@ -79,13 +85,13 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final GroundStation    slaveStation  = entry.getValue();
                 final AbsoluteDate     date          = currentState.getDate();
                 final Frame            inertial      = currentState.getFrame();
-                final Vector3D         position      = currentState.getPVCoordinates().getPosition();
+                final Vector3D         position      = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
                 final TopocentricFrame masterTopo    = masterStation.getBaseFrame();
                 final TopocentricFrame slaveTopo     = slaveStation.getBaseFrame();
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
                 if ((masterTopo.getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
-                                (slaveTopo.getElevation(position, inertial, date) > FastMath.toRadians(30.0))) {
+                    (slaveTopo.getElevation(position, inertial, date)  > FastMath.toRadians(30.0))) {
 
                     // The solver used
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
@@ -103,7 +109,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double slaveTauD  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) throws OrekitExceptionWrapper {
                             final SpacecraftState transitState = currentState.shiftedBy(-x);
-                            final double d = Vector3D.distance(transitState.getPVCoordinates().getPosition(),
+                            final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                slaveStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -115,7 +121,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double slaveTauU  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) throws OrekitExceptionWrapper {
                             final SpacecraftState transitState = currentState.shiftedBy(+x);
-                            final double d = Vector3D.distance(transitState.getPVCoordinates().getPosition(),
+                            final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                slaveStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -127,11 +133,11 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     // Transit state position & date for the 1st leg of the signal path
                     final SpacecraftState S1 = currentState.shiftedBy(-slaveTauD);
-                    final Vector3D        P1 = S1.getPVCoordinates().getPosition();
+                    final Vector3D        P1 = S1.toTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate    T1 = date.shiftedBy(-slaveTauD);
 
                     // Transit state position & date for the 2nd leg of the signal path
-                    final Vector3D     P2  = currentState.shiftedBy(+slaveTauU).getPVCoordinates().getPosition();
+                    final Vector3D     P2  = currentState.shiftedBy(+slaveTauU).toTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate T2  = date.shiftedBy(+slaveTauU);
 
 
@@ -157,12 +163,9 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
 
                     // Master station uplink delay - from master station to P1
-                    // Here the state date is known. Thus we can use the function "uplinkTimeOfFlight"
-                    // of the GroundStation class
-                    //final double masterTauU = masterStation.uplinkTimeOfFlight(S1);
-                    final double masterTauU = masterStation.signalTimeOfFlight(masterStationAtReception,
-                                                                               P1,
-                                                                               T1);
+                    // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
+                    // of the AbstractMeasurement class
+                    final double masterTauU = AbstractMeasurement.signalTimeOfFlight(masterStationAtReception, P1, T1);
 
                     final AbsoluteDate masterEmissionDate   = T1.shiftedBy(-masterTauU);
 

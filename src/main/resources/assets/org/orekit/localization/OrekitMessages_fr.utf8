@@ -268,8 +268,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matrice jacobienne associée au type {0} e
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la jacobienne de l''état n''a pas encore été initialisée
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = la jacobienne de l''état est une matrice {0}x{1}, alors qu''elle devrait être soit une matrice 6x6 soit une matrice 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = la jacobienne de l''état est une matrice {0}x{1}, alors qu''elle devrait être une matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la jacobienne de l''état a {0} lignes alors que la jacobienne des paramètres en a {1}
@@ -312,6 +312,24 @@ CCSDS_INVALID_FRAME = le repère {0} est invalide dans ce contexte de fichier OD
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''éphémérides : {0} ≠ {1}
+
+# Inconsistent time systems in the observations blocks: {0} ≠ {1}
+CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''observations : {0} ≠ {1}
+
+# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
+CCSDS_TDM_INCONSISTENT_DATA_LINE = ligne de données incohérente à la ligne {0} du fichier TDM {1}.\nUne ligne de donnée TDM doit avoir la forme « keyword = epoch value ».\nLa ligne de données lue est : {2}
+
+# No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
+CCSDS_TDM_KEYWORD_NOT_FOUND = Aucun mot-clef CCSDS TDM trouvé à la ligne {0} du fichier {1} :\n{2}
+
+# Parameter {0} needs a time system to be interpreted
+CCSDS_TIME_SYSTEM_NOT_READ_YET = le paramètre {0} a besoin d''un système temporel pour être interprété
+
+# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Le bloc XML d''observation n''est pas cohérent à la ligne {0} du fichier TDM {1}.\n Un bloc d''observation TDM devrait avoir la forme suivante:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
+
+# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
+CCSDS_TDM_UNKNOWN_FORMAT = Le format du fichier TDM {0} est inconnu. Veuillez spécifier un format de fichier: KEYVALUE ou XML
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = le nom "{0}" est déjà utilisé pour un état additionnel
@@ -382,9 +400,6 @@ OUT_OF_RANGE_LATITUDE = latitude {0} hors domaine [{1}, {2}]
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = type d''orbite {0} non autorisé ici, types autorisés : {1}
 
-# body shape is not an ellipsoid
-BODY_SHAPE_IS_NOT_AN_ELLIPSOID = la forme du corps n''est pas ellipsoïdale
-
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = aucun fichier d''almanach SEM n''a été trouvé
 
@@ -403,7 +418,7 @@ NOT_ENOUGH_GNSS_FOR_DOP = seulement {0} orbite(s) GNSS fournie(s) alors qu''il e
 # the CCSDS time system {0} has no corresponding Orekit TimeScale.
 CCSDS_NO_CORRESPONDING_TIME_SCALE = le système temporel {0} du CCSDS n''a pas d''équivalent dans les échelles de temps Orekit
 
-# use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
+# use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l''utilisation du système temporel {0} nécessite un ICD additionel et n''est pas disponible dans Orekit
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
@@ -417,3 +432,15 @@ VALUE_NOT_FOUND = la valeur {0} n''a pas été trouvée dans {1}
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = le format de fichier des éphémérides n''autorise pas les objets spatiaux multiples
+
+# Klobuchar coefficients α or β could not be loaded from {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED = impossible de charger des coefficients de Klobuchar α ou β depuis {0}
+
+# Klobuchar coefficients α or β not available for date {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = les coefficients de Klobuchar α ou β ne sont pas disponibles pour la date {0}
+
+# file {0} does not contain Klobuchar coefficients α or β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contient pas de coefficients de Klobuchar α ou β
+
+# no reference date set for parameter {0}
+NO_REFERENCE_DATE_FOR_PARAMETER = date de référence non initialisée pour le paramètre {0}

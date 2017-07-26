@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -82,8 +83,8 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                    final Frame frame)
             throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+        final FieldGeodeticPoint<T> gp = shape.transform(position, frame, date);
+        return gp.getAltitude().subtract(h0).divide(-hscale).exp().multiply(rho0);
     }
 
 }

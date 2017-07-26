@@ -75,8 +75,8 @@ public class FieldPropagation {
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.addProvider(new DirectoryCrawler(orekitData));
 
-        //setting some the file
-        File workingDir = new File(System.getProperty("user.dir"));
+        // output file in user's home directory
+        File workingDir = new File(System.getProperty("user.home"));
         File errorFile = new File(workingDir, "error.txt");
         System.out.println("Output file is in : " + errorFile.getAbsolutePath());
         PrintWriter PW = new PrintWriter(errorFile, "UTF-8");
@@ -223,7 +223,7 @@ public class FieldPropagation {
             @SuppressWarnings("unchecked")
             TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getPVCoordinates();
 
-            //getting the propagated poisition and velocity(to find the cross track and long track error)
+            //getting the propagated position and velocity(to find the cross track and long track error)
             FieldVector3D<DerivativeStructure> P_t = PV_t.getPosition();
             FieldVector3D<DerivativeStructure> V_t = PV_t.getVelocity().normalize();
             FieldVector3D<DerivativeStructure> M_t = PV_t.getMomentum().normalize();

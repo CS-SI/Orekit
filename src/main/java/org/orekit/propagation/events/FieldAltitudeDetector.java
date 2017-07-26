@@ -22,7 +22,6 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
 import org.orekit.utils.FieldPVCoordinates;
@@ -35,8 +34,8 @@ import org.orekit.utils.FieldPVCoordinates;
  * continue} propagation when ascending and to {@link
  * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
  * propagation when descending. This can be changed by calling
- * {@link #withHandler(EventHandler)} after construction.</p>
- * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * {@link #withHandler(FieldEventHandler)} after construction.</p>
+ * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  * @since 9.0
  */

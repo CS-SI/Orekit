@@ -20,6 +20,7 @@ package org.orekit.frames;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -34,8 +35,12 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -65,6 +70,19 @@ public class TransformTest {
         Line line = new Line(p1, p2, 1.0e-6);
         Line transformed = Transform.IDENTITY.transformLine(line);
         Assert.assertSame(line, transformed);
+    }
+
+    @Test
+    public void testFieldBackwardGeneration() throws Exception {
+        Utils.setDataRoot("regular-data");
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Frame tod = FramesFactory.getTOD(false);
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        FieldTransform<Decimal64> t1 =
+                        tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16, 21, 0, 0, utc)));
+        FieldTransform<Decimal64> t2 =
+                        tod.getParent().getTransformTo(tod, new FieldAbsoluteDate<>(field, new AbsoluteDate(2000, 8, 16,  9, 0, 0, utc)));
+        Assert.assertEquals(-43200.0, t2.getDate().durationFrom(t1.getDate()), 1.0e-15);
     }
 
     @Test

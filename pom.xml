@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>9.0-SNAPSHOT</version>
+  <version>9.0</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -26,20 +26,20 @@
     <orekit.maven-bundle-plugin.version>3.3.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>2.17</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>7.6</orekit.checkstyle.version>
+    <orekit.checkstyle.version>8.1</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.0.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.6.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.10.4</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.0.2</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>2.5</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>2017.10</orekit.plantuml.version>
+    <orekit.plantuml.version>1.2017.15</orekit.plantuml.version>
     <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>2.19.1</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.19.1</orekit.maven-surefire-report-plugin.version>
+    <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.hipparchus.version>1.1</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
@@ -76,14 +76,21 @@
       <roles>
         <role>developer</role>
       </roles>
-    </developer>    
+    </developer>
     <developer>
       <name>Hank Grabowski</name>
       <id>hankg</id>
       <roles>
         <role>developer</role>
       </roles>
-    </developer>    
+    </developer>
+    <developer>
+      <name>Maxime Journot</name>
+      <id>maxime</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
     <developer>
       <name>Fabien Maussion</name>
       <roles>
@@ -149,7 +156,7 @@
       <name>Daniel Aguilar Taboada</name>
     </contributor>
     <contributor>
-      <name>Lucian Barbulescu</name>
+      <name>Lucian B&#259;rbulescu</name>
     </contributor>
     <contributor>
       <name>Petre Bazavan</name>
@@ -179,7 +186,7 @@
       <name>Christine Fernandez-Martin</name>
     </contributor>
     <contributor>
-      <name>Hank Grabowski</name>
+      <name>Lars N&#230;sbye Christensen</name>
     </contributor>
     <contributor>
       <name>Steven Ports</name>

@@ -16,16 +16,14 @@
  */
 package org.orekit.forces;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -68,12 +66,11 @@ public interface ForceModel {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
-     * before any calls to {@link #addContribution(SpacecraftState,
-     * TimeDerivativesEquations)} or {@link #accelerationDerivatives(AbsoluteDate, Frame,
-     * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)} or {@link
-     * #accelerationDerivatives(SpacecraftState, String)}.
+     * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
+     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, RealFieldElement[])}
      *
-     * <p> The default implementation of this method does nothing.
+     * <p> The default implementation of this method does nothing.</p>
      *
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
@@ -81,62 +78,91 @@ public interface ForceModel {
      *                         takes some action that throws an {@link OrekitException}.
      */
     default void init(SpacecraftState initialState, AbsoluteDate target)
-            throws OrekitException {
+        throws OrekitException {
+    }
+
+    /** Compute the contribution of the force model to the perturbing
+     * acceleration.
+     * <p>
+     * The default implementation simply adds the {@link #acceleration(SpacecraftState, double[]) acceleration}
+     * as a non-Keplerian acceleration.
+     * </p>
+     * @param s current state information: date, kinematics, attitude
+     * @param adder object where the contribution should be added
+     * @exception OrekitException if some specific error occurs
+     */
+    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
+        throws OrekitException {
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
     }
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
+     * @param <T> type of the elements
      * @exception OrekitException if some specific error occurs
      */
-    void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
-        throws OrekitException;
+    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
+    }
 
-    /** Compute the contribution of the force model to the perturbing
-     * acceleration.
+    /** Get force model parameters.
+     * @return force model parameters
+     * @since 9.0
+     */
+    default double[] getParameters() {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return force model parameters
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
+
+    /** Check if force models depends on position only.
+     * @return true if force model depends on position only, false
+     * if it depends on velocity, either directly or due to a dependency
+     * on attitude
+     * @since 9.0
+     */
+    boolean dependsOnPositionOnly();
+
+    /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param adder object where the contribution should be added
-     * @param <T> extends RealFieldElement
+     * @param parameters values of the force model parameters
+     * @return acceleration in same frame as state
      * @exception OrekitException if some specific error occurs
+     * @since 9.0
      */
-    <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+    Vector3D acceleration(SpacecraftState s, double[] parameters)
         throws OrekitException;
 
-    /** Compute acceleration derivatives with respect to state parameters.
-     * <p>
-     * The derivatives should be computed with respect to position, velocity
-     * and optionnaly mass. The input parameters already take into account the
-     * free parameters (6 or 7 depending on derivation with respect to mass
-     * being considered or not) and order (always 1). Free parameters at indices
-     * 0, 1 and 2 correspond to derivatives with respect to position. Free
-     * parameters at indices 3, 4 and 5 correspond to derivatives with respect
-     * to velocity. Free parameter at index 6 (if present) corresponds to
-     * to derivatives with respect to mass.
-     * </p>
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param velocity velocity of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass spacecraft mass
-     * @return acceleration with all derivatives specified by the input parameters own derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 6.0
+    /** Compute acceleration.
+     * @param s current state information: date, kinematics, attitude
+     * @param parameters values of the force model parameters
+     * @return acceleration in same frame as state
+     * @param <T> type of the elements
+     * @exception OrekitException if some specific error occurs
+     * @since 9.0
      */
-    FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame,
-                                       FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity,
-                                       FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
-        throws OrekitException;
-
-    /** Compute acceleration derivatives with respect to additional parameters.
-     * @param s spacecraft state
-     * @param paramName name of the parameter with respect to which derivatives are required
-     * @return acceleration with all derivatives specified by the input parameters own derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 6.0
-     */
-    FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName)
+    <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters)
         throws OrekitException;
 
     /** Get the discrete events related to the model.
@@ -172,33 +198,5 @@ public interface ForceModel {
      * @see #getParametersDrivers()
      */
     boolean isSupported(String name);
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @see #isSupported(String)
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()}
-     */
-    @Deprecated
-    List<String> getParametersNames();
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @exception OrekitException if parameter is not supported
-     * @deprecated as of 8.0, replaced with
-     * {@link #getParameterDriver(String)}.{@link ParameterDriver#getName()}
-     */
-    @Deprecated
-    double getParameter(String name) throws OrekitException;
-
-    /** Set the value for a given parameter.
-     * @param name parameter name
-     * @param value parameter value
-     * @exception OrekitException if parameter is not supported
-     * @deprecated as of 8.0, replaced with
-     * {@link #getParameterDriver(String)}.{@link ParameterDriver#setValue(double)}
-     */
-    @Deprecated
-    void setParameter(String name, double value) throws OrekitException;
 
 }

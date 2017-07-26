@@ -32,14 +32,11 @@ Building with Ant:
 Building with Eclipse:
  - Eclipse can be downloaded here:
        http://www.eclipse.org/downloads/
- - extract the orekit source jar in your eclipse workspace
- - create a new java project from existing sources and direct
-   Eclipse to the directory where you unpacked Orekit
- - set the source folders to orekit/src/main/java,
-   orekit/src/main/resources, orekit/src/test/java,
-   orekit/src/test/resources, orekit/src/tutorials in
-   the source tab of the Configure Build Path dialog
- - set the external libraries to JRE system library (provided by Eclipse),
-   Junit 4.x (provided by Eclipse) and Hipparchus (available at
-   https://hipparchus.org/) in the libraries tab of the Configure
-   Build Path dialog
+ - using your operating system tools, unpack the source distribution directly
+   inside your Eclipse workspace
+ - using Eclipse, import the project by selecting in the top level "File" menu
+   the entry "Import..."
+ - in the wizard that should appear, select "Maven -> Existing Maven Projects"
+ - select the folder you just created in your workspace by unpacking the
+   source distribution. The "pom.xml" file describing the project will be
+   automatically selected. Click finish

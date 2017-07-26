@@ -16,6 +16,8 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -23,7 +25,10 @@ import org.orekit.bodies.Ellipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -60,8 +65,8 @@ public class BodyCenterPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                   final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // spacecraft coordinates in body frame
@@ -99,6 +104,50 @@ public class BodyCenterPointing extends GroundPointing {
         final TimeStampedPVCoordinates projected =
                 new TimeStampedPVCoordinates(date, projectedP, projectedV, projectedA);
         return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(projected);
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+
+        // spacecraft coordinates in body frame
+        final TimeStampedFieldPVCoordinates<T> scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());
+
+        // central projection to ground (NOT the classical nadir point)
+        final T u     = scInBodyFrame.getPosition().getX().divide(ellipsoid.getA());
+        final T v     = scInBodyFrame.getPosition().getY().divide(ellipsoid.getB());
+        final T w     = scInBodyFrame.getPosition().getZ().divide(ellipsoid.getC());
+        final T d2    = u.pow(2).add(v.pow(2)).add(w.pow(2));
+        final T d     = d2.sqrt();
+        final T ratio = d.reciprocal();
+        final FieldVector3D<T> projectedP = new FieldVector3D<>(ratio, scInBodyFrame.getPosition());
+
+        // velocity
+        final T uDot     = scInBodyFrame.getVelocity().getX().divide(ellipsoid.getA());
+        final T vDot     = scInBodyFrame.getVelocity().getY().divide(ellipsoid.getB());
+        final T wDot     = scInBodyFrame.getVelocity().getZ().divide(ellipsoid.getC());
+        //we aren't using the linearCombination in the library
+        final T dDot     = (u.multiply(uDot).add(v.multiply(vDot)).add(w.multiply(wDot))).divide(d);
+        final T ratioDot = dDot.multiply(-1).divide(d2);
+        final FieldVector3D<T> projectedV = new FieldVector3D<>(ratio,    scInBodyFrame.getVelocity(),
+                                                                ratioDot, scInBodyFrame.getPosition());
+
+        // acceleration
+        final T uDotDot      = scInBodyFrame.getAcceleration().getX().divide(ellipsoid.getA());
+        final T vDotDot      = scInBodyFrame.getAcceleration().getY().divide(ellipsoid.getB());
+        final T wDotDot      = scInBodyFrame.getAcceleration().getZ().divide(ellipsoid.getC());
+        final T dDotDot      = u.multiply(uDotDot).add(v.multiply(vDotDot)).add(w.multiply( wDotDot)
+                                         .add(uDot.pow(2).add(vDot.pow(2)).add(wDot.pow(2)).subtract(dDot.pow(2))))
+                                         .divide(d);
+        final T ratioDotDot  = (dDot.pow(2).multiply(2).subtract(d.multiply(dDotDot))).divide(d.multiply(d2));
+        final FieldVector3D<T> projectedA = new FieldVector3D<>(ratio,                scInBodyFrame.getAcceleration(),
+                                                                ratioDot.multiply(2), scInBodyFrame.getVelocity(),
+                                                                ratioDotDot,          scInBodyFrame.getPosition());
+        final TimeStampedFieldPVCoordinates<T> projected =
+                new TimeStampedFieldPVCoordinates<>(date, projectedP, projectedV, projectedA);
+        return getBodyFrame().getTransformTo(frame, date.toAbsoluteDate()).transformPVCoordinates(projected);
 
     }
 

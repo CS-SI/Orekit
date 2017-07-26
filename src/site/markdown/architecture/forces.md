@@ -45,24 +45,12 @@ The force models implemented are as follows:
 * atmospheric drag forces, taking attitude into account if spacecraft shape is defined,
   
 * central gravity forces, including time-dependent parts (linear trends and
-  pulsation at several different periods). Several attraction models are
-  available for representing the gravitational field of a celestial body
-  (the recommended model is Holmes and Featherstone): 
-  
-  * Andrzej Droziner model (Institute of Mathematical Machines, Warsaw) in his 1976 paper:
-   _An algorithm for recurrent calculation of gravitational acceleration_
-   (artificial satellites, Vol. 12, No 2, June 1977),
-   
-  * Leland E. Cunningham model (Lockheed Missiles and Space Company, Sunnyvale
-    and Astronomy Department University of California, Berkeley) in his 1969 paper:
-    _On the computation of the spherical harmonic terms needed during the numerical integration of the orbital motion of an artificial satellite_
-    (Celestial Mechanics 2, 1970),
-
-  * S. A. Holmes and W. E. Featherstone (Department of Spatial Sciences,
-    Curtin University of Technology, Perth, Australia) in their 2002 paper:
-    _A unified approach to the Clenshaw summation and the recursive computation
-     of very high degree and order normalised associated Legendre functions_
-    (Journal of Geodesy (2002) 76: 279–299).
+  pulsation at several different periods). Our implementation is based on
+  S. A. Holmes and W. E. Featherstone (Department of Spatial Sciences,
+  Curtin University of Technology, Perth, Australia) 2002 paper:
+  _A unified approach to the Clenshaw summation and the recursive computation
+   of very high degree and order normalised associated Legendre functions_
+  (Journal of Geodesy (2002) 76: 279–299).
 
 * third body gravity force. Data for all solar system bodies is available,
   based on JPL DE ephemerides or IMCCE INPOP ephemerides,
@@ -81,16 +69,24 @@ The force models implemented are as follows:
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
 
+* parametric accelerations, to model lesser-known forces, estimating a few
+  defining parameters from a parametric function using orbit determination.
+  Typical parametric functions are polynomial (often limited to a constant term)
+  and harmonic (often with either orbital period or half orbital period).
+  An important operational example is the infamous GPS Y-bias.
+
 ## Spacecraft shapes
 
 Surface forces like atmospheric drag or radiation pressure can use either
-a simple `SphericalSpacecraft` shape or a more accurate
-`BoxAndSolarArraySpacraft` shape.
+a simple spherical shape using the various `Isotropic` classes or a more
+accurate `BoxAndSolarArraySpacraft` shape.
 
 The spherical shape will be independent of attitude.
 
 The box and solar array will consider the contribution of all box facets facing
 the flux as computed from the current attitude, and also the contribution of a
 pivoting solar array, whose orientation is a combination of the spacecraft body
-attitude and either the true Sun direction or a regularized rotation angle. As
-of 6.1, the box and solar array does not compute yet shadowing effects.
+attitude and either the true Sun direction or a regularized rotation angle.
+The box can have any number of facets, and they can have any orientation as long
+as the body remains convex. As of 9.0, the box and solar array does not compute
+yet shadowing effects.

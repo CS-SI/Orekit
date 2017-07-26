@@ -19,6 +19,14 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.text.ParseException;
 
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -34,6 +42,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -96,7 +105,7 @@ public class JB2008Test {
                                               SATALT[i] * 1000.,
                                               F10[i], F10B[i], S10[i], S10B[i],
                                               XM10[i], XM10B[i], Y10[i], Y10B[i], DSTDTC[i]);
-            checkLegacy(i, rho, atm.getExosphericTemp(), atm.getLocalTemp(), print);
+            checkLegacy(i, rho, print);
         }
 
     }
@@ -142,7 +151,7 @@ public class JB2008Test {
             final double rho = atm.getDensity(InputParams.TC[i], earth.transform(point), atm.getFrame());
 
             // Check
-            checkAltitude(i, rho, atm.getExosphericTemp(), atm.getLocalTemp(), print);
+            checkAltitude(i, rho, print);
         }
    }
 
@@ -164,6 +173,110 @@ public class JB2008Test {
             Assert.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
             Assert.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
         }
+
+    }
+
+    @Test
+    public void testDensityField() throws OrekitException {
+
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+
+        final JB2008 atm = new JB2008(new InputParams(), CelestialBodyFactory.getSun(), earth);
+
+        final AbsoluteDate date = InputParams.TC[4];
+
+        for (double alt = 100; alt < 1000; alt += 50) {
+            for (double lat = -1.2; lat < 1.2; lat += 0.4) {
+                for (double lon = 0; lon < 6.28; lon += 0.8) {
+
+                    final GeodeticPoint point = new GeodeticPoint(lat, lon, alt * 1000.);
+                    final Vector3D pos = earth.transform(point);
+                    Field<Decimal64> field = Decimal64Field.getInstance();
+
+                    // Run
+                    final double    rho = atm.getDensity(date, pos, itrf);
+                    final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                           new FieldVector3D<>(field.getOne(), pos),
+                                                           itrf);
+
+                    Assert.assertEquals(rho, rho64.getReal(), rho * 4.0e-13);
+
+                }
+            }
+        }
+
+    }
+
+    @Test
+    public void testDensityGradient() throws OrekitException {
+
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+
+        final JB2008 atm = new JB2008(new InputParams(), CelestialBodyFactory.getSun(), earth);
+
+        final AbsoluteDate date = InputParams.TC[6];
+
+        // Build the position
+        final double alt = 400.;
+        final double lat =  60.;
+        final double lon = -70.;
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(lat),
+                                                      FastMath.toRadians(lon),
+                                                      alt * 1000.);
+        final Vector3D pos = earth.transform(point);
+
+        // Run
+        DerivativeStructure zero = new DSFactory(1, 1).variable(0, 0.0);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 10.0);
+        DerivativeStructure  rhoX = differentiator.
+                        differentiate((double x) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, x, Vector3D.PLUS_I), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+        DerivativeStructure  rhoY = differentiator.
+                        differentiate((double y) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, y, Vector3D.PLUS_J), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+        DerivativeStructure  rhoZ = differentiator.
+                        differentiate((double z) -> {
+                            try {
+                                return atm.getDensity(date, new Vector3D(1, pos, z, Vector3D.PLUS_K), itrf);
+                            } catch (OrekitException oe) {
+                                return Double.NaN;
+                            }
+                        }). value(zero);
+
+        DSFactory factory3 = new DSFactory(3, 1);
+        Field<DerivativeStructure> field = factory3.getDerivativeField();
+        final DerivativeStructure rhoDS = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                                                         new FieldVector3D<>(factory3.variable(0, pos.getX()),
+                                                                             factory3.variable(1, pos.getY()),
+                                                                             factory3.variable(2, pos.getZ())),
+                                                         itrf);
+
+        Assert.assertEquals(rhoX.getValue(), rhoDS.getReal(), rhoX.getValue() * 2.0e-14);
+        Assert.assertEquals(rhoY.getValue(), rhoDS.getReal(), rhoY.getValue() * 2.0e-14);
+        Assert.assertEquals(rhoZ.getValue(), rhoDS.getReal(), rhoZ.getValue() * 2.0e-14);
+        Assert.assertEquals(rhoX.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(1, 0, 0),
+                            FastMath.abs(6.0e-10 * rhoX.getPartialDerivative(1)));
+        Assert.assertEquals(rhoY.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(0, 1, 0),
+                            FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
+        Assert.assertEquals(rhoZ.getPartialDerivative(1),
+                            rhoDS.getPartialDerivative(0, 0, 1),
+                            FastMath.abs(6.0e-10 * rhoY.getPartialDerivative(1)));
 
     }
 
@@ -201,33 +314,20 @@ public class JB2008Test {
     /** Check legacy results.
      * @param id legacy test number
      * @param rho computed density
-     * @param tInf computed exospheric temperature
-     * @param tAlt computed local temperature
      * @param print if true print else check
      */
-    private void checkLegacy(final int id, final double rho, final double tInf, final double tAlt, final boolean print) {
+    private void checkLegacy(final int id, final double rho, final boolean print) {
         final double[] rhoRef  = {0.18730056e-11, 0.25650339e-11, 0.57428913e-11,
                                   0.83266893e-11, 0.82238726e-11, 0.48686457e-11,
                                   0.67210914e-11, 0.74215571e-11, 0.31821075e-11,
                                   0.29553578e-11, 0.64122627e-11, 0.79559727e-11};
-        final double[] tInfRef = { 867.4,  833.7, 1002.1, 1159.4,
-                                  1115.7, 1015.3, 1140.6, 1098.5,
-                                   867.9,  876.6, 1062.3, 1204.7};
-        final double[] tAltRef = { 857.5,  831.1,  995.0, 1148.3,
-                                  1105.7, 1008.8, 1128.9, 1089.9,
-                                   864.7,  868.3, 1050.7, 1191.3};
         final double dRho = 2.e-5;
-        final double dTmp = 1.e-4;
         final int nb = id + 1;
         if (print) {
             System.out.printf("Case #%d\n", nb);
             System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
-            System.out.printf("Tinf: %6.1f  %6.1f\n", tInfRef[id], tInf);
-            System.out.printf("Talt: %6.1f  %6.1f\n\n", tAltRef[id], tAlt);
         } else {
             Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
-            Assert.assertEquals(tInfRef[id], tInf, tInfRef[id] * dTmp);
-            Assert.assertEquals(tAltRef[id], tAlt, tAltRef[id] * dTmp);
         }
 
     }
@@ -235,31 +335,20 @@ public class JB2008Test {
     /** Check altiude results.
      * @param id test number
      * @param rho computed density
-     * @param tInf computed exospheric temperature
-     * @param tAlt computed local temperature
      * @param print if true print else check
      */
-    private void checkAltitude(final int id, final double rho, final double tInf, final double tAlt, final boolean print) {
+    private void checkAltitude(final int id, final double rho, final boolean print) {
         final double[] rhoRef  = {0.27945654e-05, 0.94115202e-07, 0.15025977e-07, 0.21128330e-08,
                                   0.15227435e-09, 0.54609767e-10, 0.45899746e-11, 0.14922800e-12,
                                   0.17392987e-13, 0.35250121e-14, 0.13482414e-14, 0.77684879e-15,
                                   0.19900569e-15};
-        final double[] tInfRef = { 955.24,  825.33,  941.87,  860.71,  948.95, 1104.19,
-                                  1094.84,  913.21,  913.36,  902.48,  961.74, 1130.35, 1079.56};
-        final double[] tAltRef = { 183.07,  245.51,  376.87,  639.08,  877.73, 1050.80,
-                                  1085.20,  908.07,  908.41,  902.35,  961.69, 1130.33, 1079.55};
         final double dRho = 3.e-4;
-        final double dTmp = 2.e-4;
         final int nb = id + 1;
         if (print) {
           System.out.printf("Case #%d\n", nb);
           System.out.printf("Rho:  %12.5e  %12.5e\n", rhoRef[id], rho);
-          System.out.printf("Tinf: %6.1f  %6.1f\n", tInfRef[id], tInf);
-          System.out.printf("Talt: %6.1f  %6.1f\n\n", tAltRef[id], tAlt);
         } else {
             Assert.assertEquals(rhoRef[id],  rho,  rhoRef[id]  * dRho);
-            Assert.assertEquals(tInfRef[id], tInf, tInfRef[id] * dTmp);
-            Assert.assertEquals(tAltRef[id], tAlt, tAltRef[id] * dTmp);
         }
 
     }

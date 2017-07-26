@@ -30,9 +30,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -44,7 +41,11 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class RangeTest {
 
@@ -78,7 +79,15 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 5.7e-10;
+        double refErrorsPMean   = 5.0e-09;
+        double refErrorsPMax    = 1.9e-07;
+        double refErrorsVMedian = 1.7e-04;
+        double refErrorsVMean   = 6.9e-04;
+        double refErrorsVMax    = 1.4e-02;
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -95,7 +104,15 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        double refErrorsPMedian = 6.2e-10;
+        double refErrorsPMean   = 5.3e-09;
+        double refErrorsPMax    = 2.4e-07;
+        double refErrorsVMedian = 1.7e-04;
+        double refErrorsVMean   = 6.9e-04;
+        double refErrorsVMax    = 1.4e-02;
+        this.genericTestStateDerivatives(isModifier, printResults,
+                                         refErrorsPMedian, refErrorsPMean, refErrorsPMax,
+                                         refErrorsVMedian, refErrorsVMean, refErrorsVMax);
     }
 
     /**
@@ -114,7 +131,11 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorsMedian = 9.0e-11;
+        double refErrorsMean   = 3.9e-10;
+        double refErrorsMax    = 9.0e-09;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -134,7 +155,11 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestParameterDerivatives(isModifier, printResults);
+        double refErrorsMedian = 9.9e-11;
+        double refErrorsMean   = 3.9e-10;
+        double refErrorsMax    = 9.0e-09;
+        this.genericTestParameterDerivatives(isModifier, printResults,
+                                             refErrorsMedian, refErrorsMean, refErrorsMax);
 
     }
 
@@ -146,7 +171,7 @@ public class RangeTest {
     void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -188,7 +213,20 @@ public class RangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final double RangeEstimated = measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+
+                    final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+                    Assert.assertEquals(3, participants.length);
+                    Assert.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[2].getDate().durationFrom(participants[0].getDate()),
+                                        estimated.getEstimatedValue()[0],
+                                        2.0e-8);
+
+                    // the real state used for estimation is adjusted according to downlink delay
+                    double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
+                    Assert.assertTrue(adjustment > 0.006);
+                    Assert.assertTrue(adjustment < 0.010);
+
+                    final double RangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
@@ -247,25 +285,21 @@ public class RangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 2e-7);
+        Assert.assertEquals(0.0, absErrorsMedian, 2e-8);
+        Assert.assertEquals(0.0, absErrorsMin, 2.2e-7);
         Assert.assertEquals(0.0, absErrorsMax, 2e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 1e-14);
-        Assert.assertEquals(0.0, relErrorsMax, 2e-14);
+        Assert.assertEquals(0.0, relErrorsMax, 2.6e-14);
 
 
     }
 
-    /**
-     * Generic test function for derivatives with respect to state
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults)
+    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
+                                     final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -311,17 +345,18 @@ public class RangeTest {
                     final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final double[][]      jacobian  = measurement.estimate(0, 0, state).getStateDerivatives();
+                    final double[][]      jacobian  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                    jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) throws OrekitException {
-                            return measurement.estimate(0, 0, state).getEstimatedValue();
+                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                         }
-                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -398,18 +433,6 @@ public class RangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-
-        // Finite differences reference values
-        refErrorsPMedian = 1.2e-09;
-        refErrorsPMean   = 8.7e-09;
-        refErrorsPMax    = 3.7e-07;
-        refErrorsVMedian = 3.3e-04;
-        refErrorsVMean   = 1.7e-03;
-        refErrorsVMax    = 8.1e-02;
-
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
@@ -418,16 +441,11 @@ public class RangeTest {
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
-    /**
-     * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
-     * @param isModifier Use of atmospheric modifiers
-     * @param printResults Print the results ?
-     * @throws OrekitException
-     */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults)
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
+                                         final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -492,17 +510,17 @@ public class RangeTest {
                     }
 
                     for (int i = 0; i < 3; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
-                                        EstimationUtils.differentiate(new ParameterFunction() {
+                                        Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
                                             public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                                return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, drivers[i], 3, 20.0);
                         final double ref = dMkdP.value(drivers[i]);
@@ -558,16 +576,10 @@ public class RangeTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsMedian, refErrorsMean, refErrorsMax;
-
-        // Numeric references
-        refErrorsMedian = 9.4e-11;
-        refErrorsMean   = 3.4e-10;
-        refErrorsMax    = 1.3e-08;
-
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
         Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
         Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+
     }
+
 }

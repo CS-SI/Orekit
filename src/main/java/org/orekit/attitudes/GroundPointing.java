@@ -16,15 +16,22 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -85,6 +92,11 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** Compute the target point position/velocity in specified frame.
+     * <p>
+     * This method is {@code public} only to allow users to subclass this
+     * abstract class from other packages. It is <em>not</em> intended to
+     * be used directly.
+     * </p>
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
@@ -93,8 +105,24 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
-                                                            AbsoluteDate date, Frame frame)
+    public abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
+                                                         AbsoluteDate date, Frame frame)
+        throws OrekitException;
+
+    /** Compute the target point position/velocity in specified frame.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which target point is requested
+     * @param frame frame in which observed ground point should be provided
+     * @param <T> type of the fiels elements
+     * @return observed ground point position (element 0) and velocity (at index 1)
+     * in specified frame
+     * @throws OrekitException if some specific error occurs,
+     * such as no target reached
+     * @since 9.0
+     */
+    public abstract <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                                 FieldAbsoluteDate<T> date,
+                                                                                                 Frame frame)
         throws OrekitException;
 
     /** {@inheritDoc} */
@@ -135,6 +163,58 @@ public abstract class GroundPointing implements AttitudeProvider {
 
         // build the attitude
         return new Attitude(date, frame, ac);
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                       final FieldAbsoluteDate<T> date,
+                                                                       final Frame frame)
+        throws OrekitException {
+
+        // satellite-target relative vector
+        final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);
+        final TimeStampedFieldPVCoordinates<T> delta =
+                new TimeStampedFieldPVCoordinates<>(date, pva, getTargetPV(pvProv, date, inertialFrame));
+
+        // spacecraft and target should be away from each other to define a pointing direction
+        if (delta.getPosition().getNorm().getReal() == 0.0) {
+            throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
+        }
+
+        // attitude definition:
+        // line of sight    -> +z satellite axis,
+        // orbital velocity -> (z, +x) half plane
+        final FieldVector3D<T> p  = pva.getPosition();
+        final FieldVector3D<T> v  = pva.getVelocity();
+        final FieldVector3D<T> a  = pva.getAcceleration();
+        final T   r2 = p.getNormSq();
+        final T   r  = r2.sqrt();
+        final FieldVector3D<T> keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a, a.getNorm().divide(r).multiply(-1), v);
+        final FieldPVCoordinates<T> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);
+
+
+        final FieldPVCoordinates<T> los    = delta.normalize();
+
+        final FieldPVCoordinates<T> normal = (delta.crossProduct(velocity)).normalize();
+
+        final FieldVector3D<T> zero  = FieldVector3D.getZero(r.getField());
+        final FieldVector3D<T> plusK = FieldVector3D.getPlusK(r.getField());
+        final FieldVector3D<T> plusJ = FieldVector3D.getPlusJ(r.getField());
+        FieldAngularCoordinates<T> ac =
+                        new FieldAngularCoordinates<>(los, normal,
+                                                      new FieldPVCoordinates<>(plusK, zero, zero),
+                                                      new FieldPVCoordinates<>(plusJ, zero, zero),
+                                                      1.0e-6);
+
+        if (frame != inertialFrame) {
+            // prepend transform from specified frame to inertial frame
+            ac = ac.addOffset(new FieldAngularCoordinates<>(r.getField(),
+                                                            frame.getTransformTo(inertialFrame, date.toAbsoluteDate()).getAngular()));
+        }
+
+        // build the attitude
+        return new FieldAttitude<>(date, frame, ac);
 
     }
 

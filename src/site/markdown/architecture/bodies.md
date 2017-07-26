@@ -16,7 +16,7 @@
 
 The `org.orekit.bodies` package provides an interface to representation of the
 position and geometry of space objects such as stars, planets or asteroids.
-	
+
 ## Position
 
 The position of celestial bodies is represented by the `CelestialBody` interface.
@@ -65,9 +65,12 @@ The shape of celestial bodies is represented by the `BodyShape` interface.
 
 ### Implementations
 
-Only one implementation is provided by Orekit for now: the `OneAxisEllipsoid`
-class, which represents the natural flattened shape of big space rotating bodies
-like planets or the Sun.
+Only two implementations are provided by Orekit for now:
+
+  * the `OneAxisEllipsoid` class, which represents the natural flattened shape
+    of big space rotating bodies like planets or the Sun
+  * the `Geoid` class, which adds the effect of a gravity field on top of
+    an ellipsoid, to represent the _sea level_
 
 For asteroids, it is expected that users will provide their own shape models, for example
 based on tessellation. They should implement the `BodyShape` interface in order to

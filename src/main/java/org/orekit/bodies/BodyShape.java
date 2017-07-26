@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -57,6 +58,26 @@ public interface BodyShape extends Serializable {
      */
     GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
                                        Frame frame, AbsoluteDate date)
+        throws OrekitException;
+
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @param <T> type of the field elements
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @exception OrekitException if line cannot be converted to body frame
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(FieldLine<T> line, FieldVector3D<T> close,
+                                                                               Frame frame, FieldAbsoluteDate<T> date)
         throws OrekitException;
 
     /** Project a point to the ground.
@@ -112,5 +133,13 @@ public interface BodyShape extends Serializable {
      * @return point at the same location but as a Cartesian point
      */
     Vector3D transform(GeodeticPoint point);
+
+    /** Transform a surface-relative point to a Cartesian point.
+     * @param point surface-relative point
+     * @param <T> type fo the filed elements
+     * @return point at the same location but as a Cartesian point
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> transform(FieldGeodeticPoint<T> point);
 
 }

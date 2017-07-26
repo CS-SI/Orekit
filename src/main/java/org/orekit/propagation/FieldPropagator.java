@@ -20,7 +20,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.attitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -49,9 +50,8 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-  ///** Default attitude provider. */
-//FieldAttitudeProvider<T> DEFAULT_LAW() = new  FieldInertialProvider(T); //TODO
-
+    /** Default attitude provider. */
+    AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */
     int SLAVE_MODE = 0;
@@ -217,12 +217,12 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Get attitude provider.
      * @return attitude provider
      */
-    FieldAttitudeProvider<T> getAttitudeProvider();
+    AttitudeProvider getAttitudeProvider();
 
     /** Set attitude provider.
      * @param attitudeProvider attitude provider
      */
-    void setAttitudeProvider(FieldAttitudeProvider<T> attitudeProvider);
+    void setAttitudeProvider(AttitudeProvider attitudeProvider);
 
     /** Get the frame in which the orbit is propagated.
      * <p>

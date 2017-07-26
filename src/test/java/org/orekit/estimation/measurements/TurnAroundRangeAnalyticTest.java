@@ -31,9 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +40,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class TurnAroundRangeAnalyticTest {
 
@@ -79,7 +79,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    1.3e-6, 2.1e-6, 5.3e-5, 1.2e-6, 3.5e-6, 1.3e-4);
+                                    1.4e-6, 1.4e-6, 2.6e-6, 9.7e-7, 1.0e-6, 2.1e-6);
     }
 
     /**
@@ -98,7 +98,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
+                                    5.9e-9, 2.2e-8, 4.8e-7, 8.1e-5, 3.6e-4, 1.4e-2);
     }
 
     /**
@@ -117,7 +117,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    1.2e-6, 2.1e-6, 3.1e-5, 1.2e-6, 3.5e-6, 1.3e-4);
+                                    1.5e-6, 2.0e-6, 2.3e-5, 1.0e-6, 1.0e-6, 2.1e-6);
     }
 
     /**
@@ -136,7 +136,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.0e-7, 1.4e-6, 5.1e-5, 1.5e-4, 4.7e-4, 9.9e-3);
+                                    6.1e-9, 2.3e-8, 5.0e-7, 8.1e-5, 3.6e-4, 1.4e-2);
     }
 
     /**
@@ -157,7 +157,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
+                                        4.4e-06, 6.9e-06, 1.3e-04, 3.4e-6, 4.9e-6, 3.6e-5);
 
     }
 
@@ -201,7 +201,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
         genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults,
-                                        3.0e-06, 5.9e-06, 1.3e-04, 3.1e-6, 5.6e-6, 3.9e-5);
+                                        4.4e-06, 6.9e-06, 1.3e-04, 3.4e-6, 4.9e-6, 3.6e-5);
 
     }
 
@@ -235,7 +235,7 @@ public class TurnAroundRangeAnalyticTest {
     void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -274,7 +274,7 @@ public class TurnAroundRangeAnalyticTest {
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
             final double TARestimated = new TurnAroundRangeAnalytic((TurnAroundRange) measurement).
-                                                                    theoreticalEvaluationAnalytic(0, 0, state).getEstimatedValue()[0];
+                                                                    theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state).getEstimatedValue()[0];
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
@@ -316,7 +316,7 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
         Assert.assertEquals(0.0, absErrorsMin, 9.0e-08);
         Assert.assertEquals(0.0, absErrorsMax, 1.1e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 1.7e-15);
+        Assert.assertEquals(0.0, relErrorsMedian, 2.0e-15);
         Assert.assertEquals(0.0, relErrorsMax , 6.4e-15);
     }
 
@@ -333,7 +333,7 @@ public class TurnAroundRangeAnalyticTest {
                                      final double refErrorsVMean, final double refErrorsVMax)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -388,25 +388,27 @@ public class TurnAroundRangeAnalyticTest {
             final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final EstimatedMeasurement<TurnAroundRange> TAR = new TurnAroundRangeAnalytic((TurnAroundRange)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+            final EstimatedMeasurement<TurnAroundRange> TAR = new TurnAroundRangeAnalytic((TurnAroundRange)measurement).
+                            theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state);
             if (isModifier) {
                 modifier.modify(TAR);
             }
-            final double[][] jacobian  = TAR.getStateDerivatives();
+            final double[][] jacobian  = TAR.getStateDerivatives(0);
 
             // Jacobian reference value
             final double[][] jacobianRef;
 
             if (isFiniteDifferences) {
                 // Compute a reference value using finite differences
-                jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.estimate(0, 0, state).getEstimatedValue();
+                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
-                }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                   OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
-                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
             }
 
 //            //Test: Test point by point with the debugger
@@ -490,7 +492,7 @@ public class TurnAroundRangeAnalyticTest {
                                          final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
                     throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
@@ -580,7 +582,8 @@ public class TurnAroundRangeAnalyticTest {
             for (int i = 0; i < 6; ++i) {
                 // Analytical computation of the parameters derivatives
                 final EstimatedMeasurement<TurnAroundRange> TAR =
-                                new TurnAroundRangeAnalytic((TurnAroundRange) measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                                new TurnAroundRangeAnalytic((TurnAroundRange) measurement).
+                                theoreticalEvaluationAnalytic(0, 0, propagator.getInitialState(), state);
                 // Optional modifier addition
                 if (isModifier) {
                   modifier.modify(TAR);
@@ -595,17 +598,17 @@ public class TurnAroundRangeAnalyticTest {
                 if (isFiniteDifferences) {
                     // Compute a reference value using finite differences
                     final ParameterFunction dMkdP =
-                                    EstimationUtils.differentiate(new ParameterFunction() {
+                                    Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                            return measurement.estimate(0, 0, state).getEstimatedValue()[0];
+                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                         }
                                     }, drivers[i], 3, 20.0);
                     ref = dMkdP.value(drivers[i]);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i])[0];
                 }
 
                 // Deltas

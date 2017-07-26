@@ -31,7 +31,7 @@ public class IodGoodingTest {
     @Test
     public void testGooding() throws OrekitException
     {
-        final Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();

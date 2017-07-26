@@ -31,7 +31,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
-import org.orekit.forces.drag.atmosphere.JB2006InputParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -46,7 +45,7 @@ import org.orekit.utils.Constants;
  *
  * @author Fabien Maussion
  */
-public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
+public class SolarInputs97to05 implements DTM2000InputParameters {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -3687601846334870069L;
