@@ -20,7 +20,20 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.0" date="TBD" description="TBD">
+    <release version="9.0" date="2017-07-26"
+             description="Version 9.0 is a major release of Orekit. It introduces several new
+             features and bug fixes. New features introduced in version 9.0 are Taylor algebra
+             propagation (for high order uncertainties propagation or very fast Monte-Carlo
+             studies), multi-satellites orbit determination, parallel multi-satellites propagation,
+             parametric accelerations (polynomial and harmonic), turn-around measurements,
+             inter-satellite range measurements, rigth ascension/declination measurements,
+             Antenna Phase Center measurements modifiers, EOP estimation in precise orbit
+             determination, orbit to attitude coupling in partial derivatives, parsing of CCSDM
+             Tracking Data Messages, parsing of university of Bern Astronomical Institute files
+             for Klobuchar coefficients, ITRF 2014, preservation of non-Keplerian orbits derivatives,
+             JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events
+             detectors, ephemeris writer, speed improvements when tens of thousands of measurements
+             are used in orbit determination, Danish translations. Several bugs have been fixed.">
      <action dev="luc" type="add">
        Added on-board antenna phase center effect on inter-satellites range measurements.
      </action>

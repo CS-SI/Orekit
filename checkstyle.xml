@@ -72,30 +72,30 @@
                              SR_ASSIGN, STAR, STAR_ASSIGN"/>
         </module>
         <module name="FileContentsHolder"/>
+        <module name="SuppressionCommentFilter">
+           <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>
+            <property name="checkFormat"      value="JavadocVariable"/>
+        </module>
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifierCheck"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
+            <property name="checkFormat"      value="VisibilityModifierCheck"/>
+        </module>
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter"/>
+            <property name="checkFormat"      value="NoWhitespaceAfter"/>
+        </module>
+        <module name="SuppressionCommentFilter">
+          <property name="offCommentFormat" value="CHECKSTYLE\: stop FallThrough check"/>
+          <property name="onCommentFormat" value="CHECKSTYLE\: resume FallThrough check"/>
+          <property name="checkFormat" value="FallThrough"/>
+        </module>
     </module>
     <module name="RegexpHeader">
       <property name="headerFile" value="${checkstyle.header.file}" />
     </module>
     <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
-        <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>
-        <property name="checkFormat"      value="JavadocVariable"/>
-    </module>
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifierCheck"/>
-        <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
-        <property name="checkFormat"      value="VisibilityModifierCheck"/>
-    </module>
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter"/>
-        <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter"/>
-        <property name="checkFormat"      value="NoWhitespaceAfter"/>
-    </module>
-    <module name="SuppressionCommentFilter">
-    	<property name="offCommentFormat" value="CHECKSTYLE\: stop FallThrough check"/>
-    	<property name="onCommentFormat" value="CHECKSTYLE\: resume FallThrough check"/>
-    	<property name="checkFormat" value="FallThrough"/>
-  	</module>
 </module>
