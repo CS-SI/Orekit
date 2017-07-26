@@ -217,13 +217,11 @@ public class TDMParser extends DefaultHandler {
      */
     public TDMFile parse(final String fileName)
         throws OrekitException {
-        final InputStream stream;
-        try {
-            stream = new FileInputStream(fileName);
-        } catch (IOException e) {
+        try (InputStream stream = new FileInputStream(fileName)) {
+            return parse(stream, fileName);
+        } catch (IOException ioe) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
         }
-        return parse(stream, fileName);
     }
 
     /** Parse a CCSDS Tracking Data Message.
@@ -595,7 +593,7 @@ public class TDMParser extends DefaultHandler {
     }
 
     /** Handler for parsing KEYVALUE file formats. */
-    private class KeyValueHandler {
+    private static class KeyValueHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;
@@ -755,7 +753,7 @@ public class TDMParser extends DefaultHandler {
     }
 
     /** Handler for parsing XML file formats. */
-    private class XMLHandler extends DefaultHandler {
+    private static class XMLHandler extends DefaultHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;
