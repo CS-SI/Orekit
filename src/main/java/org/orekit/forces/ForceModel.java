@@ -67,11 +67,10 @@ public interface ForceModel {
     /**
      * Initialize the force model at the start of propagation. This method will be called
      * before any calls to {@link #addContribution(SpacecraftState, TimeDerivativesEquations)},
-     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations),
-     * {@link #acceleration(SpacecraftState)}, {@link #acceleration(FieldSpacecraftState)}
-     * or {@link #accelerationDerivatives(SpacecraftState, String)}
+     * {@link #addContribution(FieldSpacecraftState, FieldTimeDerivativesEquations)},
+     * {@link #acceleration(SpacecraftState, double[])} or {@link #acceleration(FieldSpacecraftState, RealFieldElement[])}
      *
-     * <p> The default implementation of this method does nothing.
+     * <p> The default implementation of this method does nothing.</p>
      *
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
@@ -85,7 +84,7 @@ public interface ForceModel {
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * <p>
-     * The default implementation simply adds the {@link #acceleration(SpacecraftState) acceleration}
+     * The default implementation simply adds the {@link #acceleration(SpacecraftState, double[]) acceleration}
      * as a non-Keplerian acceleration.
      * </p>
      * @param s current state information: date, kinematics, attitude

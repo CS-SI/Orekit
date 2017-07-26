@@ -20,7 +20,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing the Jacobian of a vector function depending on {@link SpacecraftState}.
- * @see Differentiation#differentiate(StateFunction, int, org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
  * @see StateFunction
  * @author Luc Maisonobe
  * @since 8.0

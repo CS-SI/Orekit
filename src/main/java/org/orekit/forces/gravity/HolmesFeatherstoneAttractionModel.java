@@ -59,9 +59,8 @@ import org.orekit.utils.ParameterDriver;
  * </p>
  * <p>
  * This model directly uses normalized coefficients and stable recursion algorithms
- * so it is more suited to high degree gravity fields than the classical {@link
- * CunninghamAttractionModel Cunningham} or {@link DrozinerAttractionModel Droziner}
- * models which use un-normalized coefficients.
+ * so it is more suited to high degree gravity fields than the classical Cunningham
+ * Droziner models which use un-normalized coefficients.
  * </p>
  * <p>
  * Among the different algorithms presented in Holmes and Featherstone paper, this

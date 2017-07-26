@@ -19,15 +19,13 @@
  * This package provides all gravity-related forces.
  *
  * <p>
- * The force models include several implementations of spherical harmonics
- * attraction models: {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel Holmes-Featherstone},
- * {@link org.orekit.forces.gravity.CunninghamAttractionModel Cunningham}, and {@link
- * org.orekit.forces.gravity.DrozinerAttractionModel Droziner}.
- * The recommended one is {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel Holmes-Featherstone}.</p>
+ * The force models include an implementation of spherical harmonics
+ * attraction model: {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel Holmes-Featherstone}.</p>
  * <p>
  * The force models also include {@link org.orekit.forces.gravity.ThirdBodyAttraction third body attraction},
- * and both {@link org.orekit.forces.gravity.SolidTides solid tides} and {@link
- * org.orekit.forces.gravity.OceanTides ocean tides}, both with or without pole tide.
+ * both {@link org.orekit.forces.gravity.SolidTides solid tides} and {@link
+ * org.orekit.forces.gravity.OceanTides ocean tides}, both with or without pole tide and
+ * {@link org.orekit.forces.gravity.Relativity post-Newtonian correction force due to general relativity}.
  * </p>
  *
  * @author L. Maisonobe
