@@ -36,6 +36,9 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.L2TransformProvider;
+import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -102,7 +105,7 @@ public class testCaseL2_DRAFT {
         final Frame frame1 = FramesFactory.getEME2000();
         final Frame frame2 = FramesFactory.getICRF();
         final Frame frame3 = earthMoonBary.getBodyOrientedFrame();
-
+        
         final Frame referenceFrame = frame1;
         final Frame outputFrame = frame3;
 
@@ -122,12 +125,11 @@ public class testCaseL2_DRAFT {
 
         final Vector3D posL2 = new Vector3D(L2,unitVector);
         System.out.print(posL2.getX() + ", " + posL2.getY() + ", " + posL2.getZ() +"\n");
-
+        
 
         // Initial position
         Vector3D initialPosition = posL2.add( new Vector3D(x,y,z) );
         final PVCoordinates initialPV = new PVCoordinates(initialPosition, new Vector3D(Vx,Vy,Vz));
-
 
         final Orbit referenceOrbit = new CartesianOrbit(initialScWrtBary, referenceFrame, initialDate, muEarth);
 
@@ -162,7 +164,6 @@ public class testCaseL2_DRAFT {
         final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
 
 
-
         // 2: Propagation in Celestial reference frame
 
         final Frame integrationFrame2 = frame2;
@@ -195,12 +196,12 @@ public class testCaseL2_DRAFT {
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
 
 
+        // 3: Propagation in L2 centered frame
+        
+        final Frame frameL2 = new Frame(FramesFactory.getGCRF(), new L2TransformProvider(FramesFactory.getGCRF(), earth, moon), "L2_frame");
+        final Frame integrationFrame3 = frameL2;
 
-        // 3: Propagation in barycentric frame
-        // TODO: replace by frame centered on L2
-        final Frame integrationFrame3 = frame3;
-
-        System.out.print("3- Propagation in barycentric reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
+        System.out.print("3- Propagation in L2 reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
 
         final PVCoordinates initialConditions3 = initialPV;
 
