@@ -161,7 +161,7 @@ public class testCaseRotatingEarth {
             SpacecraftState initialState2 = new SpacecraftState(initialOrbit2, arbitraryAttitude2);
 
             // Create integrator
-            double[][] tolerances2 = NumericalPropagator.tolerances(positionTolerance, referenceOrbit, propagationType);
+            double[][] tolerances2 = NumericalPropagator.tolerances(positionTolerance, initialOrbit2);
             AdaptiveStepsizeIntegrator integrator2 =
                     new DormandPrince853Integrator(minStep, maxstep, tolerances2[0], tolerances2[1]);
 
