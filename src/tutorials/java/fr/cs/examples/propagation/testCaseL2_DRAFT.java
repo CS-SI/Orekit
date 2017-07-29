@@ -37,8 +37,6 @@ import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.L2TransformProvider;
-import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -87,7 +85,7 @@ public class testCaseL2_DRAFT {
         final double Vx = 1000;
         final double Vy = -1000;
         final double Vz = 0;
-        final PVCoordinates initialScWrtBary = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
+        final PVCoordinates initialScWrtBary = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz)); // WHAT IS THIS?
 
         // Integration parameters
         final double minStep = 0.001;
@@ -103,44 +101,48 @@ public class testCaseL2_DRAFT {
 
         // Create frames to compare
         final Frame frame1 = FramesFactory.getEME2000();
-        final Frame frame2 = FramesFactory.getICRF();
+        final Frame frame2 = FramesFactory.getGCRF();
         final Frame frame3 = earthMoonBary.getBodyOrientedFrame();
-        
-        final Frame referenceFrame = frame1;
+        final Frame frameL2 = new Frame(frame2, new L2TransformProvider(frame2, earth, moon), "L2_frame");
+        final Frame referenceFrame = frame2;
         final Frame outputFrame = frame3;
 
         // Compute position of L2
-        final Vector3D posMoon = moon.getPVCoordinates(initialDate, frame3).getPosition();
-        final Vector3D posEarth = earth.getPVCoordinates(initialDate, frame3).getPosition();
-        final double r2 = posMoon.getNorm();
-
-        final Vector3D earthToMoon = (posMoon.subtract(posEarth));
-        final double R = earthToMoon.getNorm();
-        final Vector3D unitVector = earthToMoon.normalize();
-
-        final double q = moon.getGM() / earth.getGM();
-        final double epsilon = Math.pow(q/3, 1/3);
-
-        final double L2 = r2 + R * (-epsilon + 1/3 * Math.pow(epsilon, 2)) + 1/9 * Math.pow(epsilon, 3);
-
-        final Vector3D posL2 = new Vector3D(L2,unitVector);
-        System.out.print(posL2.getX() + ", " + posL2.getY() + ", " + posL2.getZ() +"\n");
+        L2TransformProvider l2transformProvider = new L2TransformProvider(outputFrame, earth, moon);
+        PVCoordinates posL2 = l2transformProvider.getL2(initialDate);
+        System.out.println("L2: "+posL2.getPosition().getNorm());
+//      //(here an already coded method that I found to be wrong, to be deleted once this DRAFT is completed)
+//        final Vector3D posMoon = moon.getPVCoordinates(initialDate, frame3).getPosition();
+//        final Vector3D posEarth = earth.getPVCoordinates(initialDate, frame3).getPosition();
+//        final double r2 = posMoon.getNorm();
+//
+//        final Vector3D earthToMoon = (posMoon.subtract(posEarth));
+//        final double R = earthToMoon.getNorm();
+//        final Vector3D unitVector = earthToMoon.normalize();
+//
+//        final double q = moon.getGM() / earth.getGM();
+//        final double epsilon = Math.pow(q/3, 1/3);
+//
+//        final double L2 = r2 + R * (-epsilon + 1/3 * Math.pow(epsilon, 2)) + 1/9 * Math.pow(epsilon, 3);
+//
+//        final Vector3D posL2 = new Vector3D(L2,unitVector);
+//        System.out.print(posL2.getX() + ", " + posL2.getY() + ", " + posL2.getZ() +"\n");
         
 
         // Initial position
-        Vector3D initialPosition = posL2.add( new Vector3D(x,y,z) );
+        final Vector3D initialPosition = posL2.getPosition().add( new Vector3D(x,y,z) );
         final PVCoordinates initialPV = new PVCoordinates(initialPosition, new Vector3D(Vx,Vy,Vz));
-
+        
         final Orbit referenceOrbit = new CartesianOrbit(initialScWrtBary, referenceFrame, initialDate, muEarth);
 
-
+        
         // 1: Propagation in Earth-centered inertial reference frame
 
         final Frame integrationFrame1 = frame1;
 
         System.out.print("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " + integrationFrame1.isPseudoInertial() + ")\n");
 
-        final org.orekit.frames.Transform initialTransform1 = frame3.getTransformTo(integrationFrame1, initialDate);
+        final org.orekit.frames.Transform initialTransform1 = frame2.getTransformTo(integrationFrame1, initialDate);
         final PVCoordinates initialConditions1 = initialTransform1.transformPVCoordinates(initialPV);
 
         final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1, initialDate, muEarth);
@@ -195,10 +197,8 @@ public class testCaseL2_DRAFT {
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
 
-
         // 3: Propagation in L2 centered frame
         
-        final Frame frameL2 = new Frame(FramesFactory.getGCRF(), new L2TransformProvider(FramesFactory.getGCRF(), earth, moon), "L2_frame");
         final Frame integrationFrame3 = frameL2;
 
         System.out.print("3- Propagation in L2 reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
@@ -253,7 +253,7 @@ public class testCaseL2_DRAFT {
 
 
         System.out.print("Errors from reference trajectory "
-                + "(3: Jupiter-centered inertial frame) [m]\n");
+                + "(3: Earth-Moon barycentre frame) [m]\n");
         System.out.print("1: " + diff1 + "\n"
                 + "   norm: "+ diff1.getNorm() + "\n");
         System.out.print("2: " + diff2 + "\n"
