@@ -110,24 +110,7 @@ public class testCaseL2_DRAFT {
         // Compute position of L2
         L2TransformProvider l2transformProvider = new L2TransformProvider(outputFrame, earth, moon);
         PVCoordinates posL2 = l2transformProvider.getL2(initialDate);
-        System.out.println("L2: "+posL2.getPosition().getNorm());
-//      //(here an already coded method that I found to be wrong, to be deleted once this DRAFT is completed)
-//        final Vector3D posMoon = moon.getPVCoordinates(initialDate, frame3).getPosition();
-//        final Vector3D posEarth = earth.getPVCoordinates(initialDate, frame3).getPosition();
-//        final double r2 = posMoon.getNorm();
-//
-//        final Vector3D earthToMoon = (posMoon.subtract(posEarth));
-//        final double R = earthToMoon.getNorm();
-//        final Vector3D unitVector = earthToMoon.normalize();
-//
-//        final double q = moon.getGM() / earth.getGM();
-//        final double epsilon = Math.pow(q/3, 1/3);
-//
-//        final double L2 = r2 + R * (-epsilon + 1/3 * Math.pow(epsilon, 2)) + 1/9 * Math.pow(epsilon, 3);
-//
-//        final Vector3D posL2 = new Vector3D(L2,unitVector);
-//        System.out.print(posL2.getX() + ", " + posL2.getY() + ", " + posL2.getZ() +"\n");
-        
+        System.out.println("L2 position from body 1 at initialDate [m]: "+posL2.getPosition().getNorm()+"\n");       
 
         // Initial position
         final Vector3D initialPosition = posL2.getPosition().add( new Vector3D(x,y,z) );
