@@ -20,8 +20,6 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.1" date="TBD" description="TBD">
-    </release>
     <release version="9.0" date="2017-07-26"
              description="Version 9.0 is a major release of Orekit. It introduces several new
              features and bug fixes. New features introduced in version 9.0 are Taylor algebra
