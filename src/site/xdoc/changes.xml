@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+     <action dev="luc" type="update">
+       Use a git-flow like branching workflow, with a develop branch for bleeding-edge
+       development, and master branch for stable published versions.
+     </action>
     </release>
     <release version="9.0" date="2017-07-26"
              description="Version 9.0 is a major release of Orekit. It introduces several new
