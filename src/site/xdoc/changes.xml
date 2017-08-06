@@ -30,7 +30,7 @@
              parametric accelerations (polynomial and harmonic), turn-around measurements,
              inter-satellite range measurements, rigth ascension/declination measurements,
              Antenna Phase Center measurements modifiers, EOP estimation in precise orbit
-             determination, orbit to attitude coupling in partial derivatives, parsing of CCSDS
+             determination, orbit to attitude coupling in partial derivatives, parsing of CCSDM
              Tracking Data Messages, parsing of university of Bern Astronomical Institute files
              for Klobuchar coefficients, ITRF 2014, preservation of non-Keplerian orbits derivatives,
              JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events
