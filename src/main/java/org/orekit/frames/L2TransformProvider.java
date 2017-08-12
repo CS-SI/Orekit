@@ -51,14 +51,14 @@ public class L2TransformProvider implements TransformProvider {
     private final CelestialBody secondaryBody;
 
     /** Simple constructor.
-     * @param body1 Primary body.
-     * @param body2 Secondary body.
+     * @param primaryBody Primary body.
+     * @param secondaryBody Secondary body.
      * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
-    public L2TransformProvider(final CelestialBody body1, final CelestialBody body2)
+    public L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
                     throws OrekitException {
-        this.primaryBody = body1;
-        this.secondaryBody = body2;
+        this.primaryBody = primaryBody;
+        this.secondaryBody = secondaryBody;
         this.frame = primaryBody.getInertiallyOrientedFrame();
     }
 
