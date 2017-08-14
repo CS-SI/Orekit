@@ -19,7 +19,7 @@ package org.orekit.frames;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 
-/** Class to crate a L2 centered frame with {@link L2TransformProvider}.
+/** Class to create a L2 centered frame with {@link L2TransformProvider}.
  *  Parent frame is always set as primaryBody.getInertiallyOrientedFrame()
  * @author Luc Maisonabe
  * @author Julio Hernanz
@@ -29,10 +29,10 @@ public class L2Frame extends Frame {
     /** Serializable UID.*/
     private static final long serialVersionUID = 20170811L;
 
-    /** Simple constructor.
+    /** Simple constructor. Calls to {@link Frame#Frame(Frame, TransformProvider, String) Frame(Frame, TransformProvider, String)}
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-     * @throws OrekitException If frame cannot be retrieved in L2TransformProvider
+     * @throws OrekitException If frame cannot be retrieved in L2TransformProvider.
      * @throws IllegalArgumentException If parent frame is null.
      */
     public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody) throws IllegalArgumentException, OrekitException {
