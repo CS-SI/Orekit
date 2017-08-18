@@ -33,8 +33,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.CenteredBodyAttraction;
-import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
@@ -79,17 +78,17 @@ public class testCaseL2_DRAFT {
 
         // Time settings
         final AbsoluteDate initialDate = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        double integrationTime = 5000000;
-        double integrationStep = 50000;
+        double integrationTime = 5.0e6;//5.0e6;
+        double outputStep = 60;
 
         // Initial conditions
-        final double x = -2;
-        final double y = -1;
+        final double x = 1000;
+        final double y = -1000;
         final double z = 0;
-        final double Vx = 1000;
-        final double Vy = -1000;
+        final double Vx = 100;
+        final double Vy = -100;
         final double Vz = 0;
-        final PVCoordinates initialScWrtBary = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
+        final PVCoordinates initialScWrtBary = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));//??
 
         // Integration parameters
         final double minStep = 0.001;
@@ -111,14 +110,12 @@ public class testCaseL2_DRAFT {
         final Frame referenceFrame = gcrf;
         final Frame outputFrame = earthMoonBaryFrame;
         
-        // Compute position of L2 (a transform to output frame is needed)
-        Vector3D posL2 = frameL2.getTransformTo(outputFrame, initialDate).transformVector(Vector3D.ZERO);
+        // Initial position
+        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
+        final PVCoordinates initialPV = frameL2.getTransformTo(outputFrame, initialDate).transformPVCoordinates(initialPVInL2);
         
-        // Initial position (small variation from L2)
-        final Vector3D initialPosition = posL2.add( new Vector3D(x,y,z) );
-        final PVCoordinates initialPV = new PVCoordinates(initialPosition, new Vector3D(Vx,Vy,Vz));
         
-        final Orbit referenceOrbit = new CartesianOrbit(initialScWrtBary, referenceFrame, initialDate, muEarth);
+        final Orbit referenceOrbit = new CartesianOrbit(initialScWrtBary, referenceFrame, initialDate, muEarth);//??
 
         
         // 1: Propagation in Earth-centered inertial reference frame
@@ -146,7 +143,7 @@ public class testCaseL2_DRAFT {
         propagator1.setOrbitType(propagationType);
         propagator1.setInitialState(initialState1);
 
-        propagator1.setMasterMode(integrationStep, new TutorialStepHandler("L2sc1.txt", "L2earth1.txt", 
+        propagator1.setMasterMode(outputStep, new TutorialStepHandler("L2sc1.txt", "L2earth1.txt", 
                                                                            "L2moon1.txt", outputFrame, earth, moon));
 
         final ForceModel moonAttraction1 = new ThirdBodyAttraction(moon);
@@ -181,10 +178,11 @@ public class testCaseL2_DRAFT {
         propagator2.setOrbitType(null);
         propagator2.setInitialState(initialState);
 
-        propagator2.setMasterMode(integrationStep, new TutorialStepHandler("L2sc2.txt", "L2earth2.txt", 
+        propagator2.setMasterMode(outputStep, new TutorialStepHandler("L2sc2.txt", "L2earth2.txt", 
                                                                            "L2moon2.txt", outputFrame, earth, moon));
 
-        final ForceModel earthAttraction2 = new NewtonianAttraction(muEarth);
+        final ForceModel earthAttraction2 = new SingleBodyAbsoluteAttraction(earth);
+        propagator2.setIgnoreCentralAttraction(true);
         final ForceModel moonAttraction2 = new ThirdBodyAttraction(moon);
         propagator2.addForceModel(earthAttraction2);
         propagator2.addForceModel(moonAttraction2);
@@ -210,10 +208,10 @@ public class testCaseL2_DRAFT {
         Attitude arbitraryAttitude3 = new Attitude( integrationFrame3,
                 new TimeStampedAngularCoordinates( initialDate, new PVCoordinates( Vector3D.PLUS_I, Vector3D.ZERO ), new PVCoordinates( Vector3D.PLUS_I, Vector3D.ZERO )) );
         final SpacecraftState initialState3 = new SpacecraftState(initialOrbit3, arbitraryAttitude3);
-
-
-        final double[][] tolerances3 = NumericalPropagator.tolerances(positionTolerance, referenceOrbit, 
-                                                                      propagationType);
+     
+        final AbsolutePVCoordinates initialAbsPva3 = new AbsolutePVCoordinates(integrationFrame3, initialDate, initialConditions3);
+        final double[][] tolerances3 = NumericalPropagator.tolerances(positionTolerance, initialAbsPva3);
+        
         AdaptiveStepsizeIntegrator integrator3 =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances3[0], tolerances3[1]);
 
@@ -221,15 +219,19 @@ public class testCaseL2_DRAFT {
         propagator3.setOrbitType(null);
         propagator3.setInitialState(initialState3);
 
-        final ForceModel earthAttraction3 = new ThirdBodyAttraction(earth);
-        final ForceModel moonAttraction3 = new ThirdBodyAttraction(moon);
+        final ForceModel earthAttraction3 = new SingleBodyAbsoluteAttraction(earth);
+        final ForceModel moonAttraction3 = new SingleBodyAbsoluteAttraction(moon);
+        propagator3.setIgnoreCentralAttraction(true);
         propagator3.addForceModel(earthAttraction3);
         propagator3.addForceModel(moonAttraction3);
 
-        final ForceModel inertial = new InertialForces(referenceFrame);
-        propagator3.addForceModel(inertial);
+//        //1st way L2Frame constructor must be: super(_,_,_)
+//        final ForceModel inertial = new InertialForces(referenceFrame);
+//        propagator3.addForceModel(inertial);
+        
+        //2ndway L2Frame constructor must be: super(_,_,_,true)
 
-        propagator3.setMasterMode(integrationStep, new TutorialStepHandler("L2sc3.txt", "L2earth3.txt", 
+        propagator3.setMasterMode(outputStep, new TutorialStepHandler("L2sc3.txt", "L2earth3.txt", 
                                                                            "L2moon3.txt", outputFrame, earth, moon));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));

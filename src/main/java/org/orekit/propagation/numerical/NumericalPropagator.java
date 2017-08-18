@@ -148,6 +148,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
+    /** boolean to ignore or not the creation of a NewtonianAttraction. */
+    private boolean ignoreCentralAttraction = false;
+
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -169,6 +172,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
+        this.ignoreCentralAttraction = ignoreCentralAttraction;
+    }
+
      /** Set the central attraction coefficient μ.
       * <p>
       * Setting the central attraction coefficient is
@@ -180,7 +187,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @see #getAllForceModels()
      */
     public void setMu(final double mu) {
-        addForceModel(new NewtonianAttraction(mu));
+        if (ignoreCentralAttraction) {
+            superSetMu(mu);
+        } else {
+            addForceModel(new NewtonianAttraction(mu));
+        }
     }
 
     /** Set the central attraction coefficient μ only in upper class.

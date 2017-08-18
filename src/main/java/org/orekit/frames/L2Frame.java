@@ -37,7 +37,7 @@ public class L2Frame extends Frame {
      */
     public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody) throws IllegalArgumentException, OrekitException {
         super(primaryBody.getInertiallyOrientedFrame(), new L2TransformProvider(primaryBody, secondaryBody),
-              primaryBody.getName() + "-" + secondaryBody.getName() + "-L2");
+              primaryBody.getName() + "-" + secondaryBody.getName() + "-L2", true);
     }
 
 }
