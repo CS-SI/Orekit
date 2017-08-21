@@ -33,7 +33,34 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.ParameterDriver;
 
-/** Body attraction force model computed as absolute acceleration towards frame center.
+/** Body attraction force model computed as absolute acceleration towards a body.
+ * <p>
+ * This force model represents the same physical principles as {@link NewtonianAttraction},
+ * but has several major differences:
+ * </p>
+ * <ul>
+ *   <li>the attracting body can be <em>away</em> from the integration frame center,</li>
+ *   <li>several instances of this force model can be added when several bodies are involved,</li>
+ *   <li>this force model is <em>never</em> automatically added by the numerical propagator</li>
+ * </ul>
+ * <p>
+ * The possibility for the attracting body to be away from the frame center allows to use this force
+ * model when integrating for example an interplanetary trajectory propagated in an Earth centered
+ * frame (in which case an instance of {@link org.orekit.forces.inertia.InertialForces} must also be
+ * added to take into account the coupling effect of relative frames motion).
+ * </p>
+ * <p>
+ * The possibility to add several instances allows to use this in interplanetary trajectories or
+ * in trajectories about Lagrangian points
+ * </p>
+ * <p>
+ * The fact this force model is <em>never</em> automatically added by the numerical propagator differs
+ * from {@link NewtonianAttraction} as {@link NewtonianAttraction} may be added automatically when
+ * propagating a trajectory represented as an {@link org.orekit.orbits.Orbit}, which must always refer
+ * to a central body, if user did not add the {@link NewtonianAttraction} or set the central attraction
+ * coefficient by himself.
+ * </p>
+ * @see org.orekit.forces.inertia.InertialForces
  * @author Luc Maisonobe
  * @author Julio Hernanz
  */
@@ -87,8 +114,8 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         throws OrekitException {
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+        final Vector3D bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D satToBody     = bodyPosition.subtract(s.getPVCoordinates().getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute absolute acceleration
