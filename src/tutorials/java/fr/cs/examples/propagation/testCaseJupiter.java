@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Test;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
@@ -93,7 +92,6 @@ import org.orekit.utils.ParameterDriver;
 
 public class testCaseJupiter {
 
-    @Test
     public static void main(String[] args) throws OrekitException {
 
         // configure Orekit
