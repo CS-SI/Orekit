@@ -26,12 +26,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -45,14 +48,18 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -153,6 +160,8 @@ public class TabulatedLofOffsetTest {
                 final Rotation r1 = currentState.getAttitude().getRotation();
                 final Rotation r2 = rebuilt.getAttitude().getRotation();
                 Assert.assertEquals(0.0, Rotation.distance(r1, r2), 7.0e-6);
+                checkField(Decimal64Field.getInstance(), tabulated,
+                           currentState.getOrbit(), currentState.getDate(), currentState.getFrame());
             }
         });
         rebuildingPropagator.propagate(orbit.getDate().shiftedBy(50), orbit.getDate().shiftedBy(1950));
@@ -205,6 +214,19 @@ public class TabulatedLofOffsetTest {
         TabulatedLofOffset deserialized = (TabulatedLofOffset) ((BoundedPropagator) ois.readObject()).getAttitudeProvider();
         Assert.assertEquals(sample.size(), deserialized.getTable().size());
 
+    }
+
+    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
+                                                            final Orbit orbit, final AbsoluteDate date,
+                                                            final Frame frame)
+        throws OrekitException {
+        Attitude attitudeD = provider.getAttitude(orbit, date, frame);
+        final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
+        final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
+        FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
+        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @Before

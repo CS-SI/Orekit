@@ -34,9 +34,15 @@ import org.orekit.utils.Constants;
 public class RangeMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final Vector3D antennaPhaseCenter;
 
     public RangeMeasurementCreator(final Context context) {
-        this.context = context;
+        this(context, Vector3D.ZERO);
+    }
+
+    public RangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
+        this.context            = context;
+        this.antennaPhaseCenter = antennaPhaseCenter;
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
@@ -45,7 +51,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
-                final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+                final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
                 final TopocentricFrame topo      = station.getBaseFrame();
 
                 if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {

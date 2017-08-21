@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link L2TransformProvider}.
  * 
- * @author Luc Maisonabe
+ * @author Luc Maisonobe
  * @author Julio Hernanz
  */
 public class L2TransformProviderTest {

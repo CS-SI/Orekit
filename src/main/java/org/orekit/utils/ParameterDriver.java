@@ -142,10 +142,8 @@ public class ParameterDriver {
 
     /** Change the name of this parameter driver.
      * @param name new name
-     * @exception OrekitException if an observer throws one
      */
-    public void setName(final String name)
-        throws OrekitException {
+    public void setName(final String name) {
         final String previousName = this.name;
         this.name = name;
         for (final ParameterObserver observer : observers) {
@@ -223,10 +221,9 @@ public class ParameterDriver {
 
     /** Set reference date.
      * @param newReferenceDate new reference date
-     * @exception OrekitException if an observer throws one
      * @since 9.0
      */
-    public void setReferenceDate(final AbsoluteDate newReferenceDate) throws OrekitException {
+    public void setReferenceDate(final AbsoluteDate newReferenceDate) {
         final AbsoluteDate previousReferenceDate = getReferenceDate();
         referenceDate = newReferenceDate;
         for (final ParameterObserver observer : observers) {
@@ -268,7 +265,11 @@ public class ParameterDriver {
      * otherwise it will be fixed
      */
     public void setSelected(final boolean selected) {
+        final boolean previousSelection = isSelected();
         this.selected = selected;
+        for (final ParameterObserver observer : observers) {
+            observer.selectionChanged(previousSelection, this);
+        }
     }
 
     /** Check if parameter is selected.

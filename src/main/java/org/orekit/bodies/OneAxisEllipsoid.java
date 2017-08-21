@@ -193,21 +193,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
-    /** Get the intersection point of a line with the surface of the body.
-     * <p>A line may have several intersection points with a closed
-     * surface (we consider the one point case as a degenerated two
-     * points case). The close parameter is used to select which of
-     * these points should be returned. The selected point is the one
-     * that is closest to the close point.</p>
-     * @param line test line (may intersect the body or not)
-     * @param close point used for intersections selection
-     * @param frame frame in which line is expressed
-     * @param date date of the line in given frame
-     * @return intersection point at altitude zero or null if the line does
-     * not intersect the surface
-     * @exception OrekitException if line cannot be converted to body frame
-     * @param <T> the type of the field elements
-     */
+    /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
                                                                                       final FieldVector3D<T> close,
                                                                                       final Frame frame,
@@ -276,11 +262,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
-    /** Transform a surface-relative point to a Cartesian point.
-     * @param point surface-relative point, using time as the single derivation parameter
-     * @return point at the same location but as a Cartesian point including derivatives
-     * @param <T> the type of the field elements
-     */
+    /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
 
         final T latitude  = point.getLatitude();

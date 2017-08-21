@@ -137,6 +137,7 @@ public class TimeComponentsTest {
         Assert.assertEquals(60, TimeComponents.parseTime("23:59:59+01:00").getMinutesFromUTC());
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     public void testComparisons() {
         TimeComponents[] times = {

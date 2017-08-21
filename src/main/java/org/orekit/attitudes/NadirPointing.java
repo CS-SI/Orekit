@@ -19,15 +19,22 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -73,7 +80,7 @@ public class NadirPointing extends GroundPointing {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.01;
-        final List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        final List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.shiftedBy(-2 * h)));
         sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.shiftedBy(-h)));
         sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
@@ -82,6 +89,29 @@ public class NadirPointing extends GroundPointing {
 
         // use interpolation to compute properly the time-derivatives
         return TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final Frame frame)
+        throws OrekitException {
+
+        // transform from specified reference frame to body frame
+        final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
+
+        // sample intersection points in current date neighborhood
+        final double h  = 0.01;
+        final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.shiftedBy(-2 * h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.shiftedBy(-h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.shiftedBy(+h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.shiftedBy(+2 * h)));
+
+        // use interpolation to compute properly the time-derivatives
+        return TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
 
     }
 
@@ -109,6 +139,38 @@ public class NadirPointing extends GroundPointing {
         final Vector3D pNadirRef = refToBody.getInverse().transformPosition(pNadirBody);
 
         return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO, Vector3D.ZERO);
+
+    }
+
+    /** Compute ground point in nadir direction, in reference frame.
+     * @param scRef spacecraft coordinates in reference frame
+     * @param refToBody transform from reference frame to body frame
+     * @param <T> type of the field elements
+     * @return intersection point in body frame (only the position is set!)
+     * @exception OrekitException if line of sight does not intersect body
+     * @since 9.0
+     */
+    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> nadirRef(final TimeStampedFieldPVCoordinates<T> scRef,
+                                                                                      final FieldTransform<T> refToBody)
+        throws OrekitException {
+
+        final FieldVector3D<T> satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
+
+        // satellite position in geodetic coordinates
+        final FieldGeodeticPoint<T> gpSat = shape.transform(satInBodyFrame, getBodyFrame(), scRef.getDate());
+
+        // nadir position in geodetic coordinates
+        final FieldGeodeticPoint<T> gpNadir = new FieldGeodeticPoint<>(gpSat.getLatitude(), gpSat.getLongitude(),
+                                                                       gpSat.getAltitude().getField().getZero());
+
+        // nadir point position in body frame
+        final FieldVector3D<T> pNadirBody = shape.transform(gpNadir);
+
+        // nadir point position in reference frame
+        final FieldVector3D<T> pNadirRef = refToBody.getInverse().transformPosition(pNadirBody);
+
+        final FieldVector3D<T> zero = FieldVector3D.getZero(gpSat.getAltitude().getField());
+        return new TimeStampedFieldPVCoordinates<>(scRef.getDate(), pNadirRef, zero, zero);
 
     }
 

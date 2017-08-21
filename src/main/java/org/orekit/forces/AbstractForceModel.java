@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ParameterDriver;
 
-/** Base clas for force models.
+/** Base class for force models.
  * @author Luc Maisonobe
  * @since 8.0
  */

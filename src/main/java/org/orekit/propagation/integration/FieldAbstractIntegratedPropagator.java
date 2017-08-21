@@ -41,7 +41,7 @@ import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.orekit.attitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
@@ -137,7 +137,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     }
 
     /**  {@inheritDoc} */
-    public void setAttitudeProvider(final FieldAttitudeProvider<T> attitudeProvider) {
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
@@ -368,7 +368,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      */
     protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, double mu,
                                                         OrbitType orbitType, PositionAngle positionAngleType,
-                                                        FieldAttitudeProvider<T> attitudeProvider, Frame frame);
+                                                        AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
      * @param integ numerical integrator to use for propagation.
@@ -659,9 +659,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
-            throws OrekitException {
-        }
+        void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
+            throws OrekitException;
 
         /** Compute differential equations for main state.
          * @param state current state

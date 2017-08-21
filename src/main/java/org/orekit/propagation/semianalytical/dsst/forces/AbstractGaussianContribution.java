@@ -33,13 +33,11 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
@@ -275,20 +273,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         return meanElementRate;
     }
 
-    /** Compute the acceleration due to the non conservative perturbing force.
-     *
-     *  @param state current state information: date, kinematics, attitude
-     *  @return the perturbing acceleration
-     *  @exception OrekitException if some specific error occurs
-     */
-    protected Vector3D getAcceleration(final SpacecraftState state)
-        throws OrekitException {
-        final AccelerationRetriever retriever = new AccelerationRetriever(state);
-        contribution.addContribution(state, retriever);
-
-        return retriever.getAcceleration();
-    }
-
     /** Compute the limits in L, the true longitude, for integration.
      *
      *  @param  state current state information: date, kinematics, attitude
@@ -387,56 +371,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         return currentRhoSigmaj;
     }
 
-    /** Internal class for retrieving acceleration from a {@link ForceModel}. */
-    private static class AccelerationRetriever implements TimeDerivativesEquations {
-
-        /** acceleration vector. */
-        private Vector3D acceleration;
-
-        /** state. */
-        private final SpacecraftState state;
-
-        /** Simple constructor.
-         *  @param state input state
-         */
-        AccelerationRetriever(final SpacecraftState state) {
-            this.acceleration = Vector3D.ZERO;
-            this.state = state;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addKeplerContribution(final double mu) {
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addXYZAcceleration(final double x, final double y, final double z) {
-            acceleration = new Vector3D(x, y, z);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
-            throws OrekitException {
-            acceleration = frame.getTransformTo(state.getFrame(),
-                                                state.getDate()).transformVector(gamma);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addMassDerivative(final double q) {
-        }
-
-        /** Get the acceleration vector.
-         * @return acceleration vector
-         */
-        public Vector3D getAcceleration() {
-            return acceleration;
-        }
-
-    }
-
     /** Internal class for numerical quadrature. */
     private class IntegrableFunction implements UnivariateVectorFunction {
 
@@ -524,7 +458,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 final SpacecraftState shiftedState =
                         new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = getAcceleration(shiftedState);
+                acc = contribution.acceleration(shiftedState, contribution.getParameters());
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);

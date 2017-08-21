@@ -43,6 +43,13 @@ as required.
 
 |  package |                                              link                                                         |
 |----------|-----------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-9.0-sources.zip](https://www.orekit.org/forge/attachments/download/663/orekit-9.0-sources.zip)    |
+|  binary  | [orekit-9.0.jar](https://www.orekit.org/forge/attachments/download/664/orekit-9.0.jar)                    |
+|  javadoc | [orekit-9.0-javadoc.jar](https://www.orekit.org/forge/attachments/download/665/orekit-9.0-javadoc.jar)    |
+version 9.0 downloads (release date: 2017-07-26)
+
+|  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-8.0-sources.zip](https://www.orekit.org/forge/attachments/download/611/orekit-8.0-sources.zip)    |
 |  binary  | [orekit-8.0.jar](https://www.orekit.org/forge/attachments/download/612/orekit-8.0.jar)                    |
 |  javadoc | [orekit-8.0-javadoc.jar](https://www.orekit.org/forge/attachments/download/613/orekit-8.0-javadoc.jar)    |
@@ -147,12 +154,12 @@ your program:
 
 This file contents is:
 
-  * leap seconds data up to early 2016,
+  * leap seconds data up to end 2017,
 
-  * IERS Earth orientation parameters from 1973 to mid 2014
-    with predicted date to end 2014 for some parameters (both IAU-1980 and IAU-2000),
+  * IERS Earth orientation parameters from 1973 to mid 2017
+    with predicted date to fall 2017 for some parameters (both IAU-1980 and IAU-2000),
 
-  * Marshall Solar Activity Futur Estimation from 1999 to 2014,
+  * Marshall Solar Activity Future Estimation from 1999 to 2017,
 
   * DE 430 planetary ephemerides from 1990 to 2069,
 
@@ -162,4 +169,4 @@ There are no guarantees that this file will be available indefinitely or that it
 content will be updated. It should be considered as a simple configuration example.
 Users are encouraged to set up their own configuration data.
 
-The file is available by following this link: [orekit-data.zip](https://www.orekit.org/forge/attachments/download/610/orekit-data.zip).
+The file is available by following this link: [Orekit files](https://www.orekit.org/forge/projects/orekit/files).

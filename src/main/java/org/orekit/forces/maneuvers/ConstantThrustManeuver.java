@@ -20,17 +20,12 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -45,7 +40,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satellite frame.
@@ -97,17 +91,8 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** End of the maneuver. */
     private final AbsoluteDate endDate;
 
-    /** Engine thrust. */
-    private double thrust;
-
-    /** Engine flow-rate. */
-    private double flowRate;
-
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
@@ -161,8 +146,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             this.startDate = endDate.shiftedBy(duration);
         }
 
-        this.thrust    = thrust;
-        this.flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        final double flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
         this.direction = direction.normalize();
         firing = false;
 
@@ -171,23 +155,8 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         try {
             tpd = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
                                       0.0, Double.POSITIVE_INFINITY);
-            tpd.addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    ConstantThrustManeuver.this.thrust = driver.getValue();
-                }
-            });
             fpd = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
                                       Double.NEGATIVE_INFINITY, 0.0 );
-            fpd.addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    ConstantThrustManeuver.this.flowRate = driver.getValue();
-                }
-            });
-            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -198,6 +167,13 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return false;
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         // set the initial value of firing
@@ -215,13 +191,15 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @return thrust force (N).
      */
     public double getThrust() {
-        return thrust;
+        return thrustDriver.getValue();
     }
 
     /** Get the specific impulse.
      * @return specific impulse (s).
      */
     public double getISP() {
+        final double thrust   = getThrust();
+        final double flowRate = getFlowRate();
         return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
@@ -229,92 +207,76 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @return flow rate (negative, kg/s).
      */
     public double getFlowRate() {
-        return flowRate;
+        return flowRateDriver.getValue();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
         if (firing) {
 
             // compute thrust acceleration in inertial frame
-            adder.addAcceleration(new Vector3D(thrust / s.getMass(),
-                                               s.getAttitude().getRotation().applyInverseTo(direction)),
-                                  s.getFrame());
+            final double[] parameters = getParameters();
+            adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // compute flow rate
-            adder.addMassDerivative(flowRate);
+            adder.addMassDerivative(parameters[1]);
 
         }
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        final T zero = s.getA().getField().getZero();
+        throws OrekitException {
         if (firing) {
+
+            final T[] parameters = getParameters(s.getDate().getField());
 
             // compute thrust acceleration in inertial frame
-            adder.addAcceleration(new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
-                                                      s.getAttitude().getRotation().applyInverseTo(direction)),
-                                  s.getFrame());
+            adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // compute flow rate
-            adder.addMassDerivative(zero.add(flowRate));
+            adder.addMassDerivative(parameters[1]);
 
         }
 
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass)
-        throws OrekitException {
+    @Override
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
         if (firing) {
-            return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+            final double thrust = parameters[0];
+            return new Vector3D(thrust / state.getMass(),
+                                state.getAttitude().getRotation().applyInverseTo(direction));
+        } else {
+            return Vector3D.ZERO;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters) {
+        if (firing) {
+            // compute thrust acceleration in inertial frame
+            final T thrust = parameters[0];
+            return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+                                       s.getAttitude().getRotation().applyInverseTo(direction));
         } else {
             // constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(mass.getField());
+            return FieldVector3D.getZero(s.getMass().getField());
         }
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException {
-
-        complainIfNotSupported(paramName);
-
-        if (firing) {
-
-            if (thrustDriver.getName().equals(paramName)) {
-                final DerivativeStructure thrustDS = factory.variable(0, thrust);
-                return new FieldVector3D<>(thrustDS.divide(s.getMass()),
-                                           s.getAttitude().getRotation().applyInverseTo(direction));
-            } else if (flowRateDriver.getName().equals(paramName)) {
-                // parameter is flow rate
-                // acceleration does not depend on flow rate (only mass decrease does)
-                return FieldVector3D.getZero(factory.getDerivativeField());
-            } else {
-                throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                          thrustDriver.getName() + ", " +
-                                          flowRateDriver.getName());
-            }
-
-        } else {
-            // constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(factory.getDerivativeField());
-        }
-
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public Stream<EventDetector> getEventsDetectors() {
         // in forward propagation direction, firing must be enabled
         // at start time and disabled at end time; in backward
@@ -334,12 +296,14 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
         return new ParameterDriver[] {
             thrustDriver, flowRateDriver
         };
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // in forward propagation direction, firing must be enabled

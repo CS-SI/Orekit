@@ -55,7 +55,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * force models.
  * </p>
  * <p>
- * The object <code>OrbitalParameters</code> is guaranteed to be immutable.
+ * Instance of this class are guaranteed to be immutable.
  * </p>
  * @author Luc Maisonobe
  * @author Guylaine Prat

@@ -31,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  *
@@ -72,17 +71,14 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      */
     private final double SCALE = FastMath.scalb(1.0, -3);
 
-    /** Drivers for radiation pressure coefficient parameter. */
-    private final ParameterDriver[] radiationParametersDrivers;
+    /** Driver for absorption coefficient. */
+    private final ParameterDriver absorptionParameterDriver;
+
+    /** Driver for specular reflection coefficient. */
+    private final ParameterDriver reflectionParameterDriver;
 
     /** Cross section (m²). */
     private final double crossSection;
-
-    /** Absorption coefficient. */
-    private double alpha;
-
-    /** Specular reflection coefficient. */
-    private double tau;
 
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
@@ -93,72 +89,69 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
      * @param tau specular reflection coefficient τ between 0.0 an 1.0
      */
     public IsotropicRadiationCNES95Convention(final double crossSection, final double alpha, final double tau) {
-        this.radiationParametersDrivers = new ParameterDriver[2];
         try {
-            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                alpha, SCALE, 0.0, 1.0);
-            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    IsotropicRadiationCNES95Convention.this.alpha = driver.getValue();
-                }
-            });
-            radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                tau, SCALE, 0.0, 1.0);
-            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                /** {@inheritDoc} */
-                    IsotropicRadiationCNES95Convention.this.tau = driver.getValue();
-                }
-            });
+            absorptionParameterDriver = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
+                                                            alpha, SCALE, 0.0, 1.0);
+            reflectionParameterDriver = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                            tau, SCALE, 0.0, 1.0);
             factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
         this.crossSection = crossSection;
-        this.alpha        = alpha;
-        this.tau          = tau;
     }
 
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getRadiationParametersDrivers() {
-        return radiationParametersDrivers.clone();
+        return new ParameterDriver[] {
+            absorptionParameterDriver, reflectionParameterDriver
+        };
     }
 
     /** {@inheritDoc} */
+    @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux) {
+                                                  final Rotation rotation, final double mass, final Vector3D flux,
+                                                  final double[] parameters) {
+        final double alpha = parameters[0];
+        final double tau   = parameters[1];
         final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
         return new Vector3D(kP / mass, flux);
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
-                                                                            final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
-                                                                            final FieldVector3D<DerivativeStructure> flux) {
-        final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux,
+                                      final T[] parameters)
+        throws OrekitException {
+        final T alpha = parameters[0];
+        final T tau   = parameters[1];
+        final T kP    = alpha.negate().add(1).multiply(tau.negate().add(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
-                                                                            final Vector3D flux, final String paramName)
+                                                                            final Vector3D flux, final double[] parameters,
+                                                                            final String paramName)
         throws OrekitException {
 
         final DerivativeStructure absorptionCoeffDS;
         final DerivativeStructure specularReflectionCoeffDS;
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = factory.variable(0, alpha);
-            specularReflectionCoeffDS = factory.constant(tau);
+            absorptionCoeffDS         = factory.variable(0, parameters[0]);
+            specularReflectionCoeffDS = factory.constant(parameters[1]);
         } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = factory.constant(alpha);
-            specularReflectionCoeffDS = factory.variable(0, tau);
+            absorptionCoeffDS         = factory.constant(parameters[0]);
+            specularReflectionCoeffDS = factory.variable(0, parameters[1]);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
@@ -168,17 +161,6 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                 absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<>(kP.divide(mass), flux);
 
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T>
-        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                                      final FieldVector3D<T> position,
-                                      final FieldRotation<T> rotation, final T mass,
-                                      final FieldVector3D<T> flux)
-        throws OrekitException {
-        final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
-        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
     }
 
 }

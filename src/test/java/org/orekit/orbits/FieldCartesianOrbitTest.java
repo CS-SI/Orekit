@@ -191,6 +191,11 @@ public class FieldCartesianOrbitTest {
         doTestEquatorialRetrograde(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+        doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
+    }
+
     private <T extends RealFieldElement<T>> void doTestCartesianToCartesian(Field<T> field)
         throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
@@ -652,12 +657,12 @@ public class FieldCartesianOrbitTest {
         throws OrekitException {
         T zero = field.getZero();
         final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final T c20 = zero.add(-1.08263e-3);
-        final T c30 = zero.add(2.54e-6);
-        final T c40 = zero.add(1.62e-6);
-        final T c50 = zero.add(2.3e-7);
-        final T c60 = zero.add(-5.5e-7);
+        final double ae    = 6.378137e6;
+        final double c20   = -1.08263e-3;
+        final double c30   =  2.54e-6;
+        final double c40   =  1.62e-6;
+        final double c50   =  2.3e-7;
+        final double c60   =  -5.5e-7;
 
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
@@ -830,6 +835,42 @@ public class FieldCartesianOrbitTest {
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), mu);
         Assert.assertEquals("Cartesian parameters: {2000-01-01T11:58:55.816, P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0), A(0.1551640482651465, -0.15933073547362608, 5.25993394342302E-4)}",
                             orbit.toString());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
+        throws OrekitException {
+
+        final Frame eme2000     = FramesFactory.getEME2000();
+
+        // Define GEO satellite position
+        final FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(42164140),
+                        field.getZero(),
+                        field.getZero());
+        // Build PVCoodrinates starting from its position and computing the corresponding circular velocity
+        final FieldPVCoordinates<T> pv  =
+                        new FieldPVCoordinates<>(position,
+                                        new FieldVector3D<>(field.getZero(),
+                                                        position.getNorm().reciprocal().multiply(mu).sqrt(),
+                                                        field.getZero()));
+        // Build a KeplerianOrbit in eme2000
+        final FieldOrbit<T> orbit = new FieldCartesianOrbit<>(pv, eme2000, FieldAbsoluteDate.getJ2000Epoch(field), mu);
+
+        // Build another KeplerianOrbit as a copy of the first one
+        final FieldOrbit<T> orbitCopy = new FieldCartesianOrbit<>(orbit);
+
+        // Shift the orbit of a time-interval
+        final FieldOrbit<T> shiftedOrbit     = orbit.shiftedBy(10); // This works good
+        final FieldOrbit<T> shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
+
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
+                                                   shiftedOrbitCopy.getPVCoordinates().getPosition()).getReal(),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
+                                                   shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
+                            1.0e-10);
+
     }
 
 }

@@ -24,12 +24,9 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -39,7 +36,8 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
@@ -52,9 +50,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -326,7 +322,7 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
 }
 
-class AbsoluteBodyAttraction extends AbstractParameterizable implements ForceModel  {
+class AbsoluteBodyAttraction extends AbstractForceModel  {
 
     /** Attracting celestial body. */
     private CelestialBody body;
@@ -339,8 +335,14 @@ class AbsoluteBodyAttraction extends AbstractParameterizable implements ForceMod
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder)
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
 
         final Vector3D bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
@@ -349,44 +351,30 @@ class AbsoluteBodyAttraction extends AbstractParameterizable implements ForceMod
         final double r2             = delta.getNormSq();
 
         // compute absolute acceleration
-        final Vector3D gamma = new Vector3D(body.getGM() / (r2 * FastMath.sqrt(r2)), delta);
+        return new Vector3D(body.getGM() / (r2 * FastMath.sqrt(r2)), delta);
 
-        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
-
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass) throws OrekitException {
-        // this method will be removed some time later
-        return null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final String paramName)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
-        // TODO implement this method
-        return null;
+
+        final FieldVector3D<T> bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final FieldVector3D<T> satPosition  = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T> delta        = bodyPosition.subtract(satPosition);
+        final T                r2           = delta.getNormSq();
+
+        // compute absolute acceleration
+        return new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(body.getGM()), delta);
+
     }
 
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(FieldSpacecraftState<T> s,
-                        FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // TODO implement this method
     }
 
     /** {@inheritDoc} */
@@ -399,16 +387,14 @@ class AbsoluteBodyAttraction extends AbstractParameterizable implements ForceMod
     /** {@inheritDoc} */
     @Override
     public ParameterDriver[] getParametersDrivers() {
-        // TODO Auto-generated method stub
-        return null;
+        return new ParameterDriver[0];
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver getParameterDriver(String name)
-        throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
+    public ParameterDriver getParameterDriver(final String name)
+                    throws OrekitException {
+        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, "<none>");
     }
 
 }

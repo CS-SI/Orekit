@@ -132,7 +132,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                     final ParameterDriversList orbitalParameters = builder.getOrbitalParametersDrivers();
                     final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
                     final ParameterDriversList propagationParameters = pde.getSelectedParameters();
-                    prop.setInitialState(pde.setInitialJacobians(prop.getInitialState(), stateSize));
+                    prop.setInitialState(pde.setInitialJacobians(prop.getInitialState()));
                     final JacobiansMapper mapper  = pde.getMapper();
 
                     final List<SpacecraftState> sample = getSample();
@@ -219,8 +219,8 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
         }
 
         // Jacobian part
-        final double[][] dYdY0 = new double[mapper.getStateDimension()][mapper.getStateDimension()];
-        final double[][] dYdP  = new double[mapper.getStateDimension()][mapper.getParameters()];
+        final double[][] dYdY0 = new double[JacobiansMapper.STATE_DIMENSION][JacobiansMapper.STATE_DIMENSION];
+        final double[][] dYdP  = new double[JacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
         mapper.getStateJacobian(state, dYdY0);
         mapper.getParametersJacobian(state, dYdP);
         for (int k = 0; k < stateSize; k++) {

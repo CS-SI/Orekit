@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 
 /** Class to create a L2 centered frame with {@link L2TransformProvider}.
  *  Parent frame is always set as primaryBody.getInertiallyOrientedFrame()
- * @author Luc Maisonabe
+ * @author Luc Maisonobe
  * @author Julio Hernanz
  */
 public class L2Frame extends Frame {

@@ -77,8 +77,8 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
         this.observedMeasurement   = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
-        this.states                = states;
-        this.participants          = participants;
+        this.states                = states.clone();
+        this.participants          = participants.clone();
         this.stateDerivatives      = new double[states.length][][];
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }

@@ -19,9 +19,8 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldAttitudeProvider;
-import org.orekit.attitudes.FieldInertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -53,7 +52,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit)
         throws OrekitException {
-        this(initialFieldOrbit, new FieldInertialProvider<>(initialFieldOrbit.getA().getField()), initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, DEFAULT_LAW, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -64,7 +63,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu)
         throws OrekitException {
-        this(initialFieldOrbit, new FieldInertialProvider<>(initialFieldOrbit.getA().getField()), mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, DEFAULT_LAW, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and attitude provider.
@@ -76,7 +75,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @exception OrekitException if initial attitude cannot be computed
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
-                               final FieldAttitudeProvider<T> attitudeProv)
+                                    final AttitudeProvider attitudeProv)
         throws OrekitException {
         this(initialFieldOrbit, attitudeProv, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
@@ -90,9 +89,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @exception OrekitException if initial attitude cannot be computed
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
-                               final FieldAttitudeProvider<T> attitudeProv,
-                               final double mu)
-        throws OrekitException {
+                                    final AttitudeProvider attitudeProv,
+                                    final double mu)
+                                                    throws OrekitException {
         this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -104,8 +103,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param mass spacecraft mass (kg)
      * @exception OrekitException if initial attitude cannot be computed
      */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialOrbit, final FieldAttitudeProvider<T> attitudeProv,
-                               final double mu, final T mass)
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialOrbit, final AttitudeProvider attitudeProv,
+                                    final double mu, final T mass)
         throws OrekitException {
 
         super(initialOrbit.getA().getField(), attitudeProv);

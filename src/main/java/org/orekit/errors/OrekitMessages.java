@@ -137,7 +137,7 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_MONTH("unknown month \"{0}\""),
     SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
-    STATE_JACOBIAN_NEITHER_6X6_NOR_7X7("state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix"),
+    STATE_JACOBIAN_NOT_6X6("state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix"),
     STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH("state Jacobian has {0} rows but parameters Jacobian has {1} rows"),
     INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH("initial Jacobian matrix has {0} columns, but {1} parameters have been selected"),
     ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE("orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}"),

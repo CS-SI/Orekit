@@ -70,12 +70,14 @@ public interface DragSensitive {
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
+     * @param parameters values of the force model parameters
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @throws OrekitException if acceleration cannot be computed
      */
     Vector3D dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                               Rotation rotation, double mass,
-                              double density, Vector3D relativeVelocity)
+                              double density, Vector3D relativeVelocity,
+                              double[] parameters)
         throws OrekitException;
 
     /** Compute the acceleration due to drag.
@@ -91,34 +93,17 @@ public interface DragSensitive {
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
+     * @param parameters values of the force model parameters
      * @param <T> instance of a RealFieldElement
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @throws OrekitException if acceleration cannot be computed
+     * @since 9.0
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
                                                                       FieldVector3D<T> position,
                                                                       FieldRotation<T> rotation, T mass,
-                                                                      T density, FieldVector3D<T> relativeVelocity)
-        throws OrekitException;
-    /** Compute the acceleration due to drag, with state derivatives.
-     * <p>
-     * The computation includes all spacecraft specific characteristics
-     * like shape, area and coefficients.
-     * </p>
-     * @param date current date
-     * @param frame inertial reference frame for state (both orbit and attitude)
-     * @param position position of spacecraft in reference frame
-     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
-     * @param mass spacecraft mass
-     * @param density atmospheric density at spacecraft position
-     * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
-     * in the same inertial frame as spacecraft orbit (m/s)
-     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-     * @throws OrekitException if acceleration cannot be computed
-     */
-    FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
-                                                        FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
-                                                        DerivativeStructure density, FieldVector3D<DerivativeStructure> relativeVelocity)
+                                                                      T density, FieldVector3D<T> relativeVelocity,
+                                                                      T[] parameters)
         throws OrekitException;
 
     /** Compute acceleration due to drag, with parameters derivatives.
@@ -130,13 +115,15 @@ public interface DragSensitive {
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
      * in the same inertial frame as spacecraft orbit (m/s)
+     * @param parameters values of the force model parameters
      * @param paramName name of the parameter with respect to which derivatives are required
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @exception OrekitException if derivatives cannot be computed
      */
     FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
-                                Rotation rotation, double mass,
-                                double density, Vector3D relativeVelocity, String paramName)
+                                                        Rotation rotation, double mass,
+                                                        double density, Vector3D relativeVelocity,
+                                                        double[] parameters, String paramName)
         throws OrekitException;
 
 }

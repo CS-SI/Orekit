@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -196,15 +197,6 @@ public class ParameterDriversList {
 
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public void setSelected(final boolean selected) {
-            super.setSelected(selected);
-            for (final ParameterDriver driver : drivers) {
-                driver.setSelected(selected);
-            }
-        }
-
         /** Get the raw drivers to which this one delegates.
          * <p>
          * These raw drivers all manage the same parameter name.
@@ -228,30 +220,42 @@ public class ParameterDriversList {
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver)
                 throws OrekitException {
-                updateAll(driver, d -> d.setValue(driver.getValue()));
+                try {
+                    updateAll(driver, d -> {
+                        try {
+                            d.setValue(driver.getValue());
+                        } catch (OrekitException oe) {
+                            throw new OrekitExceptionWrapper(oe);
+                        }
+                    });
+                } catch (OrekitExceptionWrapper oew) {
+                    throw oew.getException();
+                }
             }
 
             /** {@inheritDoc} */
             @Override
-            public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver)
-                throws OrekitException {
+            public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
                 updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
             }
 
             /** {@inheritDoc} */
             @Override
-            public void nameChanged(final String previousName, final ParameterDriver driver)
-                throws OrekitException {
+            public void nameChanged(final String previousName, final ParameterDriver driver) {
                 updateAll(driver, d -> d.setName(driver.getName()));
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+                updateAll(driver, d -> d.setSelected(driver.isSelected()));
             }
 
             /** Update all bound parameters.
              * @param driver driver triggering the update
              * @param updater updater to use
-             * @throws OrekitException if the update fails
              */
-            private void updateAll(final ParameterDriver driver, final Updater updater)
-                throws OrekitException {
+            private void updateAll(final ParameterDriver driver, final Updater updater) {
 
                 final boolean firstCall = depth++ == 0;
                 if (firstCall) {
@@ -286,9 +290,8 @@ public class ParameterDriversList {
     private interface Updater {
         /** Update a driver.
          * @param driver driver to update
-         * @throws OrekitException if the update fails
          */
-        void update(ParameterDriver driver) throws OrekitException;
+        void update(ParameterDriver driver);
     }
 
 }

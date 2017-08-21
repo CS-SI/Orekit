@@ -147,7 +147,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                                                                           final SpacecraftState[] states)
         throws OrekitException {
 
-        final SpacecraftState state = states[0];
+        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
         // Turn around range derivatives are computed with respect to:
         // - Spacecraft state in inertial frame

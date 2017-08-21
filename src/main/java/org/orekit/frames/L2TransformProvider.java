@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** L2 Transform provider for a frame on the L2 Lagrange point of two celestial bodies.
  *
- * @author Luc Maisonabe
+ * @author Luc Maisonobe
  * @author Julio Hernanz
  */
 

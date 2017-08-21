@@ -242,6 +242,19 @@ system barycenter, as its associated frame is the ICRF.
 
 ![solar system frames](../images/solar-system-frames.png)
 
+## Earth Frames
+
+As explained above, the IERS conventions define Earth frames, the ITRF frames.
+Depending on which Earth Orientation Parameters are loaded at run time by
+users, the ITRF frame computed my be an older or a newer one. As of mid-2017,
+if EOP parameters are loaded from EOP C04 14 files, the ITRF will be ITRF 2014,
+whereas if EOP parameters are loaded from EOP C04 08, or from Bulletin A or
+from Bulletin B, the ITRF be be ITRF 2008. When IERS will update its references,
+the ITRF produce will change accordingly. Orekit always allows to convert
+from one ITRF to any other ITRF. All ITRF versions since 1988 are supported,
+as of Orekit 9.0, it corresponds to ITRF88, ITRF89, ITRF90, ITRF91, ITRF92,
+ITRF93, ITRF94, ITRF96, ITRF97, ITRF2000, ITRF2005, ITRF2008 and ITRF2014).
+
 ## Topocentric Frame
   
 This frame model allows defining the frame associated with any position at 

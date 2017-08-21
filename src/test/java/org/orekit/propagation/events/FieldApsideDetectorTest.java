@@ -62,11 +62,11 @@ public class FieldApsideDetectorTest {
                         new FieldEcksteinHechlerPropagator<>(orbit,
                                                              Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                              Constants.EIGEN5C_EARTH_MU,
-                                                             zero.add(Constants.EIGEN5C_EARTH_C20),
-                                                             zero.add(Constants.EIGEN5C_EARTH_C30),
-                                                             zero.add(Constants.EIGEN5C_EARTH_C40),
-                                                             zero.add(Constants.EIGEN5C_EARTH_C50),
-                                                             zero.add(Constants.EIGEN5C_EARTH_C60));
+                                                             Constants.EIGEN5C_EARTH_C20,
+                                                             Constants.EIGEN5C_EARTH_C30,
+                                                             Constants.EIGEN5C_EARTH_C40,
+                                                             Constants.EIGEN5C_EARTH_C50,
+                                                             Constants.EIGEN5C_EARTH_C60);
 
         FieldEventDetector<T> detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(zero.add(600.0)).

@@ -16,16 +16,26 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -95,6 +105,14 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getTargetPV(pvProv, date, frame);
+    }
+
     /** Compute the base system state at given date, without compensation.
      * @param pvProv provider for PV coordinates
      * @param date date at which state is requested
@@ -104,6 +122,21 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
                                  final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getAttitude(pvProv, date, frame);
+    }
+
+    /** Compute the base system state at given date, without compensation.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which state is requested
+     * @param frame reference frame from which attitude is computed
+     * @param <T> type of the field elements
+     * @return satellite base attitude state, i.e without compensation.
+     * @throws OrekitException if some specific error occurs
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                         final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
@@ -164,6 +197,67 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+
+        final Field<T>              field = date.getField();
+        final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);
+        final FieldPVCoordinates<T> plusJ = new FieldPVCoordinates<>(FieldVector3D.getPlusJ(field), zero, zero);
+        final FieldPVCoordinates<T> plusK = new FieldPVCoordinates<>(FieldVector3D.getPlusK(field), zero, zero);
+
+        final FieldTransform<T> bodyToRef = getBodyFrame().getTransformTo(frame, date);
+
+        // compute sliding target ground point
+        final FieldPVCoordinates<T> slidingRef  = getTargetPV(pvProv, date, frame);
+        final FieldPVCoordinates<T> slidingBody = bodyToRef.getInverse().transformPVCoordinates(slidingRef);
+
+        // compute relative position of sliding ground point with respect to satellite
+        final FieldPVCoordinates<T> relativePosition =
+                new FieldPVCoordinates<>(pvProv.getPVCoordinates(date, frame), slidingRef);
+
+        // compute relative velocity of fixed ground point with respect to sliding ground point
+        // the velocity part of the transformPVCoordinates for the sliding point ps
+        // from body frame to reference frame is:
+        //     d(ps_ref)/dt = r(d(ps_body)/dt + dq/dt) - Ω ⨯ ps_ref
+        // where r is the rotation part of the transform, Ω is the corresponding
+        // angular rate, and dq/dt is the derivative of the translation part of the
+        // transform (the translation itself, without derivative, is hidden in the
+        // ps_ref part in the cross product).
+        // The sliding point ps is co-located to a fixed ground point pf (i.e. they have the
+        // same position at time of computation), but this fixed point as zero velocity
+        // with respect to the ground. So the velocity part of the transformPVCoordinates
+        // for this fixed point can be computed using the same formula as above:
+        // from body frame to reference frame is:
+        //     d(pf_ref)/dt = r(0 + dq/dt) - Ω ⨯ pf_ref
+        // so remembering that the two points are at the same location at computation time,
+        // i.e. that at t=0 pf_ref=ps_ref, the relative velocity between the fixed point
+        // and the sliding point is given by the simple expression:
+        //     d(ps_ref)/dt - d(pf_ref)/dt = r(d(ps_body)/dt)
+        // the acceleration is computed by differentiating the expression, which gives:
+        //    d²(ps_ref)/dt² - d²(pf_ref)/dt² = r(d²(ps_body)/dt²) - Ω ⨯ [d(ps_ref)/dt - d(pf_ref)/dt]
+        final FieldVector3D<T> v = bodyToRef.getRotation().applyTo(slidingBody.getVelocity());
+        final FieldVector3D<T> a = new FieldVector3D<>(+1, bodyToRef.getRotation().applyTo(slidingBody.getAcceleration()),
+                                                       -1, FieldVector3D.crossProduct(bodyToRef.getRotationRate(), v));
+        final FieldPVCoordinates<T> relativeVelocity = new FieldPVCoordinates<>(v, a, FieldVector3D.getZero(date.getField()));
+
+        final FieldPVCoordinates<T> relativeNormal =
+                        relativePosition.crossProduct(relativeVelocity).normalize();
+
+        // attitude definition :
+        //  . Z satellite axis points to sliding target
+        //  . target relative velocity is in (Z, X) plane, in the -X half plane part
+        return new FieldAttitude<>(frame,
+                                   new TimeStampedFieldAngularCoordinates<>(date,
+                                                                            relativePosition.normalize(),
+                                                                            relativeNormal.normalize(),
+                                                                            plusK, plusJ,
+                                                                            1.0e-9));
+
+    }
+
     /** Compute the yaw compensation angle at date.
      * @param pvProv provider for PV coordinates
      * @param date date at which compensation is requested
@@ -178,6 +272,25 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         final Rotation rCompensated = getAttitude(pvProv, date, frame).getRotation();
         final Rotation compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);
         return -compensation.applyTo(Vector3D.PLUS_I).getAlpha();
+    }
+
+    /** Compute the yaw compensation angle at date.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which compensation is requested
+     * @param frame reference frame from which attitude is computed
+     * @param <T> type of the field elements
+     * @return yaw compensation angle for orbit.
+     * @throws OrekitException if some specific error occurs
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> T getYawAngle(final FieldPVCoordinatesProvider<T> pvProv,
+                                                         final FieldAbsoluteDate<T> date,
+                                                         final Frame frame)
+        throws OrekitException {
+        final FieldRotation<T> rBase        = getBaseState(pvProv, date, frame).getRotation();
+        final FieldRotation<T> rCompensated = getAttitude(pvProv, date, frame).getRotation();
+        final FieldRotation<T> compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);
+        return compensation.applyTo(Vector3D.PLUS_I).getAlpha().negate();
     }
 
 }

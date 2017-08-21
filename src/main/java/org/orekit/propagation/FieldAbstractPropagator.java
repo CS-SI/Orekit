@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.attitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -58,7 +58,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     private FieldAbsoluteDate<T> startDate;
 
     /** Attitude provider. */
-    private FieldAttitudeProvider<T> attitudeProvider;
+    private AttitudeProvider attitudeProvider;
 
     /** Additional state providers. */
     private final List<FieldAdditionalStateProvider<T>> additionalStateProviders;
@@ -95,12 +95,12 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /**  {@inheritDoc} */
-    public FieldAttitudeProvider<T> getAttitudeProvider() {
+    public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
     }
 
     /**  {@inheritDoc} */
-    public void setAttitudeProvider(final FieldAttitudeProvider<T> attitudeProvider) {
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         this.attitudeProvider = attitudeProvider;
     }
 

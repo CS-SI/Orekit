@@ -108,7 +108,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
                                                                       final SpacecraftState[] states)
         throws OrekitException {
 
-        final SpacecraftState state = states[0];
+        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
         // Azimuth/elevation derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
