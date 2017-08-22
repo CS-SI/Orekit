@@ -113,8 +113,8 @@ public class L2TransformProvider implements TransformProvider {
         final DerivativeStructure dsR = solver.solve(maxEval, equation, min, max, AllowedSolution.ANY_SIDE);
 
         // L2 point is built
-        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(dsR,
-                        delta.normalize()));
+        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(dsR, delta.normalize()));
+
     }
 
     private class L2Equation implements

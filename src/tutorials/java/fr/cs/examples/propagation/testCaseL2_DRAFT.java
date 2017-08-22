@@ -77,7 +77,7 @@ public class testCaseL2_DRAFT {
         // Time settings
         final AbsoluteDate initialDate = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
         double integrationTime = 5.0e4;//5.0e6;
-        double outputStep = 60;
+        double outputStep = 60.0;
 
         // Initial conditions
         final double x = 1000;
@@ -124,8 +124,8 @@ public class testCaseL2_DRAFT {
 
         final Frame integrationFrame1 = eme2000;
 
-        System.out.print("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " 
-                         + integrationFrame1.isPseudoInertial() + ")\n");
+        System.out.println("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " +
+                           integrationFrame1.isPseudoInertial() + ")");
 
         final org.orekit.frames.Transform initialTransform1 = 
                         outputFrame.getTransformTo(integrationFrame1, initialDate);
@@ -143,7 +143,7 @@ public class testCaseL2_DRAFT {
         propagator1.setOrbitType(propagationType);
         propagator1.setInitialState(initialState1);
 
-        propagator1.setMasterMode(outputStep, new TutorialStepHandler("L2sc1.txt", outputFrame));
+        propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
 
         final ForceModel moonAttraction1 = new ThirdBodyAttraction(moon);
         propagator1.addForceModel(moonAttraction1);
@@ -156,8 +156,8 @@ public class testCaseL2_DRAFT {
 
         final Frame integrationFrame2 = gcrf;
 
-        System.out.print("2- Propagation in Celestial reference frame (pseudo_inertial: " 
-                         + integrationFrame2.isPseudoInertial() + ")\n");
+        System.out.println("2- Propagation in Celestial reference frame (pseudo_inertial: " +
+                           integrationFrame2.isPseudoInertial() + ")");
 
         final org.orekit.frames.Transform initialTransform2 = outputFrame.getTransformTo(integrationFrame2,
                                                                                          initialDate);
@@ -173,11 +173,11 @@ public class testCaseL2_DRAFT {
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
         propagator2.setOrbitType(null);
         propagator2.setInitialState(initialState2);
+        propagator2.setIgnoreCentralAttraction(true);
 
-        propagator2.setMasterMode(outputStep, new TutorialStepHandler("L2sc2.txt", outputFrame));
+        propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
 
         final ForceModel earthAttraction2 = new SingleBodyAbsoluteAttraction(earth);
-        propagator2.setIgnoreCentralAttraction(true);
         final ForceModel moonAttraction2 = new ThirdBodyAttraction(moon);
         propagator2.addForceModel(earthAttraction2);
         propagator2.addForceModel(moonAttraction2);
@@ -190,8 +190,8 @@ public class testCaseL2_DRAFT {
         
         final Frame integrationFrame3 = frameL2;
 
-        System.out.print("3- Propagation in L2 reference frame (pseudo_inertial: " 
-                         + integrationFrame3.isPseudoInertial() + ")\n");
+        System.out.println("3- Propagation in L2 reference frame (pseudo_inertial: " +
+                           integrationFrame3.isPseudoInertial() + ")");
 
         final org.orekit.frames.Transform initialTransform3 = outputFrame.getTransformTo(integrationFrame3, 
                                                                                          initialDate);
@@ -214,7 +214,7 @@ public class testCaseL2_DRAFT {
         propagator3.setInitialState(initialState3);
 
         final ForceModel earthAttraction3 = new SingleBodyAbsoluteAttraction(earth);
-        final ForceModel moonAttraction3 = new SingleBodyAbsoluteAttraction(moon);
+        final ForceModel moonAttraction3  = new SingleBodyAbsoluteAttraction(moon);
         propagator3.setIgnoreCentralAttraction(true);
         propagator3.addForceModel(earthAttraction3);
         propagator3.addForceModel(moonAttraction3);
@@ -225,7 +225,7 @@ public class testCaseL2_DRAFT {
         
         //2ndway L2Frame constructor must be: super(_,_,_,true)
 
-        propagator3.setMasterMode(outputStep, new TutorialStepHandler("L2sc3.txt", outputFrame));
+        propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv3 = finalState3.getPVCoordinates(outputFrame);
