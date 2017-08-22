@@ -204,7 +204,8 @@ public class testCaseRotatingEarth {
 
                 final PVCoordinates pv = currentState.getPVCoordinates(outputFrame);
 
-                out.format(Locale.US, "%14.6f %14.6f %14.6f %14.9f %14.9f %14.9f%n",
+                out.format(Locale.US, "%s %14.6f %14.6f %14.6f %14.9f %14.9f %14.9f%n",
+                           currentState.getDate(),
                            pv.getPosition().getX(),
                            pv.getPosition().getY(),
                            pv.getPosition().getZ(),
