@@ -16,18 +16,21 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.RealFieldUnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 /** L2 Transform provider for a frame on the L2 Lagrange point of two celestial bodies.
@@ -35,8 +38,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @author Julio Hernanz
  */
-
-public class L2TransformProvider implements TransformProvider {
+class L2TransformProvider implements TransformProvider {
 
     /** Serializable UID.*/
     private static final long serialVersionUID = 20170725L;
@@ -56,34 +58,42 @@ public class L2TransformProvider implements TransformProvider {
      * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
     public L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-                    throws OrekitException {
+        throws OrekitException {
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
         this.frame = primaryBody.getInertiallyOrientedFrame();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date)
-                  throws OrekitException {
-        return new Transform(date, getL2(date).negate());
+        throws OrekitException {
+        final FieldVector3D<DerivativeStructure> l2 = getL2(date);
+        final Field<DerivativeStructure> field = l2.getX().getField();
+        final FieldVector3D<DerivativeStructure> l2Dot =
+                        new FieldVector3D<>(dot(l2.getX()), dot(l2.getY()), dot(l2.getZ()));
+        final FieldRotation<DerivativeStructure> rotation =
+                        new FieldRotation<>(l2, l2Dot, FieldVector3D.getPlusI(field), FieldVector3D.getPlusJ(field));
+        return new Transform(date,
+                             new Transform(date, new PVCoordinates(l2).negate()),
+                             new Transform(date, new AngularCoordinates(rotation)));
     }
 
-
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T>
-        getTransform(final FieldAbsoluteDate<T> date)
-                    throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
         // TODO Auto-generated method stub
         return null;
     }
 
     /** Method to get the {@link PVCoordinates} of the L2 point.
      * @param date current date
-     * @return PVCoordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
+     * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
      * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
-    public PVCoordinates getL2(final AbsoluteDate date)
-                    throws OrekitException {
+    private FieldVector3D<DerivativeStructure> getL2(final AbsoluteDate date)
+        throws OrekitException {
 
         final PVCoordinates pv21 = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<DerivativeStructure> delta = pv21.toDerivativeStructureVector(2);
@@ -113,7 +123,7 @@ public class L2TransformProvider implements TransformProvider {
         final DerivativeStructure dsR = solver.solve(maxEval, equation, min, max, AllowedSolution.ANY_SIDE);
 
         // L2 point is built
-        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(dsR, delta.normalize()));
+        return new FieldVector3D<DerivativeStructure>(dsR, delta.normalize());
 
     }
 
@@ -144,8 +154,7 @@ public class L2TransformProvider implements TransformProvider {
             // Left hand side
             final DerivativeStructure lhs1 = r.multiply(r).reciprocal();
             final DerivativeStructure rminusDelta = r.subtract(delta);
-            final DerivativeStructure lhs2 = rminusDelta.multiply(rminusDelta).reciprocal()
-                      .multiply(massRatio);
+            final DerivativeStructure lhs2 = rminusDelta.multiply(rminusDelta).reciprocal().multiply(massRatio);
             final DerivativeStructure lhs = lhs1.add(lhs2);
 
             // Right hand side
@@ -157,4 +166,18 @@ public class L2TransformProvider implements TransformProvider {
             return lhs.subtract(rhs);
         }
     }
+
+    /** Shift derivatives one degree.
+     * @param x value with derivatives
+     * @return derivative of x
+     */
+    private DerivativeStructure dot(final DerivativeStructure x) {
+        final double[] derivatives = x.getAllDerivatives();
+        for (int i = 0; i < derivatives.length - 1; ++i) {
+            derivatives[i] = derivatives[i + 1];
+        }
+        derivatives[derivatives.length - 1] = 0.0;
+        return x.getFactory().build(derivatives);
+    }
+
 }

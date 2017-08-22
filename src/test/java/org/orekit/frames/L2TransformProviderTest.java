@@ -26,6 +26,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link L2TransformProvider}.
@@ -97,7 +98,7 @@ public class L2TransformProviderTest {
         // check L2 and Earth are aligned as seen from Sun
         Assert.assertEquals(0.0, Vector3D.angle(posEarth, posL2), 1.0e-10);
 
-        // check L2 if at least 1 000 000 000km farther than Earth
+        // check L2 if at least 1 000 000km farther than Earth
         Assert.assertTrue(posL2.getNorm() > posEarth.getNorm() + 1.0e9);
     }
 
@@ -130,27 +131,24 @@ public class L2TransformProviderTest {
         // check L2 and Jupiter are aligned as seen from Sun
         Assert.assertEquals(0.0, Vector3D.angle(posJupiter, posL2), 1.0e-10);
 
-        // check L2 if at least 50 000 000 000km farther than Jupiter
+        // check L2 if at least 50 000 000km farther than Jupiter
         Assert.assertTrue(posL2.getNorm() > posJupiter.getNorm() + 5.0e10);
     }
 
     @Test
-    public void testL2Motion() throws OrekitException {
+    public void testL2Orientation() throws OrekitException {
 
         final AbsoluteDate date0 = new AbsoluteDate(2000, 01, 1, 11, 58, 20.000,
                                                    TimeScalesFactory.getUTC());
-        final Frame eme2000 = FramesFactory.getEME2000();
-        final Frame l2Frame = new L2Frame(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon());
-        Vector3D previousPosition = null;
-        for (double dt = -3600; dt <= 3600; dt += 10.0) {
-            Vector3D position = l2Frame.
-                                getTransformTo(eme2000, date0.shiftedBy(dt)).
-                                getCartesian().getPosition();
-            if (previousPosition != null) {
-                double motion = Vector3D.distance(previousPosition, position);
-                Assert.assertEquals(11374.0, motion, 3.0);
-            }
-            previousPosition = position;
+        final CelestialBody sun     = CelestialBodyFactory.getSun();
+        final CelestialBody earth   = CelestialBodyFactory.getEarth();
+        final Frame         l2Frame = new L2Frame(sun, earth);
+        for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
+            final AbsoluteDate date              = date0.shiftedBy(dt);
+            final Vector3D     sunPositionInL2   = sun.getPVCoordinates(date, l2Frame).getPosition();
+            final Vector3D     earthPositionInL2 = earth.getPVCoordinates(date, l2Frame).getPosition();
+            Assert.assertEquals(0.0, Vector3D.angle(sunPositionInL2,   Vector3D.MINUS_I), 3.0e-14);
+            Assert.assertEquals(0.0, Vector3D.angle(earthPositionInL2, Vector3D.MINUS_I), 3.0e-14);
         }
     }
 

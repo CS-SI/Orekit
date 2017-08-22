@@ -109,7 +109,7 @@ public class testCaseL2_DRAFT {
         // Initial position
         final PVCoordinates initialPV = frameL2.getTransformTo(outputFrame, initialDate).transformPVCoordinates(initialPVInL2);
         
-        // tolearances for integrators
+        // tolerances for integrators
         final double positionTolerance = 10.0;
         final double velocityTolerance = 0.01;
         final double massTolerance     = 1.0e-6;
