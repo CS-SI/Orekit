@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,6 +40,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class CelestialBodyFactoryTest {
@@ -290,6 +292,32 @@ public class CelestialBodyFactoryTest {
                                 bodyDistance(sun, earthMoonBarycenter, date, frame),
                                 1.0e-14 * refDistance);
         }
+    }
+
+    @Test
+    public void testEarthInertialFrameAroundJ2000() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getInertiallyOrientedFrame();
+        final Frame base       = FramesFactory.getGCRF();
+        final Rotation reference = new Rotation(Vector3D.PLUS_K, Vector3D.PLUS_J,
+                                                Vector3D.PLUS_K, Vector3D.PLUS_I);
+         for (double dt = -60; dt <= 60; dt += 1.0) {
+             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+             Rotation rotation = base.getTransformTo(earthFrame, date).getRotation();
+             Assert.assertEquals(0.0, Rotation.distance(reference, rotation), 3.0e-10);
+         }
+    }
+
+    @Test
+    public void testEarthBodyOrientedFrameAroundJ2000() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final Frame base       = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+         for (double dt = -60; dt <= 60; dt += 1.0) {
+             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+             Rotation rotation = base.getTransformTo(earthFrame, date).getRotation();
+             Assert.assertEquals(7.9426e-4, Rotation.distance(Rotation.IDENTITY, rotation), 1.0e-8);
+         }
     }
 
     private double bodyDistance(CelestialBody body1, CelestialBody body2, AbsoluteDate date, Frame frame)

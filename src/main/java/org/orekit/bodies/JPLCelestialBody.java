@@ -206,10 +206,7 @@ class JPLCelestialBody implements CelestialBody {
                     // specialized classes that do implement the getPole and getPrimeMeridianAngle
                     // methods
                     final Vector3D pole  = iauPole.getPole(date);
-                    Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
-                    if (qNode.getNormSq() < Precision.SAFE_MIN) {
-                        qNode = Vector3D.PLUS_I;
-                    }
+                    final Vector3D qNode = iauPole.getNode(date);
                     final Transform rotation =
                             new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
 
