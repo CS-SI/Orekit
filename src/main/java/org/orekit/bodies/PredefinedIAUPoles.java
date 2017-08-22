@@ -248,6 +248,22 @@ enum PredefinedIAUPoles implements IAUPole {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public Vector3D getNode(final AbsoluteDate date) {
+            final double t = t(date);
+            return new Vector3D(FastMath.toRadians(t * ALPHA_DOT + ALPHA_0 + 90.0),
+                                0.0);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
+            final T t = t(date);
+            return new FieldVector3D<>(toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0 + 90.0)),
+                                       date.getField().getZero());
+        }
+
+        /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
             return FastMath.toRadians(d(date) * W_DOT + W_0);
         }
@@ -912,6 +928,18 @@ enum PredefinedIAUPoles implements IAUPole {
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             return FieldVector3D.getPlusK(date.getField());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D getNode(final AbsoluteDate date) {
+            return Vector3D.PLUS_I;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
+            return FieldVector3D.getPlusI(date.getField());
         }
 
         /** {@inheritDoc} */
