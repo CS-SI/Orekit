@@ -161,8 +161,6 @@ public class FramesFactoryTest {
                                  new InterpolatingTransformProvider(raw,
                                                                     CartesianDerivativesFilter.USE_P,
                                                                     AngularDerivativesFilter.USE_R,
-                                                                    AbsoluteDate.PAST_INFINITY,
-                                                                    AbsoluteDate.FUTURE_INFINITY,
                                                                     4, Constants.JULIAN_DAY, 10,
                                                                     Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
                                  "sine");
@@ -204,8 +202,6 @@ public class FramesFactoryTest {
                                  new ShiftingTransformProvider(raw,
                                                                CartesianDerivativesFilter.USE_P,
                                                                AngularDerivativesFilter.USE_R,
-                                                               AbsoluteDate.PAST_INFINITY,
-                                                               AbsoluteDate.FUTURE_INFINITY,
                                                                4, Constants.JULIAN_DAY, 10,
                                                                Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
                                  "sine");

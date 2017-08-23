@@ -22,6 +22,11 @@
   <body>
     <release version="9.1" date="TBD" description="TBD">
      <action dev="luc" type="fix">
+        Removed unused construction parameters in ShiftingTransformProvider
+        and InterpolatingTransformProvider.
+        Fixes issue #356.
+     </action>
+     <action dev="luc" type="fix">
         Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
         Fixes issue #355.
      </action>
