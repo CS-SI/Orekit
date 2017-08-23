@@ -42,9 +42,8 @@ public class L2Frame extends Frame {
         throws OrekitException {
         super(primaryBody.getInertiallyOrientedFrame(),
               new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
-                                            CartesianDerivativesFilter.USE_PV,
+                                            CartesianDerivativesFilter.USE_P,
                                             AngularDerivativesFilter.USE_R,
-                                            null, null,
                                             5, Constants.JULIAN_DAY / 24,
                                             OrekitConfiguration.getCacheSlotsNumber(),
                                             Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY) ,
