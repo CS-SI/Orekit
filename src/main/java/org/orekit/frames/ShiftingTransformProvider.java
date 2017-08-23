@@ -62,6 +62,30 @@ public class ShiftingTransformProvider implements TransformProvider {
      * @param rawProvider provider for raw (non-interpolated) transforms
      * @param cFilter filter for derivatives from the sample to use in interpolation
      * @param aFilter filter for derivatives from the sample to use in interpolation
+     * @param gridPoints number of interpolation grid points
+     * @param step grid points time step
+     * @param maxSlots maximum number of independent cached time slots
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxSpan maximum duration span in seconds of one slot
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param newSlotInterval time interval above which a new slot is created
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @since 9.1
+     */
+    public ShiftingTransformProvider(final TransformProvider rawProvider,
+                                     final CartesianDerivativesFilter cFilter,
+                                     final AngularDerivativesFilter aFilter,
+                                     final int gridPoints, final double step,
+                                     final int maxSlots, final double maxSpan, final double newSlotInterval) {
+        this(new InterpolatingTransformProvider(rawProvider, cFilter, aFilter,
+                                                gridPoints, step, maxSlots, maxSpan, newSlotInterval),
+             maxSlots, maxSpan, newSlotInterval);
+    }
+
+    /** Simple constructor.
+     * @param rawProvider provider for raw (non-interpolated) transforms
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param earliest earliest supported date
      * @param latest latest supported date
      * @param gridPoints number of interpolation grid points
@@ -72,7 +96,10 @@ public class ShiftingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      * @param newSlotInterval time interval above which a new slot is created
      * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @deprecated as of 9.1, replaced by {@link #ShiftingTransformProvider(TransformProvider,
+     * CartesianDerivativesFilter, AngularDerivativesFilter, int, double, int, double, double)}
      */
+    @Deprecated
     public ShiftingTransformProvider(final TransformProvider rawProvider,
                                      final CartesianDerivativesFilter cFilter,
                                      final AngularDerivativesFilter aFilter,
