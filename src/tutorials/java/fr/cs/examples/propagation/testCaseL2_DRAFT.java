@@ -32,9 +32,9 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.L2Frame;
@@ -76,39 +76,54 @@ public class testCaseL2_DRAFT {
 
         // Time settings
         final AbsoluteDate initialDate = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        double integrationTime = 5.0e4;//5.0e6;
-        double outputStep = 60.0;
+        double integrationTime = 5.0e6;
+        double outputStep = 600.0;
 
         // Initial conditions
-        final double x = 1000;
-        final double y = -1000;
-        final double z = 0;
-        final double Vx = 100;
-        final double Vy = -100;
-        final double Vz = 0;
-        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
+        // The output is *very* sensitive to these conditions, as L2 point in unstable
+
+        // with these initial conditions, we have a trajectory starting below L2 and not fast
+        // enough to stay there, so it falls back towards Earth/Moon and first makes several
+        // loops around Moon before falling to Earth and starting looping around Earth
+        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+                                                              new Vector3D(0.0, 11.856, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations fall back to Earth,
+//        // while L2-centered propagation remains near Moon until the end
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.7, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations remain near Moon until the end,
+//        // while L2-centered propagation falls back to Earth
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.8, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations leave the Earth/Moon system immediately,
+//        // while L2-centered propagation falls back to Earth
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.9, -0.001));
+
+//        // with these initial conditions, all propagations leave the Earth/Moon system immediately
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 27.0, -0.001));
 
         // Integration parameters
         final double minStep = 0.001;
         final double maxstep = 3600.0;
-        final OrbitType propagationType = OrbitType.CARTESIAN;
 
         // Load Bodies
         final CelestialBody earth = CelestialBodyFactory.getEarth();
-        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final CelestialBody moon  = CelestialBodyFactory.getMoon();
         final CelestialBody earthMoonBary = CelestialBodyFactory.getEarthMoonBarycenter();
         final double muEarth = earth.getGM();
 
         // Create frames to compare
         final Frame eme2000 = FramesFactory.getEME2000();
         final Frame gcrf = FramesFactory.getGCRF();
-        final Frame frameL2 = new L2Frame(earth, moon);
-        final Frame earthMoonBaryFrame = earthMoonBary.getBodyOrientedFrame();
-        final Frame outputFrame = earthMoonBaryFrame;
-        
-        // Initial position
-        final PVCoordinates initialPV = frameL2.getTransformTo(outputFrame, initialDate).transformPVCoordinates(initialPVInL2);
-        
+        final Frame l2Frame = new L2Frame(earth, moon);
+        final Frame earthMoonBaryFrame = earthMoonBary.getInertiallyOrientedFrame();
+        final Frame outputFrame = l2Frame;
+
         // tolerances for integrators
         final double positionTolerance = 10.0;
         final double velocityTolerance = 0.01;
@@ -127,11 +142,10 @@ public class testCaseL2_DRAFT {
         System.out.println("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " +
                            integrationFrame1.isPseudoInertial() + ")");
 
-        final org.orekit.frames.Transform initialTransform1 = 
-                        outputFrame.getTransformTo(integrationFrame1, initialDate);
-        final PVCoordinates initialConditions1 = initialTransform1.transformPVCoordinates(initialPV);
+        final PVCoordinates initialConditions1 = l2Frame.getTransformTo(integrationFrame1, initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
 
-        final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1, 
+        final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1,
                                                                 initialDate, muEarth);
         final SpacecraftState initialState1 = new SpacecraftState(initialOrbit1);
 
@@ -140,13 +154,10 @@ public class testCaseL2_DRAFT {
                 new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances, vecRelativeTolerances);
 
         NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
-        propagator1.setOrbitType(propagationType);
+        propagator1.setOrbitType(OrbitType.CARTESIAN);
         propagator1.setInitialState(initialState1);
-
+        propagator1.addForceModel(new ThirdBodyAttraction(moon));
         propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
-
-        final ForceModel moonAttraction1 = new ThirdBodyAttraction(moon);
-        propagator1.addForceModel(moonAttraction1);
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
@@ -159,11 +170,10 @@ public class testCaseL2_DRAFT {
         System.out.println("2- Propagation in Celestial reference frame (pseudo_inertial: " +
                            integrationFrame2.isPseudoInertial() + ")");
 
-        final org.orekit.frames.Transform initialTransform2 = outputFrame.getTransformTo(integrationFrame2,
-                                                                                         initialDate);
-        final PVCoordinates initialConditions2 = initialTransform2.transformPVCoordinates(initialPV);
+        final PVCoordinates initialConditions2 = l2Frame.getTransformTo(integrationFrame2, initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
 
-        final AbsolutePVCoordinates initialAbsPV2 = new AbsolutePVCoordinates(integrationFrame2, initialDate, 
+        final AbsolutePVCoordinates initialAbsPV2 = new AbsolutePVCoordinates(integrationFrame2, initialDate,
                                                                               initialConditions2);
         final SpacecraftState initialState2 = new SpacecraftState(initialAbsPV2);
 
@@ -174,57 +184,41 @@ public class testCaseL2_DRAFT {
         propagator2.setOrbitType(null);
         propagator2.setInitialState(initialState2);
         propagator2.setIgnoreCentralAttraction(true);
-
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
+        propagator2.addForceModel(new ThirdBodyAttraction(moon));
         propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
-
-        final ForceModel earthAttraction2 = new SingleBodyAbsoluteAttraction(earth);
-        final ForceModel moonAttraction2 = new ThirdBodyAttraction(moon);
-        propagator2.addForceModel(earthAttraction2);
-        propagator2.addForceModel(moonAttraction2);
-
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
 
         // 3: Propagation in L2 centered frame
-        
-        final Frame integrationFrame3 = frameL2;
+
+        final Frame integrationFrame3 = l2Frame;
 
         System.out.println("3- Propagation in L2 reference frame (pseudo_inertial: " +
                            integrationFrame3.isPseudoInertial() + ")");
 
-        final org.orekit.frames.Transform initialTransform3 = outputFrame.getTransformTo(integrationFrame3, 
-                                                                                         initialDate);
-        final PVCoordinates initialConditions3 = initialTransform3.transformPVCoordinates(initialPV);
-        
-        
-        final AbsolutePVCoordinates initialAbsPV3 = new AbsolutePVCoordinates(integrationFrame3, initialDate, 
+        final PVCoordinates initialConditions3 = l2Frame.getTransformTo(integrationFrame3,  initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
+
+        final AbsolutePVCoordinates initialAbsPV3 = new AbsolutePVCoordinates(integrationFrame3, initialDate,
                                                                               initialConditions3);
         Attitude arbitraryAttitude3 = new Attitude(integrationFrame3,
                 new TimeStampedAngularCoordinates(initialDate,
                                                   new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
                                                   new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J)));
         final SpacecraftState initialState3 = new SpacecraftState(initialAbsPV3, arbitraryAttitude3);
-     
+
         AdaptiveStepsizeIntegrator integrator3 =
                 new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances, vecRelativeTolerances);
 
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
         propagator3.setOrbitType(null);
         propagator3.setInitialState(initialState3);
-
-        final ForceModel earthAttraction3 = new SingleBodyAbsoluteAttraction(earth);
-        final ForceModel moonAttraction3  = new SingleBodyAbsoluteAttraction(moon);
         propagator3.setIgnoreCentralAttraction(true);
-        propagator3.addForceModel(earthAttraction3);
-        propagator3.addForceModel(moonAttraction3);
-
-//        //1st way L2Frame constructor must be: super(_,_,_)
-//        final ForceModel inertial = new InertialForces(referenceFrame);
-//        propagator3.addForceModel(inertial);
-        
-        //2ndway L2Frame constructor must be: super(_,_,_,true)
-
+        propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(moon));
         propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
@@ -238,7 +232,7 @@ public class testCaseL2_DRAFT {
         System.out.format(Locale.US, "Differences between trajectories:%n");
         System.out.format(Locale.US, "    1/3: %10.6f [m]%n", Vector3D.distance(pos1, pos3));
         System.out.format(Locale.US, "    2/3: %10.6f [m]%n", Vector3D.distance(pos2, pos3));
-        System.out.format(Locale.US, "    1/2: %10.6f [m]%n", Vector3D.distance(pos1, pos2));        
+        System.out.format(Locale.US, "    1/2: %10.6f [m]%n", Vector3D.distance(pos1, pos2));
 
     }
 
@@ -290,7 +284,7 @@ public class testCaseL2_DRAFT {
                                       finalPv.getVelocity().getY(),
                                       finalPv.getVelocity().getZ());
                     System.out.println();
-                    out.close(); 
+                    out.close();
                     System.out.println("trajectory saved in " + outFile.getAbsolutePath());
                 }
             } catch (OrekitException oe) {
