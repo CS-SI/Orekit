@@ -53,7 +53,6 @@ public class TODProviderTest {
                 new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
                                                    CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
         double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
@@ -216,7 +215,6 @@ public class TODProviderTest {
                 new InterpolatingTransformProvider(nonInterpolating,
                                                    CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,
                                                    OrekitConfiguration.getCacheSlotsNumber(),
                                                    Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -271,7 +269,6 @@ public class TODProviderTest {
                         new InterpolatingTransformProvider(nonInterpolating,
                                                            CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
-                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 8,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
