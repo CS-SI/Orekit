@@ -32,8 +32,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -67,6 +68,7 @@ import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -74,6 +76,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -461,9 +464,16 @@ public class FieldKeplerianPropagatorTest {
         FieldKeplerianOrbit<T> orbit =
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
-        FieldAttitudeProvider<T> wrongLaw = new FieldAttitudeProvider<T>() {
+        AttitudeProvider wrongLaw = new AttitudeProvider() {
+            private static final long serialVersionUID = 1L;
             @Override
-            public FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date, Frame frame) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+                throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
+            }
+            @Override
+            public <Q extends RealFieldElement<Q>> FieldAttitude<Q> getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
+                                                                                FieldAbsoluteDate<Q> date,
+                                                                                Frame frame) throws OrekitException {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };
@@ -500,9 +510,15 @@ public class FieldKeplerianPropagatorTest {
             new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), 3.986004415e14);
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
-                                                                                new FieldAttitudeProvider<T>() {
-            public FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date,
-                                                Frame frame) throws OrekitException {
+                        new AttitudeProvider() {
+            private static final long serialVersionUID =
+                            1L;
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+                throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
+            }
+            public <Q extends RealFieldElement<Q>> FieldAttitude<Q> getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
+                                                                                FieldAbsoluteDate<Q> date,
+                                                                                Frame frame) throws OrekitException {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
         });

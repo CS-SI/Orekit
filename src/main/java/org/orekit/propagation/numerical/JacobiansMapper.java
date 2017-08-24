@@ -41,12 +41,13 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class JacobiansMapper {
 
+    /** State dimension, fixed to 6.
+     * @since 9.0
+     */
+    public static final int STATE_DIMENSION = 6;
+
     /** Name. */
     private String name;
-
-    /** State vector dimension without additional parameters
-     * (either 6 or 7 depending on mass being included or not). */
-    private final int stateDimension;
 
     /** Selected parameters for Jacobian computation. */
     private final ParameterDriversList parameters;
@@ -59,19 +60,16 @@ public class JacobiansMapper {
 
     /** Simple constructor.
      * @param name name of the Jacobians
-     * @param stateDimension dimension of the state (either 6 or 7 depending on mass
-     * being included or not)
      * @param parameters selected parameters for Jacobian computation
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final int stateDimension, final ParameterDriversList parameters,
+    JacobiansMapper(final String name, final ParameterDriversList parameters,
                     final OrbitType orbitType, final PositionAngle angleType) {
-        this.name           = name;
-        this.stateDimension = stateDimension;
-        this.parameters     = parameters;
-        this.orbitType      = orbitType;
-        this.angleType      = angleType;
+        this.name       = name;
+        this.parameters = parameters;
+        this.orbitType  = orbitType;
+        this.angleType  = angleType;
     }
 
     /** Get the name of the partial Jacobians.
@@ -85,14 +83,16 @@ public class JacobiansMapper {
      * @return length of the one-dimensional additional state array
      */
     public int getAdditionalStateDimension() {
-        return stateDimension * (stateDimension + parameters.getNbParams());
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
     }
 
     /** Get the state vector dimension.
      * @return state vector dimension
+     * @deprecated as of 9.0, replaced with {@link #STATE_DIMENSION}
      */
+    @Deprecated
     public int getStateDimension() {
-        return stateDimension;
+        return STATE_DIMENSION;
     }
 
     /** Get the number of parameters.
@@ -108,17 +108,13 @@ public class JacobiansMapper {
      */
     private double[][] getdYdC(final SpacecraftState state) {
 
-        final double[][] dYdC = new double[stateDimension][stateDimension];
+        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
 
         // make sure the state is in the desired orbit type
         final Orbit orbit = orbitType.convertType(state.getOrbit());
 
         // compute the Jacobian, taking the position angle type into account
         orbit.getJacobianWrtCartesian(angleType, dYdC);
-        if (stateDimension > 6) {
-            // add mass derivative
-            dYdC[6][6] = 1.0;
-        }
 
         return dYdC;
 
@@ -149,8 +145,8 @@ public class JacobiansMapper {
 
         // map the converted state Jacobian to one-dimensional array
         int index = 0;
-        for (int i = 0; i < stateDimension; ++i) {
-            for (int j = 0; j < stateDimension; ++j) {
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
                 p[index++] = dC1dY0.getEntry(i, j);
             }
         }
@@ -160,7 +156,7 @@ public class JacobiansMapper {
             final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
 
             // map the converted parameters Jacobian to one-dimensional array
-            for (int i = 0; i < stateDimension; ++i) {
+            for (int i = 0; i < STATE_DIMENSION; ++i) {
                 for (int j = 0; j < parameters.getNbParams(); ++j) {
                     p[index++] = dC1dP.getEntry(i, j);
                 }
@@ -189,15 +185,15 @@ public class JacobiansMapper {
         final double[] p = state.getAdditionalState(name);
 
         // compute dYdY0 = dYdC * dCdY0, without allocating new arrays
-        for (int i = 0; i < stateDimension; i++) {
+        for (int i = 0; i < STATE_DIMENSION; i++) {
             final double[] rowC = dYdC[i];
             final double[] rowD = dYdY0[i];
-            for (int j = 0; j < stateDimension; ++j) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
                 double sum = 0;
                 int pIndex = j;
-                for (int k = 0; k < stateDimension; ++k) {
+                for (int k = 0; k < STATE_DIMENSION; ++k) {
                     sum += rowC[k] * p[pIndex];
-                    pIndex += stateDimension;
+                    pIndex += STATE_DIMENSION;
                 }
                 rowD[j] = sum;
             }
@@ -231,13 +227,13 @@ public class JacobiansMapper {
             final double[] p = state.getAdditionalState(name);
 
             // compute dYdP = dYdC * dCdP, without allocating new arrays
-            for (int i = 0; i < stateDimension; i++) {
+            for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] rowC = dYdC[i];
                 final double[] rowD = dYdP[i];
                 for (int j = 0; j < parameters.getNbParams(); ++j) {
                     double sum = 0;
-                    int pIndex = j + stateDimension * stateDimension;
-                    for (int k = 0; k < stateDimension; ++k) {
+                    int pIndex = j + STATE_DIMENSION * STATE_DIMENSION;
+                    for (int k = 0; k < STATE_DIMENSION; ++k) {
                         sum += rowC[k] * p[pIndex];
                         pIndex += parameters.getNbParams();
                     }

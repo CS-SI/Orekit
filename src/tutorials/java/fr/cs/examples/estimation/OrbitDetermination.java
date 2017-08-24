@@ -58,17 +58,18 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.BatchLSObserver;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.OutlierFilter;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
+import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -458,7 +459,7 @@ public class OrbitDetermination {
                 for (int i = parameter.getName().length(); i < length; ++i) {
                     out.format(Locale.US, " ");
                 }
-                out.format(Locale.US, "  %+f  (final value:  %f)%n",
+                out.format(Locale.US, "  %+.12f  (final value:  % .12f)%n",
                            factor * (value - initial), factor * value);
             }
         }
@@ -611,6 +612,29 @@ public class OrbitDetermination {
         // post-Newtonian correction force due to general relativity
         if (parser.containsKey(ParameterKey.GENERAL_RELATIVITY) && parser.getBoolean(ParameterKey.GENERAL_RELATIVITY)) {
             propagatorBuilder.addForceModel(new Relativity(gravityField.getMu()));
+        }
+
+        // extra polynomial accelerations
+        if (parser.containsKey(ParameterKey.POLYNOMIAL_ACCELERATION_NAME)) {
+            final String[]       names        = parser.getStringArray(ParameterKey.POLYNOMIAL_ACCELERATION_NAME);
+            final Vector3D[]     directions   = parser.getVectorArray(ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_X,
+                                                                      ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_Y,
+                                                                      ParameterKey.POLYNOMIAL_ACCELERATION_DIRECTION_Z);
+            final List<String>[] coefficients = parser.getStringsListArray(ParameterKey.POLYNOMIAL_ACCELERATION_COEFFICIENTS, ',');
+            final boolean[]      estimated    = parser.getBooleanArray(ParameterKey.POLYNOMIAL_ACCELERATION_ESTIMATED);
+
+            for (int i = 0; i < names.length; ++i) {
+
+                final PolynomialParametricAcceleration ppa =
+                                new PolynomialParametricAcceleration(directions[i], true, names[i], null,
+                                                                     coefficients[i].size() - 1);
+                for (int k = 0; k < coefficients[i].size(); ++k) {
+                    final ParameterDriver driver = ppa.getParameterDriver(names[i] + "[" + k + "]");
+                    driver.setValue(Double.parseDouble(coefficients[i].get(k)));
+                    driver.setSelected(estimated[i]);
+                }
+                propagatorBuilder.addForceModel(ppa);
+            }
         }
 
         return propagatorBuilder;
@@ -2063,6 +2087,12 @@ public class OrbitDetermination {
         SOLAR_RADIATION_PRESSURE_CR_ESTIMATED,
         SOLAR_RADIATION_PRESSURE_AREA,
         GENERAL_RELATIVITY,
+        POLYNOMIAL_ACCELERATION_NAME,
+        POLYNOMIAL_ACCELERATION_DIRECTION_X,
+        POLYNOMIAL_ACCELERATION_DIRECTION_Y,
+        POLYNOMIAL_ACCELERATION_DIRECTION_Z,
+        POLYNOMIAL_ACCELERATION_COEFFICIENTS,
+        POLYNOMIAL_ACCELERATION_ESTIMATED,
         TRANSPONDER_DELAY_BIAS,
         TRANSPONDER_DELAY_BIAS_MIN,
         TRANSPONDER_DELAY_BIAS_MAX,

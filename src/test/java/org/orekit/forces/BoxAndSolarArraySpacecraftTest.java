@@ -56,6 +56,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BoxAndSolarArraySpacecraftTest {
@@ -302,7 +303,8 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
                                                state.getPVCoordinates().getPosition(),
                                                state.getAttitude().getRotation(),
-                                               state.getMass(), 0.001, relativeVelocity);
+                                               state.getMass(), 0.001, relativeVelocity,
+                                               getDragParameters(s));
             Assert.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-15);
 
             Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
@@ -310,7 +312,8 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                                                  state.getPVCoordinates().getPosition(),
                                                                  state.getAttitude().getRotation(),
-                                                                 state.getMass(), flux);
+                                                                 state.getMass(), flux,
+                                                                 getRadiationParameters(s));
             Assert.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
@@ -340,7 +343,8 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
                                                state.getPVCoordinates().getPosition(),
                                                state.getAttitude().getRotation(),
-                                               state.getMass(), 0.001, relativeVelocity);
+                                               state.getMass(), 0.001, relativeVelocity,
+                                               getDragParameters(s));
             Assert.assertTrue(Vector3D.angle(relativeVelocity, drag) > 0.167);
             Assert.assertTrue(Vector3D.angle(relativeVelocity, drag) < 0.736);
 
@@ -349,7 +353,8 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                                                  state.getPVCoordinates().getPosition(),
                                                                  state.getAttitude().getRotation(),
-                                                                 state.getMass(), flux);
+                                                                 state.getMass(), flux,
+                                                                 getRadiationParameters(s));
             Assert.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
@@ -387,7 +392,8 @@ public class BoxAndSolarArraySpacecraftTest {
 
         // head-on, there acceleration with lift should be twice acceleration without lift
         Vector3D headOnVelocity = new Vector3D(2000, 0.0, 0.0);
-        Vector3D newHeadOnDrag  = cube.dragAcceleration(date, frame, position, rotation, mass, density, headOnVelocity);
+        Vector3D newHeadOnDrag  = cube.dragAcceleration(date, frame, position, rotation, mass, density, headOnVelocity,
+                                                        getDragParameters(cube));
         Vector3D oldHeadOnDrag  = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, headOnVelocity);
         Assert.assertThat(newHeadOnDrag, OrekitMatchers.vectorCloseTo(oldHeadOnDrag.scalarMultiply(2), 1));
 
@@ -398,7 +404,8 @@ public class BoxAndSolarArraySpacecraftTest {
         // and since molecule is reflected backward with the same velocity, this implies a
         // factor 2 in linear momentum differences
         Vector3D diagonalVelocity = new Vector3D(2000, 2000, 2000);
-        Vector3D newDiagDrag= cube.dragAcceleration(date, frame, position, rotation, mass, density, diagonalVelocity);
+        Vector3D newDiagDrag= cube.dragAcceleration(date, frame, position, rotation, mass, density, diagonalVelocity,
+                                                    getDragParameters(cube));
         Vector3D oldDiagDrag = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, diagonalVelocity);
         double oldMissingCoeff = 2.0 / FastMath.sqrt(3.0);
         Vector3D fixedOldDrag = new Vector3D(oldMissingCoeff, oldDiagDrag);
@@ -425,9 +432,7 @@ public class BoxAndSolarArraySpacecraftTest {
         saAreaField.setAccessible(true);
         final double solarArrayArea = (Double) saAreaField.get(bsa);
         
-        java.lang.reflect.Field dragCoeffAreaField = BoxAndSolarArraySpacecraft.class.getDeclaredField("dragCoeff");
-        dragCoeffAreaField.setAccessible(true);
-        final double dragCoeff = (Double) dragCoeffAreaField.get(bsa);
+        final double dragCoeff = bsa.getDragParametersDrivers()[0].getValue();
         
         // relative velocity in spacecraft frame
         final Vector3D v = rotation.applyTo(relativeVelocity);
@@ -467,7 +472,8 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D acceleration = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                                                     state.getPVCoordinates().getPosition(),
                                                                     state.getAttitude().getRotation(),
-                                                                    state.getMass(), flux);
+                                                                    state.getMass(), flux,
+                                                                    getRadiationParameters(s));
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
                                                                                            state.getPVCoordinates().getPosition(),
                                                                                            state.getAttitude().getRotation()));
@@ -501,7 +507,8 @@ public class BoxAndSolarArraySpacecraftTest {
                     s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                                     state.getPVCoordinates().getPosition(),
                                                     state.getAttitude().getRotation(),
-                                                    state.getMass(), flux);
+                                                    state.getMass(), flux,
+                                                    getRadiationParameters(s));
             Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
                                                                                            state.getPVCoordinates().getPosition(),
                                                                                            state.getAttitude().getRotation()));
@@ -527,6 +534,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                state.getPVCoordinates().getPosition(),
                                state.getAttitude().getRotation(),
                                state.getMass(), 1.0e-6, Vector3D.PLUS_I,
+                               getDragParameters(s),
                                "wrong");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -547,6 +555,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                state.getPVCoordinates().getPosition(),
                                state.getAttitude().getRotation(),
                                state.getMass(), 1.0e-6, Vector3D.PLUS_I,
+                               getDragParameters(s),
                                DragSensitive.LIFT_RATIO);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -568,6 +577,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                                                   state.getPVCoordinates().getPosition(),
                                                                   state.getAttitude().getRotation(),
                                                                   state.getMass(), 1.0e-6, Vector3D.PLUS_I,
+                                                                  getDragParameters(s),
                                                                   DragSensitive.LIFT_RATIO);
         Assert.assertEquals(5.58e-10, a.getNorm().getReal(), 1.0e-12);
     }
@@ -583,6 +593,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                state.getPVCoordinates().getPosition(),
                                state.getAttitude().getRotation(),
                                state.getMass(), 1.0e-6, Vector3D.PLUS_I,
+                               getDragParameters(s),
                                "wrong");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -606,6 +617,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                             state.getPVCoordinates().getPosition(),
                                             state.getAttitude().getRotation(),
                                             state.getMass(), Vector3D.PLUS_I,
+                                            getRadiationParameters(s),
                                             "wrong");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -627,6 +639,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                             state.getAttitude().getRotation(),
                                             state.getMass(), new Vector3D(Precision.SAFE_MIN / 2,
                                                                           Vector3D.PLUS_I),
+                                            getRadiationParameters(s),
                                             RadiationSensitive.ABSORPTION_COEFFICIENT);
         Assert.assertEquals(0.0, a.getNorm().getReal(), Double.MIN_VALUE);
     }
@@ -645,12 +658,14 @@ public class BoxAndSolarArraySpacecraftTest {
                                             state.getPVCoordinates().getPosition(),
                                             state.getAttitude().getRotation(),
                                             state.getMass(), n,
+                                            getRadiationParameters(s),
                                             RadiationSensitive.ABSORPTION_COEFFICIENT);
         FieldVector3D<DerivativeStructure> aMinus =
                         s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
                                             state.getPVCoordinates().getPosition(),
                                             state.getAttitude().getRotation(),
                                             state.getMass(), n.negate(),
+                                            getRadiationParameters(s),
                                             RadiationSensitive.ABSORPTION_COEFFICIENT);
         Assert.assertEquals(0.0, aPlus.add(aMinus).getNorm().getReal(), Double.MIN_VALUE);
     }
@@ -802,6 +817,24 @@ public class BoxAndSolarArraySpacecraftTest {
                                                                 FieldVector3D.getZero(factory.getDerivativeField()),
                                                                 FieldRotation.getIdentity(factory.getDerivativeField()));
         Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+    }
+
+    private double[] getDragParameters(final BoxAndSolarArraySpacecraft basa) {
+        final ParameterDriver[] drivers = basa.getDragParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    private double[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa) {
+        final ParameterDriver[] drivers = basa.getRadiationParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
     }
 
     @Before

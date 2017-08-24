@@ -17,14 +17,11 @@
 package org.orekit.forces.gravity;
 
 
-import java.io.Serializable;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -45,12 +42,10 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -64,9 +59,8 @@ import org.orekit.utils.ParameterObserver;
  * </p>
  * <p>
  * This model directly uses normalized coefficients and stable recursion algorithms
- * so it is more suited to high degree gravity fields than the classical {@link
- * CunninghamAttractionModel Cunningham} or {@link DrozinerAttractionModel Droziner}
- * models which use un-normalized coefficients.
+ * so it is more suited to high degree gravity fields than the classical Cunningham
+ * Droziner models which use un-normalized coefficients.
  * </p>
  * <p>
  * Among the different algorithms presented in Holmes and Featherstone paper, this
@@ -96,14 +90,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
-    /** Drivers for force model parameters. */
-    private final ParameterDriver[] parametersDrivers;
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
 
     /** Provider for the spherical harmonics. */
     private final NormalizedSphericalHarmonicsProvider provider;
-
-    /** Central attraction coefficient. */
-    private double mu;
 
     /** Rotating body. */
     private final Frame bodyFrame;
@@ -120,9 +111,6 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Scaled sectorial Pbar<sub>m,m</sub>/u<sup>m</sup> &times; 2<sup>-SCALING</sup>. */
     private final double[] sectorial;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Creates a new instance.
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
@@ -131,24 +119,15 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     public HolmesFeatherstoneAttractionModel(final Frame centralBodyFrame,
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
-        this.parametersDrivers = new ParameterDriver[1];
         try {
-            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
-            parametersDrivers[0].addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    HolmesFeatherstoneAttractionModel.this.mu = driver.getValue();
-                }
-            });
+            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
         }
 
         this.provider  = provider;
-        this.mu        = provider.getMu();
         this.bodyFrame = centralBodyFrame;
 
         // the pre-computed arrays hold coefficients from triangular arrays in a single
@@ -183,8 +162,12 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
 
-        factory = new DSFactory(1, 1);
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnPositionOnly() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -192,24 +175,34 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         return provider.getTideSystem();
     }
 
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return gmParameterDriver.getValue();
+    }
+
     /** Compute the value of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
+     * @param mu central attraction coefficient to use
      * @return value of the gravity field (central and non-central parts summed together)
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double value(final AbsoluteDate date, final Vector3D position)
+    public double value(final AbsoluteDate date, final Vector3D position,
+                        final double mu)
         throws OrekitException {
-        return mu / position.getNorm() + nonCentralPart(date, position);
+        return mu / position.getNorm() + nonCentralPart(date, position, mu);
     }
 
     /** Compute the non-central part of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
+     * @param mu central attraction coefficient to use
      * @return value of the non-central part of the gravity field
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double nonCentralPart(final AbsoluteDate date, final Vector3D position)
+    public double nonCentralPart(final AbsoluteDate date, final Vector3D position, final double mu)
         throws OrekitException {
 
         final int degree = provider.getMaxDegree();
@@ -285,10 +278,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Compute the gradient of the non-central part of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
+     * @param mu central attraction coefficient to use
      * @return gradient of the non-central part of the gravity field
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double[] gradient(final AbsoluteDate date, final Vector3D position)
+    public double[] gradient(final AbsoluteDate date, final Vector3D position, final double mu)
         throws OrekitException {
 
         final int degree = provider.getMaxDegree();
@@ -400,11 +394,13 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Compute the gradient of the non-central part of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
+     * @param mu central attraction coefficient to use
      * @param <T> type of field used
      * @return gradient of the non-central part of the gravity field
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public <T extends RealFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position)
+    public <T extends RealFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+                                                        final T mu)
         throws OrekitException {
 
         final int degree = provider.getMaxDegree();
@@ -542,10 +538,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Compute both the gradient and the hessian of the non-central part of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
+     * @param mu central attraction coefficient to use
      * @return gradient and hessian of the non-central part of the gravity field
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position)
+    private GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position, final double mu)
         throws OrekitException {
 
         final int degree = provider.getMaxDegree();
@@ -692,10 +689,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Container for gradient and Hessian. */
-    public static class GradientHessian implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130219L;
+    private static class GradientHessian {
 
         /** Gradient. */
         private final double[] gradient;
@@ -710,7 +704,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
          * @param gradient gradient
          * @param hessian hessian
          */
-        public GradientHessian(final double[] gradient, final double[][] hessian) {
+        GradientHessian(final double[] gradient, final double[][] hessian) {
             this.gradient = gradient;
             this.hessian  = hessian;
         }
@@ -971,9 +965,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
      * @return new value for index
      */
     private <T extends RealFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
-                                final T t, final T u, final T tOu,
-                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
-                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
+                                                                final T t, final T u, final T tOu,
+                                                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
+                                                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
 
         final T u2 = u.multiply(u);
         final T zero = u.getField().getZero();
@@ -1043,8 +1037,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+    @Override
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
         throws OrekitException {
+
+        final double mu = parameters[0];
 
         // get the position in body frame
         final AbsoluteDate date       = s.getDate();
@@ -1053,23 +1050,37 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        return fromBodyFrame.transformVector(new Vector3D(gradient(date, position, mu)));
+
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
 
+        final T mu = parameters[0];
+
+        // check for faster computation dedicated to derivatives with respect to state
+        if (isStateDerivative(s)) {
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
+                                                                               s.getFrame(), p,
+                                                                               (DerivativeStructure) mu);
+            return a;
+        }
+
         // get the position in body frame
-        final FieldAbsoluteDate<T> date       = s.getDate();
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldAbsoluteDate<T> date          = s.getDate();
+        final Transform            fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
+        final Transform            toBodyFrame   = fromBodyFrame.getInverse();
+        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
-        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position)));
-        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+        return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));
+
     }
 
     /** {@inheritDoc} */
@@ -1083,10 +1094,76 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         return Stream.empty();
     }
 
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
+    /** Check if a field state corresponds to derivatives with respect to state.
+     * @param state state to check
+     * @param <T> type of the filed elements
+     * @return true if state corresponds to derivatives with respect to state
+     * @since 9.0
+     */
+    private <T extends RealFieldElement<T>> boolean isStateDerivative(final FieldSpacecraftState<T> state) {
+        try {
+            final DerivativeStructure dsMass = (DerivativeStructure) state.getMass();
+            final int o = dsMass.getOrder();
+            final int p = dsMass.getFreeParameters();
+            if (o != 1 || (p < 3)) {
+                return false;
+            }
+            @SuppressWarnings("unchecked")
+            final FieldPVCoordinates<DerivativeStructure> pv = (FieldPVCoordinates<DerivativeStructure>) state.getPVCoordinates();
+            return isVariable(pv.getPosition().getX(), 0) &&
+                   isVariable(pv.getPosition().getY(), 1) &&
+                   isVariable(pv.getPosition().getZ(), 2);
+        } catch (ClassCastException cce) {
+            return false;
+        }
+    }
+
+    /** Check if a derivative represents a specified variable.
+     * @param ds derivative to check
+     * @param index index of the variable
+     * @return true if the derivative represents a specified variable
+     * @since 9.0
+     */
+    private boolean isVariable(final DerivativeStructure ds, final int index) {
+        final double[] derivatives = ds.getAllDerivatives();
+        boolean check = true;
+        for (int i = 1; i < derivatives.length; ++i) {
+            check &= derivatives[i] == ((index + 1 == i) ? 1.0 : 0.0);
+        }
+        return check;
+    }
+
+    /** Compute acceleration derivatives with respect to state parameters.
+     * <p>
+     * From a theoretical point of view, this method computes the same values
+     * as {@link #acceleration(FieldSpacecraftState, RealFieldElement[])} in the
+     * specific case of {@link DerivativeStructure} with respect to state, so
+     * it is less general. However, it is *much* faster in this important case.
+     * <p>
+     * <p>
+     * The derivatives should be computed with respect to position. The input
+     * parameters already take into account the free parameters (6 or 7 depending
+     * on derivation with respect to mass being considered or not) and order
+     * (always 1). Free parameters at indices 0, 1 and 2 correspond to derivatives
+     * with respect to position. Free parameters at indices 3, 4 and 5 correspond
+     * to derivatives with respect to velocity (these derivatives will remain zero
+     * as acceleration due to gravity does not depend on velocity). Free parameter
+     * at index 6 (if present) corresponds to to derivatives with respect to mass
+     * (this derivative will remain zero as acceleration due to gravity does not
+     * depend on mass).
+     * </p>
+     * @param date current date
+    * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in inertial frame
+     * @param mu central attraction coefficient to use
+     * @return acceleration with all derivatives specified by the input parameters
+     * own derivatives
+     * @exception OrekitException if derivatives cannot be computed
+     * @since 6.0
+     */
+    private FieldVector3D<DerivativeStructure> accelerationWrtState(final AbsoluteDate date, final Frame frame,
+                                                                    final FieldVector3D<DerivativeStructure> position,
+                                                                    final DerivativeStructure mu)
         throws OrekitException {
 
         // get the position in body frame
@@ -1095,7 +1172,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
         // compute gradient and Hessian
-        final GradientHessian gh   = gradientHessian(date, positionBody);
+        final GradientHessian gh   = gradientHessian(date, positionBody, mu.getReal());
 
         // gradient of the non-central part of the gravity field
         final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
@@ -1106,7 +1183,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
         // distribute all partial derivatives in a compact acceleration vector
-        final double[] derivatives = new double[1 + mass.getFreeParameters()];
+        final double[] derivatives = new double[1 + position.getX().getFreeParameters()];
         final DerivativeStructure[] accDer = new DerivativeStructure[3];
         for (int i = 0; i < 3; ++i) {
 
@@ -1118,9 +1195,12 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             derivatives[2] = hInertial.getEntry(i, 1);
             derivatives[3] = hInertial.getEntry(i, 2);
 
-            // next elements (three or four depending on mass being used or not) are left as 0
+            // next element is derivative with respect to parameter mu
+            if (derivatives.length > 4 && isVariable(mu, 3)) {
+                derivatives[4] = gInertial[i] / mu.getReal();
+            }
 
-            accDer[i] = mass.getFactory().build(derivatives);
+            accDer[i] = position.getX().getFactory().build(derivatives);
 
         }
 
@@ -1129,29 +1209,10 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
-        throws OrekitException, IllegalArgumentException {
-
-        complainIfNotSupported(paramName);
-
-        // get the position in body frame
-        final AbsoluteDate date       = s.getDate();
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
-        final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
-
-        // gradient of the non-central part of the gravity field
-        final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
-
-        return new FieldVector3D<>(factory.build(gInertial.getX(), gInertial.getX() / mu),
-                                   factory.build(gInertial.getY(), gInertial.getY() / mu),
-                                   factory.build(gInertial.getZ(), gInertial.getZ() / mu));
-
-    }
-
-    /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
-        return parametersDrivers.clone();
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
 }

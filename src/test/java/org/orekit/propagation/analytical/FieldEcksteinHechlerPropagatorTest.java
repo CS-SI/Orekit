@@ -36,8 +36,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldAttitudeProvider;
-import org.orekit.attitudes.FieldLofOffset;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -64,11 +65,13 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldNodeDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -289,9 +292,9 @@ public class FieldEcksteinHechlerPropagatorTest {
         // -----------------------
         FieldEcksteinHechlerPropagator<T> extrapolator =
             new FieldEcksteinHechlerPropagator<>(initialOrbit,
-                                          new FieldLofOffset<>(initialOrbit.getFrame(),
-                                                               LOFType.VNC, RotationOrder.XYZ, zero, zero, zero),
-                                          provider);
+                                                 new LofOffset(initialOrbit.getFrame(),
+                                                               LOFType.VNC, RotationOrder.XYZ, 0, 0, 0),
+                                                 provider);
 
         // Extrapolation at a final date different from initial date
         // ---------------------------------------------------------
@@ -381,8 +384,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // -----------------------
         FieldEcksteinHechlerPropagator<T> extrapolator =
             new FieldEcksteinHechlerPropagator<>(initialOrbit,
-                                                 new FieldLofOffset<>(initialOrbit.getFrame(),
-                                                                      LOFType.VNC, RotationOrder.XYZ, zero, zero, zero),
+                                                 new LofOffset(initialOrbit.getFrame(), LOFType.VNC),
                                                  zero.add(2000.0), provider);
 
         // Extrapolation at a final date different from initial date
@@ -610,8 +612,22 @@ public class FieldEcksteinHechlerPropagatorTest {
             new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), date, 3.986004415e14);
         final DummyLocalizable gasp = new DummyLocalizable("gasp");
-        FieldAttitudeProvider<T> wrongLaw = new FieldAttitudeProvider<T>() {
-            public FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date, Frame frame) throws OrekitException {
+        AttitudeProvider wrongLaw = new AttitudeProvider() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Attitude getAttitude(PVCoordinatesProvider pvProv,
+                                        AbsoluteDate date, Frame frame)
+                throws OrekitException {
+                throw new OrekitException(gasp, new RuntimeException());
+            }
+
+            @Override
+            public <Q extends RealFieldElement<Q>> FieldAttitude<Q>
+                getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
+                            FieldAbsoluteDate<Q> date, Frame frame)
+                    throws OrekitException {
                 throw new OrekitException(gasp, new RuntimeException());
             }
         };

@@ -23,9 +23,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -33,8 +30,12 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
  * The effect of tropospheric correction on the range-rate is directly computed
@@ -144,7 +145,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
                                                    final double delay)
         throws OrekitException {
         final double[][] finiteDifferencesJacobian =
-                        EstimationUtils.differentiate(new StateFunction() {
+                        Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 try {
                                     // evaluate target's elevation with a changed target position
@@ -156,7 +157,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
                                     throw new OrekitExceptionWrapper(oe);
                                 }
                             }
-                        }, 1, OrbitType.CARTESIAN,
+                        }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
 
         return finiteDifferencesJacobian;
@@ -186,7 +187,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
         };
 
         final ParameterFunction rangeErrorDerivative =
-                        EstimationUtils.differentiate(rangeError, driver, 3, 10.0);
+                        Differentiation.differentiate(rangeError, driver, 3, 10.0);
 
         return rangeErrorDerivative.value(driver);
 

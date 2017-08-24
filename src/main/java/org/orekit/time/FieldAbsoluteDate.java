@@ -97,10 +97,6 @@ import org.orekit.utils.Constants;
 public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     implements FieldTimeStamped<T>, TimeShiftable<FieldAbsoluteDate<T>>, Comparable<FieldAbsoluteDate<T>> {
 
-    /** Reference date, corresponding to epoch=0 and offset= 0. */
-    private static final AbsoluteDate REFERENCE_ZERO =
-        new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
-
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
      * <p>Beware, it is not {@link #getJ2000Epoch(Field)} since it is in TAI and not in TT.</p> */
     private final long epoch;
@@ -117,8 +113,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public FieldAbsoluteDate(final Field<T> field, final AbsoluteDate date) {
         this.field  = field;
-        this.epoch  = (long) FastMath.floor(date.durationFrom(REFERENCE_ZERO));
-        this.offset = field.getZero().add(date.durationFrom(REFERENCE_ZERO.shiftedBy(epoch)));
+        this.epoch  = date.getEpoch();
+        this.offset = field.getZero().add(date.getOffset());
     }
 
     /** Create an instance with a default value ({@link #getJ2000Epoch(Field)}).
@@ -879,7 +875,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #FieldAbsoluteDate(FieldAbsoluteDate, double)
      */
     public T durationFrom(final AbsoluteDate instant) {
-        return offset.add(REFERENCE_ZERO.durationFrom(instant)).add(epoch);
+        return offset.subtract(instant.getOffset()).add(epoch - instant.getEpoch());
     }
 
     /** Compute the apparent clock offset between two instant <em>in the
@@ -1168,8 +1164,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return AbsoluteDate of the FieldObject
      * */
     public AbsoluteDate toAbsoluteDate() {
-        // use two separate shifts to preserve accuracy
-        return REFERENCE_ZERO.shiftedBy(epoch).shiftedBy(offset.getReal());
+        return new AbsoluteDate(epoch, offset.getReal());
     }
 
 }

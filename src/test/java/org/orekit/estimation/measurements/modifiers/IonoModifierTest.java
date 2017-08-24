@@ -14,38 +14,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.modifiers;
 
 import java.util.List;
+import java.util.Map;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
-import org.orekit.estimation.measurements.modifiers.AngularTroposphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
-import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
-import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TurnAroundRange;
+import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.TurnAroundRangeIonosphericDelayModifier;
+import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
-public class TropoModifierTest {
+public class IonoModifierTest {
+
+    /** ionospheric model. */
+    private KlobucharIonoModel model;
 
     @Before
     public void setUp() throws Exception {
-
+        // Navigation message data
+        // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
+        // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
+        model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+                                       new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
     }
 
     @After
@@ -54,7 +77,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeTropoModifier() throws OrekitException {
+    public void testRangeIonoModifier() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -76,31 +99,49 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+        final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refState = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, new SpacecraftState[] { refState });
-
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             range.addModifier(modifier);
-            EstimatedMeasurement<Range> eval = range.estimate(0, 0, new SpacecraftState[] { refState });
+            boolean found = false;
+            for (final EstimationModifier<Range> existing : range.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
+            //
+            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
+            final double w = evalNoMod.getCurrentWeight()[0];
+            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
+            eval.setCurrentWeight(new double[] { w + 2 });
+            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffMeters, 30.0);
 
-            final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testTurnAroundRangeTropoModifier() throws OrekitException {
+    public void testTurnAroundRangeIonoModifier() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -108,11 +149,16 @@ public class TropoModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect range measurements
-        for (final GroundStation station : context.stations) {
-            station.getEastOffsetDriver().setSelected(true);
-            station.getNorthOffsetDriver().setSelected(true);
-            station.getZenithOffsetDriver().setSelected(true);
+        // Create perfect turn-around measurements
+        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
+            final GroundStation    masterStation = entry.getKey();
+            final GroundStation    slaveStation  = entry.getValue();
+            masterStation.getEastOffsetDriver().setSelected(true);
+            masterStation.getNorthOffsetDriver().setSelected(true);
+            masterStation.getZenithOffsetDriver().setSelected(true);
+            slaveStation.getEastOffsetDriver().setSelected(true);
+            slaveStation.getNorthOffsetDriver().setSelected(true);
+            slaveStation.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -122,31 +168,49 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refState = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
 
             TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
-            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
 
-            // add modifier
+            // Add modifier
             turnAroundRange.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<TurnAroundRange> existing : turnAroundRange.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
             //
-            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
+            final double w = evalNoMod.getCurrentWeight()[0];
+            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
+            eval.setCurrentWeight(new double[] { w + 2 });
+            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffMeters, 30.0);
 
-            final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testRangeRateTropoModifier() throws OrekitException {
+    public void testRangeRateIonoModifier() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -168,32 +232,31 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
+        final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, true);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refState = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
 
             // add modifier
             rangeRate.addModifier(modifier);
 
             //
-            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffMetersSec, 0.016);
 
-            final double epsilon = 1e-6;
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
     @Test
-    public void testAngularTropoModifier() throws OrekitException {
+    public void testAngularIonoModifier() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -201,7 +264,7 @@ public class TropoModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect angular measurements
+        // create perfect range measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -215,20 +278,21 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+
+        final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model);
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refState = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, new SpacecraftState[] { refstate });
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, new SpacecraftState[] { refstate });
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
@@ -239,15 +303,14 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testAngularRadioRefractionModifier() throws OrekitException {
-
+    public void testKlobucharIonoModel() throws OrekitException {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect angular measurements
+        // create perfect range measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -257,33 +320,38 @@ public class TropoModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new AngularAzElMeasurementCreator(context),
+                                                               new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-
-
         for (final ObservedMeasurement<?> measurement : measurements) {
-            final AbsoluteDate date = measurement.getDate();
+            // parameter corresponding to station position offset
+            final GroundStation   station = ((Range) measurement).getStation();
+            final AbsoluteDate    date    = ((Range) measurement).getDate();
+            final SpacecraftState state   = propagator.propagate(date);
 
-            final SpacecraftState refState = propagator.propagate(date);
+            final Vector3D position = state.getPVCoordinates().getPosition();
 
-            AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, new SpacecraftState[] { refState });
-
-            // get the altitude of the station (in kilometers)
-            final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
-
-            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(altitude));
-            // add modifier
-            angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, new SpacecraftState[] { refState });
+            final GeodeticPoint geo = station.getBaseFrame().getPoint();
 
-            final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
-            // TODO: check threshold
-            Assert.assertEquals(0.0, diffEl, 1.0e-3);
+            // elevation
+            final double elevation = station.getBaseFrame().getElevation(position,
+                                                                         state.getFrame(),
+                                                                         state.getDate());
+
+            // elevation
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
+
+            double delayMeters = model.pathDelay(date, geo, elevation, azimuth);
+
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
         }
+
     }
 }
 

@@ -16,13 +16,19 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -99,6 +105,33 @@ public class SpinStabilized implements AttitudeProviderModifier {
         // build the attitude
         return new Attitude(date, frame,
                             combined.getRotation(), combined.getRotationRate(), combined.getRotationAcceleration());
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date,
+                                                                        final Frame frame)
+        throws OrekitException {
+
+        // get attitude from underlying non-rotating law
+        final FieldAttitude<T> base = nonRotatingLaw.getAttitude(pvProv, date, frame);
+        final FieldTransform<T> baseTransform = new FieldTransform<>(date, base.getOrientation());
+
+        // compute spin transform due to spin from reference to current date
+        final FieldTransform<T> spinInfluence =
+            new FieldTransform<>(date,
+                                 new FieldRotation<>(new FieldVector3D<>(date.getField(), axis),
+                                                     date.durationFrom(start).multiply(rate),
+                                                     RotationConvention.FRAME_TRANSFORM),
+                                 new FieldVector3D<>(date.getField(), spin));
+
+        // combine the two transforms
+        final FieldTransform<T> combined = new FieldTransform<>(date, baseTransform, spinInfluence);
+
+        // build the attitude
+        return new FieldAttitude<>(date, frame,
+                                   combined.getRotation(), combined.getRotationRate(), combined.getRotationAcceleration());
 
     }
 

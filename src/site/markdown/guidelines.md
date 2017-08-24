@@ -82,6 +82,54 @@ difficult to catch bugs are caused by mutable objects that are changed in some d
 buried code and have an impact on user code that forgot to perform a defensive copy.
 Orbits, dates, vectors, and rotations are all immutable objects.
 
+## Source Control Management
+
+The source code control management system used is [Git](http://git-scm.com/). The
+main Orekit repository is located at [https://www.orekit.org/git/orekit-main.git](https://www.orekit.org/git/orekit-main.git).
+
+Starting after version 9.0, the branch management workflow is adapted from
+both [git flow](http://nvie.com/posts/a-successful-git-branching-model/)
+and from the [Orfeo ToolBox Workflow](https://wiki.orfeo-toolbox.org/index.php/Git#Workflow).
+
+![Orekit git workflow](./images/orekit-git-flow.png)
+
+This implies that development occurs on a develop branch only.
+Developers create feature branches, and merge them on the develop
+branch when ready. The develop branch should always be functional
+so people wanting to be on the bleeding edge can use it (for example
+to create nightly builds or to prepare their application for upcoming
+features before the official release).
+
+In order to improve traceability, when a feature branch is merged into
+develop, it should use
+
+    git merge ---no-ff
+
+the --no-ff flag prevents fast-forward so the history makes it clear there
+was a feature branch at this point.
+
+Feature branches are temporary, they are deleted when they are not useful anymore.
+Feature branches may be present only in one developer workspace and never appear
+in the main repository, however, they may also be pushed on the main repository
+if the developer wants to share work or needs community feedback.
+
+When a release is desired, a dedicated branch should be created, with a name
+following the pattern release-x.y. These branches are created from the
+develop branch. When the release is ready, the branch is merged both into the
+master branch and into the develop branch. Once a release branch has been set
+up, it will remain. This allows users relying on this specific version to be
+able to retrieve the fixes published afterward (i.e. x.y.1, x.y.2...).
+
+After a release has been published and pushed to master, it may be necessary
+to publish an urgent bugfix if a serious problem in the released version is
+found. Short-lived bugfix branches that are created directly from master are
+devoted to this. These bugfix branches are merged back into master and develop.
+
+The master branch always refer to the latest stable release performed. No
+direct work is done on this branch. It is updated only by merging either
+release branches or bugfix branches branches to it.
+
+
 ## Style Rules
 
 For reading ease and consistency, the existing code style should be

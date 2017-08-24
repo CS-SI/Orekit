@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.lang.reflect.Array;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -37,6 +39,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 
@@ -91,7 +94,8 @@ public class FieldDateDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
-        FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(2.0*dt));
+        FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
+                                                                     toArray(iniDate.shiftedBy(2.0*dt)));
         Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
@@ -120,7 +124,9 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
+                                                                    (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0));
         Assert.assertNull(dateDetector.getDate());
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
                 withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
@@ -163,7 +169,8 @@ public class FieldDateDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(-dt)).
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
+                                                                    toArray(iniDate.shiftedBy(-dt))).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
                             throws OrekitException {
@@ -200,7 +207,8 @@ public class FieldDateDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
 
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt)).
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
+                                                                    toArray(iniDate.shiftedBy(dt))).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
                         throws OrekitException {
@@ -243,7 +251,8 @@ public class FieldDateDetectorTest {
         propagator.setInitialState(initialState);
 
         //setup
-        final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt));
+        final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
+                                                                          toArray(iniDate.shiftedBy(dt)));
         // generic event handler that works with all detectors.
         FieldEventHandler<FieldEventDetector<T>, T> handler = new FieldEventHandler<FieldEventDetector<T>, T>() {
             @Override
@@ -272,6 +281,13 @@ public class FieldDateDetectorTest {
 
         //verify
         Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+    }
+
+    private <T extends RealFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        final FieldTimeStamped<T>[] array = (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 1);
+        array[0] = date;
+        return array;
     }
 
     @Before

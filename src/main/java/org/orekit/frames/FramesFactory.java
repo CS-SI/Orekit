@@ -776,7 +776,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(new CIRFProvider(eopHistory),
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       6, Constants.JULIAN_DAY / 24,
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -952,7 +951,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(gtodRaw,
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       todInterpolating.getGridPoints(), todInterpolating.getStep(),
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -1058,7 +1056,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -1185,7 +1182,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(temeRaw,
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       todShifting.getGridPoints(), todShifting.getStep(),
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);

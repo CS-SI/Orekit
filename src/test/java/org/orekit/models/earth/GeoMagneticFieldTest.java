@@ -43,9 +43,10 @@ import org.orekit.time.TimeScalesFactory;
 
 public class GeoMagneticFieldTest {
 
-    /** maximum degree and order used in testing {@link Geoid}. */
-    @SuppressWarnings("javadoc")
-    private static final int maxOrder = 360, maxDegree = 360;
+    /** maximum degree used in testing {@link Geoid}. */
+    private static final int maxOrder = 360;
+    /** maximum order used in testing {@link Geoid}. */
+    private static final int maxDegree = 360;
     /** The WGS84 reference ellipsoid. */
     private static ReferenceEllipsoid WGS84 = new ReferenceEllipsoid(
             6378137.00, 1 / 298.257223563, FramesFactory.getGCRF(),

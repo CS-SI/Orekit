@@ -17,12 +17,12 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.RealFieldUnivariateFunction;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
-import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
@@ -32,11 +32,25 @@ import org.orekit.utils.PVCoordinates;
 
 /** L2 Transform provider for a frame on the L2 Lagrange point of two celestial bodies.
  *
- * @author Luc Maisonabe
+ * @author Luc Maisonobe
  * @author Julio Hernanz
  */
+class L2TransformProvider implements TransformProvider {
 
-public class L2TransformProvider implements TransformProvider {
+    /** Relative accuracy on position for solver. */
+    private static final double RELATIVE_ACCURACY = 1e-14;
+
+    /** Absolute accuracy on position for solver (1mm). */
+    private static final double ABSOLUTE_ACCURACY = 1e-3;
+
+    /** Function value ccuracy for solver (set to 0 so we rely only on position for convergence). */
+    private static final double FUNCTION_ACCURACY = 0;
+
+    /** Maximal order for solver. */
+    private static final int MAX_ORDER = 5;
+
+    /** Maximal number of evaluations for solver. */
+    private static final int MAX_EVALUATIONS = 1000;
 
     /** Serializable UID.*/
     private static final long serialVersionUID = 20170725L;
@@ -56,105 +70,70 @@ public class L2TransformProvider implements TransformProvider {
      * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
     public L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-                    throws OrekitException {
+        throws OrekitException {
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
         this.frame = primaryBody.getInertiallyOrientedFrame();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date)
-                  throws OrekitException {
-        return new Transform(date, getL2(date).negate());
+        throws OrekitException {
+        final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final Vector3D      translation = getL2(pv21.getPosition()).negate();
+        final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
+                                                       Vector3D.PLUS_I, Vector3D.PLUS_J);
+        return new Transform(date, new Transform(date, translation), new Transform(date, rotation));
     }
 
-
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T>
-        getTransform(final FieldAbsoluteDate<T> date)
-                    throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /** Method to get the {@link PVCoordinates} of the L2 point.
-     * @param date current date
-     * @return PVCoordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
+    /** Compute the coordinates of the L2 point.
+     * @param primaryToSecondary relative position of secondary body with respect to primary body
+     * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
      * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
-    public PVCoordinates getL2(final AbsoluteDate date)
-                    throws OrekitException {
+    private Vector3D getL2(final Vector3D primaryToSecondary)
+        throws OrekitException {
 
-        final PVCoordinates pv21 = secondaryBody.getPVCoordinates(date, frame);
-        final FieldVector3D<DerivativeStructure> delta = pv21.toDerivativeStructureVector(2);
-        final double q = secondaryBody.getGM() / primaryBody.getGM(); // Mass ratio
-
-        final L2Equation equation = new L2Equation(delta.getNorm(), q);
-
-        // FieldBracketingNthOrderBrentSolver parameters
-        final DSFactory dsFactory = delta.getX().getFactory();
-        final DerivativeStructure relativeAccuracy = dsFactory.constant(1e-14);
-        final DerivativeStructure absoluteAccuracy = dsFactory.constant(1e-3); // i.e. 1mm
-        final DerivativeStructure functionValueAccuracy = dsFactory.constant(0);
-        final int maximalOrder = 2;
-        final FieldBracketingNthOrderBrentSolver<DerivativeStructure> solver =
-                        new FieldBracketingNthOrderBrentSolver<DerivativeStructure>(relativeAccuracy,
-                                    absoluteAccuracy, functionValueAccuracy, maximalOrder);
-        final int maxEval = 1000;
+        // mass ratio
+        final double massRatio = secondaryBody.getGM() / primaryBody.getGM();
 
         // Approximate position of L2 point, valid when m2 << m1
-        final DerivativeStructure bigR  = delta.getNorm();
-        final DerivativeStructure baseR = bigR.multiply(FastMath.cbrt(q / 3) + 1);
+        final double bigR  = primaryToSecondary.getNorm();
+        final double baseR = bigR * (FastMath.cbrt(massRatio / 3) + 1);
 
-        // We build the startValue of the solver method with an approximation
-        final double deviationFromApprox = 0.1;
-        final DerivativeStructure min = baseR.multiply(1 - deviationFromApprox);
-        final DerivativeStructure max = baseR.multiply(1 + deviationFromApprox);
-        final DerivativeStructure dsR = solver.solve(maxEval, equation, min, max, AllowedSolution.ANY_SIDE);
+        // Accurate position of L2 point, by solving the L2 equilibrium equation
+        final UnivariateFunction l2Equation = r -> {
+            final double rminusDelta = r - bigR;
+            final double lhs1        = 1.0 / (r * r);
+            final double lhs2        = massRatio / (rminusDelta * rminusDelta);
+            final double rhs1        = 1.0 / (bigR * bigR);
+            final double rhs2        = (1 + massRatio) * rminusDelta * rhs1 / bigR;
+            return (lhs1 + lhs2) - (rhs1 + rhs2);
+        };
+        final double[] searchInterval = UnivariateSolverUtils.bracket(l2Equation,
+                                                                      baseR, 0, 2 * bigR,
+                                                                      0.01 * bigR, 1, MAX_EVALUATIONS);
+        final BracketingNthOrderBrentSolver solver =
+                        new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
+                                                          ABSOLUTE_ACCURACY,
+                                                          FUNCTION_ACCURACY,
+                                                          MAX_ORDER);
+        final double r = solver.solve(MAX_EVALUATIONS, l2Equation,
+                                      searchInterval[0], searchInterval[1],
+                                      AllowedSolution.ANY_SIDE);
 
         // L2 point is built
-        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(dsR,
-                        delta.normalize()));
+        return new Vector3D(r / bigR, primaryToSecondary);
+
     }
 
-    private class L2Equation implements
-        RealFieldUnivariateFunction<DerivativeStructure> {
-
-        /** Distance between primary and secondary body. */
-        private final DerivativeStructure delta;
-
-        /** massRatio = m2 / m1. */
-        private final double massRatio;
-
-        /** Basic constructor.
-         * @param delta absolute value of the distances between the two celestial bodies
-         * @param q mass ratio
-         */
-        L2Equation(final DerivativeStructure delta, final double q) {
-            this.delta = delta;
-            this.massRatio = q;
-        }
-
-        /** value method of the L2 equation for the solver to solve it.
-         * @param r The unknown distance of the L2 point from the primary body.
-         * @return solution of the L2 equation as lhs-rhs
-         */
-        public DerivativeStructure value(final DerivativeStructure r) {
-
-            // Left hand side
-            final DerivativeStructure lhs1 = r.multiply(r).reciprocal();
-            final DerivativeStructure rminusDelta = r.subtract(delta);
-            final DerivativeStructure lhs2 = rminusDelta.multiply(rminusDelta).reciprocal()
-                      .multiply(massRatio);
-            final DerivativeStructure lhs = lhs1.add(lhs2);
-
-            // Right hand side
-            final DerivativeStructure rhs1 = delta.multiply(delta).reciprocal();
-            final DerivativeStructure rhs2 = rhs1.divide(delta).multiply(rminusDelta).multiply(1 + massRatio);
-            final DerivativeStructure rhs = rhs1.add(rhs2);
-
-            // lhs-rhs = 0
-            return lhs.subtract(rhs);
-        }
-    }
 }

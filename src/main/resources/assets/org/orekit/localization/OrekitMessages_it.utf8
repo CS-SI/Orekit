@@ -268,8 +268,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matrice jacobiana associata al tipo {0} è
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = lo stato Jacobiano non è stato ancora inizializzato
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = lo stato Jacobiano è una matrice {0}x{1}, mentre dovrebbe essere una matrice 6x6 o 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = lo stato Jacobiano è una matrice {0}x{1}, mentre dovrebbe essere una matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = lo stato Jacobiano ha {0} righe ma i parametri Jacobiani hanno {1} righe

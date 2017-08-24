@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.attitudes;
+package org.orekit.utils;
 
-import org.hipparchus.RealFieldElement;
+import org.orekit.errors.OrekitException;
+import org.orekit.propagation.SpacecraftState;
 
-/** This interface represents an attitude provider that modifies/wraps another underlying provider.
+/** Interface representing the Jacobian of a vector function depending on {@link SpacecraftState}.
+ * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * @see StateFunction
  * @author Luc Maisonobe
- * @since 5.1
+ * @since 8.0
  */
-public interface FieldAttitudeProviderModifier<T extends RealFieldElement<T>> extends FieldAttitudeProvider<T> {
+public interface StateJacobian {
 
-    /** Get the underlying attitude provider.
-     * @return underlying attitude provider
+    /** Evaluate the Jacobian of the function.
+     * @param state spacecraft state as the sole free parameter of the function.
+     * @return Jacobian matric
+     * @throws OrekitException if evaluation cannot be performed
      */
-    FieldAttitudeProvider<T> getUnderlyingAttitudeProvider();
+    double[][] value(SpacecraftState state) throws OrekitException;
 
 }

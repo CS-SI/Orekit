@@ -14,33 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package fr.cs.examples.propagation;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.FastMath;
-import org.junit.Test;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
@@ -49,68 +39,66 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 /** Swing-by trajectory about Jupiter compared in EME2000, ICRF and
  * Jupiter-centered inertial reference frame.
  *
- * <p>Case 1:
+ * <p>
+ * Case 1:
  * <ul>
  * <li>Integration frame: EME2000</li>
  * <li>Representation of the trajectory: AbsolutePVCoordinates</li>
  * <li>No central body</li>
- * <li>ThirdBodyAttraction with Jupiter</li>
+ * <li>InertialForces between EME2000 and ICRF</li>
+ * <li>SingleBodyAbsoluteAttraction with the Sun</li>
+ * <li>SingleBodyAbsoluteAttraction with Jupiter</li>
  * </ul>
  *
- * <p>Case 2:
+ * Case 2:
  * <ul>
  * <li>Integration frame: ICRF</li>
  * <li> Representation of the trajectory: AbsolutePVCoordinates</li>
  * <li>No central body</li>
- * <li>ThirdBodyAttraction with Jupiter</li>
+ * <li>SingleBodyAbsoluteAttraction with the Sun</li>
+ * <li>SingleBodyAbsoluteAttraction with Jupiter</li>
  * </ul>
  *
- * <p>Case 3:
+ * Case 3:
  * <ul>
  * <li>Integration frame: Jupiter-centered inertial</li>
- * <li>Representation of the trajectory: Orbit</li>
+ * <li>Representation of the trajectory: Cartesian orbit</li>
  * <li>Central body: Jupiter</li>
+ * <li>ThirdBodyAttraction with the Sun</li>
  * </ul>
  *
- * <p>All trajectories output in ICRF.
+ * All trajectories output in ICRF.
  *
  * @author Guillaume Obrecht
- * @author Julio Hernanz
+ * @author Luc Maisonobe
  *
  */
 
 public class testCaseJupiter {
 
-  @Test
-  public static void main(String[] args) throws OrekitException {
+    public static void main(String[] args) throws OrekitException {
 
-    // configure Orekit
-    File home       = new File(System.getProperty("user.home"));
-    File orekitData = new File(home, "orekit-data");
-    if (!orekitData.exists()) {
-      System.err.format(Locale.US, "Failed to find %s folder%n",
+        // configure Orekit
+        File home       = new File(System.getProperty("user.home"));
+        File orekitData = new File(home, "orekit-data");
+        if (!orekitData.exists()) {
+            System.err.format(Locale.US, "Failed to find %s folder%n",
                               orekitData.getAbsolutePath());
-      System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+            System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
                               "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
                               home.getAbsolutePath());
-      System.exit(1);
+            System.exit(1);
         }
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.addProvider(new DirectoryCrawler(orekitData));
@@ -120,7 +108,7 @@ public class testCaseJupiter {
         double integrationTime = 100000;
         double outputStep = 500;
 
-  // Initial conditions
+        // Initial conditions
         final double x = 69911000 + 100000000;
         final double y = -2000000000;
         final double z = 0;
@@ -130,30 +118,20 @@ public class testCaseJupiter {
         final PVCoordinates initialScWrthJupiter = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
 
         // Integration parameters
-        final double minStep = 0.001;
-        final double maxstep = 120.0;
-        final double positionTolerance = 100.0;
-        final double initialStepSize = 1.0;
+        final double minStep = 1.0;
+        final double maxstep = 7200.0;
+        final double positionTolerance = 1.0;
+        final double initialStepSize = 120.0;
 
         // Load Celestial bodies
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
 
-
         // Create frames to compare
         final Frame eme2000     = FramesFactory.getEME2000();
         final Frame icrf        = FramesFactory.getICRF();
         final Frame jovianFrame = jupiter.getInertiallyOrientedFrame();
-        final Frame gcrf 		= FramesFactory.getGCRF();
-        
-        PVCoordinates posZero = new PVCoordinates();
-        PVCoordinates posICRFCenter = icrf.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
-        PVCoordinates posJovianFrameCenter = jovianFrame.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
-        PVCoordinates posGCRFCenter = gcrf.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
-        System.out.println(posICRFCenter);
-        System.out.println(posJovianFrameCenter);
-        System.out.println(posGCRFCenter);
-        
+
         final Frame outputFrame = jovianFrame;
 
         // 1: Propagation in Earth-centered inertial reference frame
@@ -176,8 +154,9 @@ public class testCaseJupiter {
         propagator1.setOrbitType(null);  // propagate as absolute position-velocity-acceleration
         propagator1.setInitialState(new SpacecraftState(initialAbsPva1));
         propagator1.addForceModel(new InertialForces(icrf));
-        propagator1.addForceModel(new ThirdBodyAttraction(jupiter));
-        propagator1.setMasterMode(outputStep, new TutorialStepHandler("testJupiter1.txt", "jupiter1.txt", outputFrame, jupiter));
+        propagator1.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        propagator1.addForceModel(new SingleBodyAbsoluteAttraction(jupiter));
+        propagator1.setMasterMode(outputStep, new TutorialStepHandler("testJupiter1.txt", outputFrame));
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
@@ -204,9 +183,9 @@ public class testCaseJupiter {
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
         propagator2.setOrbitType(null);  // propagate as absolute position-velocity-acceleration
         propagator2.setInitialState(new SpacecraftState(initialAbsPva2));
-        propagator2.addForceModel(new AbsoluteBodyAttraction(jupiter));
-        propagator1.addForceModel(new AbsoluteBodyAttraction(sun));
-        propagator2.setMasterMode(outputStep, new TutorialStepHandler("testJupiter2.txt", "jupiter2.txt", outputFrame, jupiter));
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(jupiter));
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        propagator2.setMasterMode(outputStep, new TutorialStepHandler("testJupiter2.txt", outputFrame));
 
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
@@ -218,7 +197,7 @@ public class testCaseJupiter {
 
         final Frame integrationFrame3 = jovianFrame;
 
-        System.out.print("3- Propagation in Jupiter-centred reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
+        System.out.print("3- Propagation in Jupiter-centered reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
 
         final Orbit initialOrbit3 = new CartesianOrbit(initialScWrthJupiter, integrationFrame3, initialDate, jupiter.getGM());
 
@@ -230,10 +209,9 @@ public class testCaseJupiter {
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
         propagator3.setOrbitType(OrbitType.CARTESIAN);     // propagate as regular orbit
         propagator3.setInitialState(new SpacecraftState(initialOrbit3));
-        propagator3.addForceModel(new InertialForces(icrf));
         propagator3.addForceModel(new ThirdBodyAttraction(sun));
         propagator3.setMu(jupiter.getGM());
-        propagator3.setMasterMode(outputStep, new TutorialStepHandler("testJupiter3.txt", "jupiter3.txt", outputFrame, jupiter));
+        propagator3.setMasterMode(outputStep, new TutorialStepHandler("testJupiter3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv3 = finalState3.getPVCoordinates(outputFrame);
@@ -243,21 +221,10 @@ public class testCaseJupiter {
         final Vector3D pos1 = pv1.getPosition();
         final Vector3D pos2 = pv2.getPosition();
         final Vector3D pos3 = pv3.getPosition();
-
-        final Vector3D diff13 = pos1.subtract(pos3);
-        final Vector3D diff23 = pos2.subtract(pos3);
-        final Vector3D diff12 = pos1.subtract(pos2);
-        
-        
-        System.out.print("Errors from reference trajectory "
-                + "(3: Jupiter-centered inertial frame) [m]\n");
-        System.out.print("1/3: " + diff13 + "\n"
-                + "   norm: "+ diff13.getNorm() + "\n");
-        System.out.print("2/3: " + diff23 + "\n"
-                        + "   norm: "+ diff23.getNorm() + "\n");
-        System.out.print("1/2: " + diff12 + "\n"
-                        + "   norm: "+ diff12.getNorm() + "\n");
-        
+        System.out.format(Locale.US, "Differences between trajectories:%n");
+        System.out.format(Locale.US, "    1/3: %10.6f [m]%n", Vector3D.distance(pos1, pos3));
+        System.out.format(Locale.US, "    2/3: %10.6f [m]%n", Vector3D.distance(pos2, pos3));
+        System.out.format(Locale.US, "    1/2: %10.6f [m]%n", Vector3D.distance(pos1, pos2));        
 
     }
 
@@ -266,28 +233,21 @@ public class testCaseJupiter {
 
 
 
-private static class TutorialStepHandler implements OrekitFixedStepHandler {
+    private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
-        private PrintWriter file;
-
-        private PrintWriter bodyFile;
+        private File        outFile;
+        private PrintWriter out;
 
         private Frame outputFrame;
 
-        private CelestialBody centralBody;
-
-        private TutorialStepHandler(final String fileName, final String bodyFileName, final Frame frame, final CelestialBody body) throws OrekitException {
+        private TutorialStepHandler(final String fileName, final Frame frame) throws OrekitException {
             try {
-                file = new PrintWriter(fileName);
-                bodyFile = new PrintWriter(bodyFileName);
+                outFile = new File(new File(System.getProperty("user.home")), fileName);
+                out = new PrintWriter(outFile);
                 outputFrame = frame;
-                centralBody = body;
             } catch (IOException ioe) {
                 throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
             }
-        }
-
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
@@ -298,9 +258,9 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
                 final PVCoordinates pv = currentState.getPVCoordinates(outputFrame);
                 final AbsoluteDate d = currentState.getDate();
-                final PVCoordinates bodyPV = centralBody.getPVCoordinates(d, outputFrame);
 
-                file.format(Locale.US, "%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
+                out.format(Locale.US, "%s %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
+                            d,
                             pv.getPosition().getX(),
                             pv.getPosition().getY(),
                             pv.getPosition().getZ(),
@@ -309,19 +269,11 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
                             pv.getVelocity().getZ());
 
 
-                bodyFile.format(Locale.US, "%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
-                            bodyPV.getPosition().getX(),
-                            bodyPV.getPosition().getY(),
-                            bodyPV.getPosition().getZ(),
-                            bodyPV.getVelocity().getX(),
-                            bodyPV.getVelocity().getY(),
-                            bodyPV.getVelocity().getZ());
-
                 if (isLast) {
                     final PVCoordinates finalPv = currentState.getPVCoordinates(outputFrame);
                     System.out.println();
                     System.out.format(Locale.US, "%s %12.0f %12.0f %12.0f %12.0f %12.0f %12.0f%n",
-                            currentState.getDate(),
+                            d,
                             finalPv.getPosition().getX(),
                             finalPv.getPosition().getY(),
                             finalPv.getPosition().getZ(),
@@ -329,100 +281,13 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
                             finalPv.getVelocity().getY(),
                             finalPv.getVelocity().getZ());
                     System.out.println();
-                    file.close(); 
-                    bodyFile.close();
+                    out.close();
+                    System.out.println("trajectory saved in " + outFile.getAbsolutePath());
                 }
             } catch (OrekitException oe) {
                 System.err.println(oe.getMessage());
             }
         }
-    }
-
-}
-
-class AbsoluteBodyAttraction extends AbstractParameterizable implements ForceModel  {
-
-    /** Attracting celestial body. */
-    private CelestialBody body;
-
-    /** Simple constructor.
-     * @param body attracting celestial body
-     */
-    public AbsoluteBodyAttraction(final CelestialBody body) {
-        this.body = body;
-    }
-
-    /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder)
-        throws OrekitException {
-
-        final Vector3D bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D satPosition  = s.getPVCoordinates().getPosition();
-        final Vector3D delta        = bodyPosition.subtract(satPosition);
-        final double r2             = delta.getNormSq();
-
-        // compute absolute acceleration
-        final Vector3D gamma = new Vector3D(body.getGM() / (r2 * FastMath.sqrt(r2)), delta);
-
-        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
-
-    }
-
-    /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass) throws OrekitException {
-        // this method will be removed some time later
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final String paramName)
-        throws OrekitException {
-        // TODO implement this method
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(FieldSpacecraftState<T> s,
-                        FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // TODO implement this method
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>>
-        getFieldEventsDetectors(Field<T> field) {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver[] getParametersDrivers() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver getParameterDriver(String name)
-        throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

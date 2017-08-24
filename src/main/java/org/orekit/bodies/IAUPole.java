@@ -58,6 +58,25 @@ public interface IAUPole extends Serializable {
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> getPole(FieldAbsoluteDate<T> date);
 
+    /** Get the body Q Node direction in ICRF frame.
+     * @param date current date
+     * @return body Q Node direction in ICRF frame
+     * @since 9.1
+     */
+    default Vector3D getNode(AbsoluteDate date) {
+        return Vector3D.crossProduct(Vector3D.PLUS_K, getPole(date));
+    }
+
+    /** Get the body Q Node direction in ICRF frame.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return body Q Node direction in ICRF frame
+     * @since 9.1
+     */
+    default <T extends RealFieldElement<T>> FieldVector3D<T> getNode(FieldAbsoluteDate<T> date) {
+        return FieldVector3D.crossProduct(FieldVector3D.getPlusK(date.getField()), getPole(date));
+    }
+
     /** Get the prime meridian angle.
      * <p>
      * The prime meridian angle is the angle between the Q node and the

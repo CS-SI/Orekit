@@ -20,7 +20,79 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.0" date="TBD" description="TBD">
+    <release version="9.1" date="TBD" description="TBD">
+     <action dev="luc" type="fix">
+        Removed unused construction parameters in ShiftingTransformProvider
+        and InterpolatingTransformProvider.
+        Fixes issue #356.
+     </action>
+     <action dev="luc" type="fix">
+        Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
+        Fixes issue #355.
+     </action>
+     <action dev="luc" type="update">
+       Use a git-flow like branching workflow, with a develop branch for bleeding-edge
+       development, and master branch for stable published versions.
+     </action>
+    </release>
+    <release version="9.0" date="2017-07-26"
+             description="Version 9.0 is a major release of Orekit. It introduces several new
+             features and bug fixes. New features introduced in version 9.0 are Taylor algebra
+             propagation (for high order uncertainties propagation or very fast Monte-Carlo
+             studies), multi-satellites orbit determination, parallel multi-satellites propagation,
+             parametric accelerations (polynomial and harmonic), turn-around measurements,
+             inter-satellite range measurements, rigth ascension/declination measurements,
+             Antenna Phase Center measurements modifiers, EOP estimation in precise orbit
+             determination, orbit to attitude coupling in partial derivatives, parsing of CCSDS
+             Tracking Data Messages, parsing of university of Bern Astronomical Institute files
+             for Klobuchar coefficients, ITRF 2014, preservation of non-Keplerian orbits derivatives,
+             JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events
+             detectors, ephemeris writer, speed improvements when tens of thousands of measurements
+             are used in orbit determination, Danish translations. Several bugs have been fixed.">
+     <action dev="luc" type="add">
+       Added on-board antenna phase center effect on inter-satellites range measurements.
+     </action>
+     <action dev="luc" type="add">
+       Added on-board antenna phase center effect on turn-around range measurements.
+     </action>
+     <action dev="luc" type="add">
+       Added on-board antenna phase center effect on range measurements.
+     </action>
+     <action dev="luc" type="update">
+       Moved Bias and OutlierFilter classes together with the other estimation modifiers.
+     </action>
+     <action dev="luc" type="update">
+       Forced states derivatives to be dimension 6 rather than either 6 or 7. The
+       additional mass was not really useful, it was intended for maneuvers calibration,
+       but in fact during maneuver calibration we adjust either flow rate or specific
+       impulse but not directly mass itself. 
+     </action>
+      <action dev="luc" type="add">
+        Added parametric acceleration force models, where acceleration amplitude is a
+        simple parametric function. Acceleration direction is fixed in either inertial
+        frame, or spacecraft frame, or in a dedicated attitude frame overriding spacecraft
+        attitude. The latter could for example be used to model solar arrays orientation if
+        the force is related to solar arrays). Two predefined implementations are provided,
+        one for polynomial amplitude and one for harmonic amplitude. Users can add other
+        cases at will. This allows for example to model the infamous GPS Y-bias, which is
+        thought to be related to a radiator thermal radiation.
+      </action>
+      <action dev="luc" type="remove">
+        Removed obsolete Cunningham and Droziner attraction models. These models have
+        been superseded by Holmes-Featherstone attraction model available since 2013
+        in Orekit.
+      </action>
+      <action dev="luc" type="update">
+        Take orbit to attitude coupling into account in the partial derivatives for all attitude modes.
+        Fixes issue #200.
+      </action>
+      <action dev="luc" type="update">
+        Merged FieldAttitudeProvider into AttitudeProvider.
+      </action>
+      <action dev="luc" type="update">
+        Simplified ForceModel interface. It does not require dedicated methods anymore for
+        computing derivatives with respect to either state or parameters.
+      </action>
       <action dev="luc" type="remove">
         Removed Jacchia-Bowman 2006 now completely superseded by Jacchia-Bowman 2008.
       </action>

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -31,7 +32,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FieldLofOffset;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -40,6 +41,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
@@ -104,7 +106,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
     }
 
@@ -129,7 +131,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
     }
 
@@ -154,7 +156,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, orbit.getA().getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -181,7 +183,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
         throws OrekitException {
         this(orbit,
-             new FieldLofOffset<>(orbit.getFrame(), LOFType.VVLH, mass.getField()).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -194,7 +196,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * or frames are not equal
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude,
-                           final T mass, final Map<String, T[]> additional)
+                                final T mass, final Map<String, T[]> additional)
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
@@ -211,6 +213,53 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
                 this.additional.put(entry.getKey(), entry.getValue().clone());
             }
         }
+    }
+
+    /** Convert a {@link SpacecraftState}.
+     * @param field field to which the elements belong
+     * @param state state to convert
+     */
+    public FieldSpacecraftState(final Field<T> field, final SpacecraftState state) {
+
+        final double[] stateD    = new double[6];
+        final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
+        state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateD, stateDotD);
+        final T[] stateF    = MathArrays.buildArray(field, 6);
+        for (int i = 0; i < stateD.length; ++i) {
+            stateF[i]    = field.getZero().add(stateD[i]);
+        }
+        final T[] stateDotF;
+        if (stateDotD == null) {
+            stateDotF = null;
+        } else {
+            stateDotF = MathArrays.buildArray(field, 6);
+            for (int i = 0; i < stateDotD.length; ++i) {
+                stateDotF[i] = field.getZero().add(stateDotD[i]);
+            }
+        }
+
+        final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
+
+        this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF,
+                                                                   PositionAngle.TRUE,
+                                                                   dateF, state.getMu(), state.getFrame());
+        this.attitude = new FieldAttitude<>(field, state.getAttitude());
+        this.mass     = field.getZero().add(state.getMass());
+
+        final Map<String, double[]> additionalD = state.getAdditionalStates();
+        if (additionalD.isEmpty()) {
+            this.additional = Collections.emptyMap();
+        } else {
+            this.additional = new HashMap<String, T[]>(additionalD.size());
+            for (final Map.Entry<String, double[]> entry : additionalD.entrySet()) {
+                final T[] array = MathArrays.buildArray(field, entry.getValue().length);
+                for (int k = 0; k < array.length; ++k) {
+                    array[k] = field.getZero().add(entry.getValue()[k]);
+                }
+                this.additional.put(entry.getKey(), array);
+            }
+        }
+
     }
 
     /** Add an additional state.
@@ -672,7 +721,20 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @return SpacecraftState instance with the same properties
      */
     public SpacecraftState toSpacecraftState() {
-        return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(), mass.getReal());
+        final Map<String, double[]> map;
+        if (additional.isEmpty()) {
+            map = Collections.emptyMap();
+        } else {
+            map = new HashMap<>(additional.size());
+            for (final Map.Entry<String, T[]> entry : additional.entrySet()) {
+                final double[] array = new double[entry.getValue().length];
+                for (int k = 0; k < array.length; ++k) {
+                    array[k] = entry.getValue()[k].getReal();
+                }
+                map.put(entry.getKey(), array);
+            }
+        }
+        return new SpacecraftState(orbit.toOrbit(), attitude.toAttitude(), mass.getReal(), map);
     }
 
 }

@@ -120,7 +120,7 @@ public class PV extends AbstractMeasurement<PV> {
         throws OrekitException {
 
         // PV value
-        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+        final TimeStampedPVCoordinates pv = states[getPropagatorsIndices().get(0)].getPVCoordinates();
 
         // prepare the evaluation
         final EstimatedMeasurement<PV> estimated =

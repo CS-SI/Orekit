@@ -214,17 +214,14 @@ public class TDMParser extends DefaultHandler {
      * @param fileName name of the file containing the message
      * @return parsed file content in a TDMFile object
      * @exception OrekitException if Tracking Date Message cannot be parsed or if file cannot be found
-     * @exception IOException if stream cannot be read
      */
     public TDMFile parse(final String fileName)
-                    throws OrekitException {
-        final InputStream stream;
-        try {
-            stream = new FileInputStream(fileName);
-        } catch (IOException e) {
+        throws OrekitException {
+        try (InputStream stream = new FileInputStream(fileName)) {
+            return parse(stream, fileName);
+        } catch (IOException ioe) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
         }
-        return parse(stream, fileName);
     }
 
     /** Parse a CCSDS Tracking Data Message.
@@ -233,7 +230,7 @@ public class TDMParser extends DefaultHandler {
      * @exception OrekitException if Tracking Date Message cannot be parsed
      */
     public TDMFile parse(final InputStream stream)
-                    throws OrekitException {
+        throws OrekitException {
         return parse(stream, "<unknown>");
     }
 
@@ -244,7 +241,7 @@ public class TDMParser extends DefaultHandler {
      * @exception OrekitException if Tracking Date Message cannot be parsed or format is unknown
      */
     public TDMFile parse(final InputStream stream, final String fileName)
-                    throws  OrekitException {
+        throws  OrekitException {
 
         // Set the format of the file automatically
         // If it is obvious and was not formerly specified
@@ -275,7 +272,7 @@ public class TDMParser extends DefaultHandler {
      * @exception OrekitException if Tracking Date Message cannot be parsed
      */
     public TDMFile parseKeyValue(final InputStream stream, final String fileName)
-                    throws  OrekitException {
+        throws  OrekitException {
 
         final KeyValueHandler handler = new KeyValueHandler(new ParseInfo(this.getMissionReferenceDate(),
                                                                     this.getConventions(),
@@ -290,14 +287,11 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-     * @exception IOException if stream cannot be read
      * @exception OrekitException if Tracking Date Message cannot be parsed
      */
     public TDMFile parseXml(final InputStream stream, final String fileName)
-                    throws OrekitException
-    {
-        try
-        {
+        throws OrekitException {
+        try {
             // Create the handler
             final XMLHandler handler = new XMLHandler(new ParseInfo(this.getMissionReferenceDate(),
                                                                     this.getConventions(),
@@ -318,9 +312,7 @@ public class TDMParser extends DefaultHandler {
             tdmFile.checkTimeSystems();
 
             return tdmFile;
-        }
-        catch (ParserConfigurationException | SAXException | IOException e)
-        {
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             // throw caught exception as an OrekitException
             throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
@@ -601,7 +593,7 @@ public class TDMParser extends DefaultHandler {
     }
 
     /** Handler for parsing KEYVALUE file formats. */
-    private class KeyValueHandler {
+    private static class KeyValueHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;
@@ -761,7 +753,7 @@ public class TDMParser extends DefaultHandler {
     }
 
     /** Handler for parsing XML file formats. */
-    private class XMLHandler extends DefaultHandler {
+    private static class XMLHandler extends DefaultHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;

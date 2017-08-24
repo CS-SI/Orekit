@@ -23,6 +23,7 @@ import org.junit.Test;
 
 public class DateTimeComponentsTest {
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     public void testComparisons() {
         DateTimeComponents[] dates = {

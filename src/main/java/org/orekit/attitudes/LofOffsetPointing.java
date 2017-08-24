@@ -19,18 +19,26 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldLine;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -83,33 +91,87 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
+        throws OrekitException {
+        return attitudeLaw.getAttitude(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // transform from specified reference frame to spacecraft frame
-        final Transform refToSc =
-                new Transform(date,
-                              new Transform(date, pvProv.getPVCoordinates(date, frame).negate()),
-                              new Transform(date, attitudeLaw.getAttitude(pvProv, date, frame).getOrientation()));
-
-        // transform from specified reference frame to body frame
-        final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
-
         // sample intersection points in current date neighborhood
-        final Transform scToBody  = new Transform(date, refToSc.getInverse(), refToBody);
         final double h  = 0.1;
-        final List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(-h)));
-        sample.add(losIntersectionWithBody(scToBody));
-        sample.add(losIntersectionWithBody(scToBody.shiftedBy(+h)));
+        final List<TimeStampedPVCoordinates> sample = new ArrayList<>();
+        Transform centralRefToBody = null;
+        for (int i = -1; i < 2; ++i) {
+
+            final AbsoluteDate shifted = date.shiftedBy(i * h);
+
+            // transform from specified reference frame to spacecraft frame
+            final Transform refToSc =
+                            new Transform(shifted,
+                                          new Transform(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
+                                          new Transform(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+
+            // transform from specified reference frame to body frame
+            final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            if (i == 0) {
+                centralRefToBody = refToBody;
+            }
+
+            sample.add(losIntersectionWithBody(new Transform(shifted, refToSc.getInverse(), refToBody)));
+
+        }
 
         // use interpolation to compute properly the time-derivatives
         final TimeStampedPVCoordinates targetBody =
                 TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
 
         // convert back to caller specified frame
-        return refToBody.getInverse().transformPVCoordinates(targetBody);
+        return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final Frame frame)
+        throws OrekitException {
+
+        // sample intersection points in current date neighborhood
+        final double h  = 0.1;
+        final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
+        FieldTransform<T> centralRefToBody = null;
+        for (int i = -1; i < 2; ++i) {
+
+            final FieldAbsoluteDate<T> shifted = date.shiftedBy(i * h);
+
+            // transform from specified reference frame to spacecraft frame
+            final FieldTransform<T> refToSc =
+                            new FieldTransform<>(shifted,
+                                                 new FieldTransform<>(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
+                                                 new FieldTransform<>(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+
+            // transform from specified reference frame to body frame
+            final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            if (i == 0) {
+                centralRefToBody = refToBody;
+            }
+
+            sample.add(losIntersectionWithBody(new FieldTransform<>(shifted, refToSc.getInverse(), refToBody)));
+
+        }
+
+        // use interpolation to compute properly the time-derivatives
+        final TimeStampedFieldPVCoordinates<T> targetBody =
+                        TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+
+        // convert back to caller specified frame
+        return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
 
     }
 
@@ -146,6 +208,44 @@ public class LofOffsetPointing extends GroundPointing {
 
         return new TimeStampedPVCoordinates(scToBody.getDate(),
                                             pIntersection, Vector3D.ZERO, Vector3D.ZERO);
+
+    }
+
+    /** Compute line of sight intersection with body.
+     * @param scToBody transform from spacecraft frame to body frame
+     * @param <T> type of the field elements
+     * @return intersection point in body frame (only the position is set!)
+     * @exception OrekitException if line of sight does not intersect body
+     */
+    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody)
+        throws OrekitException {
+
+        // compute satellite pointing axis and position/velocity in body frame
+        final FieldVector3D<T> pointingBodyFrame = scToBody.transformVector(satPointingVector);
+        final FieldVector3D<T> pBodyFrame        = scToBody.transformPosition(Vector3D.ZERO);
+
+        // Line from satellite following pointing direction
+        // we use arbitrarily the Earth radius as a scaling factor, it could be anything else
+        final FieldLine<T> pointingLine = new FieldLine<>(pBodyFrame,
+                                                          pBodyFrame.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                         pointingBodyFrame),
+                                                          1.0e-10);
+
+        // Intersection with body shape
+        final FieldGeodeticPoint<T> gpIntersection =
+            shape.getIntersectionPoint(pointingLine, pBodyFrame, shape.getBodyFrame(), scToBody.getFieldDate());
+        final FieldVector3D<T> pIntersection =
+            (gpIntersection == null) ? null : shape.transform(gpIntersection);
+
+        // Check there is an intersection and it is not in the reverse pointing direction
+        if ((pIntersection == null) ||
+            (FieldVector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame).getReal() < 0)) {
+            throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
+        }
+
+        final FieldVector3D<T> zero = FieldVector3D.getZero(scToBody.getFieldDate().getField());
+        return new TimeStampedFieldPVCoordinates<>(scToBody.getDate(),
+                                                   pIntersection, zero, zero);
 
     }
 

@@ -18,10 +18,14 @@ package org.orekit.frames;
 
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
 
 /** Class to create a L2 centered frame with {@link L2TransformProvider}.
  *  Parent frame is always set as primaryBody.getInertiallyOrientedFrame()
- * @author Luc Maisonabe
+ * @author Luc Maisonobe
  * @author Julio Hernanz
  */
 public class L2Frame extends Frame {
@@ -33,10 +37,16 @@ public class L2Frame extends Frame {
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
      * @throws OrekitException If frame cannot be retrieved in L2TransformProvider.
-     * @throws IllegalArgumentException If parent frame is null.
      */
-    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody) throws IllegalArgumentException, OrekitException {
-        super(primaryBody.getInertiallyOrientedFrame(), new L2TransformProvider(primaryBody, secondaryBody),
+    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
+        throws OrekitException {
+        super(primaryBody.getInertiallyOrientedFrame(),
+              new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
+                                            CartesianDerivativesFilter.USE_P,
+                                            AngularDerivativesFilter.USE_R,
+                                            5, Constants.JULIAN_DAY / 24,
+                                            OrekitConfiguration.getCacheSlotsNumber(),
+                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY) ,
               primaryBody.getName() + "-" + secondaryBody.getName() + "-L2", true);
     }
 

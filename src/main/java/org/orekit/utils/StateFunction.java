@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation;
+package org.orekit.utils;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing a vector function depending on {@link SpacecraftState}.
- * @see EstimationUtils#differentiate(StateFunction, int, org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
  * @see StateJacobian
  * @author Luc Maisonobe
  * @since 8.0
