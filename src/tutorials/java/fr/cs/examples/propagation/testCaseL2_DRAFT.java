@@ -93,8 +93,18 @@ public class testCaseL2_DRAFT {
         // Integration parameters
         final double minStep = 0.001;
         final double maxstep = 1000.0;
-        final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.CARTESIAN;
+        
+        // Tolerances
+        double positionTolerance = 10.0;
+        double velocityTolerance = 1.0e-2;
+        double massTolerance     = 1.0e-6;
+        double[] vecAbsoluteTolerance = {
+          positionTolerance, positionTolerance, positionTolerance,
+          velocityTolerance, velocityTolerance, velocityTolerance,
+          massTolerance
+        };
+        double[] vecRelativeTolerance = new double[7];
 
         // Load Bodies
         final CelestialBody earth = CelestialBodyFactory.getEarth();

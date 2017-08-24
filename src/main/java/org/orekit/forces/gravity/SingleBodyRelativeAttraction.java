@@ -41,11 +41,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
-/** Body attraction force model computed as absolute acceleration towards frame center.
+/** Body attraction force model computed as relative acceleration towards frame center.
  * @author Luc Maisonabe
  * @author Julio Hernanz
  */
-public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
+public class SingleBodyRelativeAttraction extends AbstractForceModel {
 
     /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
     public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
@@ -75,7 +75,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
      * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
      * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
-    public SingleBodyAbsoluteAttraction(final CelestialBody body) {
+    public SingleBodyRelativeAttraction(final CelestialBody body) {
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
@@ -84,7 +84,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    SingleBodyAbsoluteAttraction.this.gm = driver.getValue();
+                    SingleBodyRelativeAttraction.this.gm = driver.getValue();
                 }
             });
         } catch (OrekitException oe) {
@@ -107,9 +107,10 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
-        // compute absolute acceleration
+        // compute relative acceleration
+        final Vector3D bodyAcc = body.getPVCoordinates(s.getDate(), s.getFrame()).getAcceleration();
         final double a = gm / r2Sat;
-        final Vector3D acceleration = new Vector3D(a, satToBody.normalize());
+        final Vector3D acceleration = new Vector3D(a, satToBody.normalize()).add(bodyAcc);
 
         // add contribution to the ODE second member
         adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
@@ -129,8 +130,11 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
         final DerivativeStructure r2Sat = satToBody.getNormSq();
 
-        // compute absolute acceleration
-        return new FieldVector3D<>(r2Sat.reciprocal().multiply(gm), satToBody.normalize());
+        // compute relative acceleration
+        final Vector3D bodyAcc = body.getPVCoordinates(date, frame).getAcceleration();
+        final FieldVector3D<DerivativeStructure> satAcc =
+                new FieldVector3D<>(r2Sat.reciprocal().multiply(gm), satToBody.normalize());
+        return satAcc.add(bodyAcc);
 
     }
 
@@ -147,8 +151,10 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
 
         final DerivativeStructure gmds = factory.variable(0, gm);
 
-        // compute absolute acceleration
-        return new FieldVector3D<>(gmds.divide(r2Sat), satToBody.normalize());
+        // compute relative acceleration
+        final Vector3D bodyAcc = body.getPVCoordinates(s.getDate(), s.getFrame()).getAcceleration();
+        final FieldVector3D<DerivativeStructure> satAcc = new FieldVector3D<>(gmds.divide(r2Sat), satToBody.normalize());
+        return satAcc.add(bodyAcc);
     }
 
     /** {@inheritDoc} */
@@ -182,7 +188,11 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
         final FieldVector3D<T> acceleration =
             new FieldVector3D<>(r2Sat.reciprocal().multiply(gm), satToBody.normalize());
 
-        adder.addXYZAcceleration(acceleration.getX(), acceleration.getY(), acceleration.getZ());
+        // relative acceleration of the body (2nd way) substract added
+        final FieldVector3D<T> bodyAcc = body.getPVCoordinates(s.getDate(), s.getFrame()).getAcceleration();
+        final FieldVector3D<T> finalAcceleration = acceleration.add(bodyAcc);
+
+        adder.addXYZAcceleration(finalAcceleration.getX(), finalAcceleration.getY(), finalAcceleration.getZ());
     }
 
 }

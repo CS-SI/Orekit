@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package fr.cs.examples.propagation;
 
 import java.io.File;
@@ -65,8 +66,7 @@ import org.orekit.utils.ParameterDriver;
 /** Swing-by trajectory about Jupiter compared in EME2000, ICRF and
  * Jupiter-centered inertial reference frame.
  *
- * <p>
- * Case 1:
+ * <p>Case 1:
  * <ul>
  * <li>Integration frame: EME2000</li>
  * <li>Representation of the trajectory: AbsolutePVCoordinates</li>
@@ -74,7 +74,7 @@ import org.orekit.utils.ParameterDriver;
  * <li>ThirdBodyAttraction with Jupiter</li>
  * </ul>
  *
- * Case 2:
+ * <p>Case 2:
  * <ul>
  * <li>Integration frame: ICRF</li>
  * <li> Representation of the trajectory: AbsolutePVCoordinates</li>
@@ -82,34 +82,35 @@ import org.orekit.utils.ParameterDriver;
  * <li>ThirdBodyAttraction with Jupiter</li>
  * </ul>
  *
- * Case 3:
+ * <p>Case 3:
  * <ul>
  * <li>Integration frame: Jupiter-centered inertial</li>
  * <li>Representation of the trajectory: Orbit</li>
  * <li>Central body: Jupiter</li>
  * </ul>
  *
- * All trajectories output in ICRF.
+ * <p>All trajectories output in ICRF.
  *
  * @author Guillaume Obrecht
+ * @author Julio Hernanz
  *
  */
 
 public class testCaseJupiter {
 
-    @Test
-    public static void main(String[] args) throws OrekitException {
+  @Test
+  public static void main(String[] args) throws OrekitException {
 
-        // configure Orekit
-        File home       = new File(System.getProperty("user.home"));
-        File orekitData = new File(home, "orekit-data");
-        if (!orekitData.exists()) {
-            System.err.format(Locale.US, "Failed to find %s folder%n",
+    // configure Orekit
+    File home       = new File(System.getProperty("user.home"));
+    File orekitData = new File(home, "orekit-data");
+    if (!orekitData.exists()) {
+      System.err.format(Locale.US, "Failed to find %s folder%n",
                               orekitData.getAbsolutePath());
-            System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
+      System.err.format(Locale.US, "You need to download %s from the %s page and unzip it in %s for this tutorial to work%n",
                               "orekit-data.zip", "https://www.orekit.org/forge/projects/orekit/files",
                               home.getAbsolutePath());
-            System.exit(1);
+      System.exit(1);
         }
         DataProvidersManager manager = DataProvidersManager.getInstance();
         manager.addProvider(new DirectoryCrawler(orekitData));
@@ -119,7 +120,7 @@ public class testCaseJupiter {
         double integrationTime = 100000;
         double outputStep = 500;
 
-        // Initial conditions
+  // Initial conditions
         final double x = 69911000 + 100000000;
         final double y = -2000000000;
         final double z = 0;
@@ -138,11 +139,21 @@ public class testCaseJupiter {
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
 
+
         // Create frames to compare
         final Frame eme2000     = FramesFactory.getEME2000();
         final Frame icrf        = FramesFactory.getICRF();
         final Frame jovianFrame = jupiter.getInertiallyOrientedFrame();
-
+        final Frame gcrf 		= FramesFactory.getGCRF();
+        
+        PVCoordinates posZero = new PVCoordinates();
+        PVCoordinates posICRFCenter = icrf.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
+        PVCoordinates posJovianFrameCenter = jovianFrame.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
+        PVCoordinates posGCRFCenter = gcrf.getTransformTo(eme2000, initialDate).transformPVCoordinates(posZero);
+        System.out.println(posICRFCenter);
+        System.out.println(posJovianFrameCenter);
+        System.out.println(posGCRFCenter);
+        
         final Frame outputFrame = jovianFrame;
 
         // 1: Propagation in Earth-centered inertial reference frame
@@ -236,7 +247,8 @@ public class testCaseJupiter {
         final Vector3D diff13 = pos1.subtract(pos3);
         final Vector3D diff23 = pos2.subtract(pos3);
         final Vector3D diff12 = pos1.subtract(pos2);
-
+        
+        
         System.out.print("Errors from reference trajectory "
                 + "(3: Jupiter-centered inertial frame) [m]\n");
         System.out.print("1/3: " + diff13 + "\n"
@@ -317,6 +329,8 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
                             finalPv.getVelocity().getY(),
                             finalPv.getVelocity().getZ());
                     System.out.println();
+                    file.close(); 
+                    bodyFile.close();
                 }
             } catch (OrekitException oe) {
                 System.err.println(oe.getMessage());
