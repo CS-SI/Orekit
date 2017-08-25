@@ -56,9 +56,9 @@ import org.orekit.utils.PVCoordinates;
  * <li>Integration frame: EME2000</li>
  * <li>Representation of the trajectory: AbsolutePVCoordinates</li>
  * <li>No central body</li>
- * <li>InertialForces between EME2000 and ICRF</li>
- * <li>SingleBodyAbsoluteAttraction with the Sun</li>
  * <li>SingleBodyAbsoluteAttraction with Jupiter</li>
+ * <li>SingleBodyAbsoluteAttraction with the Sun and all remaining planets</li>
+ * <li>InertialForces between EME2000 and ICRF</li>
  * </ul>
  *
  * Case 2:
@@ -66,8 +66,8 @@ import org.orekit.utils.PVCoordinates;
  * <li>Integration frame: ICRF</li>
  * <li> Representation of the trajectory: AbsolutePVCoordinates</li>
  * <li>No central body</li>
- * <li>SingleBodyAbsoluteAttraction with the Sun</li>
  * <li>SingleBodyAbsoluteAttraction with Jupiter</li>
+ * <li>SingleBodyAbsoluteAttraction with the Sun and all remaining planets</li>
  * </ul>
  *
  * Case 3:
@@ -75,10 +75,10 @@ import org.orekit.utils.PVCoordinates;
  * <li>Integration frame: Jupiter-centered inertial</li>
  * <li>Representation of the trajectory: Cartesian orbit</li>
  * <li>Central body: Jupiter</li>
- * <li>ThirdBodyAttraction with the Sun</li>
+ * <li>ThirdBodyAttraction with the Sun and all remaining planets</li>
  * </ul>
  *
- * All trajectories output in ICRF.
+ * All trajectories output in Jovian frame.
  *
  * @author Guillaume Obrecht
  * @author Luc Maisonobe
@@ -124,10 +124,17 @@ public class testCaseJupiter {
         final double initialStepSize = 120.0;
 
         // Load Celestial bodies
-        final CelestialBody sun     = CelestialBodyFactory.getSun();
-        final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
-
-        // Create frames to compare
+        final CelestialBody   jupiter     = CelestialBodyFactory.getJupiter();
+        final CelestialBody[] otherBodies = {
+            CelestialBodyFactory.getSun(),
+            CelestialBodyFactory.getMercury(),
+            CelestialBodyFactory.getVenus(),
+            CelestialBodyFactory.getEarthMoonBarycenter(),
+            CelestialBodyFactory.getMars(),
+            CelestialBodyFactory.getSaturn(),
+            CelestialBodyFactory.getUranus(),
+            CelestialBodyFactory.getNeptune()
+        };
         final Frame eme2000     = FramesFactory.getEME2000();
         final Frame icrf        = FramesFactory.getICRF();
         final Frame jovianFrame = jupiter.getInertiallyOrientedFrame();
@@ -152,10 +159,13 @@ public class testCaseJupiter {
 
         NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
         propagator1.setOrbitType(null);  // propagate as absolute position-velocity-acceleration
-        propagator1.setInitialState(new SpacecraftState(initialAbsPva1));
-        propagator1.addForceModel(new InertialForces(icrf));
-        propagator1.addForceModel(new SingleBodyAbsoluteAttraction(sun));
         propagator1.addForceModel(new SingleBodyAbsoluteAttraction(jupiter));
+        for (final CelestialBody body : otherBodies) {
+            propagator1.addForceModel(new SingleBodyAbsoluteAttraction(body));
+        }
+        propagator1.addForceModel(new InertialForces(icrf));
+        propagator1.setIgnoreCentralAttraction(true);
+        propagator1.setInitialState(new SpacecraftState(initialAbsPva1));
         propagator1.setMasterMode(outputStep, new TutorialStepHandler("testJupiter1.txt", outputFrame));
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
@@ -181,10 +191,13 @@ public class testCaseJupiter {
         integrator2.setInitialStepSize(initialStepSize);
 
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
-        propagator2.setOrbitType(null);  // propagate as absolute position-velocity-acceleration
-        propagator2.setInitialState(new SpacecraftState(initialAbsPva2));
+        propagator2.setOrbitType(null);
         propagator2.addForceModel(new SingleBodyAbsoluteAttraction(jupiter));
-        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        for (final CelestialBody body : otherBodies) {
+            propagator2.addForceModel(new SingleBodyAbsoluteAttraction(body));
+        }
+        propagator2.setIgnoreCentralAttraction(true);
+        propagator2.setInitialState(new SpacecraftState(initialAbsPva2));
         propagator2.setMasterMode(outputStep, new TutorialStepHandler("testJupiter2.txt", outputFrame));
 
 
@@ -208,9 +221,11 @@ public class testCaseJupiter {
 
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
         propagator3.setOrbitType(OrbitType.CARTESIAN);     // propagate as regular orbit
-        propagator3.setInitialState(new SpacecraftState(initialOrbit3));
-        propagator3.addForceModel(new ThirdBodyAttraction(sun));
         propagator3.setMu(jupiter.getGM());
+        for (final CelestialBody body : otherBodies) {
+            propagator3.addForceModel(new ThirdBodyAttraction(body));
+        }
+        propagator3.setInitialState(new SpacecraftState(initialOrbit3));
         propagator3.setMasterMode(outputStep, new TutorialStepHandler("testJupiter3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
@@ -240,7 +255,8 @@ public class testCaseJupiter {
 
         private Frame outputFrame;
 
-        private TutorialStepHandler(final String fileName, final Frame frame) throws OrekitException {
+        private TutorialStepHandler(final String fileName, final Frame frame)
+            throws OrekitException {
             try {
                 outFile = new File(new File(System.getProperty("user.home")), fileName);
                 out = new PrintWriter(outFile);
@@ -259,7 +275,16 @@ public class testCaseJupiter {
                 final PVCoordinates pv = currentState.getPVCoordinates(outputFrame);
                 final AbsoluteDate d = currentState.getDate();
 
-                out.format(Locale.US, "%s %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
+                out.format(Locale.US, "%s %9.3f %9.3f %9.3f%n",
+                            d,
+                            pv.getPosition().getX(),
+                            pv.getPosition().getY(),
+                            pv.getPosition().getZ());
+
+                if (isLast) {
+                    out.close();
+                    System.out.println();
+                    System.out.format(Locale.US, "%s %12.0f %12.0f %12.0f %12.0f %12.0f %12.0f%n",
                             d,
                             pv.getPosition().getX(),
                             pv.getPosition().getY(),
@@ -267,21 +292,7 @@ public class testCaseJupiter {
                             pv.getVelocity().getX(),
                             pv.getVelocity().getY(),
                             pv.getVelocity().getZ());
-
-
-                if (isLast) {
-                    final PVCoordinates finalPv = currentState.getPVCoordinates(outputFrame);
                     System.out.println();
-                    System.out.format(Locale.US, "%s %12.0f %12.0f %12.0f %12.0f %12.0f %12.0f%n",
-                            d,
-                            finalPv.getPosition().getX(),
-                            finalPv.getPosition().getY(),
-                            finalPv.getPosition().getZ(),
-                            finalPv.getVelocity().getX(),
-                            finalPv.getVelocity().getY(),
-                            finalPv.getVelocity().getZ());
-                    System.out.println();
-                    out.close();
                     System.out.println("trajectory saved in " + outFile.getAbsolutePath());
                 }
             } catch (OrekitException oe) {
