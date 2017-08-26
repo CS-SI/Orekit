@@ -30,12 +30,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-/** L2 Transform provider for a frame on the L2 Lagrange point of two celestial bodies.
+/** L1 Transform provider for a frame on the L1 Lagrange point of two celestial bodies.
  *
  * @author Luc Maisonobe
  * @author Julio Hernanz
  */
-class L2TransformProvider implements TransformProvider {
+public class L1TransformProvider implements TransformProvider {
 
     /** Relative accuracy on position for solver. */
     private static final double RELATIVE_ACCURACY = 1e-14;
@@ -53,7 +53,7 @@ class L2TransformProvider implements TransformProvider {
     private static final int MAX_EVALUATIONS = 1000;
 
     /** Serializable UID.*/
-    private static final long serialVersionUID = 20170725L;
+    private static final long serialVersionUID = 20170824L;
 
     /** Frame for results. Always defined as primaryBody's inertially oriented frame.*/
     private final Frame frame;
@@ -69,7 +69,7 @@ class L2TransformProvider implements TransformProvider {
      * @param secondaryBody Secondary body.
      * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
-    L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
+    public L1TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
         throws OrekitException {
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
@@ -81,7 +81,7 @@ class L2TransformProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date)
         throws OrekitException {
         final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
-        final Vector3D      translation = getL2(pv21.getPosition()).negate();
+        final Vector3D      translation = getL1(pv21.getPosition()).negate();
         final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
                                                        Vector3D.PLUS_I, Vector3D.PLUS_J);
         return new Transform(date, new Transform(date, translation), new Transform(date, rotation));
@@ -94,31 +94,31 @@ class L2TransformProvider implements TransformProvider {
         return new FieldTransform<T>(date.getField(), getTransform(date.toAbsoluteDate()));
     }
 
-    /** Compute the coordinates of the L2 point.
+    /** Compute the coordinates of the L1 point.
      * @param primaryToSecondary relative position of secondary body with respect to primary body
-     * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
+     * @return coordinates of the L1 point given in frame: primaryBody.getInertiallyOrientedFrame()
      * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
-    private Vector3D getL2(final Vector3D primaryToSecondary)
+    private Vector3D getL1(final Vector3D primaryToSecondary)
         throws OrekitException {
 
         // mass ratio
         final double massRatio = secondaryBody.getGM() / primaryBody.getGM();
 
-        // Approximate position of L2 point, valid when m2 << m1
+        // Approximate position of L1 point, valid when m2 << m1
         final double bigR  = primaryToSecondary.getNorm();
-        final double baseR = bigR * (FastMath.cbrt(massRatio / 3) + 1);
+        final double baseR = bigR * (FastMath.cbrt(massRatio / 3) - 1);
 
-        // Accurate position of L2 point, by solving the L2 equilibrium equation
-        final UnivariateFunction l2Equation = r -> {
-            final double rminusbigR  = r - bigR;
-            final double lhs1        = 1.0 / (r * r);
-            final double lhs2        = massRatio / (rminusbigR * rminusbigR);
-            final double rhs1        = 1.0 / (bigR * bigR);
-            final double rhs2        = (1 + massRatio) * rminusbigR * rhs1 / bigR;
-            return (lhs1 + lhs2) - (rhs1 + rhs2);
+        // Accurate position of L1 point, by solving the L1 equilibrium equation
+        final UnivariateFunction l1Equation = r -> {
+            final double bigrminusR  = bigR - r;
+            final double lhs         = 1.0 / ( r * r );
+            final double rhs1        = massRatio / (bigrminusR * bigrminusR);
+            final double rhs2        = 1.0 / (bigR * bigR);
+            final double rhs3        = (1 + massRatio) * bigrminusR * rhs2;
+            return lhs - (rhs1 + rhs2 - rhs3);
         };
-        final double[] searchInterval = UnivariateSolverUtils.bracket(l2Equation,
+        final double[] searchInterval = UnivariateSolverUtils.bracket(l1Equation,
                                                                       baseR, 0, 2 * bigR,
                                                                       0.01 * bigR, 1, MAX_EVALUATIONS);
         final BracketingNthOrderBrentSolver solver =
@@ -126,11 +126,11 @@ class L2TransformProvider implements TransformProvider {
                                                           ABSOLUTE_ACCURACY,
                                                           FUNCTION_ACCURACY,
                                                           MAX_ORDER);
-        final double r = solver.solve(MAX_EVALUATIONS, l2Equation,
+        final double r = solver.solve(MAX_EVALUATIONS, l1Equation,
                                       searchInterval[0], searchInterval[1],
                                       AllowedSolution.ANY_SIDE);
 
-        // L2 point is built
+        // L1 point is built
         return new Vector3D(r / bigR, primaryToSecondary);
 
     }

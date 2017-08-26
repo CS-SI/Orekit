@@ -23,12 +23,12 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.OrekitConfiguration;
 
-/** Class to create a L2 centered frame with {@link L2TransformProvider}.
+/** Class to create a L1 centered frame with {@link L1TransformProvider}.
  *  Parent frame is always set as primaryBody.getInertiallyOrientedFrame()
  * @author Luc Maisonobe
  * @author Julio Hernanz
  */
-public class L2Frame extends Frame {
+public class L1Frame extends Frame {
 
     /** Serializable UID.*/
     private static final long serialVersionUID = 20170811L;
@@ -36,18 +36,18 @@ public class L2Frame extends Frame {
     /** Simple constructor. Calls to {@link Frame#Frame(Frame, TransformProvider, String) Frame(Frame, TransformProvider, String)}
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-     * @throws OrekitException If frame cannot be retrieved in {@link L2TransformProvider}.
+     * @throws OrekitException If frame cannot be retrieved in {@link L1TransformProvider}.
      */
-    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
+    public L1Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
         throws OrekitException {
         super(primaryBody.getInertiallyOrientedFrame(),
-              new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
+              new ShiftingTransformProvider(new L1TransformProvider(primaryBody, secondaryBody),
                                             CartesianDerivativesFilter.USE_P,
                                             AngularDerivativesFilter.USE_R,
                                             5, Constants.JULIAN_DAY / 24,
                                             OrekitConfiguration.getCacheSlotsNumber(),
                                             Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY),
-              primaryBody.getName() + "-" + secondaryBody.getName() + "-L2", true);
+              primaryBody.getName() + "-" + secondaryBody.getName() + "-L1", true);
     }
 
 }

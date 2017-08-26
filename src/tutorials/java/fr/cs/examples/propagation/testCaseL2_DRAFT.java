@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package fr.cs.examples.propagation;
 
 import java.io.File;
@@ -55,7 +54,6 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Julio Hernanz
  *
  */
-
 public class testCaseL2_DRAFT {
 
   public static void main(String[] args) throws OrekitException {
@@ -85,8 +83,8 @@ public class testCaseL2_DRAFT {
         // with these initial conditions, we have a trajectory starting below L2 and not fast
         // enough to stay there, so it falls back towards Earth/Moon and first makes several
         // loops around Moon before falling to Earth and starting looping around Earth
-        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-                                                              new Vector3D(0.0, 11.856, -0.001));
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 11.856, -0.001));
 
 //        // with these initial conditions, Earth-centered propagations fall back to Earth,
 //        // while L2-centered propagation remains near Moon until the end
@@ -104,8 +102,8 @@ public class testCaseL2_DRAFT {
 //                                                              new Vector3D(0.0, 26.9, -0.001));
 
 //        // with these initial conditions, all propagations leave the Earth/Moon system immediately
-//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                              new Vector3D(0.0, 27.0, -0.001));
+        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+                                                              new Vector3D(0.0, 27.0, -0.001));
 
         // Integration parameters
         final double minStep = 0.001;
