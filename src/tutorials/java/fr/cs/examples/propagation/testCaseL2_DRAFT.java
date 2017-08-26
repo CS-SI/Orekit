@@ -153,8 +153,8 @@ public class testCaseL2_DRAFT {
 
         NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
         propagator1.setOrbitType(OrbitType.CARTESIAN);
-        propagator1.setInitialState(initialState1);
         propagator1.addForceModel(new ThirdBodyAttraction(moon));
+        propagator1.setInitialState(initialState1);
         propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
@@ -180,10 +180,10 @@ public class testCaseL2_DRAFT {
 
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
         propagator2.setOrbitType(null);
-        propagator2.setInitialState(initialState2);
         propagator2.setIgnoreCentralAttraction(true);
-        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
         propagator2.addForceModel(new ThirdBodyAttraction(moon));
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
+        propagator2.setInitialState(initialState2);
         propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
@@ -212,11 +212,11 @@ public class testCaseL2_DRAFT {
 
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
         propagator3.setOrbitType(null);
-        propagator3.setInitialState(initialState3);
         propagator3.setIgnoreCentralAttraction(true);
-        propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
-        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
         propagator3.addForceModel(new SingleBodyAbsoluteAttraction(moon));
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
+        propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
+        propagator3.setInitialState(initialState3);
         propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));

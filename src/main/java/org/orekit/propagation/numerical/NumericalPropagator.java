@@ -566,6 +566,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.addContribution(state, this);
             }
 
+            if (getOrbitType() == null) {
+                // position derivative is velocity, and was not added above in the force models
+                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
+                final Vector3D velocity = currentState.getPVCoordinates().getVelocity();
+                yDot[0] += velocity.getX();
+                yDot[1] += velocity.getY();
+                yDot[2] += velocity.getZ();
+            }
+
+
             return yDot.clone();
 
         }
@@ -575,19 +585,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         public void addKeplerContribution(final double mu) {
             if (getOrbitType() == null) {
 
-                // propagation uses absolute position-velocity-acceleration
-                final PVCoordinates pv = currentState.getPVCoordinates();
-
-                // position derivative is velocity
-                final Vector3D velocity = pv.getVelocity();
-                yDot[0] += velocity.getX();
-                yDot[1] += velocity.getY();
-                yDot[2] += velocity.getZ();
-
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final Vector3D position = pv.getPosition();
+                    final Vector3D position = currentState.getPVCoordinates().getPosition();
                     final double r2         = position.getNormSq();
                     final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                     yDot[3] += coeff * position.getX();
