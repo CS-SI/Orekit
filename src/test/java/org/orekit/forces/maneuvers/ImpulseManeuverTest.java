@@ -21,11 +21,13 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
@@ -41,6 +43,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -187,6 +191,115 @@ public class ImpulseManeuverTest {
                                               rebuiltPast.getPVCoordinates().getVelocity()),
                             2.0e-11);
         Assert.assertEquals(pastMass, rebuiltPast.getMass(), 5.0e-13);
+
+    }
+
+    @Test
+    public void testAdditionalStateKeplerian() throws OrekitException {
+        final double mu = CelestialBodyFactory.getEarth().getGM();
+
+        final double initialX = 7100e3;
+        final double initialY = 0.0;
+        final double initialZ = 1300e3;
+        final double initialVx = 0;
+        final double initialVy = 8000;
+        final double initialVz = 1000;
+
+        final Vector3D position = new Vector3D(initialX, initialY, initialZ);
+        final Vector3D velocity = new Vector3D(initialVx, initialVy, initialVz);
+        final AbsoluteDate epoch = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(epoch, position, velocity, Vector3D.ZERO);
+        final Orbit initialOrbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), mu);
+
+        final double totalPropagationTime = 10;
+        final double deltaX = 0.01;
+        final double deltaY = 0.02;
+        final double deltaZ = 0.03;
+        final double isp = 300;
+
+        final Vector3D deltaV = new Vector3D(deltaX, deltaY, deltaZ);
+
+        final AttitudeProvider attitudeProvider = new LofOffset(initialOrbit.getFrame(), LOFType.VNC);
+        final Attitude initialAttitude = attitudeProvider.getAttitude(initialOrbit, initialOrbit.getDate(), initialOrbit.getFrame());
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit, initialAttitude);
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        propagator.resetInitialState(initialState.addAdditionalState("testOnly", -1.0));
+        DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
+        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+                                                                              RotationConvention.VECTOR_OPERATOR,
+                                                                              0, 0, 0));
+        ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        propagator.addEventDetector(burnAtEpoch);
+
+        SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
+        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(-1.0, finalState.getAdditionalState("testOnly")[0], 1.0e-15);
+
+    }
+
+    @Test
+    public void testAdditionalStateNumerical() throws OrekitException {
+        final double mu = CelestialBodyFactory.getEarth().getGM();
+
+        final double initialX = 7100e3;
+        final double initialY = 0.0;
+        final double initialZ = 1300e3;
+        final double initialVx = 0;
+        final double initialVy = 8000;
+        final double initialVz = 1000;
+
+        final Vector3D position = new Vector3D(initialX, initialY, initialZ);
+        final Vector3D velocity = new Vector3D(initialVx, initialVy, initialVz);
+        final AbsoluteDate epoch = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(epoch, position, velocity, Vector3D.ZERO);
+        final Orbit initialOrbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), mu);
+
+        final double totalPropagationTime = 10.0;
+        final double deltaX = 0.01;
+        final double deltaY = 0.02;
+        final double deltaZ = 0.03;
+        final double isp = 300;
+
+        final Vector3D deltaV = new Vector3D(deltaX, deltaY, deltaZ);
+
+        final AttitudeProvider attitudeProvider = new LofOffset(initialOrbit.getFrame(), LOFType.VNC);
+        final Attitude initialAttitude = attitudeProvider.getAttitude(initialOrbit, initialOrbit.getDate(), initialOrbit.getFrame());
+
+        double[][] tolerances = NumericalPropagator.tolerances(10.0, initialOrbit, initialOrbit.getType());
+        DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(initialOrbit.getType());
+        PartialDerivativesEquations pde = new PartialDerivativesEquations("derivatives", propagator);
+        final SpacecraftState initialState = pde.setInitialJacobians(new SpacecraftState(initialOrbit, initialAttitude));
+        propagator.resetInitialState(initialState);
+        DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
+        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+                                                                              RotationConvention.VECTOR_OPERATOR,
+                                                                              0, 0, 0));
+        ImpulseManeuver<DateDetector> burnAtEpoch = new ImpulseManeuver<DateDetector>(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        propagator.addEventDetector(burnAtEpoch);
+
+        SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
+        Assert.assertEquals(1, finalState.getAdditionalStates().size());
+        Assert.assertEquals(36, finalState.getAdditionalState("derivatives").length);
+
+        double[][] stateTransitionMatrix = new double[6][6];
+        pde.getMapper().getStateJacobian(finalState, stateTransitionMatrix);
+        for (int i = 0; i < 6; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                double sIJ = stateTransitionMatrix[i][j];
+                if (j == i) {
+                    // dPi/dPj and dVi/dVj are roughly 1 for small propagation times
+                    Assert.assertEquals(1.0, sIJ, 2.0e-4);
+                } else if (j == i + 3) {
+                    // dVi/dPi is roughly the propagation time for small propagation times
+                    Assert.assertEquals(totalPropagationTime, sIJ, 4.0e-5 * totalPropagationTime);
+                } else {
+                    // other derivatives are almost zero for small propagation times
+                    Assert.assertEquals(0, sIJ, 1.0e-4);
+                }
+            }
+        }
 
     }
 
