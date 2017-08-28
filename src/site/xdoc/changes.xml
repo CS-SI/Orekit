@@ -22,6 +22,10 @@
   <body>
     <release version="9.1" date="TBD" description="TBD">
      <action dev="luc" type="fix">
+        Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
+        Fixes issue #350.
+     </action>
+     <action dev="luc" type="fix">
         Copy additional states through impulse maneuvers.
         Fixes issue #349.
      </action>

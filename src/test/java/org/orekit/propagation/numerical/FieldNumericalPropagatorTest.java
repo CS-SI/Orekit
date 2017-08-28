@@ -46,6 +46,7 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -91,7 +92,7 @@ public class FieldNumericalPropagatorTest {
     private double               mu;
 
     @Test(expected=OrekitException.class)
-    public void testErr1() throws OrekitException{
+    public void testNotInitialised1() throws OrekitException{
         doTestNotInitialised1(Decimal64Field.getInstance());
     }
 
@@ -105,7 +106,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testErr2() throws OrekitException{
+    public void testNotInitialised2() throws OrekitException{
         doTestNotInitialised2(Decimal64Field.getInstance());
     }
 
@@ -115,6 +116,23 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() throws OrekitException {
+        doTestDeprecatedMethods(Decimal64Field.getInstance());
+    }
+
+    @Deprecated
+    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
+        throws OrekitException {
+        FieldNumericalPropagator<T>  propagator = createPropagator(field);
+        propagator.addForceModel(new Relativity(mu));
+        Assert.assertEquals(2, propagator.getAllForceModels().size());
+        Assert.assertEquals(1, propagator.getForceModels().size());
+        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
+        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
     }
 
     @Test
@@ -629,7 +647,7 @@ public class FieldNumericalPropagatorTest {
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
-        for (ForceModel force: propagator.getForceModels()) {
+        for (ForceModel force: propagator.getAllForceModels()) {
             newPropagator.addForceModel(force);
         }
         return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
@@ -877,10 +895,6 @@ public class FieldNumericalPropagatorTest {
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
-
-
-
-
 
         propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
 

@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.Field;
@@ -29,6 +30,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -44,6 +46,8 @@ import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
@@ -141,9 +145,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
-    /** Central body attraction. */
-    private NewtonianAttraction newtonianAttraction;
-
     /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
 
@@ -175,8 +176,25 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @see #addForceModel(ForceModel)
      */
     public void setMu(final double mu) {
+        addForceModel(new NewtonianAttraction(mu));
+    }
+
+    /** Set the central attraction coefficient μ only in upper class.
+     * @param mu central attraction coefficient (m³/s²)
+     */
+    private void superSetMu(final double mu) {
         super.setMu(mu);
-        newtonianAttraction = new NewtonianAttraction(mu);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
     }
 
     /** Add a force model to the global perturbation model.
@@ -187,7 +205,43 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @see #setMu(double)
      */
     public void addForceModel(final ForceModel model) {
-        forceModels.add(model);
+
+        if (model instanceof NewtonianAttraction) {
+            // we want to add the central attraction force model
+
+            try {
+                // ensure we are notified of any mu change
+                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                });
+            } catch (OrekitException oe) {
+                // this should never happen
+                throw new OrekitInternalError(oe);
+            }
+
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, model);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(model);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, model);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(model);
+            }
+        }
+
     }
 
     /** Remove all perturbing force models from the global perturbation model.
@@ -200,22 +254,41 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         forceModels.clear();
     }
 
+    /** Get all the force models, perturbing forces and Newtonian attraction included.
+     * @return list of perturbing force models, with Newtonian attraction being the
+     * last one
+     * @see #addForceModel(ForceModel)
+     * @see #setMu(double)
+     * @since 9.1
+     */
+    public List<ForceModel> getAllForceModels() {
+        return Collections.unmodifiableList(forceModels);
+    }
+
     /** Get perturbing force models list.
      * @return list of perturbing force models
-     * @see #addForceModel(ForceModel)
-     * @see #getNewtonianAttractionForceModel()
+     * @deprecated as of 9.1, this method is deprecated, the perturbing
+     * force models are retrieved together with the Newtonian attraction
+     * by calling {@link #getAllForceModels()}
      */
+    @Deprecated
     public List<ForceModel> getForceModels() {
-        return forceModels;
+        return hasNewtonianAttraction() ? forceModels.subList(0, forceModels.size() - 1) : forceModels;
     }
 
     /** Get the Newtonian attraction from the central body force model.
      * @return Newtonian attraction force model
-     * @see #setMu(double)
-     * @see #getForceModels()
+     * @deprecated as of 9.1, this method is deprecated, the Newtonian
+     * attraction force model (if any) is the last in the {@link #getAllForceModels()}
      */
+    @Deprecated
     public NewtonianAttraction getNewtonianAttractionForceModel() {
-        return newtonianAttraction;
+        final int last = forceModels.size() - 1;
+        if (last >= 0 && forceModels.get(last) instanceof NewtonianAttraction) {
+            return (NewtonianAttraction) forceModels.get(last);
+        } else {
+            return null;
+        }
     }
 
     /** Set propagation orbit type.
@@ -263,7 +336,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** {@inheritDoc} */
     public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
         super.resetInitialState(state);
-        if (newtonianAttraction == null) {
+        if (!hasNewtonianAttraction()) {
             setMu(state.getMu());
         }
         setStartDate(state.getDate());
@@ -376,12 +449,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             orbit = state.getOrbit();
             Arrays.fill(yDot, zero);
             orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
-            // compute the contributions of all perturbing forces
+
+            // compute the contributions of all perturbing forces,
+            // using the Kepler contribution at the end since
+            // NewtonianAttraction is always the last instance in the list
             for (final ForceModel forceModel : forceModels) {
                 forceModel.addContribution(state, this);
             }
-            // finalize derivatives by adding the Kepler contribution
-            newtonianAttraction.addContribution(state, this);
+
             return yDot.clone();
 
         }
