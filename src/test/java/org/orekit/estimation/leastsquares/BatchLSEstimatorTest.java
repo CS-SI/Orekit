@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Assert;
@@ -89,6 +90,14 @@ public class BatchLSEstimatorTest {
                                      0.0, 1.1e-7,
                                      0.0, 1.4e-8,
                                      0.0, 6.3e-12);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
