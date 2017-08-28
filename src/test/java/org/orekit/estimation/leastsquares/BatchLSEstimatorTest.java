@@ -39,6 +39,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -460,14 +461,27 @@ public class BatchLSEstimatorTest {
 
         // Builder sat 1
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+//        final NumericalPropagatorBuilder propagatorBuilder1 =
+//                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+//                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
         final NumericalPropagatorBuilder propagatorBuilder1 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
-
+                                              1.0e-6, 60.0, 1.0, Force.SOLAR_RADIATION_PRESSURE);
+        
+//        // Find the value of µ and add a central Newtonian attraction model
+//        double mu = 0.;
+//        for (DelegatingDriver driver:propagatorBuilder1.getPropagationParametersDrivers().getDrivers()) {
+//            if (driver.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
+//                mu = driver.getValue();
+//            }
+//        }
+//        propagatorBuilder1.addForceModel(new NewtonianAttraction(mu));
+        
+        
         // Adding selection of parameters
         String satName = "sat 1";
         for (DelegatingDriver driver:propagatorBuilder1.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.getName().equals("central attraction coefficient")) {
+            if (driver.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
                 driver.setSelected(muEstimated);
             }
             if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
@@ -478,13 +492,18 @@ public class BatchLSEstimatorTest {
                 driver.setName(driver.getName() + " " + satName);
                 driver.setSelected(caEstimated1);
             }
-        }
+        }       
 
         // Builder for sat 2
         final Context context2 = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context2.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
+                                              1.0e-6, 60.0, 1.0, Force.SOLAR_RADIATION_PRESSURE);
+//        // Add a central Newtonian attraction model
+//        propagatorBuilder2.addForceModel(new NewtonianAttraction(mu));
+//        final NumericalPropagatorBuilder propagatorBuilder2 =
+//                        context2.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+//                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Adding selection of parameters
         satName = "sat 2";
@@ -600,11 +619,11 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 6.3e-06,
-                                     0.0, 2.0e-05,
-                                     0.0, 3.3e-07,
-                                     0.0, 1.4e-10);
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                     0.0, 3.1e-06,
+                                     0.0, 9.8e-06,
+                                     0.0, 8.3e-07,
+                                     0.0, 3.1e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -623,7 +642,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
-                            2.0e-9);
+                            2.7e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

@@ -200,6 +200,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     }
 
+    /** Get the central attraction coefficient.
+     * @return the central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return mu;
+    }
+
     /** Build an initial orbit using the current selected parameters.
      * <p>
      * This method is a stripped down version of {@link #buildPropagator(double[])}

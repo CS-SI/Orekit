@@ -334,7 +334,7 @@ public class BatchLSEstimator {
      */
     public NumericalPropagator[] estimate() throws OrekitException {
 
-        // set reference date for all parameters that lack one (including the not estimated parameters)
+        // Set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
             if (driver.getReferenceDate() == null) {
                 driver.setReferenceDate(builders[0].getInitialOrbitDate());

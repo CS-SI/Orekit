@@ -17,12 +17,14 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -77,6 +79,27 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.attProvider = Propagator.DEFAULT_LAW;
     }
 
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    public boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
+    }
+
+    /** Get all the force models, perturbing forces and Newtonian attraction included.
+     * @return list of perturbing force models, with Newtonian attraction being the
+     * last one
+     * @see #addForceModel(ForceModel)
+     * @see #setMu(double)
+     */
+    public List<ForceModel> getAllForceModels() {
+        return Collections.unmodifiableList(forceModels);
+    }
+
     /** Set the attitude provider.
      * @param attitudeProvider attitude provider
      */
@@ -114,13 +137,21 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final Attitude        attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
         final SpacecraftState state    = new SpacecraftState(orbit, attitude, mass);
 
+        // Check that the builder as an attraction force model
+        // If not, add a simple central one
+        if (!this.hasNewtonianAttraction()) {
+            addForceModel(new NewtonianAttraction(this.getMu()));
+        }
+
         final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orbit, getOrbitType()));
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngle());
         propagator.setAttitudeProvider(attProvider);
+
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+
         propagator.resetInitialState(state);
 
         return propagator;

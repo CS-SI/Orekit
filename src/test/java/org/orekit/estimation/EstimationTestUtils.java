@@ -304,6 +304,10 @@ public class EstimationTestUtils {
         Assert.assertEquals(expectedMax,
                             max,
                             maxEps);
+        //debug
+        double d = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        double v = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
+        //debug
         Assert.assertEquals(expectedDeltaPos,
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
                             posEps);
