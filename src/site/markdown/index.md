@@ -194,6 +194,7 @@
   
     * tropospheric delay (modified Saastamoinen)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
+    * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
