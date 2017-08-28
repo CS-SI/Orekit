@@ -21,8 +21,13 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+     <action dev="luc" type="fix">
+        Added a convenience method to retrieve covariance matrix in
+        physical units in orbit determination.
+        Fixes issue #353.
+     </action>
      <action dev="luc" type="fix" due-to="Rongwang Li">
-        Fixed two errors in Marin-Murray model implementation.
+        Fixed two errors in Marini-Murray model implementation.
         Fixes issue #352.
      </action>
      <action dev="luc" type="fix">
