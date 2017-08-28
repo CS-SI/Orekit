@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+     <action dev="luc" type="fix" due-to="Rongwang Li">
+        Fixed two errors in Marin-Murray model implementation.
+        Fixes issue #352.
+     </action>
      <action dev="luc" type="fix">
         Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
         Fixes issue #350.
