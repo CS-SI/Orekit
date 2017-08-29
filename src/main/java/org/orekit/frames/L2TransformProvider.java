@@ -16,18 +16,28 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.RealFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.AllowedSolution;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 /** L2 Transform provider for a frame on the L2 Lagrange point of two celestial bodies.
@@ -91,7 +101,14 @@ class L2TransformProvider implements TransformProvider {
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
         throws OrekitException {
-        return new FieldTransform<T>(date.getField(), getTransform(date.toAbsoluteDate()));
+        final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
+        final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
+        final Field<T>              field       = pv21.getPosition().getX().getField();
+        final FieldRotation<T>      rotation    = new FieldRotation<T>(pv21.getPosition(), pv21.getVelocity(),
+                                                                       FieldVector3D.getPlusI(field),
+                                                                       FieldVector3D.getPlusJ(field));
+        return new FieldTransform<T>(date, new FieldTransform<T>(date, translation),
+                                     new FieldTransform<T>(date, rotation));
     }
 
     /** Compute the coordinates of the L2 point.
@@ -133,6 +150,254 @@ class L2TransformProvider implements TransformProvider {
         // L2 point is built
         return new Vector3D(r / bigR, primaryToSecondary);
 
+    }
+
+    /** Compute the coordinates of the L2 point.
+     * @param <T> type of the field elements
+     * @param primaryToSecondary relative position of secondary body with respect to primary body
+     * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
+     * @throws OrekitException if some frame specific error occurs at .getTransformTo()
+     */
+    private <T extends RealFieldElement<T>> FieldVector3D<T>
+        getL2(final FieldVector3D<T> primaryToSecondary)
+        throws OrekitException {
+
+        // mass ratio
+        final double massRatio = secondaryBody.getGM() / primaryBody.getGM();
+
+        // Approximate position of L2 point, valid when m2 << m1
+        final T bigR  = primaryToSecondary.getNorm();
+        final T baseR = bigR.multiply(FastMath.cbrt(massRatio / 3) + 1);
+
+        // Accurate position of L2 point, by solving the L2 equilibrium equation
+        final RealFieldUnivariateFunction<T> l2Equation = r -> {
+            final T rminusbigR = r.subtract(bigR);
+            final T lhs1       = r.multiply(r).reciprocal();
+            final T lhs2       = rminusbigR.multiply(rminusbigR).reciprocal().multiply(massRatio);
+            final T rhs1       = bigR.multiply(bigR).reciprocal();
+            final T rhs2       = rminusbigR.multiply(rhs1).multiply(1 + massRatio).divide(bigR);
+            return lhs1.add(lhs2).subtract(rhs1.add(rhs2));
+        };
+        final T zero             = primaryToSecondary.getX().getField().getZero();
+        final T[] searchInterval = L2TransformProvider.bracket(l2Equation,
+                                                               baseR, zero, bigR.multiply(2),
+                                                               bigR.multiply(0.01), zero.add(1),
+                                                               MAX_EVALUATIONS);
+
+
+        final T relativeAccuracy = zero.add(RELATIVE_ACCURACY);
+        final T absoluteAccuracy = zero.add(ABSOLUTE_ACCURACY);
+        final T functionAccuracy = zero.add(FUNCTION_ACCURACY);
+
+        final FieldBracketingNthOrderBrentSolver<T> solver =
+                        new FieldBracketingNthOrderBrentSolver<T>(relativeAccuracy,
+                                                                  absoluteAccuracy,
+                                                                  functionAccuracy,
+                                                                  MAX_ORDER);
+        final T r = solver.solve(MAX_EVALUATIONS, l2Equation,
+                                 searchInterval[0], searchInterval[1],
+                                 AllowedSolution.ANY_SIDE);
+
+        // L2 point is built
+        return new FieldVector3D<T>(r.divide(bigR), primaryToSecondary);
+
+    }
+
+    // Methods added temporarily until next Hipparchus release:
+    /**
+     * This method attempts to find two values a and b satisfying <ul>
+     * <li> {@code lowerBound <= a < initial < b <= upperBound} </li>
+     * <li> {@code f(a) * f(b) <= 0} </li>
+     * </ul>
+     * If {@code f} is continuous on {@code [a,b]}, this means that {@code a}
+     * and {@code b} bracket a root of {@code f}.
+     * <p>
+     * The algorithm checks the sign of \( f(l_k) \) and \( f(u_k) \) for increasing
+     * values of k, where \( l_k = max(lower, initial - \delta_k) \),
+     * \( u_k = min(upper, initial + \delta_k) \), using recurrence
+     * \( \delta_{k+1} = r \delta_k + q, \delta_0 = 0\) and starting search with \( k=1 \).
+     * The algorithm stops when one of the following happens: <ul>
+     * <li> at least one positive and one negative value have been found --  success!</li>
+     * <li> both endpoints have reached their respective limits -- MathIllegalArgumentException </li>
+     * <li> {@code maximumIterations} iterations elapse -- MathIllegalArgumentException </li></ul>
+     * <p>
+     * If different signs are found at first iteration ({@code k=1}), then the returned
+     * interval will be \( [a, b] = [l_1, u_1] \). If different signs are found at a later
+     * iteration {@code k>1}, then the returned interval will be either
+     * \( [a, b] = [l_{k+1}, l_{k}] \) or \( [a, b] = [u_{k}, u_{k+1}] \). A root solver called
+     * with these parameters will therefore start with the smallest bracketing interval known
+     * at this step.
+     * </p>
+     * <p>
+     * Interval expansion rate is tuned by changing the recurrence parameters {@code r} and
+     * {@code q}. When the multiplicative factor {@code r} is set to 1, the sequence is a
+     * simple arithmetic sequence with linear increase. When the multiplicative factor {@code r}
+     * is larger than 1, the sequence has an asymptotically exponential rate. Note than the
+     * additive parameter {@code q} should never be set to zero, otherwise the interval would
+     * degenerate to the single initial point for all values of {@code k}.
+     * </p>
+     * <p>
+     * As a rule of thumb, when the location of the root is expected to be approximately known
+     * within some error margin, {@code r} should be set to 1 and {@code q} should be set to the
+     * order of magnitude of the error margin. When the location of the root is really a wild guess,
+     * then {@code r} should be set to a value larger than 1 (typically 2 to double the interval
+     * length at each iteration) and {@code q} should be set according to half the initial
+     * search interval length.
+     * </p>
+     * <p>
+     * As an example, if we consider the trivial function {@code f(x) = 1 - x} and use
+     * {@code initial = 4}, {@code r = 1}, {@code q = 2}, the algorithm will compute
+     * {@code f(4-2) = f(2) = -1} and {@code f(4+2) = f(6) = -5} for {@code k = 1}, then
+     * {@code f(4-4) = f(0) = +1} and {@code f(4+4) = f(8) = -7} for {@code k = 2}. Then it will
+     * return the interval {@code [0, 2]} as the smallest one known to be bracketing the root.
+     * As shown by this example, the initial value (here {@code 4}) may lie outside of the returned
+     * bracketing interval.
+     * </p>
+     * @param <T> type of the field elements
+     * @param function function to check
+     * @param initial Initial midpoint of interval being expanded to
+     * bracket a root.
+     * @param lowerBound Lower bound (a is never lower than this value).
+     * @param upperBound Upper bound (b never is greater than this
+     * value).
+     * @param q additive offset used to compute bounds sequence (must be strictly positive)
+     * @param r multiplicative factor used to compute bounds sequence
+     * @param maximumIterations Maximum number of iterations to perform
+     * @return a two element array holding the bracketing values.
+     * @exception MathIllegalArgumentException if function cannot be bracketed in the search interval
+     * @since 1.2
+     */
+    private static <T extends RealFieldElement<T>> T[] bracket(final RealFieldUnivariateFunction<T> function,
+                                                              final T initial,
+                                                              final T lowerBound, final T upperBound,
+                                                              final T q, final T r,
+                                                              final int maximumIterations)
+        throws MathIllegalArgumentException {
+
+        MathUtils.checkNotNull(function, LocalizedCoreFormats.FUNCTION);
+
+        if (q.getReal() <= 0)  {
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL_BOUND_EXCLUDED,
+                                                   q, 0);
+        }
+        if (maximumIterations <= 0)  {
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.INVALID_MAX_ITERATIONS, maximumIterations);
+        }
+        verifySequence(lowerBound.getReal(), initial.getReal(), upperBound.getReal());
+
+        // initialize the recurrence
+        T a     = initial;
+        T b     = initial;
+        T fa    = null;
+        T fb    = null;
+        T delta = initial.getField().getZero();
+
+        for (int numIterations = 0;
+             (numIterations < maximumIterations) &&
+                (a.getReal() > lowerBound.getReal() || b.getReal() < upperBound.getReal());
+             ++numIterations) {
+
+            final T previousA  = a;
+            final T previousFa = fa;
+            final T previousB  = b;
+            final T previousFb = fb;
+
+            delta = r.multiply(delta).add(q);
+            a     = max(initial.subtract(delta), lowerBound);
+            b     = min(initial.add(delta), upperBound);
+            fa    = function.value(a);
+            fb    = function.value(b);
+
+            if (numIterations == 0) {
+                // at first iteration, we don't have a previous interval
+                // we simply compare both sides of the initial interval
+                if (fa.multiply(fb).getReal() <= 0) {
+                    // the first interval already brackets a root
+                    final T[] interval = MathArrays.buildArray(initial.getField(), 2);
+                    interval[0] = a;
+                    interval[1] = b;
+                    return interval;
+                }
+            } else {
+                // we have a previous interval with constant sign and expand it,
+                // we expect sign changes to occur at boundaries
+                if (fa.multiply(previousFa).getReal() <= 0) {
+                    // sign change detected at near lower bound
+                    final T[] interval = MathArrays.buildArray(initial.getField(), 2);
+                    interval[0] = a;
+                    interval[1] = previousA;
+                    return interval;
+                } else if (fb.multiply(previousFb).getReal() <= 0) {
+                    // sign change detected at near upper bound
+                    final T[] interval = MathArrays.buildArray(initial.getField(), 2);
+                    interval[0] = previousB;
+                    interval[1] = b;
+                    return interval;
+                }
+            }
+
+        }
+
+        // no bracketing found
+        throw new MathIllegalArgumentException(LocalizedCoreFormats.NOT_BRACKETING_INTERVAL,
+                                               a.getReal(), b.getReal(), fa.getReal(), fb.getReal());
+
+    }
+
+
+    /** Compute the maximum of two values.
+     * @param <T> type of the field elements
+     * @param a first value
+     * @param b second value
+     * @return b if a is lesser or equal to b, a otherwise
+     * @since 1.2
+     */
+    private static <T extends RealFieldElement<T>> T max(final T a, final T b) {
+        return (a.subtract(b).getReal() <= 0) ? b : a;
+    }
+
+    /** Compute the minimum of two values.
+     * @param <T> type of the field elements
+     * @param a first value
+     * @param b second value
+     * @return a if a is lesser or equal to b, b otherwise
+     * @since 1.2
+     */
+    private static <T extends RealFieldElement<T>> T min(final T a, final T b) {
+        return (a.subtract(b).getReal() <= 0) ? a : b;
+    }
+
+    /**
+     * Check that the endpoints specify an interval.
+     *
+     * @param lower Lower endpoint.
+     * @param upper Upper endpoint.
+     * @throws MathIllegalArgumentException if {@code lower >= upper}.
+     */
+    public static void verifyInterval(final double lower,
+                                      final double upper)
+        throws MathIllegalArgumentException {
+        if (lower >= upper) {
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.ENDPOINTS_NOT_AN_INTERVAL,
+                                                lower, upper, false);
+        }
+    }
+
+    /**
+     * Check that {@code lower < initial < upper}.
+     *
+     * @param lower Lower endpoint.
+     * @param initial Initial value.
+     * @param upper Upper endpoint.
+     * @throws MathIllegalArgumentException if {@code lower >= initial} or
+     * {@code initial >= upper}.
+     */
+    public static void verifySequence(final double lower,
+                                      final double initial,
+                                      final double upper)
+        throws MathIllegalArgumentException {
+        verifyInterval(lower, initial);
+        verifyInterval(initial, upper);
     }
 
 }
