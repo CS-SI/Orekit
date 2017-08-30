@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+	<action dev="maxime" type="fix">
+		Modified the way the propagation parameter drivers are mapped in the
+		Jacobian matrix in class "Model".
+        Added a test for multi-sat orbit determination with estimated
+		propagation parameters (µ and SRP coefficients).
+        Fixes issue #354.
+     </action>
      <action dev="luc" type="fix">
         Added a convenience method to retrieve covariance matrix in
         physical units in orbit determination.
