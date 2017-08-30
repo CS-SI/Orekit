@@ -124,7 +124,7 @@ public class L1TransformProvider implements TransformProvider {
 
         // Approximate position of L1 point, valid when m2 << m1
         final double bigR  = primaryToSecondary.getNorm();
-        final double baseR = bigR * (FastMath.cbrt(massRatio / 3) - 1);
+        final double baseR = bigR * (1 - FastMath.cbrt(massRatio / 3));
 
         // Accurate position of L1 point, by solving the L1 equilibrium equation
         final UnivariateFunction l1Equation = r -> {
@@ -132,11 +132,11 @@ public class L1TransformProvider implements TransformProvider {
             final double lhs         = 1.0 / ( r * r );
             final double rhs1        = massRatio / (bigrminusR * bigrminusR);
             final double rhs2        = 1.0 / (bigR * bigR);
-            final double rhs3        = (1 + massRatio) * bigrminusR * rhs2;
+            final double rhs3        = (1 + massRatio) * bigrminusR * rhs2 / bigR;
             return lhs - (rhs1 + rhs2 - rhs3);
         };
         final double[] searchInterval = UnivariateSolverUtils.bracket(l1Equation,
-                                                                      baseR, 0, 2 * bigR,
+                                                                      baseR, 0, bigR,
                                                                       0.01 * bigR, 1, MAX_EVALUATIONS);
         final BracketingNthOrderBrentSolver solver =
                         new BracketingNthOrderBrentSolver(RELATIVE_ACCURACY,
@@ -167,7 +167,7 @@ public class L1TransformProvider implements TransformProvider {
 
         // Approximate position of L1 point, valid when m2 << m1
         final T bigR  = primaryToSecondary.getNorm();
-        final T baseR = bigR.multiply(FastMath.cbrt(massRatio / 3) - 1);
+        final T baseR = bigR.multiply(1 - FastMath.cbrt(massRatio / 3));
 
         // Accurate position of L1 point, by solving the L1 equilibrium equation
         final RealFieldUnivariateFunction<T> l1Equation = r -> {
@@ -175,7 +175,7 @@ public class L1TransformProvider implements TransformProvider {
             final T lhs        = r.multiply(r).reciprocal();
             final T rhs1       = bigrminusR.multiply(bigrminusR).reciprocal().multiply(massRatio);
             final T rhs2       = bigR.multiply(bigR).reciprocal();
-            final T rhs3       = bigrminusR.multiply(rhs2).multiply(1 + massRatio);
+            final T rhs3       = bigrminusR.multiply(rhs2).multiply(1 + massRatio).divide(bigR);
             return lhs.subtract(rhs1.add(rhs2).add(rhs3));
         };
         final T zero             = primaryToSecondary.getX().getField().getZero();
