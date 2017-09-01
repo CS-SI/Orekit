@@ -1,0 +1,15 @@
+language: java
+
+
+jdk:
+  - oraclejdk8
+
+#before_install: 
+#  - git clone -b MATH_3_X https://github.com/apache/commons-math.git ~/builds/MATH_3_X 
+#  - pushd ~/builds/MATH_3_X 
+#  - mvn install  
+#  - popd 
+
+#matrix:
+#    allow_failures:
+#        - jdk: openjdk6
