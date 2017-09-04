@@ -313,7 +313,7 @@ public class PoissonSeriesParser {
     /** Set fields patterns.
      * @param array fields pattern array to modify
      * @param first first column to set (counting from 1), do nothing if non-positive
-     * @param count number of colums to set
+     * @param count number of columns to set
      * @param pattern pattern to use
      */
     private static void setPatterns(final String[] array, final int first, final int count,
@@ -343,7 +343,7 @@ public class PoissonSeriesParser {
      * <p>
      * At most one column may be optional.
      * </p>
-     * @param column column of the GMST tide multiplier (counting from 1)
+     * @param column optional column (counting from 1)
      * @return a new parser, with updated columns settings
      */
     public PoissonSeriesParser withOptionalColumn(final int column) {
@@ -384,7 +384,7 @@ public class PoissonSeriesParser {
 
     }
 
-    /** Set up columns for Doodson multiplers and Doodson number.
+    /** Set up columns for Doodson multipliers and Doodson number.
      * @param firstMultiplierColumn column of the first Doodson multiplier which
      * corresponds to τ (counting from 1)
      * @param numberColumn column of the Doodson number (counting from 1)
@@ -576,7 +576,7 @@ public class PoissonSeriesParser {
                     final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 5));
                     final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
 
-                    // get the tide multipler
+                    // get the tide multiplier
                     int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
 
                     // get the Delaunay multipliers
@@ -607,7 +607,7 @@ public class PoissonSeriesParser {
                         cD      = -cD;
                         cOmega  = -cOmega;
 
-                        // check Doodson number, Doodson multiplers and Delaunay multipliers consistency
+                        // check Doodson number, Doodson multipliers and Delaunay multipliers consistency
                         if (nDoodson != doodsonToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs) ||
                             nDoodson != delaunayToDoodsonNumber(cGamma, cL, cLPrime, cF, cD, cOmega)) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
