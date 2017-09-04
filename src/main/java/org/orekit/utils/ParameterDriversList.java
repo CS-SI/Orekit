@@ -140,6 +140,18 @@ public class ParameterDriversList {
     public List<DelegatingDriver> getDrivers() {
         return Collections.unmodifiableList(delegating);
     }
+    
+    /**
+     * 
+     */
+    public DelegatingDriver getDriver(final String driverName) {
+        for (DelegatingDriver driver : delegating) {
+            if (driverName.equals(driver.getName())) {
+                return driver;
+            }
+        }
+        return null;
+    }
 
     /** Specialized driver delegating to several other managing
      * the same parameter name.

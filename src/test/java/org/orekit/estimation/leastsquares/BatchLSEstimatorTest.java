@@ -457,28 +457,16 @@ public class BatchLSEstimatorTest {
         final boolean caEstimated1 = true;
         final boolean crEstimated2 = true;
         final boolean caEstimated2 = false;
-        
+
+        // Context for both satellites
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Builder sat 1
-        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
-//        final NumericalPropagatorBuilder propagatorBuilder1 =
-//                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-//                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
         final NumericalPropagatorBuilder propagatorBuilder1 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-                                              1.0e-6, 60.0, 1.0, Force.SOLAR_RADIATION_PRESSURE);
+                                              1.0e-6, 60.0, 1.0, Force.SOLAR_RADIATION_PRESSURE);        
         
-//        // Find the value of µ and add a central Newtonian attraction model
-//        double mu = 0.;
-//        for (DelegatingDriver driver:propagatorBuilder1.getPropagationParametersDrivers().getDrivers()) {
-//            if (driver.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
-//                mu = driver.getValue();
-//            }
-//        }
-//        propagatorBuilder1.addForceModel(new NewtonianAttraction(mu));
-        
-        
-        // Adding selection of parameters
+        // Add the selection of parameters
         String satName = "sat 1";
         for (DelegatingDriver driver:propagatorBuilder1.getPropagationParametersDrivers().getDrivers()) {
             if (driver.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
@@ -499,13 +487,8 @@ public class BatchLSEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context2.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 1.0, Force.SOLAR_RADIATION_PRESSURE);
-//        // Add a central Newtonian attraction model
-//        propagatorBuilder2.addForceModel(new NewtonianAttraction(mu));
-//        final NumericalPropagatorBuilder propagatorBuilder2 =
-//                        context2.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
-//                                              1.0e-6, 60.0, 1.0, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
-        // Adding selection of parameters
+        // Add the selection of parameters
         satName = "sat 2";
         for (ParameterDriver driver:propagatorBuilder2.getPropagationParametersDrivers().getDrivers()) {
             if (driver.getName().equals("central attraction coefficient")) {
@@ -540,7 +523,7 @@ public class BatchLSEstimatorTest {
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris),
                                                                1.0, 3.0, 300.0);
 
-        // create perfect range measurements for first satellite
+        // Create perfect range measurements for first satellite
         propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                            propagatorBuilder1);
         final List<ObservedMeasurement<?>> r1 =
@@ -619,6 +602,8 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
+        
+        // Do the estimation and check the results
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 3.1e-06,
                                      0.0, 9.8e-06,

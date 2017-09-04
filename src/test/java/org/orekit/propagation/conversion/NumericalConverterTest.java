@@ -85,7 +85,7 @@ public class NumericalConverterTest {
         }
     }
 
-    @Test
+   @Test
     public void testConversionWithoutParameters() throws OrekitException, IOException, ParseException {
         checkFit(orbit, 6000, 300, 1.0e-3, 0.855);
     }

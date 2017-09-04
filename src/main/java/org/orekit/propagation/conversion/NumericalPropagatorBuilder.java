@@ -23,6 +23,7 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
@@ -31,6 +32,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
@@ -122,7 +125,29 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public void addForceModel(final ForceModel model)
         throws OrekitException {
-        forceModels.add(model);
+        if (model instanceof NewtonianAttraction) {
+            // we want to add the central attraction force model
+
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, model);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(model);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, model);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(model);
+            }
+        }
+
+        // Add the force model's parameter drivers to the list of propagation drivers in the builder
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
@@ -139,9 +164,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         // Check that the builder as an attraction force model
         // If not, add a simple central one
-        if (!this.hasNewtonianAttraction()) {
-            addForceModel(new NewtonianAttraction(this.getMu()));
-        }
+//        if (!hasNewtonianAttraction()) {
+//            addForceModel(new NewtonianAttraction(getMu()));
+//        }
+        
 
         final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orbit, getOrbitType()));
         propagator.setOrbitType(getOrbitType());
@@ -151,10 +177,37 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+        
+//        //debug
+//        final DelegatingDriver muDriver = getPropagationParametersDrivers().getDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+//        if (!(muDriver == null) && muDriver.isSelected()) {
+//            propagator.setMu(getMu());
+//            
+//            final List<ForceModel> forceModels  = propagator.getAllForceModels();
+//            forceModels.get(forceModels.size()-1).getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setSelected(true);
+//        }
+//        
+//        //debug
 
         propagator.resetInitialState(state);
 
+        return synchronizeMuDriverSelection(propagator);
+    }
+    
+    /**
+     * @throws OrekitException 
+     * 
+     */
+    public NumericalPropagator synchronizeMuDriverSelection(final NumericalPropagator propagator)
+                    throws OrekitException {
+
+        for (DelegatingDriver delegating : getPropagationParametersDrivers().getDrivers()) {
+            if (delegating.getName().equals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT) &&
+                delegating.isSelected()) {
+                final List<ForceModel> propagatorForceModels  = propagator.getAllForceModels();
+                propagatorForceModels.get(propagatorForceModels.size() - 1).getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setSelected(true);
+            }
+        }
         return propagator;
     }
-
 }
