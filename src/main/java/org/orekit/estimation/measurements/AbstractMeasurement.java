@@ -314,7 +314,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * {@code firstDerivative + 1} and {@code firstDerivative + 2}.
      * The velocity will correspond to variables {@code firstDerivative + 3},
      * {@code firstDerivative + 4} and {@code firstDerivative + 5}.
-     * The acceleration will corredpon to constants.
+     * The acceleration will correspond to constants.
      * </p>
      * @param state state of the satellite considered
      * @param firstDerivative index of the first derivative
