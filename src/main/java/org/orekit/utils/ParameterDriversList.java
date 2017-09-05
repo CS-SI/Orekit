@@ -140,18 +140,6 @@ public class ParameterDriversList {
     public List<DelegatingDriver> getDrivers() {
         return Collections.unmodifiableList(delegating);
     }
-    
-    /**
-     * 
-     */
-    public DelegatingDriver getDriver(final String driverName) {
-        for (DelegatingDriver driver : delegating) {
-            if (driverName.equals(driver.getName())) {
-                return driver;
-            }
-        }
-        return null;
-    }
 
     /** Specialized driver delegating to several other managing
      * the same parameter name.
@@ -228,6 +216,10 @@ public class ParameterDriversList {
             /** Depth of the current update chain. */
             private int depth;
 
+            //debug
+            int count;
+            //debug
+
             /** {@inheritDoc} */
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver)
@@ -268,6 +260,10 @@ public class ParameterDriversList {
              * @param updater updater to use
              */
             private void updateAll(final ParameterDriver driver, final Updater updater) {
+
+                //debug
+                System.out.println(count++);
+                //debug
 
                 final boolean firstCall = depth++ == 0;
                 if (firstCall) {

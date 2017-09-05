@@ -23,7 +23,6 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
@@ -33,7 +32,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
@@ -164,10 +162,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         // Check that the builder as an attraction force model
         // If not, add a simple central one
-//        if (!hasNewtonianAttraction()) {
-//            addForceModel(new NewtonianAttraction(getMu()));
-//        }
-        
+        if (!hasNewtonianAttraction()) {
+            addForceModel(new NewtonianAttraction(getMu()));
+        }
+
 
         final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orbit, getOrbitType()));
         propagator.setOrbitType(getOrbitType());
@@ -177,28 +175,21 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
-        
-//        //debug
-//        final DelegatingDriver muDriver = getPropagationParametersDrivers().getDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
-//        if (!(muDriver == null) && muDriver.isSelected()) {
-//            propagator.setMu(getMu());
-//            
-//            final List<ForceModel> forceModels  = propagator.getAllForceModels();
-//            forceModels.get(forceModels.size()-1).getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setSelected(true);
-//        }
-//        
-//        //debug
 
         propagator.resetInitialState(state);
 
-        return synchronizeMuDriverSelection(propagator);
+        //return synchroniseMuDriverSelection(propagator);
+        //debug
+        return propagator;
+        //debug
     }
-    
-    /**
-     * @throws OrekitException 
-     * 
+
+    /** Synchronise the selection of the driver for µ between the builder and a created propagator.
+     * @param propagator to synchronise
+     * @return synchronised propagator
+     * @throws OrekitException
      */
-    public NumericalPropagator synchronizeMuDriverSelection(final NumericalPropagator propagator)
+    public NumericalPropagator synchroniseMuDriverSelection(final NumericalPropagator propagator)
                     throws OrekitException {
 
         for (DelegatingDriver delegating : getPropagationParametersDrivers().getDrivers()) {
