@@ -548,7 +548,7 @@ public class BatchLSEstimatorTest {
         for (final ObservedMeasurement<?> range : r1) {
             estimator.addMeasurement(range);
         }
-        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -609,11 +609,11 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 6.3e-06,
-                                     0.0, 2.0e-05,
-                                     0.0, 3.3e-07,
-                                     0.0, 1.4e-10);
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                     0.0, 3.5e-06,
+                                     0.0, 6.7e-06,
+                                     0.0, 1.3e-07,
+                                     0.0, 5.3e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -628,11 +628,11 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            5.8e-6);
+                            2.0e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
-                            2.0e-9);
+                            3.3e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
