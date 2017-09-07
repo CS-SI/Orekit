@@ -122,7 +122,7 @@ public class ParameterDriver {
         this.referenceDate  = null;
         this.value          = referenceValue;
         this.selected       = false;
-        this.observers      = new ArrayList<ParameterObserver>();
+        this.observers      = new ArrayList<>();
     }
 
 
@@ -147,7 +147,7 @@ public class ParameterDriver {
      * @since 9.1
      */
     public void removeObserver(final ParameterObserver observer) {
-        for (final Iterator<ParameterObserver> iterator = observers.iterator() ; iterator.hasNext();) {
+        for (final Iterator<ParameterObserver> iterator = observers.iterator(); iterator.hasNext();) {
             if (iterator.next() == observer) {
                 iterator.remove();
                 return;
