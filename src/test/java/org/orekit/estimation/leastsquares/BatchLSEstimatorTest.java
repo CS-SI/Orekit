@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Assert;
@@ -90,6 +91,14 @@ public class BatchLSEstimatorTest {
                                      0.0, 1.1e-7,
                                      0.0, 1.4e-8,
                                      0.0, 6.3e-12);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -541,7 +550,7 @@ public class BatchLSEstimatorTest {
         for (final ObservedMeasurement<?> range : r1) {
             estimator.addMeasurement(range);
         }
-        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -623,7 +632,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            5.8e-6);
+                            2.0e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),

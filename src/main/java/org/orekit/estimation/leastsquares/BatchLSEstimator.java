@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
@@ -447,10 +449,64 @@ public class BatchLSEstimator {
      * The {@link Optimum} object contains detailed elements (covariance matrix, estimated
      * parameters standard deviation, weighted Jacobian, RMS, χ², residuals and more).
      * </p>
+     * <p>
+     * Beware that the returned object is the raw view from the underlying mathematical
+     * library. At this ral level, parameters have {@link ParameterDriver#getNormalizedValue()
+     * normalized values} whereas the space flight parameters have {@link ParameterDriver#getValue()
+     * physical values} with their units. So there are {@link ParameterDriver#getScale() scaling
+     * factors} to apply when using these elements.
+     * </p>
      * @return optimum found after last call to {@link #estimate()}
      */
     public Optimum getOptimum() {
         return optimum;
+    }
+
+    /** Get the covariances matrix in space flight dynamics physical units.
+     * <p>
+     * This method retrieve the {@link
+     * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation#getCovariances(double)
+     * covariances} from the [@link {@link #getOptimum() optimum} and applies the scaling factors
+     * to it in order to convert it from raw normalized values back to physical values.
+     * </p>
+     * @param threshold threshold to identify matrix singularity
+     * @return covariances matrix in space flight dynamics physical units
+     * @exception OrekitException if the covariance matrix cannot be computed (singular problem).
+     * @since 9.1
+     */
+    public RealMatrix getPhysicalCovariances(final double threshold)
+        throws OrekitException {
+        final RealMatrix covariances;
+        try {
+            // get the normalized matrix
+            covariances = optimum.getCovariances(threshold).copy();
+        } catch (MathIllegalArgumentException miae) {
+            // the problem is singular
+            throw new OrekitException(miae);
+        }
+
+        // retrieve the scaling factors
+        final double[] scale = new double[covariances.getRowDimension()];
+        int index = 0;
+        for (final ParameterDriver driver : getOrbitalParametersDrivers(true).getDrivers()) {
+            scale[index++] = driver.getScale();
+        }
+        for (final ParameterDriver driver : getPropagatorParametersDrivers(true).getDrivers()) {
+            scale[index++] = driver.getScale();
+        }
+        for (final ParameterDriver driver : getMeasurementsParametersDrivers(true).getDrivers()) {
+            scale[index++] = driver.getScale();
+        }
+
+        // unnormalize the matrix, to retrieve physical covariances
+        for (int i = 0; i < covariances.getRowDimension(); ++i) {
+            for (int j = 0; j < covariances.getColumnDimension(); ++j) {
+                covariances.setEntry(i, j, scale[i] * scale[j] * covariances.getEntry(i, j));
+            }
+        }
+
+        return covariances;
+
     }
 
     /** Get the number of iterations used for last estimation.

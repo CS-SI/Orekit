@@ -28,6 +28,7 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
@@ -134,6 +135,17 @@ public class GroundStationTest {
         Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  6.5e-15);
         Assert.assertEquals(reference.getLongitude(), result.getLongitude(), 1.5e-14);
         Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  1.6e-7);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(9,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(9,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(9,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(9,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
+        Assert.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
+        Assert.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
+
     }
 
     @Test

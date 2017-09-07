@@ -22,6 +22,34 @@
   <body>
     <release version="9.1" date="TBD" description="TBD">
      <action dev="luc" type="fix">
+        Avoid intermixed ChangeForwarder instances calling each other.
+        Fixes issue #360.
+     </action>
+	<action dev="maxime" type="fix">
+		Modified the way the propagation parameter drivers are mapped in the
+		Jacobian matrix in class "Model".
+        Added a test for multi-sat orbit determination with estimated
+		propagation parameters (µ and SRP coefficients).
+        Fixes issue #354.
+     </action>
+     <action dev="luc" type="fix">
+        Added a convenience method to retrieve covariance matrix in
+        physical units in orbit determination.
+        Fixes issue #353.
+     </action>
+     <action dev="luc" type="fix" due-to="Rongwang Li">
+        Fixed two errors in Marini-Murray model implementation.
+        Fixes issue #352.
+     </action>
+     <action dev="luc" type="fix">
+        Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
+        Fixes issue #350.
+     </action>
+     <action dev="luc" type="fix">
+        Copy additional states through impulse maneuvers.
+        Fixes issue #349.
+     </action>
+     <action dev="luc" type="fix">
         Removed unused construction parameters in ShiftingTransformProvider
         and InterpolatingTransformProvider.
         Fixes issue #356.
