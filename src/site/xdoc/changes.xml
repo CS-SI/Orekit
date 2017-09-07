@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+     <action dev="luc" type="fix">
+        Avoid intermixed ChangeForwarder instances calling each other.
+        Fixes issue #360.
+     </action>
 	<action dev="maxime" type="fix">
 		Modified the way the propagation parameter drivers are mapped in the
 		Jacobian matrix in class "Model".
