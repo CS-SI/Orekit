@@ -16,8 +16,8 @@
  */
 package org.orekit.utils;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -89,7 +89,7 @@ public class ParameterDriver {
     private boolean selected;
 
     /** Observers observing this driver. */
-    private final List<WeakReference<ParameterObserver>> observers;
+    private final List<ParameterObserver> observers;
 
     /** Simple constructor.
      * <p>
@@ -122,7 +122,7 @@ public class ParameterDriver {
         this.referenceDate  = null;
         this.value          = referenceValue;
         this.selected       = false;
-        this.observers      = new ArrayList<>();
+        this.observers      = new ArrayList<ParameterObserver>();
     }
 
 
@@ -132,18 +132,13 @@ public class ParameterDriver {
      * valueChanged} method is called once automatically when the
      * observer is added, and then called at each value change.
      * </p>
-     * <p>
-     * Observers are stored through {@link WeakReference weak references} so
-     * they are automatically removed when they can be reached only through
-     * the parameter driver.
-     * </p>
      * @param observer observer to add
      * @exception OrekitException if the observer triggers one
      * while being updated
      */
     public void addObserver(final ParameterObserver observer)
         throws OrekitException {
-        observers.add(new WeakReference<>(observer));
+        observers.add(observer);
         observer.valueChanged(getValue(), this);
     }
 
@@ -152,30 +147,20 @@ public class ParameterDriver {
      * @since 9.1
      */
     public void removeObserver(final ParameterObserver observer) {
-        for (final Iterator<WeakReference<ParameterObserver>> i = observers.iterator() ; i.hasNext();) {
-            if (i.next().get() == observer) {
-                i.remove();
+        for (final Iterator<ParameterObserver> iterator = observers.iterator() ; iterator.hasNext();) {
+            if (iterator.next() == observer) {
+                iterator.remove();
                 return;
             }
         }
     }
 
     /** Get the observers for this driver.
-     * @return a list of the observers for this driver
+     * @return an unmodifiable view of the observers for this driver
      * @since 9.1
      */
     public List<ParameterObserver> getObservers() {
-        final List<ParameterObserver> list = new ArrayList<>(observers.size());
-        for (final Iterator<WeakReference<ParameterObserver>> i = observers.iterator(); i.hasNext();) {
-            final ParameterObserver observer = i.next().get();
-            if (observer == null) {
-                // the observer was only weakly reachable and has been cleared by the the JVM
-                i.remove();
-            } else {
-                list.add(observer);
-            }
-        }
-        return list;
+        return Collections.unmodifiableList(observers);
     }
 
     /** Change the name of this parameter driver.
@@ -184,7 +169,7 @@ public class ParameterDriver {
     public void setName(final String name) {
         final String previousName = this.name;
         this.name = name;
-        for (final ParameterObserver observer : getObservers()) {
+        for (final ParameterObserver observer : observers) {
             observer.nameChanged(previousName, this);
         }
     }
@@ -264,7 +249,7 @@ public class ParameterDriver {
     public void setReferenceDate(final AbsoluteDate newReferenceDate) {
         final AbsoluteDate previousReferenceDate = getReferenceDate();
         referenceDate = newReferenceDate;
-        for (final ParameterObserver observer : getObservers()) {
+        for (final ParameterObserver observer : observers) {
             observer.referenceDateChanged(previousReferenceDate, this);
         }
     }
@@ -289,7 +274,7 @@ public class ParameterDriver {
     public void setValue(final double newValue) throws OrekitException {
         final double previousValue = getValue();
         value = FastMath.max(minValue, FastMath.min(maxValue, newValue));
-        for (final ParameterObserver observer : getObservers()) {
+        for (final ParameterObserver observer : observers) {
             observer.valueChanged(previousValue, this);
         }
     }
@@ -305,7 +290,7 @@ public class ParameterDriver {
     public void setSelected(final boolean selected) {
         final boolean previousSelection = isSelected();
         this.selected = selected;
-        for (final ParameterObserver observer : getObservers()) {
+        for (final ParameterObserver observer : observers) {
             observer.selectionChanged(previousSelection, this);
         }
     }
