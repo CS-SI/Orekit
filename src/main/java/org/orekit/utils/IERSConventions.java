@@ -682,6 +682,22 @@ public enum IERSConventions {
             };
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public double[] getNominalTidalDisplacementLoveAndShida() {
+
+            //  // elastic Earth values
+            //  return new double[] {
+            //      0.6026, -0.0006, 0.0831, 0.0002, 0.292, 0.015
+            //  };
+
+            // anelastic Earth values
+            return new double[] {
+                0.6078, -0.0006, 0.0847, 0.0002, 0.292, 0.015
+            };
+
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -1404,6 +1420,14 @@ public enum IERSConventions {
             };
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public double[] getNominalTidalDisplacementLoveAndShida() {
+            return new double[] {
+                0.6078, -0.0006, 0.0847, 0.0002, 0.292, 0.015
+            };
+        }
+
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -1803,6 +1827,14 @@ public enum IERSConventions {
 
             };
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getNominalTidalDisplacementLoveAndShida() {
+            return new double[] {
+                0.6078, -0.0006, 0.0847, 0.0002, 0.292, 0.015
+            };
         }
 
         /** {@inheritDoc} */
@@ -2251,6 +2283,12 @@ public enum IERSConventions {
      */
     public abstract TimeVectorFunction getOceanPoleTide(EOPHistory eopHistory)
         throws OrekitException;
+
+    /** Get the nominal values of the displacement Love and Shida numbers.
+     * @return an array containing h⁽⁰⁾, h⁽²⁾, l⁽⁰⁾, l⁽²⁾, h₃, l₃
+     * @since 9.1
+     */
+    public abstract double[] getNominalTidalDisplacementLoveAndShida();
 
     /** Interface for functions converting nutation corrections between
      * δΔψ/δΔε to δX/δY.
