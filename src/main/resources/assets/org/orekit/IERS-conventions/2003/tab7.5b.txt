@@ -1,4 +1,4 @@
-# Extract from IERS conventions 2010 (table 7.3b)
+# Extract from IERS conventions 2003 (table 7.5b)
 
 Table 7.3b: Corrections due to the frequency dependence of Love and Shida numbers for zonal tides.
 Units: mm. All terms with radial correction ≥ 0.05 mm are shown. Nominal values are
