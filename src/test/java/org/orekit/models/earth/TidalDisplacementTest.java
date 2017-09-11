@@ -49,6 +49,23 @@ public class TidalDisplacementTest {
     }
 
     @Test
+    public void testLoveShida() throws OrekitException {
+        for (final IERSConventions conventions : IERSConventions.values()) {
+            // as of Orekit 9.0, supported conventions are
+            // IERS conventions 1996, IERS conventions 2003 and IERS conventions 2010
+            // and they all share the same values for anelastic Earth model
+            double[] hl = conventions.getNominalTidalDisplacementLoveAndShida();
+            Assert.assertEquals(6, hl.length);
+            Assert.assertEquals( 0.6078, hl[0], 1.0e-15);
+            Assert.assertEquals(-0.0006, hl[1], 1.0e-15);
+            Assert.assertEquals( 0.292,  hl[2], 1.0e-15);
+            Assert.assertEquals( 0.0847, hl[3], 1.0e-15);
+            Assert.assertEquals( 0.0002, hl[4], 1.0e-15);
+            Assert.assertEquals( 0.015,  hl[5], 1.0e-15);
+        }
+    }
+
+    @Test
     public void testDehant() throws OrekitException {
 
         IERSConventions conventions = IERSConventions.IERS_2010;

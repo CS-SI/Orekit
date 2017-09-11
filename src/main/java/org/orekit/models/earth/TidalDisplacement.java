@@ -18,7 +18,6 @@ package org.orekit.models.earth;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -93,6 +92,7 @@ public class TidalDisplacement {
                              final IERSConventions conventions) {
 
         final double sunEarthMassRatio = sunEarthSystemMassRatio * (1 + 1 / earthMoonMassRatio);
+        final double moonEarthMassRatio = 1.0 / earthMoonMassRatio;
 
         this.earthFrame = earthFrame;
         this.sun        = sun;
@@ -102,7 +102,7 @@ public class TidalDisplacement {
         final double r4 = r2 * r2;
         this.ratio2S    = r4 * sunEarthMassRatio;
         this.ratio3S    = ratio2S * rEarth;
-        this.ratio2M    = r4  * earthMoonMassRatio;
+        this.ratio2M    = r4  * moonEarthMassRatio;
         this.ratio3M    = ratio2M * rEarth;
 
         // Get the nominal values for the Love and Shiva numbers
@@ -155,8 +155,9 @@ public class TidalDisplacement {
         final double x2Py2 = referencePoint.getX() * referencePoint.getX() +
                              referencePoint.getY() * referencePoint.getY();
         final double z2    = referencePoint.getZ() * referencePoint.getZ();
-        final double r     = x2Py2 + z2;
-        final double f     = (z2 - 0.5 * x2Py2) / r;
+        final double r2    = x2Py2 + z2;
+        final double f     = (z2 - 0.5 * x2Py2) / r2;
+        final double r     = FastMath.sqrt(r2);
 
         // geocenter to tide generating body
         final Vector3D s    = sun.getPVCoordinates(date, earthFrame).getPosition();
@@ -186,7 +187,7 @@ public class TidalDisplacement {
         final double s2r = fs2 * h2 * 0.5 * (3 * sDot2 - 1) - s2R * sDot;
         final double fm2 = ratio2M / mNorm3;
         final double m2R = fm2 * 3 * l2 * mDot;
-        final double m2r = fm2 * h2 * 0.5 * (3 * mDot2 - 1) - m2R * sDot;
+        final double m2r = fm2 * h2 * 0.5 * (3 * mDot2 - 1) - m2R * mDot;
 
         // in-phase, degree 3 (equation 7.6 in IERS conventions 2010)
         final double fs3 = ratio3S / sNorm4;
