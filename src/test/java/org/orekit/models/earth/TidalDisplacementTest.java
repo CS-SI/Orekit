@@ -55,13 +55,19 @@ public class TidalDisplacementTest {
             // IERS conventions 1996, IERS conventions 2003 and IERS conventions 2010
             // and they all share the same values for anelastic Earth model
             double[] hl = conventions.getNominalTidalDisplacementLoveAndShida();
-            Assert.assertEquals(6, hl.length);
-            Assert.assertEquals( 0.6078, hl[0], 1.0e-15);
-            Assert.assertEquals(-0.0006, hl[1], 1.0e-15);
-            Assert.assertEquals( 0.292,  hl[2], 1.0e-15);
-            Assert.assertEquals( 0.0847, hl[3], 1.0e-15);
-            Assert.assertEquals( 0.0002, hl[4], 1.0e-15);
-            Assert.assertEquals( 0.015,  hl[5], 1.0e-15);
+            Assert.assertEquals(12, hl.length);
+            Assert.assertEquals( 0.6078, hl[ 0], 1.0e-15); // h⁽⁰⁾
+            Assert.assertEquals(-0.0006, hl[ 1], 1.0e-15); // h⁽²⁾
+            Assert.assertEquals( 0.292,  hl[ 2], 1.0e-15); // h₃
+            Assert.assertEquals(-0.0025, hl[ 3], 1.0e-15); // hI diurnal
+            Assert.assertEquals(-0.0022, hl[ 4], 1.0e-15); // hI semi-diurnal
+            Assert.assertEquals( 0.0847, hl[ 5], 1.0e-15); // l⁽⁰⁾
+            Assert.assertEquals( 0.0012, hl[ 6], 1.0e-15); // l⁽¹⁾ diurnal
+            Assert.assertEquals( 0.0024, hl[ 7], 1.0e-15); // l⁽¹⁾ semi-diurnal
+            Assert.assertEquals( 0.0002, hl[ 8], 1.0e-15); // l⁽²⁾
+            Assert.assertEquals( 0.015,  hl[ 9], 1.0e-15); // l₃
+            Assert.assertEquals(-0.0007, hl[10], 1.0e-15); // lI diurnal
+            Assert.assertEquals(-0.0007, hl[11], 1.0e-15); // lI semi-diurnal
         }
     }
 

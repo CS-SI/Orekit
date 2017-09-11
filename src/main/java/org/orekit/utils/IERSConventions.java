@@ -688,13 +688,19 @@ public enum IERSConventions {
 
             //  // elastic Earth values
             //  return new double[] {
-            //      0.6026, -0.0006, 0.292, 0.0831, 0.0002, 0.015
+            //      // h⁽⁰⁾,                                  h⁽²⁾,   h₃,     hI diurnal, hI semi-diurnal,
+            //      0.6026,                                  -0.0006, 0.292, -0.0025, -0.0022,
+            //      // l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾,   l₃,     lI diurnal, lI semi-diurnal
+            //      0.0831,  0.0012,       0.0024,            0.0002, 0.015, -0.0007,    -0.0007
             //  };
 
             // anelastic Earth values
             return new double[] {
-                0.6078, -0.0006, 0.292, 0.0847, 0.0002, 0.015
-            };
+                // h⁽⁰⁾,                                  h⁽²⁾,   h₃,     hI diurnal, hI semi-diurnal,
+                0.6078,                                  -0.0006, 0.292, -0.0025,    -0.0022,
+                // l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾,   l₃,     lI diurnal, lI semi-diurnal
+                0.0847,  0.0012,       0.0024,            0.0002, 0.015, -0.0007,    -0.0007
+           };
 
         }
 
@@ -1424,7 +1430,10 @@ public enum IERSConventions {
         @Override
         public double[] getNominalTidalDisplacementLoveAndShida() {
             return new double[] {
-                0.6078, -0.0006, 0.292, 0.0847, 0.0002, 0.015
+                // h⁽⁰⁾,                                  h⁽²⁾,   h₃,     hI diurnal, hI semi-diurnal,
+                0.6078,                                  -0.0006, 0.292, -0.0025,    -0.0022,
+                // l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾,   l₃,     lI diurnal, lI semi-diurnal
+                0.0847,  0.0012,       0.0024,            0.0002, 0.015, -0.0007,    -0.0007
             };
         }
 
@@ -1833,7 +1842,10 @@ public enum IERSConventions {
         @Override
         public double[] getNominalTidalDisplacementLoveAndShida() {
             return new double[] {
-                0.6078, -0.0006, 0.292, 0.0847, 0.0002, 0.015
+                // h⁽⁰⁾,                                  h⁽²⁾,   h₃,     hI diurnal, hI semi-diurnal,
+                0.6078,                                  -0.0006, 0.292, -0.0025,    -0.0022,
+                // l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾,   l₃,     lI diurnal, lI semi-diurnal
+                0.0847,  0.0012,       0.0024,            0.0002, 0.015, -0.0007,    -0.0007
             };
         }
 
@@ -2285,7 +2297,8 @@ public enum IERSConventions {
         throws OrekitException;
 
     /** Get the nominal values of the displacement Love and Shida numbers.
-     * @return an array containing h⁽⁰⁾, h⁽²⁾, h₃, l⁽⁰⁾, l⁽²⁾, l₃
+     * @return an array containing h⁽⁰⁾, h⁽²⁾, h₃, hI diurnal, hI semi-diurnal,
+     * l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾, l₃, lI diurnal, lI semi-diurnal
      * @since 9.1
      */
     public abstract double[] getNominalTidalDisplacementLoveAndShida();
