@@ -19,8 +19,11 @@ package org.orekit.models.earth;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -97,6 +100,19 @@ public class TidalDisplacement {
     /** Displacement Love number lI semi-diurnal. */
     private final double lISemiDiurnal;
 
+    /** Function computing corrections in the frequency domain.
+     * <p>Both diurnal tides and long period tides are included.</p>
+     * <ul>
+     *  <li>f[0]: radial correction, longitude cosine part</li>
+     *  <li>f[1]: radial correction, longitude sine part</li>
+     *  <li>f[2]: North correction, longitude cosine part</li>
+     *  <li>f[3]: North correction, longitude sine part</li>
+     *  <li>f[4]: East correction, longitude cosine part</li>
+     *  <li>f[5]: East correction, longitude sine part</li>
+     * </ul>
+     */
+    private final TimeVectorFunction frequencyCorrection;
+
     /** Simple constructor.
      * @param earthFrame Earth frame
      * @param rEarth Earth equatorial radius (from gravity field model)
@@ -104,16 +120,21 @@ public class TidalDisplacement {
      * @param earthMoonMassRatio Earth/Moon mass ratio
      * @param sun Sun model
      * @param moon Moon model
-     * @param conventions IERS conventions for displacement model
+     * @param eopHistory EOP history (must be consistent with the selected Earth frame)
+     * @see org.orekit.frames.FramesFactory#getITRF(IERSConventions, boolean)
+     * @see org.orekit.frames.FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @exception OrekitException if fundamental nutation arguments cannot be loaded
      */
     public TidalDisplacement(final Frame earthFrame, final double rEarth,
                              final double sunEarthSystemMassRatio,
                              final double earthMoonMassRatio,
                              final PVCoordinatesProvider sun, final PVCoordinatesProvider moon,
-                             final IERSConventions conventions) {
+                             final EOPHistory eopHistory)
+        throws OrekitException {
 
         final double sunEarthMassRatio = sunEarthSystemMassRatio * (1 + 1 / earthMoonMassRatio);
         final double moonEarthMassRatio = 1.0 / earthMoonMassRatio;
+        final IERSConventions conventions = eopHistory.getConventions();
 
         this.earthFrame = earthFrame;
         this.sun        = sun;
@@ -141,6 +162,8 @@ public class TidalDisplacement {
         lIDiurnal        = hl[10];
         lISemiDiurnal    = hl[11];
 
+        this.frequencyCorrection = conventions.getTidalDisplacementFrequencyCorrection(TimeScalesFactory.getUT1(eopHistory));
+
     }
 
     /** Get the Earth frame.
@@ -159,18 +182,18 @@ public class TidalDisplacement {
     public Vector3D displacement(final AbsoluteDate date, final Vector3D referencePoint)
         throws OrekitException {
 
-        // preliminary computation (we hold everything in temporary structures so method is thread-safe)
-        final PointData pointData = new PointData(referencePoint);
-        final BodyData  sunData   = new BodyData(sun.getPVCoordinates(date, earthFrame).getPosition(),
-                                                 ratio2S, ratio3S, pointData);
-        final BodyData  moonData  = new BodyData(moon.getPVCoordinates(date, earthFrame).getPosition(),
-                                                 ratio2M, ratio3M, pointData);
+        // preliminary computation (we hold everything in local variables so method is thread-safe)
+        final PointData      pointData    = new PointData(referencePoint);
+        final Vector3D       sunPosition  = sun.getPVCoordinates(date, earthFrame).getPosition();
+        final BodyData       sunData      = new BodyData(sunPosition, ratio2S, ratio3S, pointData);
+        final Vector3D       moonPosition = moon.getPVCoordinates(date, earthFrame).getPosition();
+        final BodyData       moonData     = new BodyData(moonPosition, ratio2M, ratio3M, pointData);
 
         // step 1 in IERS procedure: corrections in the time domain
         final Vector3D displacement1 = timeDomainCorrection(pointData, sunData, moonData);
 
         // step 2 in IERS procedure: corrections in the frequency domain
-        final Vector3D displacement2 = frequencyDomainCorrection(pointData, sunData, moonData);
+        final Vector3D displacement2 = frequencyDomainCorrection(date, pointData);
 
         return displacement1.add(displacement2);
 
@@ -255,21 +278,20 @@ public class TidalDisplacement {
     }
 
     /** Compute the corrections in the frequency domain (step 2 in IERS procedure).
+     * @param date current date
      * @param pointData reference point data
-     * @param sunData Sun data
-     * @param moonData Moon data
      * @return displacement of the reference point
      */
-    private Vector3D frequencyDomainCorrection(final PointData pointData,
-                                               final BodyData sunData, final BodyData moonData) {
+    private Vector3D frequencyDomainCorrection(final AbsoluteDate date, final PointData pointData) {
 
-        // in phase, degree 2, diurnal tides (equation 7.12 in IERS conventions 2010)
-        // TODO
+        final double[] c  = frequencyCorrection.value(date);
+        final double   dr = pointData.sin2Phi * (c[0] * pointData.cosLambda + c[1] * pointData.sinLambda);
+        final double   dn = pointData.cos2Phi * (c[2] * pointData.cosLambda + c[3] * pointData.sinLambda);
+        final double   de = pointData.sinPhi  * (c[4] * pointData.cosLambda + c[5] * pointData.sinLambda);
 
-        // in phase and out-of-phase, degree 2, long-period tides (equation 7.13 in IERS conventions 2010)
-        // TODO
-
-        return Vector3D.ZERO;
+        return new Vector3D(dr, pointData.radial,
+                            dn, pointData.north,
+                            de, pointData.east);
 
     }
 
@@ -438,11 +460,11 @@ public class TidalDisplacement {
             final double sinCos    = sinPhi * cosPhi;
             cosPhi2                = cosPhi * cosPhi;
             sin2Phi                = 2 * sinCos;
-            final double sinLambda = y / rho;
-            final double cosLambda = x / rho;
             p21                    = 3 * sinCos;
             p22                    = 3 * cosPhi2;
 
+            final double sinLambda = y / rho;
+            final double cosLambda = x / rho;
             sinDeltaLambda  = pointData.sinLambda * cosLambda  - pointData.cosLambda * sinLambda;
             cosDeltaLambda  = pointData.cosLambda * cosLambda  + pointData.sinLambda * sinLambda;
             sin2DeltaLambda = 2 * sinDeltaLambda * cosDeltaLambda;

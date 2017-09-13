@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -38,13 +39,14 @@ public class TidalDisplacementTest {
     @Test
     public void testFrame() throws OrekitException {
         IERSConventions conventions = IERSConventions.IERS_2010;
-        Frame itrf = FramesFactory.getITRF(conventions, false);
+        Frame           itrf        = FramesFactory.getITRF(conventions, false);
+        EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
         TidalDisplacement td = new TidalDisplacement(itrf, Constants.EIGEN5C_EARTH_MU,
                                                      Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
                                                      Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
                                                      CelestialBodyFactory.getSun(),
                                                      CelestialBodyFactory.getMoon(),
-                                                     conventions);
+                                                     eopHistory);
         Assert.assertSame(itrf, td.getEarthFrame());
     }
 
@@ -75,7 +77,8 @@ public class TidalDisplacementTest {
     public void testDehant() throws OrekitException {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
-        Frame itrf = FramesFactory.getITRF(conventions, false);
+        Frame           itrf        = FramesFactory.getITRF(conventions, false);
+        EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
 
         // constants consistent with DEHANTTIDEINEL.F reference program
         // available at <ftp://tai.bipm.org/iers/conv2010/chapter7/dehanttideinel/>
@@ -102,7 +105,7 @@ public class TidalDisplacementTest {
                                                      1.0 / massRatioMoon,
                                                      fakeSun,
                                                      fakeMoon,
-                                                     conventions);
+                                                     eopHistory);
 
         Vector3D fundamentalStationWettzell = new Vector3D(4075578.385, 931852.890, 4801570.154);
         AbsoluteDate date = new AbsoluteDate(2009, 4, 13, 0, 0, 0.0,

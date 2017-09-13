@@ -82,8 +82,8 @@ public class PoissonSeries {
         // arithmetic properties (rounding and representable numbers)
         double npHigh = 0;
         double npLow  = 0;
-        for (final SeriesTerm term : series.values()) {
-            final double v       = term.value(elements)[0];
+        for (final Map.Entry<Long, SeriesTerm> entry : series.entrySet()) {
+            final double v       = entry.getValue().value(elements)[0];
             final double sum     = npHigh + v;
             final double sPrime  = sum - v;
             final double tPrime  = sum - sPrime;
@@ -111,8 +111,8 @@ public class PoissonSeries {
 
         // non-polynomial part
         T sum = tc.getField().getZero();
-        for (final SeriesTerm term : series.values()) {
-            sum = sum.add(term.value(elements)[0]);
+        for (final Map.Entry<Long, SeriesTerm> entry : series.entrySet()) {
+            sum = sum.add(entry.getValue().value(elements)[0]);
         }
 
         // add the polynomial and the non-polynomial parts
