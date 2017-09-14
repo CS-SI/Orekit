@@ -17,7 +17,9 @@
 package org.orekit.models.earth;
 
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -82,24 +84,47 @@ public class TidalDisplacementTest {
     @Test
     public void testDehantOriginalArguments() throws OrekitException {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
-        // it does so by replacing the fundamental nutation arguments used by Orekit
-        // (which come from IERS conventions) by the Doodson arguments in the aforementioned program
+        // it does so by replacing the fundamental nutation arguments and frequency correction
+        // models used by Orekit (which come from IERS conventions) by the hard-coded models
+        // in the aforementioned program
         // The results should be really close to the reference values from the original test case
-        doTestDehant(true, 1.0e-10);
+        doTestDehant(IERSConventions.IERS_2010, true, 1.0e-14);
     }
 
     @Test
-    public void testDehantIERSArguments() throws OrekitException {
+    public void testDehantIERS1996() throws OrekitException {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
-        // fundamental nutation arguments from IERS conventions.
+        // fundamental nutation arguments and frequency correction models from IERS
+        // conventions.
         // The results should be very slightly different from the reference values
-        doTestDehant(false, 1.0e-10);
+        doTestDehant(IERSConventions.IERS_1996, false, 5.8e-4);
     }
 
-    private void doTestDehant(final boolean replaceFundamentalArguments, final double tolerance)
+    @Test
+    public void testDehantIERS2003() throws OrekitException {
+        // this test intends to replay the DEHANTTIDEINEL.F test case but using the
+        // fundamental nutation arguments and frequency correction models from IERS
+        // conventions.
+        // The results should be very slightly different from the reference values
+        doTestDehant(IERSConventions.IERS_2003, false, 2.3e-5);
+    }
+
+    @Test
+    public void testDehantIERS2010() throws OrekitException {
+        // this test intends to replay the DEHANTTIDEINEL.F test case but using the
+        // fundamental nutation arguments and frequency correction models from IERS
+        // conventions.
+        // The results should be very slightly different from the reference values
+        // the differences are more important than with conventions 2003
+        // because after discussion with Dr. Hana Krásná from TU Wien,
+        // we have fixed a typo in the IERS 2010 table 7.3a (∆Rf(op) for
+        // tide P₁ is +0.07mm but the conventions list it as -0.07mm)
+        doTestDehant(IERSConventions.IERS_2010, false, 1.3e-4);
+    }
+
+    private void doTestDehant(final IERSConventions conventions, final boolean replaceModels, final double tolerance)
         throws OrekitException {
 
-        IERSConventions conventions = IERSConventions.IERS_2010;
         Frame           itrf        = FramesFactory.getITRF(conventions, false);
         EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
         TimeScale       ut1         = TimeScalesFactory.getUT1(conventions, false);
@@ -132,7 +157,7 @@ public class TidalDisplacementTest {
                                                      fakeMoon,
                                                      eopHistory);
 
-        if (replaceFundamentalArguments) {
+        if (replaceModels) {
             try {
                 // we override the official IERS conventions 2010 arguments with fake arguments matching DEHANTTIDEINEL.F code
                 String regularArguments = "/assets/org/orekit/IERS-conventions/2010/nutation-arguments.txt";
@@ -169,13 +194,26 @@ public class TidalDisplacementTest {
 
                     }
                 };
-                Field correctionFunctionField = td.getClass().getDeclaredField("frequencyCorrection");
-                correctionFunctionField.setAccessible(true);
-                Object correctionFunction = correctionFunctionField.get(td);
-                Field argumentsField = correctionFunction.getClass().getDeclaredField("arguments");
-                argumentsField.setAccessible(true);
-                argumentsField.set(correctionFunction, fakeArguments);
-            } catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+                String table73a = "/tides/tab7.3a-Dehant.txt";
+                Field diurnalCorrectionField = td.getClass().getDeclaredField("frequencyCorrectionDiurnal");
+                diurnalCorrectionField.setAccessible(true);
+                Constructor<?> diurnalCorrectionConstructor =
+                                diurnalCorrectionField.get(td).getClass().
+                                getDeclaredConstructor(FundamentalNutationArguments.class,
+                                                       String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                diurnalCorrectionConstructor.setAccessible(true);
+                diurnalCorrectionField.set(td, diurnalCorrectionConstructor.newInstance(fakeArguments, table73a, 18, 15, 16, 17, 18));
+                String table73b = "/assets/org/orekit/IERS-conventions/2010/tab7.3b.txt";
+                Field zonalCorrectionField = td.getClass().getDeclaredField("frequencyCorrectionZonal");
+                zonalCorrectionField.setAccessible(true);
+                Constructor<?> zonalCorrectionConstructor =
+                                zonalCorrectionField.get(td).getClass().
+                                getDeclaredConstructor(FundamentalNutationArguments.class,
+                                                       String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                zonalCorrectionConstructor.setAccessible(true);
+                zonalCorrectionField.set(td, zonalCorrectionConstructor.newInstance(fakeArguments, table73b, 18, 15, 16, 17, 18));
+            } catch (SecurityException | NoSuchMethodException | NoSuchFieldException |
+                     InvocationTargetException | InstantiationException | IllegalArgumentException | IllegalAccessException e) {
                 Assert.fail(e.getLocalizedMessage());
             }
 

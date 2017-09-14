@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
@@ -100,8 +101,7 @@ public class TidalDisplacement {
     /** Displacement Love number lI semi-diurnal. */
     private final double lISemiDiurnal;
 
-    /** Function computing corrections in the frequency domain.
-     * <p>Both diurnal tides and long period tides are included.</p>
+    /** Function computing corrections in the frequency domain for diurnal tides.
      * <ul>
      *  <li>f[0]: radial correction, longitude cosine part</li>
      *  <li>f[1]: radial correction, longitude sine part</li>
@@ -111,7 +111,15 @@ public class TidalDisplacement {
      *  <li>f[5]: East correction, longitude sine part</li>
      * </ul>
      */
-    private final TimeVectorFunction frequencyCorrection;
+    private final TimeVectorFunction frequencyCorrectionDiurnal;
+
+    /** Function computing corrections in the frequency domain for zonal tides.
+     * <ul>
+     *  <li>f[0]: radial correction</li>
+     *  <li>f[1]: North correction, longitude cosine part</li>
+     * </ul>
+     */
+    private final TimeVectorFunction frequencyCorrectionZonal;
 
     /** Simple constructor.
      * @param earthFrame Earth frame
@@ -162,7 +170,9 @@ public class TidalDisplacement {
         lIDiurnal        = hl[10];
         lISemiDiurnal    = hl[11];
 
-        this.frequencyCorrection = conventions.getTidalDisplacementFrequencyCorrection(TimeScalesFactory.getUT1(eopHistory));
+        final TimeScale ut1 = TimeScalesFactory.getUT1(eopHistory);
+        this.frequencyCorrectionDiurnal = conventions.getTidalDisplacementFrequencyCorrectionDiurnal(ut1);
+        this.frequencyCorrectionZonal   = conventions.getTidalDisplacementFrequencyCorrectionZonal(ut1);
 
     }
 
@@ -284,14 +294,20 @@ public class TidalDisplacement {
      */
     private Vector3D frequencyDomainCorrection(final AbsoluteDate date, final PointData pointData) {
 
-        final double[] c  = frequencyCorrection.value(date);
-        final double   dr = pointData.sin2Phi * (c[0] * pointData.cosLambda + c[1] * pointData.sinLambda);
-        final double   dn = pointData.cos2Phi * (c[2] * pointData.cosLambda + c[3] * pointData.sinLambda);
-        final double   de = pointData.sinPhi  * (c[4] * pointData.cosLambda + c[5] * pointData.sinLambda);
+        // corrections due to diurnal tides 
+        final double[] cD  = frequencyCorrectionDiurnal.value(date);
+        final double   drD = pointData.sin2Phi * (cD[0] * pointData.cosLambda + cD[1] * pointData.sinLambda);
+        final double   dnD = pointData.cos2Phi * (cD[2] * pointData.cosLambda + cD[3] * pointData.sinLambda);
+        final double   deD = pointData.sinPhi  * (cD[4] * pointData.cosLambda + cD[5] * pointData.sinLambda);
 
-        return new Vector3D(dr, pointData.radial,
-                            dn, pointData.north,
-                            de, pointData.east);
+        // corrections due to zonal long period tides 
+        final double[] cZ  = frequencyCorrectionZonal.value(date);
+        final double   drZ = (1.5 * pointData.sinPhi2 - 0.5) * cZ[0];
+        final double   dnZ = pointData.sin2Phi               * cZ[1];
+
+        return new Vector3D(drD + drZ, pointData.radial,
+                            dnD + dnZ, pointData.north,
+                            deD,       pointData.east);
 
     }
 
