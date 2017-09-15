@@ -125,12 +125,16 @@ public class TidalDisplacement {
      * @param earthFrame Earth frame
      * @param rEarth Earth equatorial radius (from gravity field model)
      * @param sunEarthSystemMassRatio Sun/(Earth + Moon) mass ratio
+     * (typically {@link org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO})
      * @param earthMoonMassRatio Earth/Moon mass ratio
+     * (typically {@link org.orekit.utils.Constants#JPL_SSD_EARTH_MOON_MASS_RATIO Constants.JPL_SSD_EARTH_MOON_MASS_RATIO})
      * @param sun Sun model
      * @param moon Moon model
      * @param eopHistory EOP history (must be consistent with the selected Earth frame)
      * @see org.orekit.frames.FramesFactory#getITRF(IERSConventions, boolean)
      * @see org.orekit.frames.FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @see org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO
+     * @see org.orekit.utils.Constants#JPL_SSD_EARTH_MOON_MASS_RATIO
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      */
     public TidalDisplacement(final Frame earthFrame, final double rEarth,

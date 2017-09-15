@@ -37,6 +37,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.models.earth.TidalDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -96,8 +97,14 @@ public class GroundStation {
      */
     private static final double ANGULAR_SCALE = FastMath.scalb(1.0, -22);
 
+    /** Angular velocity of the Earth, in rad/s, from TIRF model. */
+    private static final double AVE = 7.292115146706979e-5;
+
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
+
+    /** Tidal displacements model (may be null). */
+    private final TidalDisplacement tidalDisplacement;
 
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
@@ -126,7 +133,7 @@ public class GroundStation {
     /** Driver for pole drift along Y. */
     private final ParameterDriver polarDriftYDriver;
 
-    /** Simple constructor.
+    /** Build a ground station ignoring {@link TidalDisplacement tidal displacements}.
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
@@ -142,11 +149,38 @@ public class GroundStation {
      * model (no station offset, no polar motion, no meridian shift)
      * @exception OrekitException if some frame transforms cannot be computed
      * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     * @see #GroundStation(TopocentricFrame, TidalDisplacement)
      */
     public GroundStation(final TopocentricFrame baseFrame)
+                    throws OrekitException {
+        this(baseFrame, null);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * The initial values for the pole and prime meridian parametric linear models
+     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
+     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
+     * The initial values for the station offset model ({@link #getEastOffsetDriver()},
+     * {@link #getNorthOffsetDriver()}, {@link #getZenithOffsetDriver()}) are set to 0.
+     * This implies that as long as these values are not changed, the offset frame is
+     * the same as the {@link #getBaseFrame() base frame}. As soon as some of these models
+     * are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
+     * </p>
+     * @param baseFrame base frame associated with the station, without *any* parametric
+     * model (no station offset, no polar motion, no meridian shift)
+     * @param tidalDisplacement tidal displacement to use, null tidal displacements should
+     * not be applied
+     * @exception OrekitException if some frame transforms cannot be computed
+     * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     * @since 9.1
+     */
+    public GroundStation(final TopocentricFrame baseFrame, final TidalDisplacement tidalDisplacement)
         throws OrekitException {
 
-        this.baseFrame = baseFrame;
+        this.baseFrame         = baseFrame;
+        this.tidalDisplacement = tidalDisplacement;
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, OFFSET_SCALE,
@@ -184,6 +218,14 @@ public class GroundStation {
                                                      0.0, ANGULAR_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+    }
+
+    /** Get the tidal displacement model.
+     * @return tidal displacement model (null if tidal displacement is ignored)
+     * @since 9.1
+     */
+    public TidalDisplacement getTidalDisplacement() {
+        return tidalDisplacement;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -285,10 +327,24 @@ public class GroundStation {
     }
 
     /** Get the geodetic point at the center of the offset frame.
+     * @param date current date (may be null if tidal displacement is ignored)
      * @return geodetic point at the center of the offset frame
      * @exception OrekitException if frames transforms cannot be computed
+     * @deprecated as of 9.1, replaced by {@link #getOffsetGeodeticPoint(AbsoluteDate)}
      */
+    @Deprecated
     public GeodeticPoint getOffsetGeodeticPoint()
+        throws OrekitException {
+        return getOffsetGeodeticPoint(null);
+    }
+
+    /** Get the geodetic point at the center of the offset frame.
+     * @param date current date (may be null if tidal displacement is ignored)
+     * @return geodetic point at the center of the offset frame
+     * @exception OrekitException if frames transforms cannot be computed
+     * @since 9.1
+     */
+    public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date)
         throws OrekitException {
 
         // take station offset into account
@@ -297,7 +353,13 @@ public class GroundStation {
         final double    z          = parametricModel(zenithOffsetDriver);
         final BodyShape baseShape  = baseFrame.getParentShape();
         final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
-        final Vector3D  origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+        Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+
+        if (tidalDisplacement != null && date != null) {
+            // apply displacement due to tides
+            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
+            origin = origin.add(tidalDisplacement.displacement(date.shiftedBy(dut1), origin));
+        }
 
         return baseShape.transform(origin, baseShape.getBodyFrame(), null);
 
@@ -349,7 +411,13 @@ public class GroundStation {
         final BodyShape baseShape  = baseFrame.getParentShape();
         final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
-        final Vector3D      origin   = baseToBody.transformPosition(new Vector3D(x, y, z));
+        Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+        if (tidalDisplacement != null) {
+            // apply displacement due to tides
+            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
+            origin = origin.add(tidalDisplacement.displacement(date.shiftedBy(dut1), origin));
+        }
+
         final GeodeticPoint originGP = baseShape.transform(origin, baseShape.getBodyFrame(), date);
         final Transform offsetToIntermediate =
                         new Transform(date,
@@ -427,7 +495,13 @@ public class GroundStation {
         final BodyShape            baseShape  = baseFrame.getParentShape();
         final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
-        final FieldVector3D<DerivativeStructure>      origin   = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        FieldVector3D<DerivativeStructure>            origin   = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        if (tidalDisplacement != null) {
+            // apply displacement due to tides
+            final AbsoluteDate aDate = date.toAbsoluteDate();
+            final double dut1 = linearModel(aDate, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
+            origin = origin.add(tidalDisplacement.displacement(aDate.shiftedBy(dut1), origin.toVector3D()));
+        }
         final FieldGeodeticPoint<DerivativeStructure> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), date);
         final FieldTransform<DerivativeStructure> offsetToIntermediate =
                         new FieldTransform<>(date,

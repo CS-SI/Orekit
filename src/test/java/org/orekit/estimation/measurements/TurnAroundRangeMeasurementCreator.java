@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.hipparchus.analysis.UnivariateFunction;
@@ -27,12 +28,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 /**
  * Class creating a list of turn-around range measurement
@@ -51,6 +52,27 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
     public TurnAroundRangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
         this.context            = context;
         this.antennaPhaseCenter = antennaPhaseCenter;
+    }
+
+    public void init(SpacecraftState s0, AbsoluteDate t, double step) {
+        for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
+            for (final GroundStation station : Arrays.asList(entry.getKey(), entry.getValue())) {
+                for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                                                            station.getNorthOffsetDriver(),
+                                                            station.getZenithOffsetDriver(),
+                                                            station.getPrimeMeridianOffsetDriver(),
+                                                            station.getPrimeMeridianDriftDriver(),
+                                                            station.getPolarOffsetXDriver(),
+                                                            station.getPolarDriftXDriver(),
+                                                            station.getPolarOffsetYDriver(),
+                                                            station.getPolarDriftYDriver())) {
+                    if (driver.getReferenceDate() == null) {
+                        driver.setReferenceDate(s0.getDate());
+                    }
+                }
+
+            }
+        }
     }
 
     /**
@@ -86,12 +108,10 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final AbsoluteDate     date          = currentState.getDate();
                 final Frame            inertial      = currentState.getFrame();
                 final Vector3D         position      = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
-                final TopocentricFrame masterTopo    = masterStation.getBaseFrame();
-                final TopocentricFrame slaveTopo     = slaveStation.getBaseFrame();
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
-                if ((masterTopo.getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
-                    (slaveTopo.getElevation(position, inertial, date)  > FastMath.toRadians(30.0))) {
+                if ((masterStation.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
+                    (slaveStation.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0))) {
 
                     // The solver used
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
@@ -99,7 +119,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Spacecraft date t = date of arrival/departure of the signal to/from from the slave station
                     // Slave station position in inertial frame at t
                     final Vector3D slaveStationPosition =
-                                    slaveTopo.getTransformTo(inertial, date).transformPosition(Vector3D.ZERO);
+                                    slaveStation.getOffsetToInertial(inertial, date).transformPosition(Vector3D.ZERO);
 
                     // Downlink time of flight to slave station
                     // The date of arrival/departure of the signal to/from the slave station is known and
@@ -147,7 +167,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double masterTauD  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) throws OrekitExceptionWrapper {
                             try {
-                                final Transform t = masterTopo.getTransformTo(inertial, T2.shiftedBy(+x));
+                                final Transform t = masterStation.getOffsetToInertial(inertial, T2.shiftedBy(+x));
                                 final double d = Vector3D.distance(P2, t.transformPosition(Vector3D.ZERO));
                                 return d - x * Constants.SPEED_OF_LIGHT;
                             } catch (OrekitException oe) {
@@ -158,7 +178,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     final AbsoluteDate masterReceptionDate  = T2.shiftedBy(+masterTauD);
                     final TimeStampedPVCoordinates masterStationAtReception =
-                                    masterTopo.getTransformTo(inertial, masterReceptionDate).
+                                    masterStation.getOffsetToInertial(inertial, masterReceptionDate).
                                     transformPVCoordinates(new TimeStampedPVCoordinates(masterReceptionDate, PVCoordinates.ZERO));
 
 
@@ -170,7 +190,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final AbsoluteDate masterEmissionDate   = T1.shiftedBy(-masterTauU);
 
                     final Vector3D masterStationAtEmission  =
-                                    masterTopo.getTransformTo(inertial, masterEmissionDate).transformPosition(Vector3D.ZERO);
+                                    masterStation.getOffsetToInertial(inertial, masterEmissionDate).transformPosition(Vector3D.ZERO);
 
 
                     // Uplink/downlink distance from/to slave station

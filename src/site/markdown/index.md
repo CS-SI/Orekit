@@ -164,6 +164,7 @@
       * measurements parameters estimation (biases, station position, pole motion and rate,
         prime meridian correction and rate)
     * multi-satellites orbit determination
+    * automatic handling of ground stations displacements due to tides
     * several predefined measurements
       * range
       * range rate (one way and two way)

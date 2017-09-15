@@ -272,7 +272,7 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.0e-5,
                                      0.0, 5.2e-5,
-                                     0.0, 2.6e-5,
+                                     0.0, 2.7e-5,
                                      0.0, 1.1e-8);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
@@ -412,10 +412,10 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 2.6e-06,
-                                     0.0, 7.4e-06,
-                                     0.0, 5.2e-07,
-                                     0.0, 2.1e-10);
+                                     0.0, 3.1e-06,
+                                     0.0, 9.1e-06,
+                                     0.0, 5.6e-07,
+                                     0.0, 2.6e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -430,7 +430,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            1.1e-6);
+                            1.6e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
@@ -609,11 +609,11 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 6.3e-06,
-                                     0.0, 2.0e-05,
-                                     0.0, 3.3e-07,
-                                     0.0, 1.4e-10);
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                     0.0, 1.2e-06,
+                                     0.0, 3.0e-06,
+                                     0.0, 2.1e-07,
+                                     0.0, 2.8e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -716,7 +716,7 @@ public class BatchLSEstimatorTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
-        // create perfect range measurements
+        // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements1 =

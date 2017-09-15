@@ -48,11 +48,13 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.forces.radiation.IsotropicRadiationClassicalConvention;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
+import org.orekit.models.earth.TidalDisplacement;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -81,8 +83,14 @@ public class EstimationTestUtils {
         context.moon = CelestialBodyFactory.getMoon();
         context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
         context.dragSensitive = new IsotropicDrag(2.0, 1.2);
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(context.conventions, true);
         context.utc = TimeScalesFactory.getUTC();
-        context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
+        context.ut1 = TimeScalesFactory.getUT1(eopHistory);
+        context.tidalDisplacement = new TidalDisplacement(context.earth.getBodyFrame(),
+                                                          context.earth.getEquatorialRadius(),
+                                                          Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
+                                                          Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
+                                                          context.sun, context.moon, eopHistory);
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);

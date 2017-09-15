@@ -30,6 +30,7 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.TidalDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -52,6 +53,7 @@ public class Context {
     public TimeScale                            utc;
     public UT1Scale                             ut1;
     public Orbit                                initialOrbit;
+    public TidalDisplacement                    tidalDisplacement;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
     // Map entry = master station
@@ -97,7 +99,7 @@ public class Context {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name));
+        return new GroundStation(new TopocentricFrame(earth, gp, name), tidalDisplacement);
     }
 
 }

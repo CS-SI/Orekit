@@ -22,6 +22,9 @@
   <body>
     <release version="9.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Take ground station displacements due to tide into account in orbit determination.
+      </action>
+      <action dev="luc" type="add">
         Added ground points displacements due to tides as per IERS conventions.
         We have slightly edited one entry in table 7.3a from IERS 2010 conventions
         to fix a sign error identified by Dr. Hana Krásná from TU Wien (out of phase
