@@ -327,7 +327,6 @@ public class GroundStation {
     }
 
     /** Get the geodetic point at the center of the offset frame.
-     * @param date current date (may be null if tidal displacement is ignored)
      * @return geodetic point at the center of the offset frame
      * @exception OrekitException if frames transforms cannot be computed
      * @deprecated as of 9.1, replaced by {@link #getOffsetGeodeticPoint(AbsoluteDate)}

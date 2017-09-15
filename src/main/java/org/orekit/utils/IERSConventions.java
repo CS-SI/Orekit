@@ -706,7 +706,7 @@ public enum IERSConventions {
                 0.6078,                                  -0.0006, 0.292, -0.0025,    -0.0022,
                 // l⁽⁰⁾, l⁽¹⁾ diurnal, l⁽¹⁾ semi-diurnal, l⁽²⁾,   l₃,     lI diurnal, lI semi-diurnal
                 0.0847,  0.0012,       0.0024,            0.0002, 0.015, -0.0007,    -0.0007
-           };
+            };
 
         }
 
@@ -2387,7 +2387,7 @@ public enum IERSConventions {
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time
      * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return correction function for tidal displacement
-     * @throws OrekitException
+     * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
     public abstract TimeVectorFunction getTidalDisplacementFrequencyCorrectionDiurnal(TimeScale timeScale)
@@ -2401,7 +2401,7 @@ public enum IERSConventions {
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time
      * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return correction function for tidal displacement
-     * @throws OrekitException
+     * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
     public abstract TimeVectorFunction getTidalDisplacementFrequencyCorrectionZonal(TimeScale timeScale)
@@ -2926,10 +2926,10 @@ public enum IERSConventions {
     private static class TidalDisplacementFrequencyCorrectionDiurnal implements TimeVectorFunction {
 
         /** fundamental nutation arguments. */
-        final FundamentalNutationArguments arguments;
+        private final FundamentalNutationArguments arguments;
 
         /** Poisson series for diurnal tides. */
-        final PoissonSeries.CompiledSeries correction;
+        private final PoissonSeries.CompiledSeries correction;
 
         /** simple constructor.
          * @param arguments nutation arguments
@@ -2938,7 +2938,7 @@ public enum IERSConventions {
          * @param rIp column holding ∆Rf(ip) in the diurnal tides table, counting from 1
          * @param rOp column holding ∆Rf(op) in the diurnal tides table, counting from 1
          * @param tIp column holding ∆Tf(ip) in the diurnal tides table, counting from 1
-         * @param tIp column holding ∆Tf(op) in the diurnal tides table, counting from 1
+         * @param tOp column holding ∆Tf(op) in the diurnal tides table, counting from 1
          * @exception OrekitException if Poisson series cannot be loaded
          */
         TidalDisplacementFrequencyCorrectionDiurnal(final FundamentalNutationArguments arguments,
@@ -2976,7 +2976,7 @@ public enum IERSConventions {
         }
 
         /** Load a Poisson series.
-         * @param table name for the table
+         * @param name name for the table
          * @param cols total number of columns of the table
          * @param sinColumn column of the sine coefficient counting from 1
          * (may be -1 if there are no sine coefficients)
@@ -2997,16 +2997,16 @@ public enum IERSConventions {
                             withFirstDelaunay(10).
                             withSinCos(0, sinColumn, sinFactor, cosColumn, cosFactor).
                             parse(getStream(name), name);
-       }
+        }
 
         @Override
-        public double[] value(AbsoluteDate date) {
+        public double[] value(final AbsoluteDate date) {
             final BodiesElements elements = arguments.evaluateAll(date);
             return correction.value(elements);
         }
 
         @Override
-        public <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date) {
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
             return correction.value(elements);
         }
@@ -3017,10 +3017,10 @@ public enum IERSConventions {
     private static class TidalDisplacementFrequencyCorrectionZonal implements TimeVectorFunction {
 
         /** fundamental nutation arguments. */
-        final FundamentalNutationArguments arguments;
+        private final FundamentalNutationArguments arguments;
 
         /** Poisson series for zonal tides. */
-        final PoissonSeries.CompiledSeries correction;
+        private final PoissonSeries.CompiledSeries correction;
 
         /** simple constructor.
          * @param arguments nutation arguments
@@ -3029,7 +3029,7 @@ public enum IERSConventions {
          * @param rIp column holding ∆Rf(ip) in the table, counting from 1
          * @param rOp column holding ∆Rf(op) in the table, counting from 1
          * @param tIp column holding ∆Tf(ip) in the table, counting from 1
-         * @param tIp column holding ∆Tf(op) in the table, counting from 1
+         * @param tOp column holding ∆Tf(op) in the table, counting from 1
          * @exception OrekitException if Poisson series cannot be loaded
          */
         TidalDisplacementFrequencyCorrectionZonal(final FundamentalNutationArguments arguments,
@@ -3056,7 +3056,7 @@ public enum IERSConventions {
         }
 
         /** Load a Poisson series.
-         * @param table name for the table
+         * @param name name for the table
          * @param cols total number of columns of the table
          * @param sinColumn column of the sine coefficient counting from 1
          * (may be -1 if there are no sine coefficients)
@@ -3077,16 +3077,16 @@ public enum IERSConventions {
                             withFirstDelaunay(10).
                             withSinCos(0, sinColumn, sinFactor, cosColumn, cosFactor).
                             parse(getStream(name), name);
-       }
+        }
 
         @Override
-        public double[] value(AbsoluteDate date) {
+        public double[] value(final AbsoluteDate date) {
             final BodiesElements elements = arguments.evaluateAll(date);
             return correction.value(elements);
         }
 
         @Override
-        public <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date) {
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
             final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
             return correction.value(elements);
         }
