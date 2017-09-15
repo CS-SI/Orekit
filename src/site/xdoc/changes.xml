@@ -21,6 +21,14 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added ground points displacements due to tides as per IERS conventions.
+        We have slightly edited one entry in table 7.3a from IERS 2010 conventions
+        to fix a sign error identified by Dr. Hana Krásná from TU Wien (out of phase
+        radial term for the P₁ tide, which is -0.07mm in conventions when it should be
+        +0.07mm). This implies that our implementation may differ up to 0.14mm from
+        other implementations.
+      </action>
 	  <action dev="maxime" type="fix">
         Modified the way the propagation parameter drivers are mapped in the
         Jacobian matrix in class "Model".
