@@ -164,6 +164,7 @@
       * measurements parameters estimation (biases, station position, pole motion and rate,
         prime meridian correction and rate)
     * multi-satellites orbit determination
+    * automatic handling of ground stations displacements due to tides
     * several predefined measurements
       * range
       * range rate (one way and two way)
@@ -198,6 +199,7 @@
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
+    * displacement of ground points due to tides
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
     

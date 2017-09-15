@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 
 /**
- * Modeling of a general three-axes ellipsoid. <p>
+ * Modeling of a general three-axes ellipsoid.
  * @since 7.0
  * @author Luc Maisonobe
  */

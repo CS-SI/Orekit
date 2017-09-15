@@ -132,12 +132,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMedian = 2.6e-6;
         double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 4.6e-6;
-        double refErrorQSMedian = 3.8e-7;
+        double refErrorQMMax    = 5.6e-6;
+        double refErrorQSMedian = 3.7e-7;
         double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.4e-7;
+        double refErrorQSMax    = 7.7e-7;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
@@ -160,12 +160,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMedian = 2.6e-6;
         double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 4.6e-6;
-        double refErrorQSMedian = 3.8e-7;
+        double refErrorQMMax    = 5.6e-6;
+        double refErrorQSMedian = 3.7e-7;
         double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.4e-7;
+        double refErrorQSMax    = 7.7e-7;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
@@ -263,10 +263,10 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 3.5e-8);
+        Assert.assertEquals(0.0, absErrorsMedian, 1.4e-7);
         Assert.assertEquals(0.0, absErrorsMin, 5.0e-7);
-        Assert.assertEquals(0.0, absErrorsMax, 3.6e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.9e-15);
+        Assert.assertEquals(0.0, absErrorsMax, 4.9e-7);
+        Assert.assertEquals(0.0, relErrorsMedian, 8.9e-15);
         Assert.assertEquals(0.0, relErrorsMax , 2.9e-14);
     }
 

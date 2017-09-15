@@ -21,47 +21,58 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
-     <action dev="luc" type="fix">
+      <action dev="luc" type="add">
+        Take ground stations displacements due to tides into account in orbit determination.
+      </action>
+      <action dev="luc" type="add">
+        Added ground points displacements due to tides as per IERS conventions.
+        We have slightly edited one entry in table 7.3a from IERS 2010 conventions
+        to fix a sign error identified by Dr. Hana Krásná from TU Wien (out of phase
+        radial term for the P₁ tide, which is -0.07mm in conventions when it should be
+        +0.07mm). This implies that our implementation may differ up to 0.14mm from
+        other implementations.
+      </action>
+      <action dev="luc" type="fix">
         Avoid intermixed ChangeForwarder instances calling each other.
         Fixes issue #360.
-     </action>
-	<action dev="maxime" type="fix">
-		Modified the way the propagation parameter drivers are mapped in the
-		Jacobian matrix in class "Model".
+      </action>
+      <action dev="maxime" type="fix">
+        Modified the way the propagation parameter drivers are mapped in the
+        Jacobian matrix in class "Model".
         Added a test for multi-sat orbit determination with estimated
-		propagation parameters (µ and SRP coefficients).
+        propagation parameters (µ and SRP coefficients).
         Fixes issue #354.
-     </action>
-     <action dev="luc" type="fix">
-        Added a convenience method to retrieve covariance matrix in
-        physical units in orbit determination.
-        Fixes issue #353.
-     </action>
-     <action dev="luc" type="fix" due-to="Rongwang Li">
-        Fixed two errors in Marini-Murray model implementation.
-        Fixes issue #352.
-     </action>
-     <action dev="luc" type="fix">
-        Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
-        Fixes issue #350.
-     </action>
-     <action dev="luc" type="fix">
-        Copy additional states through impulse maneuvers.
-        Fixes issue #349.
-     </action>
-     <action dev="luc" type="fix">
-        Removed unused construction parameters in ShiftingTransformProvider
-        and InterpolatingTransformProvider.
-        Fixes issue #356.
-     </action>
-     <action dev="luc" type="fix">
-        Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
-        Fixes issue #355.
-     </action>
-     <action dev="luc" type="update">
-       Use a git-flow like branching workflow, with a develop branch for bleeding-edge
-       development, and master branch for stable published versions.
-     </action>
+      </action>
+      <action dev="luc" type="fix">
+         Added a convenience method to retrieve covariance matrix in
+         physical units in orbit determination.
+         Fixes issue #353.
+      </action>
+      <action dev="luc" type="fix" due-to="Rongwang Li">
+         Fixed two errors in Marini-Murray model implementation.
+         Fixes issue #352.
+      </action>
+      <action dev="luc" type="fix">
+         Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
+         Fixes issue #350.
+      </action>
+      <action dev="luc" type="fix">
+         Copy additional states through impulse maneuvers.
+         Fixes issue #349.
+      </action>
+      <action dev="luc" type="fix">
+         Removed unused construction parameters in ShiftingTransformProvider
+         and InterpolatingTransformProvider.
+         Fixes issue #356.
+      </action>
+      <action dev="luc" type="fix">
+         Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
+         Fixes issue #355.
+      </action>
+      <action dev="luc" type="update">
+        Use a git-flow like branching workflow, with a develop branch for bleeding-edge
+        development, and master branch for stable published versions.
+      </action>
     </release>
     <release version="9.0" date="2017-07-26"
              description="Version 9.0 is a major release of Orekit. It introduces several new

@@ -1,0 +1,18 @@
+# Extract from IERS conventions 1996 (table 7.3b)
+
+The table has been slightly edited with respect to published version so the
+out of phase amplitudes appear as the two last columns (after the in phase amplitudes)
+instead as on the following line. This allows a parsing similar to other IERS files.
+
+Table 7.3b: Corrections due to the frequency dependence of Love and Shida numbers for zonal tides.
+Units: mm. All terms with radial correction ≥ 0.05 mm are shown. Nominal values are h = 0.6026 and
+l = 0.0831 for the elastic case, and hR = 0.6078 and lR = 0.0847 for the real parts in the anelastic
+case. For each frequency, the in phase amplitudes ∆Rf(ip) and ∆Tf(ip) are shown on the first line, and
+the out of phase amplitudes ∆Rf(op) and ∆Tf(op) on the second line. Frequencies are given in degrees
+per hour.
+Name Frequency Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  ∆Rf(el) ∆Tf(el)  ∆Rf(anel, ip) ∆Tf(anel, ip)  ∆Rf(anel, op) ∆Tf(anel, op)
+     0.00221   55,565   0  0  0  0   1  0   0  0  0  0  1  -0.05    0.00        0.47          0.23           0.16          0.07
+Ssa  0.08214   57,555   0  0  2  0   0  0   0  0 -2  2 -2   0.05    0.00       -0.20         -0.12          -0.11         -0.05
+Mm   0.54438   65,455   0  1  0 -1   0  0  -1  0  0  0  0   0.06    0.00       -0.11         -0.08          -0.09         -0.04
+Mf   1.09804   75,555   0  2  0  0   0  0   0  0 -2  0 -2   0.12    0.00       -0.13         -0.11          -0.15         -0.07
+     1.10024   75,565   0  2  0  0   1  0   0  0 -2  0 -1   0.05    0.00       -0.05         -0.05          -0.06         -0.03
