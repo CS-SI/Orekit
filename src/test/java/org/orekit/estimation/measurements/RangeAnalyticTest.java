@@ -320,11 +320,11 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 3.6e-08);
-        Assert.assertEquals(0.0, absErrorsMin, 2.0e-07);
-        Assert.assertEquals(0.0, absErrorsMax, 2.3e-07);
+        Assert.assertEquals(0.0, absErrorsMedian, 3.8e-08);
+        Assert.assertEquals(0.0, absErrorsMin,    2.0e-07);
+        Assert.assertEquals(0.0, absErrorsMax,    2.3e-07);
         Assert.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assert.assertEquals(0.0, relErrorsMax, 2.4e-14);
+        Assert.assertEquals(0.0, relErrorsMax,    2.4e-14);
     }
 
     /**

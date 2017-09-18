@@ -78,12 +78,12 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 4.9e-10;
-        double refErrorsPMean   = 3.3e-09;
+        double refErrorsPMedian = 6.5e-10;
+        double refErrorsPMean   = 4.0e-09;
         double refErrorsPMax    = 2.1e-07;
         double refErrorsVMedian = 1.8e-04;
-        double refErrorsVMean   = 1.2e-3;
-        double refErrorsVMax    = 5.2e-02;
+        double refErrorsVMean   = 6.0e-04;
+        double refErrorsVMax    = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -103,12 +103,12 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 5.2e-10;
+        double refErrorsPMedian = 6.3e-10;
         double refErrorsPMean   = 3.3e-09;
         double refErrorsPMax    = 1.6e-07;
         double refErrorsVMedian = 1.8e-04;
-        double refErrorsVMean   = 1.2e-03;
-        double refErrorsVMax    = 5.2e-02;
+        double refErrorsVMean   = 6.0e-04;
+        double refErrorsVMax    = 1.3e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);

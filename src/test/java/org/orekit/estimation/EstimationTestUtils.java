@@ -87,10 +87,10 @@ public class EstimationTestUtils {
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(eopHistory);
         context.tidalDisplacement = new TidalDisplacement(context.earth.getBodyFrame(),
-                                                          context.earth.getEquatorialRadius(),
+                                                          Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                           Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
                                                           Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
-                                                          context.sun, context.moon, eopHistory);
+                                                          context.sun, context.moon, eopHistory, false);
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);

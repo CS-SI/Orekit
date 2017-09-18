@@ -98,7 +98,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.1e-9, 1.8e-8, 2.9e-7, 6.9e-5, 2.9e-4, 7.3e-3);
+                                    5.9e-9, 2.0e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
     }
 
     /**
@@ -136,7 +136,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.2e-9, 1.8e-8, 2.9e-7, 6.9e-5, 2.9e-4, 7.3e-3);
+                                    6.2e-9, 1.9e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
     }
 
     /**
@@ -313,11 +313,11 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 8.2e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 9.0e-08);
-        Assert.assertEquals(0.0, absErrorsMax, 1.9e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 4.9e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 1.1e-14);
+        Assert.assertEquals(0.0, absErrorsMedian, 8.4e-08);
+        Assert.assertEquals(0.0, absErrorsMin,    9.0e-08);
+        Assert.assertEquals(0.0, absErrorsMax,    2.0e-07);
+        Assert.assertEquals(0.0, relErrorsMedian, 5.1e-15);
+        Assert.assertEquals(0.0, relErrorsMax,    1.2e-14);
     }
 
     /**
