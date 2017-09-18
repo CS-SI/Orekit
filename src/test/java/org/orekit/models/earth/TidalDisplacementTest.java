@@ -54,41 +54,57 @@ public class TidalDisplacementTest {
                                                      Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
                                                      CelestialBodyFactory.getSun(),
                                                      CelestialBodyFactory.getMoon(),
-                                                     eopHistory);
+                                                     eopHistory,true);
         Assert.assertSame(itrf, td.getEarthFrame());
     }
 
     @Test
-    public void testLoveShida() throws OrekitException {
+    public void testIERSDisplacementNumbers() throws OrekitException {
         for (final IERSConventions conventions : IERSConventions.values()) {
             // as of Orekit 9.0, supported conventions are
             // IERS conventions 1996, IERS conventions 2003 and IERS conventions 2010
             // and they all share the same values for anelastic Earth model
-            double[] hl = conventions.getNominalTidalDisplacementLoveAndShida();
-            Assert.assertEquals(12, hl.length);
-            Assert.assertEquals( 0.6078, hl[ 0], 1.0e-15); // h⁽⁰⁾
-            Assert.assertEquals(-0.0006, hl[ 1], 1.0e-15); // h⁽²⁾
-            Assert.assertEquals( 0.292,  hl[ 2], 1.0e-15); // h₃
-            Assert.assertEquals(-0.0025, hl[ 3], 1.0e-15); // hI diurnal
-            Assert.assertEquals(-0.0022, hl[ 4], 1.0e-15); // hI semi-diurnal
-            Assert.assertEquals( 0.0847, hl[ 5], 1.0e-15); // l⁽⁰⁾
-            Assert.assertEquals( 0.0012, hl[ 6], 1.0e-15); // l⁽¹⁾ diurnal
-            Assert.assertEquals( 0.0024, hl[ 7], 1.0e-15); // l⁽¹⁾ semi-diurnal
-            Assert.assertEquals( 0.0002, hl[ 8], 1.0e-15); // l⁽²⁾
-            Assert.assertEquals( 0.015,  hl[ 9], 1.0e-15); // l₃
-            Assert.assertEquals(-0.0007, hl[10], 1.0e-15); // lI diurnal
-            Assert.assertEquals(-0.0007, hl[11], 1.0e-15); // lI semi-diurnal
+            double[] hl = conventions.getNominalTidalDisplacement();
+            Assert.assertEquals(13, hl.length);
+            Assert.assertEquals( 0.6078,  hl[ 0], 1.0e-15); // h⁽⁰⁾
+            Assert.assertEquals(-0.0006,  hl[ 1], 1.0e-15); // h⁽²⁾
+            Assert.assertEquals( 0.292,   hl[ 2], 1.0e-15); // h₃
+            Assert.assertEquals(-0.0025,  hl[ 3], 1.0e-15); // hI diurnal
+            Assert.assertEquals(-0.0022,  hl[ 4], 1.0e-15); // hI semi-diurnal
+            Assert.assertEquals( 0.0847,  hl[ 5], 1.0e-15); // l⁽⁰⁾
+            Assert.assertEquals( 0.0012,  hl[ 6], 1.0e-15); // l⁽¹⁾ diurnal
+            Assert.assertEquals( 0.0024,  hl[ 7], 1.0e-15); // l⁽¹⁾ semi-diurnal
+            Assert.assertEquals( 0.0002,  hl[ 8], 1.0e-15); // l⁽²⁾
+            Assert.assertEquals( 0.015,   hl[ 9], 1.0e-15); // l₃
+            Assert.assertEquals(-0.0007,  hl[10], 1.0e-15); // lI diurnal
+            Assert.assertEquals(-0.0007,  hl[11], 1.0e-15); // lI semi-diurnal
+            Assert.assertEquals(-0.31460, hl[12], 1.0e-15); // H₀ permanent deformation amplitude
         }
     }
 
     @Test
-    public void testDehantOriginalArguments() throws OrekitException {
+    public void testDehantOriginalArgumentsNoRemove() throws OrekitException {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
         // it does so by replacing the fundamental nutation arguments and frequency correction
         // models used by Orekit (which come from IERS conventions) by the hard-coded models
         // in the aforementioned program
         // The results should be really close to the reference values from the original test case
-        doTestDehant(IERSConventions.IERS_2010, true, 1.0e-14);
+        doTestDehant(IERSConventions.IERS_2010, false, true,
+                     0.07700420357108125891, 0.06304056321824967613, 0.05516568152597246810,
+                     1.0e-14);
+    }
+
+    @Test
+    public void testDehantOriginalArgumentsRemovePermanentTide() throws OrekitException {
+        // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
+        // with step 3 activated
+        // it does so by replacing the fundamental nutation arguments and frequency correction
+        // models used by Orekit (which come from IERS conventions) by the hard-coded models
+        // in the aforementioned program
+        // The results should be really close to the reference values from the original test case
+        doTestDehant(IERSConventions.IERS_2010, true, true,
+                     0.085888815560994619, 0.065071968475918243, 0.10369393753580475,
+                     1.0e-14);
     }
 
     @Test
@@ -97,7 +113,9 @@ public class TidalDisplacementTest {
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
         // The results should be very slightly different from the reference values
-        doTestDehant(IERSConventions.IERS_1996, false, 5.8e-4);
+        doTestDehant(IERSConventions.IERS_1996, false, false,
+                     0.07700420357108125891, 0.06304056321824967613, 0.05516568152597246810,
+                     5.8e-4);
     }
 
     @Test
@@ -106,7 +124,9 @@ public class TidalDisplacementTest {
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
         // The results should be very slightly different from the reference values
-        doTestDehant(IERSConventions.IERS_2003, false, 2.3e-5);
+        doTestDehant(IERSConventions.IERS_2003, false, false,
+                     0.07700420357108125891, 0.06304056321824967613, 0.05516568152597246810,
+                     2.3e-5);
     }
 
     @Test
@@ -119,22 +139,38 @@ public class TidalDisplacementTest {
         // because after discussion with Dr. Hana Krásná from TU Wien,
         // we have fixed a typo in the IERS 2010 table 7.3a (∆Rf(op) for
         // tide P₁ is +0.07mm but the conventions list it as -0.07mm)
-        doTestDehant(IERSConventions.IERS_2010, false, 1.3e-4);
+        doTestDehant(IERSConventions.IERS_2010, false, false,
+                     0.07700420357108125891, 0.06304056321824967613, 0.05516568152597246810,
+                     1.3e-4);
     }
 
-    private void doTestDehant(final IERSConventions conventions, final boolean replaceModels, final double tolerance)
+    private void doTestDehant(final IERSConventions conventions, final boolean removePermanentDeformation, final boolean replaceModels,
+                              final double expectedDx, final double expectedDy, final double expectedDz,
+                              final double tolerance)
         throws OrekitException {
 
         Frame           itrf        = FramesFactory.getITRF(conventions, false);
         EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
         TimeScale       ut1         = TimeScalesFactory.getUT1(conventions, false);
 
-        // constants consistent with DEHANTTIDEINEL.F reference program
-        // available at <ftp://tai.bipm.org/iers/conv2010/chapter7/dehanttideinel/>
-        // and Copyright (C) 2008 IERS Conventions Center
-        double massRatioSun  = 332946.0482;
-        double massRatioMoon = 0.0123000371;
-        double re            = 6378136.6;
+        final double re;
+        final double sunEarthSystemMassRatio ;
+        final double earthMoonMassRatio;
+        if (replaceModels) {
+            // constants consistent with DEHANTTIDEINEL.F reference program
+            // available at <ftp://tai.bipm.org/iers/conv2010/chapter7/dehanttideinel/>
+            // and Copyright (C) 2008 IERS Conventions Center
+            re                         = 6378136.6;
+            final double massRatioSun  = 332946.0482;
+            final double massRatioMoon = 0.0123000371;
+            sunEarthSystemMassRatio    = massRatioSun * (1.0 / (1.0 + massRatioMoon));
+            earthMoonMassRatio         = 1.0 / massRatioMoon;
+        } else {
+            // constants consistent with IERS and JPL
+            re                      = Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS;
+            sunEarthSystemMassRatio = Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO;
+            earthMoonMassRatio      = Constants.JPL_SSD_EARTH_MOON_MASS_RATIO;
+        }
 
         // fake providers generating only the positions from the reference program test
         PVCoordinatesProvider fakeSun  = (date, frame) -> new TimeStampedPVCoordinates(date,
@@ -150,12 +186,8 @@ public class TidalDisplacementTest {
                                                                                        Vector3D.ZERO,
                                                                                        Vector3D.ZERO);
 
-        TidalDisplacement td = new TidalDisplacement(itrf, re,
-                                                     massRatioSun * (1.0 / (1.0 + massRatioMoon)),
-                                                     1.0 / massRatioMoon,
-                                                     fakeSun,
-                                                     fakeMoon,
-                                                     eopHistory);
+        TidalDisplacement td = new TidalDisplacement(itrf, re, sunEarthSystemMassRatio, earthMoonMassRatio,
+                                                     fakeSun, fakeMoon, eopHistory, removePermanentDeformation);
 
         if (replaceModels) {
             try {
@@ -222,9 +254,9 @@ public class TidalDisplacementTest {
         Vector3D fundamentalStationWettzell = new Vector3D(4075578.385, 931852.890, 4801570.154);
         AbsoluteDate date = new AbsoluteDate(2009, 4, 13, 0, 0, 0.0, ut1);
         Vector3D displacement = td.displacement(date, fundamentalStationWettzell);
-        Assert.assertEquals(0.07700420357108125891, displacement.getX(), tolerance);
-        Assert.assertEquals(0.06304056321824967613, displacement.getY(), tolerance);
-        Assert.assertEquals(0.05516568152597246810, displacement.getZ(), tolerance);
+        Assert.assertEquals(expectedDx, displacement.getX(), tolerance);
+        Assert.assertEquals(expectedDy, displacement.getY(), tolerance);
+        Assert.assertEquals(expectedDz, displacement.getZ(), tolerance);
 
     }
 
