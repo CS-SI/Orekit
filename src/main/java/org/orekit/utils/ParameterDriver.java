@@ -264,8 +264,8 @@ public class ParameterDriver {
     /** Set parameter value.
      * <p>
      * If {@code newValue} is below {@link #getMinValue()}, it will
-     * be silently to {@link #getMinValue()}. If {@code newValue} is
-     * above {@link #getMaxValue()}, it will be silently to {@link
+     * be silently set to {@link #getMinValue()}. If {@code newValue} is
+     * above {@link #getMaxValue()}, it will be silently set to {@link
      * #getMaxValue()}.
      * </p>
      * @param newValue new value
