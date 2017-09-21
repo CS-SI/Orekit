@@ -107,7 +107,8 @@ public class GroundStationTest {
                                                                                             parent.getBodyFrame(),
                                                                                             null),
                                                                            base.getName() + movedSuffix),
-                                                      context.stations.get(0).getTidalDisplacement());
+                                                      context.conventions,
+                                                      context.stations.get(0).getDisplacements());
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),

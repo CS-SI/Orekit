@@ -18,13 +18,12 @@ package org.orekit.models.earth;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.data.BodiesElements;
+import org.orekit.data.PoissonSeries.CompiledSeries;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.EOPHistory;
+import org.orekit.estimation.measurements.StationDisplacement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -49,7 +48,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 9.1
  * @author Luc Maisonobe
  */
-public class TidalDisplacement {
+public class TidalDisplacement implements StationDisplacement {
 
     /** Earth frame. */
     private final Frame earthFrame;
@@ -124,7 +123,7 @@ public class TidalDisplacement {
      *  <li>f[5]: East correction, longitude sine part</li>
      * </ul>
      */
-    private final TimeVectorFunction frequencyCorrectionDiurnal;
+    private final CompiledSeries frequencyCorrectionDiurnal;
 
     /** Function computing corrections in the frequency domain for zonal tides.
      * <ul>
@@ -132,7 +131,7 @@ public class TidalDisplacement {
      *  <li>f[1]: North correction, longitude cosine part</li>
      * </ul>
      */
-    private final TimeVectorFunction frequencyCorrectionZonal;
+    private final CompiledSeries frequencyCorrectionZonal;
 
     /** Simple constructor.
      * @param earthFrame Earth frame
@@ -143,10 +142,7 @@ public class TidalDisplacement {
      * (typically {@link org.orekit.utils.Constants#JPL_SSD_EARTH_MOON_MASS_RATIO Constants.JPL_SSD_EARTH_MOON_MASS_RATIO})
      * @param sun Sun model
      * @param moon Moon model
-     * @param eopHistory EOP history (must be consistent with the selected Earth frame)
-     * @param removePermanentDeformation if true, permanent deformation must be removed
-     * from the displacement (i.e. this permanent deformation is considered to be already
-     * in the original reference points  coordinates)
+     * @param conventions IERS conventions to use
      * @see org.orekit.frames.FramesFactory#getITRF(IERSConventions, boolean)
      * @see org.orekit.frames.FramesFactory#getEOPHistory(IERSConventions, boolean)
      * @see org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO
@@ -157,12 +153,12 @@ public class TidalDisplacement {
                              final double sunEarthSystemMassRatio,
                              final double earthMoonMassRatio,
                              final PVCoordinatesProvider sun, final PVCoordinatesProvider moon,
-                             final EOPHistory eopHistory, final boolean removePermanentDeformation)
+                             final IERSConventions conventions,
+                             final boolean removePermanentDeformation)
         throws OrekitException {
 
         final double sunEarthMassRatio = sunEarthSystemMassRatio * (1 + 1 / earthMoonMassRatio);
         final double moonEarthMassRatio = 1.0 / earthMoonMassRatio;
-        final IERSConventions conventions = eopHistory.getConventions();
 
         this.earthFrame                  = earthFrame;
         this.sun                         = sun;
@@ -192,9 +188,8 @@ public class TidalDisplacement {
         lISemiDiurnal    = hl[11];
         h0Permanent      = hl[12];
 
-        final TimeScale ut1 = TimeScalesFactory.getUT1(eopHistory);
-        this.frequencyCorrectionDiurnal = conventions.getTidalDisplacementFrequencyCorrectionDiurnal(ut1);
-        this.frequencyCorrectionZonal   = conventions.getTidalDisplacementFrequencyCorrectionZonal(ut1);
+        this.frequencyCorrectionDiurnal = conventions.getTidalDisplacementFrequencyCorrectionDiurnal();
+        this.frequencyCorrectionZonal   = conventions.getTidalDisplacementFrequencyCorrectionZonal();
 
     }
 
@@ -205,14 +200,12 @@ public class TidalDisplacement {
         return earthFrame;
     }
 
-    /** Compute displacement of a ground reference point.
-     * @param date current date
-     * @param referencePoint reference point position in {@link #getEarthFrame() Earth frame}
-     * @return displacement vector to be <em>added</em> to {@code referencePoint}
-     * @exception OrekitException if Sun or Moon position cannot be retrieved in Earth frame
-     */
-    public Vector3D displacement(final AbsoluteDate date, final Vector3D referencePoint)
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D displacement(BodiesElements elements, final Vector3D referencePoint)
         throws OrekitException {
+
+        final AbsoluteDate date = elements.getDate();
 
         // preliminary computation (we hold everything in local variables so method is thread-safe)
         final PointData      pointData    = new PointData(referencePoint);
@@ -225,7 +218,7 @@ public class TidalDisplacement {
         Vector3D displacement = timeDomainCorrection(pointData, sunData, moonData);
 
         // step 2 in IERS procedure: corrections in the frequency domain
-        displacement = displacement.add(frequencyDomainCorrection(date, pointData));
+        displacement = displacement.add(frequencyDomainCorrection(elements, pointData));
 
         if (removePermanentDeformation) {
             displacement = displacement.subtract(permanentDeformation(pointData));
@@ -314,20 +307,19 @@ public class TidalDisplacement {
     }
 
     /** Compute the corrections in the frequency domain (step 2 in IERS procedure).
-     * @param date current date
-     * @param pointData reference point data
+BodiesElements arguments     * @param pointData reference point data
      * @return displacement of the reference point
      */
-    private Vector3D frequencyDomainCorrection(final AbsoluteDate date, final PointData pointData) {
+    private Vector3D frequencyDomainCorrection(final BodiesElements elements, final PointData pointData) {
 
         // corrections due to diurnal tides
-        final double[] cD  = frequencyCorrectionDiurnal.value(date);
+        final double[] cD  = frequencyCorrectionDiurnal.value(elements);
         final double   drD = pointData.sin2Phi * (cD[0] * pointData.cosLambda + cD[1] * pointData.sinLambda);
         final double   dnD = pointData.cos2Phi * (cD[2] * pointData.cosLambda + cD[3] * pointData.sinLambda);
         final double   deD = pointData.sinPhi  * (cD[4] * pointData.cosLambda + cD[5] * pointData.sinLambda);
 
         // corrections due to zonal long period tides
-        final double[] cZ  = frequencyCorrectionZonal.value(date);
+        final double[] cZ  = frequencyCorrectionZonal.value(elements);
         final double   drZ = (1.5 * pointData.sinPhi2 - 0.5) * cZ[0];
         final double   dnZ = pointData.sin2Phi               * cZ[1];
 

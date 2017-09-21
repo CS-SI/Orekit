@@ -99,7 +99,8 @@ public class Context {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name), tidalDisplacement);
+        return new GroundStation(new TopocentricFrame(earth, gp, name),
+                                 conventions, tidalDisplacement);
     }
 
 }

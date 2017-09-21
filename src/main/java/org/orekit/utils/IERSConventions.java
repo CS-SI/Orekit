@@ -35,6 +35,7 @@ import org.orekit.data.FieldBodiesElements;
 import org.orekit.data.FieldDelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
+import org.orekit.data.PoissonSeries.CompiledSeries;
 import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
@@ -716,20 +717,18 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionDiurnal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionDiurnal(getNutationArguments(timeScale),
-                                                                   TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
-                                                                   18, 17, -1, 18, -1);
+            return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
+                                                                  18, 17, -1, 18, -1);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionZonal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionZonal(getNutationArguments(timeScale),
-                                         TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
-                                         20, 17, 19, 18, 20);
+            return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
+                                                                20, 17, 19, 18, 20);
         }
 
     },
@@ -1475,20 +1474,18 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionDiurnal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionDiurnal(getNutationArguments(timeScale),
-                                                                   TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
-                                                                   18, 15, 16, 17, 18);
+            return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
+                                                                  18, 15, 16, 17, 18);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionZonal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionZonal(getNutationArguments(timeScale),
-                                                                 TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
-                                                                 18, 15, 16, 17, 18);
+            return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
+                                                                18, 15, 16, 17, 18);
         }
 
     },
@@ -2176,20 +2173,18 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionDiurnal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionDiurnal(getNutationArguments(timeScale),
-                                                                   TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
-                                                                   18, 15, 16, 17, 18);
+            return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
+                                                                  18, 15, 16, 17, 18);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getTidalDisplacementFrequencyCorrectionZonal(final TimeScale timeScale)
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
             throws OrekitException {
-            return new TidalDisplacementFrequencyCorrectionZonal(getNutationArguments(timeScale),
-                                                                 TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
-                                                                 18, 15, 16, 17, 18);
+            return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
+                                                                18, 15, 16, 17, 18);
         }
 
     };
@@ -2393,13 +2388,103 @@ public enum IERSConventions {
      *  <li>f[4]: East correction, longitude cosine part</li>
      *  <li>f[5]: East correction, longitude sine part</li>
      * </ul>
-     * @param timeScale time scale for computing Greenwich Mean Sidereal Time
-     * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return correction function for tidal displacement
      * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
-    public abstract TimeVectorFunction getTidalDisplacementFrequencyCorrectionDiurnal(TimeScale timeScale)
+    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
+        throws OrekitException;
+
+    /** Get the correction function for tidal displacement for diurnal tides.
+     * <ul>
+     *  <li>f[0]: radial correction, longitude cosine part</li>
+     *  <li>f[1]: radial correction, longitude sine part</li>
+     *  <li>f[2]: North correction, longitude cosine part</li>
+     *  <li>f[3]: North correction, longitude sine part</li>
+     *  <li>f[4]: East correction, longitude cosine part</li>
+     *  <li>f[5]: East correction, longitude sine part</li>
+     * </ul>
+     * @param tableName name for the diurnal tides table
+     * @param cols total number of columns of the diurnal tides table
+     * @param rIp column holding ∆Rf(ip) in the diurnal tides table, counting from 1
+     * @param rOp column holding ∆Rf(op) in the diurnal tides table, counting from 1
+     * @param tIp column holding ∆Tf(ip) in the diurnal tides table, counting from 1
+     * @param tOp column holding ∆Tf(op) in the diurnal tides table, counting from 1
+     * @exception OrekitException if Poisson series cannot be loaded
+     * @since 9.1
+     */
+    protected static CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal(final String tableName, final int cols,
+                                                                                   final int rIp, final int rOp,
+                                                                                   final int tIp, final int tOp)
+        throws OrekitException {
+
+        // radial component, missing the sin 2φ factor; this corresponds to:
+        //  - equation 15a in IERS conventions 1996, chapter 7
+        //  - equation 16a in IERS conventions 2003, chapter 7
+        //  - equation 7.12a in IERS conventions 2010, chapter 7
+        final PoissonSeries drCos = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, rIp, +1.0e-3, rOp, +1.0e-3).
+                                    parse(getStream(tableName), tableName);
+        final PoissonSeries drSin = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, rOp, -1.0e-3, rIp, +1.0e-3).
+                                    parse(getStream(tableName), tableName);
+
+        // North component, missing the cos 2φ factor; this corresponds to:
+        //  - equation 15b in IERS conventions 1996, chapter 7
+        //  - equation 16b in IERS conventions 2003, chapter 7
+        //  - equation 7.12b in IERS conventions 2010, chapter 7
+        final PoissonSeries dnCos = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, tIp, +1.0e-3, tOp, +1.0e-3).
+                                    parse(getStream(tableName), tableName);
+        final PoissonSeries dnSin = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
+                                    parse(getStream(tableName), tableName);
+
+        // East component, missing the sin φ factor; this corresponds to:
+        //  - equation 15b in IERS conventions 1996, chapter 7
+        //  - equation 16b in IERS conventions 2003, chapter 7
+        //  - equation 7.12b in IERS conventions 2010, chapter 7
+        final PoissonSeries deCos = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, tOp, -1.0e-3, tIp, +1.0e-3).
+                                    parse(getStream(tableName), tableName);
+        final PoissonSeries deSin = new PoissonSeriesParser(cols).
+                                    withOptionalColumn(1).
+                                    withDoodson(4, 3).
+                                    withFirstDelaunay(10).
+                                    withSinCos(0, tIp, -1.0e-3, tOp, -1.0e-3).
+                                    parse(getStream(tableName), tableName);
+
+        return PoissonSeries.compile(drCos, drSin,
+                                     dnCos, dnSin,
+                                     deCos, deSin);
+
+    }
+
+    /** Get the correction function for tidal displacement for zonal tides.
+     * <ul>
+     *  <li>f[0]: radial correction</li>
+     *  <li>f[1]: North correction</li>
+     * </ul>
+     * @return correction function for tidal displacement
+     * @throws OrekitException if Poisson series cannot be loaded
+     * @since 9.1
+     */
+    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
         throws OrekitException;
 
     /** Get the correction function for tidal displacement for zonal tides.
@@ -2407,14 +2492,45 @@ public enum IERSConventions {
      *  <li>f[0]: radial correction</li>
      *  <li>f[1]: North correction</li>
      * </ul>
-     * @param timeScale time scale for computing Greenwich Mean Sidereal Time
-     * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
-     * @return correction function for tidal displacement
-     * @throws OrekitException if Poisson series cannot be loaded
+     * @param tableName name for the zonal tides table
+     * @param cols total number of columns of the table
+     * @param rIp column holding ∆Rf(ip) in the table, counting from 1
+     * @param rOp column holding ∆Rf(op) in the table, counting from 1
+     * @param tIp column holding ∆Tf(ip) in the table, counting from 1
+     * @param tOp column holding ∆Tf(op) in the table, counting from 1
+     * @exception OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
-    public abstract TimeVectorFunction getTidalDisplacementFrequencyCorrectionZonal(TimeScale timeScale)
-        throws OrekitException;
+    protected static CompiledSeries getTidalDisplacementFrequencyCorrectionZonal(final String tableName, final int cols,
+                                                                                 final int rIp, final int rOp,
+                                                                                 final int tIp, final int tOp)
+        throws OrekitException {
+
+        // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
+        //  - equation 16a in IERS conventions 1996, chapter 7
+        //  - equation 17a in IERS conventions 2003, chapter 7
+        //  - equation 7.13a in IERS conventions 2010, chapter 7
+        final PoissonSeries dr = new PoissonSeriesParser(cols).
+                                 withOptionalColumn(1).
+                                 withDoodson(4, 3).
+                                 withFirstDelaunay(10).
+                                 withSinCos(0, rOp, +1.0e-3, rIp, +1.0e-3).
+                                 parse(getStream(tableName), tableName);
+
+        // North component, missing the sin 2φ factor; this corresponds to:
+        //  - equation 16b in IERS conventions 1996, chapter 7
+        //  - equation 17b in IERS conventions 2003, chapter 7
+        //  - equation 7.13b in IERS conventions 2010, chapter 7
+        final PoissonSeries dn = new PoissonSeriesParser(cols).
+                                 withOptionalColumn(1).
+                                 withDoodson(4, 3).
+                                 withFirstDelaunay(10).
+                                 withSinCos(0, tOp, +1.0e-3, tIp, +1.0e-3).
+                                 parse(getStream(tableName), tableName);
+
+        return PoissonSeries.compile(dr, dn);
+
+    }
 
     /** Interface for functions converting nutation corrections between
      * δΔψ/δΔε to δX/δY.
@@ -2927,177 +3043,6 @@ public enum IERSConventions {
             a[2] = correction[2];
             a[3] = correctionDot[2].multiply(-Constants.JULIAN_DAY);
             return a;
-        }
-
-    }
-
-    /** Local class for tidal displacement frequency corrections for diurnal tides. */
-    private static class TidalDisplacementFrequencyCorrectionDiurnal implements TimeVectorFunction {
-
-        /** fundamental nutation arguments. */
-        private final FundamentalNutationArguments arguments;
-
-        /** Poisson series for diurnal tides. */
-        private final PoissonSeries.CompiledSeries correction;
-
-        /** simple constructor.
-         * @param arguments nutation arguments
-         * @param tableName name for the diurnal tides table
-         * @param cols total number of columns of the diurnal tides table
-         * @param rIp column holding ∆Rf(ip) in the diurnal tides table, counting from 1
-         * @param rOp column holding ∆Rf(op) in the diurnal tides table, counting from 1
-         * @param tIp column holding ∆Tf(ip) in the diurnal tides table, counting from 1
-         * @param tOp column holding ∆Tf(op) in the diurnal tides table, counting from 1
-         * @exception OrekitException if Poisson series cannot be loaded
-         */
-        TidalDisplacementFrequencyCorrectionDiurnal(final FundamentalNutationArguments arguments,
-                                                    final String tableName, final int cols,
-                                                    final int rIp, final int rOp, final int tIp, final int tOp)
-            throws OrekitException {
-
-            this.arguments = arguments;
-
-            // radial component, missing the sin 2φ factor; this corresponds to:
-            //  - equation 15a in IERS conventions 1996, chapter 7
-            //  - equation 16a in IERS conventions 2003, chapter 7
-            //  - equation 7.12a in IERS conventions 2010, chapter 7
-            final PoissonSeries drCos = load(tableName, cols, rIp, +1.0e-3, rOp, +1.0e-3);
-            final PoissonSeries drSin = load(tableName, cols, rOp, -1.0e-3, rIp, +1.0e-3);
-
-            // North component, missing the cos 2φ factor; this corresponds to:
-            //  - equation 15b in IERS conventions 1996, chapter 7
-            //  - equation 16b in IERS conventions 2003, chapter 7
-            //  - equation 7.12b in IERS conventions 2010, chapter 7
-            final PoissonSeries dnCos = load(tableName, cols, tIp, +1.0e-3, tOp, +1.0e-3);
-            final PoissonSeries dnSin = load(tableName, cols, tOp, -1.0e-3, tIp, +1.0e-3);
-
-            // East component, missing the sin φ factor; this corresponds to:
-            //  - equation 15b in IERS conventions 1996, chapter 7
-            //  - equation 16b in IERS conventions 2003, chapter 7
-            //  - equation 7.12b in IERS conventions 2010, chapter 7
-            final PoissonSeries deCos = load(tableName, cols, tOp, -1.0e-3, tIp, +1.0e-3);
-            final PoissonSeries deSin = load(tableName, cols, tIp, -1.0e-3, tOp, -1.0e-3);
-
-            correction = PoissonSeries.compile(drCos, drSin,
-                                               dnCos, dnSin,
-                                               deCos, deSin);
-
-        }
-
-        /** Load a Poisson series.
-         * @param name name for the table
-         * @param cols total number of columns of the table
-         * @param sinColumn column of the sine coefficient counting from 1
-         * (may be -1 if there are no sine coefficients)
-         * @param sinFactor multiplicative factor for the sine coefficient
-         * @param cosColumn column of the cosine coefficient counting from 1
-         * (may be -1 if there are no cosine coefficients)
-         * @param cosFactor multiplicative factor for the cosine coefficient
-         * @return loaded Poisson series
-         * @exception OrekitException if Poisson series cannot be loaded
-         */
-        private PoissonSeries load(final String name, final int cols,
-                                   final int sinColumn, final double sinFactor,
-                                   final int cosColumn, final double cosFactor)
-            throws OrekitException {
-            return new PoissonSeriesParser(cols).
-                            withOptionalColumn(1).
-                            withDoodson(4, 3).
-                            withFirstDelaunay(10).
-                            withSinCos(0, sinColumn, sinFactor, cosColumn, cosFactor).
-                            parse(getStream(name), name);
-        }
-
-        @Override
-        public double[] value(final AbsoluteDate date) {
-            final BodiesElements elements = arguments.evaluateAll(date);
-            return correction.value(elements);
-        }
-
-        @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
-            final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
-            return correction.value(elements);
-        }
-
-    }
-
-    /** Local class for tidal displacement frequency corrections for zonal tides. */
-    private static class TidalDisplacementFrequencyCorrectionZonal implements TimeVectorFunction {
-
-        /** fundamental nutation arguments. */
-        private final FundamentalNutationArguments arguments;
-
-        /** Poisson series for zonal tides. */
-        private final PoissonSeries.CompiledSeries correction;
-
-        /** simple constructor.
-         * @param arguments nutation arguments
-         * @param tableName name for the zonal tides table
-         * @param cols total number of columns of the table
-         * @param rIp column holding ∆Rf(ip) in the table, counting from 1
-         * @param rOp column holding ∆Rf(op) in the table, counting from 1
-         * @param tIp column holding ∆Tf(ip) in the table, counting from 1
-         * @param tOp column holding ∆Tf(op) in the table, counting from 1
-         * @exception OrekitException if Poisson series cannot be loaded
-         */
-        TidalDisplacementFrequencyCorrectionZonal(final FundamentalNutationArguments arguments,
-                                                  final String tableName, final int cols,
-                                                  final int rIp, final int rOp, final int tIp, final int tOp)
-            throws OrekitException {
-
-            this.arguments = arguments;
-
-            // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
-            //  - equation 16a in IERS conventions 1996, chapter 7
-            //  - equation 17a in IERS conventions 2003, chapter 7
-            //  - equation 7.13a in IERS conventions 2010, chapter 7
-            final PoissonSeries dr = load(tableName, cols, rOp, +1.0e-3, rIp, +1.0e-3);
-
-            // North component, missing the sin 2φ factor; this corresponds to:
-            //  - equation 16b in IERS conventions 1996, chapter 7
-            //  - equation 17b in IERS conventions 2003, chapter 7
-            //  - equation 7.13b in IERS conventions 2010, chapter 7
-            final PoissonSeries dn = load(tableName, cols, tOp, +1.0e-3, tIp, +1.0e-3);
-
-            correction = PoissonSeries.compile(dr, dn);
-
-        }
-
-        /** Load a Poisson series.
-         * @param name name for the table
-         * @param cols total number of columns of the table
-         * @param sinColumn column of the sine coefficient counting from 1
-         * (may be -1 if there are no sine coefficients)
-         * @param sinFactor multiplicative factor for the sine coefficient
-         * @param cosColumn column of the cosine coefficient counting from 1
-         * (may be -1 if there are no cosine coefficients)
-         * @param cosFactor multiplicative factor for the cosine coefficient
-         * @return loaded Poisson series
-         * @exception OrekitException if Poisson series cannot be loaded
-         */
-        private PoissonSeries load(final String name, final int cols,
-                                   final int sinColumn, final double sinFactor,
-                                   final int cosColumn, final double cosFactor)
-            throws OrekitException {
-            return new PoissonSeriesParser(cols).
-                            withOptionalColumn(1).
-                            withDoodson(4, 3).
-                            withFirstDelaunay(10).
-                            withSinCos(0, sinColumn, sinFactor, cosColumn, cosFactor).
-                            parse(getStream(name), name);
-        }
-
-        @Override
-        public double[] value(final AbsoluteDate date) {
-            final BodiesElements elements = arguments.evaluateAll(date);
-            return correction.value(elements);
-        }
-
-        @Override
-        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
-            final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
-            return correction.value(elements);
         }
 
     }
