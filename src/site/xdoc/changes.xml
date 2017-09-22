@@ -22,6 +22,11 @@
   <body>
     <release version="9.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a way to retrieve EOP from frames by walking the frames hierarchy tree
+        using parent frame links. This allows to retrieve EOP from topocentric frames,
+        from Earth frames, from TOD...
+      </action>
+      <action dev="luc" type="add">
         Take ground stations displacements due to tides into account in orbit determination.
       </action>
       <action dev="luc" type="add">
