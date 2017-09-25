@@ -35,8 +35,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  * due to tidal effects, as per IERS conventions.
  * </p>
  * <p>
- * Displacement can be computed either to generate coordinates as <em>conventional
- * tide free</em> or <em>mean tide</em>. The difference between the two systems is
+ * Displacement can be computed with respect to either <em>conventional tide free</em>
+ * or <em>mean tide</em> coordinates. The difference between the two systems is
  * about -12cm at poles and +6cm at equator. Selecting one system or the other
  * depends on how the station coordinates have been computed (i.e. it depends
  * whether the coordinates already include the permanent deformation or not).
@@ -49,9 +49,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  */
 public class TidalDisplacement implements StationDisplacement {
-
-    /** Earth frame. */
-    private final Frame earthFrame;
 
     /** Sun motion model. */
     private final PVCoordinatesProvider sun;
@@ -134,7 +131,6 @@ public class TidalDisplacement implements StationDisplacement {
     private final CompiledSeries frequencyCorrectionZonal;
 
     /** Simple constructor.
-     * @param earthFrame Earth frame
      * @param rEarth Earth equatorial radius (from gravity field model)
      * @param sunEarthSystemMassRatio Sun/(Earth + Moon) mass ratio
      * (typically {@link org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO})
@@ -143,13 +139,18 @@ public class TidalDisplacement implements StationDisplacement {
      * @param sun Sun model
      * @param moon Moon model
      * @param conventions IERS conventions to use
+     * @param removePermanentDeformation if true, the station coordinates are
+     * considered <em>mean tide</em> and already include the permanent deformation, hence
+     * it should be removed from the displacement to avoid considering it twice;
+     * if false, the station coordinates are considered <em>conventional tide free</em>
+     * so the permanent deformation must be included in the displacement
      * @see org.orekit.frames.FramesFactory#getITRF(IERSConventions, boolean)
      * @see org.orekit.frames.FramesFactory#getEOPHistory(IERSConventions, boolean)
      * @see org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO
      * @see org.orekit.utils.Constants#JPL_SSD_EARTH_MOON_MASS_RATIO
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      */
-    public TidalDisplacement(final Frame earthFrame, final double rEarth,
+    public TidalDisplacement(final double rEarth,
                              final double sunEarthSystemMassRatio,
                              final double earthMoonMassRatio,
                              final PVCoordinatesProvider sun, final PVCoordinatesProvider moon,
@@ -160,7 +161,6 @@ public class TidalDisplacement implements StationDisplacement {
         final double sunEarthMassRatio = sunEarthSystemMassRatio * (1 + 1 / earthMoonMassRatio);
         final double moonEarthMassRatio = 1.0 / earthMoonMassRatio;
 
-        this.earthFrame                  = earthFrame;
         this.sun                         = sun;
         this.moon                        = moon;
         this.removePermanentDeformation = removePermanentDeformation;
@@ -193,16 +193,9 @@ public class TidalDisplacement implements StationDisplacement {
 
     }
 
-    /** Get the Earth frame.
-     * @return earth frame
-     */
-    public Frame getEarthFrame() {
-        return earthFrame;
-    }
-
     /** {@inheritDoc} */
     @Override
-    public Vector3D displacement(BodiesElements elements, final Vector3D referencePoint)
+    public Vector3D displacement(BodiesElements elements, final Frame earthFrame, final Vector3D referencePoint)
         throws OrekitException {
 
         final AbsoluteDate date = elements.getDate();
@@ -221,6 +214,10 @@ public class TidalDisplacement implements StationDisplacement {
         displacement = displacement.add(frequencyDomainCorrection(elements, pointData));
 
         if (removePermanentDeformation) {
+            // the station coordinates already include permanent deformation,
+            // so it should not be included in the displacement that will be
+            // added to these coordinates to avoid considering this deformation twice
+            // as step 1 did include permanent deformation, we remove it here
             displacement = displacement.subtract(permanentDeformation(pointData));
         }
 

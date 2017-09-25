@@ -68,6 +68,7 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_FIND_RESOURCE("unable to find resource {0} in classpath"),
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
+    NO_EARTH_ORIENTATION_PARAMETERS("missing Earth Orientation Parameters"),
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
     INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
     UNEXPECTED_DATA_AFTER_LINE_IN_FILE("unexpected data after line {0} in file {1}: {2}"),

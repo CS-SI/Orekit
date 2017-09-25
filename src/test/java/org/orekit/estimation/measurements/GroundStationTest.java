@@ -107,7 +107,7 @@ public class GroundStationTest {
                                                                                             parent.getBodyFrame(),
                                                                                             null),
                                                                            base.getName() + movedSuffix),
-                                                      context.conventions,
+                                                      context.ut1.getEOPHistory(),
                                                       context.stations.get(0).getDisplacements());
 
         // create orbit estimator
@@ -135,8 +135,8 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 5.0e-7,
-                                     0.0, 1.3e-6,
+                                     0.0, 5.6e-7,
+                                     0.0, 1.4e-6,
                                      0.0, 4.8e-7,
                                      0.0, 2.6e-10);
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
@@ -146,7 +146,7 @@ public class GroundStationTest {
         GeodeticPoint result = moved.getOffsetGeodeticPoint(null);
 
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
-        Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  1.2e-14);
+        Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  1.4e-14);
         Assert.assertEquals(reference.getLongitude(), result.getLongitude(), 2.9e-14);
         Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.6e-7);
 
@@ -261,30 +261,27 @@ public class GroundStationTest {
 
         estimator.estimate();
 
-        // Angular velocity of the Earth, in rad/s, from TIRF model
-        final double ave = 7.292115146706979e-5;
-
-        final double computedDut1 = station.getPrimeMeridianOffsetDriver().getValue() / ave;
-        final double computedLOD  = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / ave);
+        final double computedDut1  = station.getPrimeMeridianOffsetDriver().getValue() / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY;
+        final double computedLOD   = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY);
         final double computedXp    = station.getPolarOffsetXDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        Assert.assertEquals(dut10, computedDut1,  6.7e-10);
-        Assert.assertEquals(lod,   computedLOD,   4.4e-10);
-        Assert.assertEquals(xp0,   computedXp,    2.8e-9);
-        Assert.assertEquals(xpDot, computedXpDot, 3.6e-10);
-        Assert.assertEquals(yp0,   computedYp,    2.0e-8);
-        Assert.assertEquals(ypDot, computedYpDot, 1.5e-8);
+        Assert.assertEquals(dut10, computedDut1,  4.3e-10);
+        Assert.assertEquals(lod,   computedLOD,   4.9e-10);
+        Assert.assertEquals(xp0,   computedXp,    5.6e-9);
+        Assert.assertEquals(xpDot, computedXpDot, 7.2e-9);
+        Assert.assertEquals(yp0,   computedYp,    1.1e-9);
+        Assert.assertEquals(ypDot, computedYpDot, 2.8e-11);
 
-        // threshold to use if orbit is estimated
-        // (i.e. when commenting out the loop above setting orbital parameters drivers to not selected)
-        // Assert.assertEquals(dut10, computedDut1,  2.1e-2);
-        // Assert.assertEquals(lod,   computedLOD,   6.6e-10);
-        // Assert.assertEquals(xp0,   computedXp,    2.9e-8);
-        // Assert.assertEquals(xpDot, computedXpDot, 2.2e-8);
-        // Assert.assertEquals(yp0,   computedYp,    4.4e-8);
-        // Assert.assertEquals(ypDot, computedYpDot, 4.4e-8);
+        // thresholds to use if orbit is estimated
+        // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")
+//         Assert.assertEquals(dut10, computedDut1,  6.6e-3);
+//         Assert.assertEquals(lod,   computedLOD,   1.1e-9);
+//         Assert.assertEquals(xp0,   computedXp,    3.3e-8);
+//         Assert.assertEquals(xpDot, computedXpDot, 2.2e-8);
+//         Assert.assertEquals(yp0,   computedYp,    3.3e-8);
+//         Assert.assertEquals(ypDot, computedYpDot, 3.8e-8);
 
     }
 
@@ -1138,7 +1135,6 @@ public class GroundStationTest {
             }
         };
         DSFactory factory11 = new DSFactory(1, 1);
-
         RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
 
         double maxRotationValueError          = 0;

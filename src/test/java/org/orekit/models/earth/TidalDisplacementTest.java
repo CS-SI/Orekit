@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
@@ -42,19 +41,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TidalDisplacementTest {
-
-    @Test
-    public void testFrame() throws OrekitException {
-        IERSConventions conventions = IERSConventions.IERS_2010;
-        Frame           itrf        = FramesFactory.getITRF(conventions, false);
-        TidalDisplacement td = new TidalDisplacement(itrf, Constants.EIGEN5C_EARTH_MU,
-                                                     Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
-                                                     Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
-                                                     CelestialBodyFactory.getSun(),
-                                                     CelestialBodyFactory.getMoon(),
-                                                     conventions, true);
-        Assert.assertSame(itrf, td.getEarthFrame());
-    }
 
     @Test
     public void testIERSDisplacementNumbers() throws OrekitException {
@@ -183,7 +169,7 @@ public class TidalDisplacementTest {
                                                                                        Vector3D.ZERO,
                                                                                        Vector3D.ZERO);
 
-        TidalDisplacement td = new TidalDisplacement(itrf, re, sunEarthSystemMassRatio, earthMoonMassRatio,
+        TidalDisplacement td = new TidalDisplacement(re, sunEarthSystemMassRatio, earthMoonMassRatio,
                                                      fakeSun, fakeMoon, conventions, removePermanentDeformation);
 
         FundamentalNutationArguments arguments = null;
@@ -245,7 +231,7 @@ public class TidalDisplacementTest {
 
         Vector3D fundamentalStationWettzell = new Vector3D(4075578.385, 931852.890, 4801570.154);
         AbsoluteDate date = new AbsoluteDate(2009, 4, 13, 0, 0, 0.0, ut1);
-        Vector3D displacement = td.displacement(arguments.evaluateAll(date), fundamentalStationWettzell);
+        Vector3D displacement = td.displacement(arguments.evaluateAll(date), itrf, fundamentalStationWettzell);
         Assert.assertEquals(expectedDx, displacement.getX(), tolerance);
         Assert.assertEquals(expectedDy, displacement.getY(), tolerance);
         Assert.assertEquals(expectedDz, displacement.getZ(), tolerance);

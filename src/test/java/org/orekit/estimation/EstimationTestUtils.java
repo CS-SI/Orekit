@@ -39,8 +39,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.MeasurementCreator;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.StationDisplacement;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
@@ -77,8 +78,8 @@ public class EstimationTestUtils {
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                     Constants.WGS84_EARTH_FLATTENING,
-                                     FramesFactory.getITRF(context.conventions, true));
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(context.conventions, true));
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
         context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
@@ -86,12 +87,13 @@ public class EstimationTestUtils {
         final EOPHistory eopHistory = FramesFactory.getEOPHistory(context.conventions, true);
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(eopHistory);
-        context.tidalDisplacement = new TidalDisplacement(context.earth.getBodyFrame(),
-                                                          Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                          Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
-                                                          Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
-                                                          context.sun, context.moon,
-                                                          context.conventions, false);
+        context.displacements = new StationDisplacement[] {
+            new TidalDisplacement(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                  Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
+                                  Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
+                                  context.sun, context.moon,
+                                  context.conventions, false)
+        };
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -136,6 +138,7 @@ public class EstimationTestUtils {
         context.conventions = IERSConventions.IERS_2010;
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
+        context.displacements = new StationDisplacement[0];
         String Myframename = "MyEarthFrame";
         final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
         final double omega = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
