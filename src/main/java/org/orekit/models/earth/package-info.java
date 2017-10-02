@@ -26,7 +26,7 @@
  *   <li>Geomagnetic Field</li>
  *   <li>Geoid</li>
  *   <li>Atmospheric refraction</li>
- *   <li>Displacement of ground points due to tides</li>
+ *   <li>Displacement of ground points</li>
  *   <li>Tessellation of zones of interest as tiles</li>
  *   <li>Sampling of zones of interest as grids of points</li>
  * </ul>

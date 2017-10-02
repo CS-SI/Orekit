@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.displacement;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries.CompiledSeries;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.StationDisplacement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
