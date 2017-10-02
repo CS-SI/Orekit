@@ -447,3 +447,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

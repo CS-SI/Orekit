@@ -1,0 +1,156 @@
+/* Copyright 2011-2012 Space Applications Services
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.models.earth.displacement;
+
+
+import java.util.List;
+
+import org.hipparchus.util.FastMath;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
+public class OceanLoadingCoefficientsBLQFactoryTest {
+
+    @Test
+    public void testTruncated() {
+        try {
+            OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^truncated\\.blq$");
+            factory.getSites();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE, oe.getSpecifier());
+            Assert.assertEquals(10, oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testCorrupted() {
+        try {
+            OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^corrupted\\.blq$");
+            factory.getSites();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(11, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testHardisp() throws OrekitException {
+        OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^hardisp\\.blq$");
+        List<String> sites = factory.getSites();
+        Assert.assertEquals(2, sites.size());
+        Assert.assertEquals("Onsala", sites.get(0));
+        Assert.assertEquals("Reykjavik", sites.get(1));
+
+        OceanLoadingCoefficients onsalaCoeffs = factory.getCoefficients("OnSaLa");
+        Assert.assertEquals("Onsala", onsalaCoeffs.getSiteName());
+        Assert.assertEquals(11.9264, FastMath.toDegrees(onsalaCoeffs.getSiteLocation().getLongitude()), 1.0e-15);
+        Assert.assertEquals(57.3958, FastMath.toDegrees(onsalaCoeffs.getSiteLocation().getLatitude()),  1.0e-15);
+        Assert.assertEquals( 0.0000, onsalaCoeffs.getSiteLocation().getAltitude(),                      1.0e-15);
+        Assert.assertEquals( .00352, onsalaCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.M2),                      1.0e-15);
+        Assert.assertEquals( .00123, onsalaCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.S2),                      1.0e-15);
+        Assert.assertEquals( .00035, onsalaCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.N2),                        1.0e-15);
+        Assert.assertEquals( .00008, onsalaCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.K2),                        1.0e-15);
+        Assert.assertEquals( .00029, onsalaCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.K1),                       1.0e-15);
+        Assert.assertEquals( .00028, onsalaCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.O1),                       1.0e-15);
+        Assert.assertEquals(  -65.6, FastMath.toDegrees(onsalaCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.P1)),      1.0e-15);
+        Assert.assertEquals( -138.1, FastMath.toDegrees(onsalaCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.Q1)),      1.0e-15);
+        Assert.assertEquals( -167.4, FastMath.toDegrees(onsalaCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.MF)),        1.0e-15);
+        Assert.assertEquals( -170.0, FastMath.toDegrees(onsalaCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.MM)),        1.0e-15);
+        Assert.assertEquals(    5.2, FastMath.toDegrees(onsalaCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.SSA)),      1.0e-15);
+        Assert.assertEquals(  109.5, FastMath.toDegrees(onsalaCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.M2)),       1.0e-15);
+
+        // the coordinates for Reykjavik are *known* to be wrong in this test file
+        // these test data have been extracted from the HARDISP.F file in September 2017
+        // and it seems longitude and latitude have been exchanged...
+        // With the file coordinates, Reykjavik would be somewhere in the Indian Ocean, East of Madagascar
+        // The error has been reported to IERS conventions center.
+        OceanLoadingCoefficients reykjavikCoeffs = factory.getCoefficients("Reykjavik");
+        Assert.assertEquals("Reykjavik", reykjavikCoeffs.getSiteName());
+        Assert.assertEquals( 64.1388, FastMath.toDegrees(reykjavikCoeffs.getSiteLocation().getLongitude()), 1.0e-15);
+        Assert.assertEquals(-21.9555, FastMath.toDegrees(reykjavikCoeffs.getSiteLocation().getLatitude()),  1.0e-15);
+        Assert.assertEquals(  0.0000, reykjavikCoeffs.getSiteLocation().getAltitude(),                      1.0e-15);
+        Assert.assertEquals(  .00034, reykjavikCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.SSA),                     1.0e-15);
+        Assert.assertEquals(  .00034, reykjavikCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.MM),                      1.0e-15);
+        Assert.assertEquals(  .00004, reykjavikCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.MF),                        1.0e-15);
+        Assert.assertEquals(  .00018, reykjavikCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.Q1),                        1.0e-15);
+        Assert.assertEquals(  .00047, reykjavikCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.P1),                       1.0e-15);
+        Assert.assertEquals(  .00066, reykjavikCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.O1),                       1.0e-15);
+        Assert.assertEquals(   -52.0, FastMath.toDegrees(reykjavikCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.K1)),      1.0e-15);
+        Assert.assertEquals(   104.1, FastMath.toDegrees(reykjavikCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.K2)),      1.0e-15);
+        Assert.assertEquals(    38.9, FastMath.toDegrees(reykjavikCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.N2)),        1.0e-15);
+        Assert.assertEquals(    93.8, FastMath.toDegrees(reykjavikCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.S2)),        1.0e-15);
+        Assert.assertEquals(   156.2, FastMath.toDegrees(reykjavikCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.M2)),       1.0e-15);
+        Assert.assertEquals(   179.7, FastMath.toDegrees(reykjavikCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.SSA)),      1.0e-15);
+
+    }
+
+    @Test
+    public void testCompleteFormat() throws OrekitException {
+        OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^complete-format\\.blq$");
+        List<String> sites = factory.getSites();
+        Assert.assertEquals(4, sites.size());
+        Assert.assertEquals("GMRT",           sites.get(0));
+        Assert.assertEquals("Goldstone",      sites.get(1));
+        Assert.assertEquals("Noumea",         sites.get(2));
+        Assert.assertEquals("Pleumeur-Bodou", sites.get(3));
+
+        OceanLoadingCoefficients noumeaCoeffs = factory.getCoefficients("NOUMEA");
+        Assert.assertEquals("Noumea", noumeaCoeffs.getSiteName());
+        Assert.assertEquals(166.4433, FastMath.toDegrees(noumeaCoeffs.getSiteLocation().getLongitude()), 1.0e-15);
+        Assert.assertEquals(-22.2711, FastMath.toDegrees(noumeaCoeffs.getSiteLocation().getLatitude()),  1.0e-15);
+        Assert.assertEquals(  0.0000, noumeaCoeffs.getSiteLocation().getAltitude(),                      1.0e-15);
+        Assert.assertEquals(  .02070, noumeaCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.M2),                      1.0e-15);
+        Assert.assertEquals(  .00346, noumeaCoeffs.getZenithAmplitude(OceanLoadingCoefficients.MainTide.S2),                      1.0e-15);
+        Assert.assertEquals(  .00153, noumeaCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.N2),                        1.0e-15);
+        Assert.assertEquals(  .00021, noumeaCoeffs.getWestAmplitude(OceanLoadingCoefficients.MainTide.K2),                        1.0e-15);
+        Assert.assertEquals(  .00125, noumeaCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.K1),                       1.0e-15);
+        Assert.assertEquals(  .00101, noumeaCoeffs.getSouthAmplitude(OceanLoadingCoefficients.MainTide.O1),                       1.0e-15);
+        Assert.assertEquals(  -152.1, FastMath.toDegrees(noumeaCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.P1)),      1.0e-15);
+        Assert.assertEquals(   164.2, FastMath.toDegrees(noumeaCoeffs.getZenithPhase(OceanLoadingCoefficients.MainTide.Q1)),      1.0e-15);
+        Assert.assertEquals(   -89.7, FastMath.toDegrees(noumeaCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.MF)),        1.0e-15);
+        Assert.assertEquals(  -133.6, FastMath.toDegrees(noumeaCoeffs.getWestPhase(OceanLoadingCoefficients.MainTide.MM)),        1.0e-15);
+        Assert.assertEquals(  -179.0, FastMath.toDegrees(noumeaCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.SSA)),      1.0e-15);
+        Assert.assertEquals(   -56.2, FastMath.toDegrees(noumeaCoeffs.getSouthPhase(OceanLoadingCoefficients.MainTide.M2)),       1.0e-15);
+
+    }
+
+    @Test
+        public void testSeveralFiles() throws OrekitException {
+            OceanLoadingCoefficientsBLQFactory factory =
+                            new OceanLoadingCoefficientsBLQFactory("^(?:(?:hardisp)|(?:complete-format))\\.blq$");
+            List<String> sites = factory.getSites();
+            Assert.assertEquals(6, sites.size());
+            Assert.assertEquals("GMRT",           sites.get(0));
+            Assert.assertEquals("Goldstone",      sites.get(1));
+            Assert.assertEquals("Noumea",         sites.get(2));
+            Assert.assertEquals("Onsala",         sites.get(3));
+            Assert.assertEquals("Pleumeur-Bodou", sites.get(4));
+            Assert.assertEquals("Reykjavik",      sites.get(5));
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        Utils.setDataRoot("regular-data:oso-blq");
+    }
+
+}

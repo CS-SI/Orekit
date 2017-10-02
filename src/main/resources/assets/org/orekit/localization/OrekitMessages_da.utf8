@@ -447,3 +447,7 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = filen {0} indeholder ikke Klobuchar koefficien
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = ingen referencedato angivet for parameteren {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>
+

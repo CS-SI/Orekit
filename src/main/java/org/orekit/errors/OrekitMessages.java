@@ -200,7 +200,8 @@ public enum OrekitMessages implements Localizable {
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
-    NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}");
+    NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
+    STATION_NOT_FOUND("station {0} not found, known stations: {1}");
 
 
     // CHECKSTYLE: resume JavadocVariable check
