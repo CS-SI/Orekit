@@ -114,6 +114,46 @@ public class TideTest {
     }
 
     @Test
+    public void testSortedRatesSemiLongPeriod() throws OrekitException {
+        doTestSort(0, Tide.SSA, Tide.MM, Tide.MF);
+    }
+
+    @Test
+    public void testSortedRatesDiurnal() throws OrekitException {
+        doTestSort(1, Tide.Q1, Tide.O1, Tide.P1, Tide.K1);
+    }
+
+    @Test
+    public void testSortedRatesSemiDiurnal() throws OrekitException {
+        doTestSort(2, Tide.N2, Tide.M2, Tide.S2, Tide.K2 );
+    }
+
+    private void doTestSort(int tauMultiplier, Tide... tides) throws OrekitException {
+        // this test checks that tides sort order is date-independent for a large time range
+        // (almost 180000 years long)
+        // tides sort-order is based on rate, but the rates varies slightly with dates
+        // (because Delaunay nutation arguments are polynomials)
+        // The variations are however small and we want to make sure
+        // that if rate(tideA) < rate(tideB) at time t0, this order remains
+        // the same for t1 a few millenia around t0
+        TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
+        for (double dt = -122000; dt < 54000; dt += 100) {
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_YEAR);
+            final BodiesElements el = fna.evaluateAll(date);
+            for (int i = 1; i < tides.length; ++i) {
+                Assert.assertTrue(tides[i - 1].getRate(el) < tides[i].getRate(el));
+            }
+        }
+
+        // check we are in the expected species
+        for (final Tide tide : tides) {
+            Assert.assertEquals(tauMultiplier, tide.getTauMultiplier());
+        }
+
+    }
+
+    @Test
     public void testTable65a() throws OrekitException {
         doTestTable(new double[][] {
             { 12.85429,  125755, 1, -3,  0,  2,   0,  0,   2,  0,  2,  0,  2  },

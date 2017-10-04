@@ -37,107 +37,83 @@ import org.orekit.bodies.GeodeticPoint;
  */
 public class OceanLoadingCoefficients {
 
-    /** Main tides used in the coefficients. */
-    public enum MainTide {
-
-        /** M₂ tide. */
-        M2(Tide.M2),
-
-        /** S₂ tide. */
-        S2(Tide.S2),
-
-        /** N₂ tide. */
-        N2(Tide.N2),
-
-        /** K₂ tide. */
-        K2(Tide.K2),
-
-        /** K₁ tide. */
-        K1(Tide.K1),
-
-        /** O₁ tide. */
-        O1(Tide.O1),
-
-        /** P₁ tide. */
-        P1(Tide.P1),
-
-        /** Q₁ tide. */
-        Q1(Tide.Q1),
-
-        /** Mf tide. */
-        MF(Tide.MF),
-
-        /** Mm tide. */
-        MM(Tide.MM),
-
-        /** Ssa tide. */
-        SSA(Tide.SSA);
-
-        /** Tide. */
-        private final Tide tide;
-
-        /** Simple constructor.
-         * @param doodsonNumber Doodson number for the tide
-         */
-        MainTide(final Tide tide) {
-            this.tide = tide;
-        }
-
-        /** Get the tide.
-         * @return tide
-         */
-        public Tide getTide() {
-            return tide;
-        }
-
-    }
-
     /** Site name. */
     private final String siteName;
 
     /** Site location. */
     private final GeodeticPoint siteLocation;
 
-    /** Amplitude along zenith axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] zAmplitude;
+    /** Main tides by species and increasing rate. */
+    private final Tide[][] tides;
 
-    /** Phase along zenith axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] zPhase;
+    /** Amplitude along zenith axis for main tides by species and increasing rate. */
+    private final double[][] zAmplitude;
 
-    /** Amplitude along West axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] wAmplitude;
+    /** Phase along zenith axis for main tides by species and increasing rate. */
+    private final double[][] zPhase;
 
-    /** Phase along West axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] wPhase;
+    /** Amplitude along West axis for main tides by species and increasing rate. */
+    private final double[][] wAmplitude;
 
-    /** Amplitude along South axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] sAmplitude;
+    /** Phase along West axis for main tides by species and increasing rate. */
+    private final double[][] wPhase;
 
-    /** Phase along South axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides. */
-    private final double[] sPhase;
+    /** Amplitude along South axis for main tides by species and increasing rate. */
+    private final double[][] sAmplitude;
+
+    /** Phase along South axis for main tides by species and increasing rate. */
+    private final double[][] sPhase;
 
     /** Simple constructor.
+     * <p>
+     * Arrays must be organized by species and sorted in increasing rate order.
      * @param siteName site name
      * @param siteLocation site location
-     * @param zAmplitude amplitude along zenith axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
-     * @param zPhase phase along zenith axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
-     * @param wAmplitude amplitude along West axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
-     * @param wPhase phase along West axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
-     * @param sAmplitude amplitude along South axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
-     * @param sPhase phase along South axis for M₂, S₂, N₂, K₂, K₁, O₁, P₁, Q₁, Mf, Mm and Ssa tides
+     * @param zAmplitude amplitude along zenith axis
+     * @param zPhase phase along zenith axis
+     * @param wAmplitude amplitude along West
+     * @param wPhase phase along West axis
+     * @param sAmplitude amplitude along South
+     * @param sPhase phase along South axis
      */
     public OceanLoadingCoefficients(final String siteName, final GeodeticPoint siteLocation,
-                                    final double[] zAmplitude, final double[] zPhase,
-                                    final double[] wAmplitude, final double[] wPhase,
-                                    final double[] sAmplitude, final double[] sPhase) {
+                                    final Tide[][] tides,
+                                    final double[][] zAmplitude, final double[][] zPhase,
+                                    final double[][] wAmplitude, final double[][] wPhase,
+                                    final double[][] sAmplitude, final double[][] sPhase) {
         this.siteName     = siteName;
         this.siteLocation = siteLocation;
-        this.zAmplitude   = zAmplitude.clone();
-        this.zPhase       = zPhase.clone();
-        this.wAmplitude   = wAmplitude.clone();
-        this.wPhase       = wPhase.clone();
-        this.sAmplitude   = sAmplitude.clone();
-        this.sPhase       = sPhase.clone();
+        this.tides        = copy(tides);
+        this.zAmplitude   = copy(zAmplitude);
+        this.zPhase       = copy(zPhase);
+        this.wAmplitude   = copy(wAmplitude);
+        this.wPhase       = copy(wPhase);
+        this.sAmplitude   = copy(sAmplitude);
+        this.sPhase       = copy(sPhase);
+    }
+
+    /** Deep copy of a variable rows tides array.
+     * @param array to copy
+     * @return copied array
+     */
+    private Tide[][] copy(final Tide[][] array) {
+        final Tide[][] copied = new Tide[array.length][];
+        for (int i = 0; i < array.length; ++i) {
+            copied[i] = array[i].clone();
+        }
+        return copied;
+    }
+
+    /** Deep copy of a variable rows double array.
+     * @param array to copy
+     * @return copied array
+     */
+    private double[][] copy(final double[][] array) {
+        final double[][] copied = new double[array.length][];
+        for (int i = 0; i < array.length; ++i) {
+            copied[i] = array[i].clone();
+        }
+        return copied;
     }
 
     /** Get the site name.
@@ -154,52 +130,81 @@ public class OceanLoadingCoefficients {
         return siteLocation;
     }
 
+    /** Get the tide.
+     * @param i species
+     * @param j tide in the species
+     * @return tide
+     */
+    public Tide getTide(final int i, int j) {
+        return tides[i][j];
+    }
+
     /** Get the amplitude along zenith axis.
-     * @param tide main tide to consider
+     * @param i species
+     * @param j tide in the species
      * @return amplitude along zenith axis
      */
-    public double getZenithAmplitude(final MainTide tide) {
-        return zAmplitude[tide.ordinal()];
+    public double getZenithAmplitude(final int i, int j) {
+        return zAmplitude[i][j];
     }
 
     /** Get the phase along zenith axis.
-     * @param tide main tide to consider
-     * @return phase along zenith axis
+     * @param i species
+     * @param j tide in the species
      */
-    public double getZenithPhase(final MainTide tide) {
-        return zPhase[tide.ordinal()];
+    public double getZenithPhase(final int i, int j) {
+        return zPhase[i][j];
     }
 
     /** Get the amplitude along west axis.
-     * @param tide main tide to consider
+     * @param i species
+     * @param j tide in the species
      * @return amplitude along west axis
      */
-    public double getWestAmplitude(final MainTide tide) {
-        return wAmplitude[tide.ordinal()];
+    public double getWestAmplitude(final int i, int j) {
+        return wAmplitude[i][j];
     }
 
     /** Get the phase along West axis.
-     * @param tide main tide to consider
+     * @param i species
+     * @param j tide in the species
      * @return phase along West axis
      */
-    public double getWestPhase(final MainTide tide) {
-        return wPhase[tide.ordinal()];
+    public double getWestPhase(final int i, int j) {
+        return wPhase[i][j];
     }
 
     /** Get the amplitude along South axis.
-     * @param tide main tide to consider
+     * @param i species
+     * @param j tide in the species
      * @return amplitude along South axis
      */
-    public double getSouthAmplitude(final MainTide tide) {
-        return sAmplitude[tide.ordinal()];
+    public double getSouthAmplitude(final int i, int j) {
+        return sAmplitude[i][j];
     }
 
     /** Get the phase along South axis.
-     * @param tide main tide to consider
+     * @param i species
+     * @param j tide in the species
      * @return phase along South axis
      */
-    public double getSouthPhase(final MainTide tide) {
-        return sPhase[tide.ordinal()];
+    public double getSouthPhase(final int i, int j) {
+        return sPhase[i][j];
+    }
+
+    /** Get the number of species.
+     * @return number of species
+     */
+    public int getNbSpecies() {
+        return tides.length;
+    }
+
+    /** Get the number of tides for one species.
+     * @param species species index
+     * @return number of tides for one species
+     */
+    public int getNbTides(final int species) {
+        return tides[species].length;
     }
 
 }

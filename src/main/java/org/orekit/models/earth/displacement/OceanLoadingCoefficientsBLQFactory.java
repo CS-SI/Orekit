@@ -60,6 +60,23 @@ public class OceanLoadingCoefficientsBLQFactory {
     /** Default supported files name pattern for Onsala Space Observatory files in BLQ format. */
     public static final String DEFAULT_BLQ_SUPPORTED_NAMES = "^.+\\.blq$";
 
+    /** Main tides. */
+    private static final Tide[][] TIDES = {
+        { Tide.SSA, Tide.MM, Tide.MF },
+        { Tide.Q1,  Tide.O1, Tide.P1, Tide.K1 },
+        { Tide.N2,  Tide.M2, Tide.S2, Tide.K2 }
+    };
+
+    /** Species index for each column. */
+    private static final int[] I = {
+        2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0
+    };
+
+    /** Tides index for each column. */
+    private static final int[] J = {
+        1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
+    };
+
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
@@ -256,7 +273,12 @@ public class OceanLoadingCoefficientsBLQFactory {
             // temporary holders for parsed data
             String         siteName     = null;
             GeodeticPoint  siteLocation = null;
-            final double[][] data       = new double[6][OceanLoadingCoefficients.MainTide.values().length];
+            final double[][][] data     = new double[6][3][];
+            for (int i = 0; i < data.length; ++i) {
+                data[i][0] = new double[3];
+                data[i][1] = new double[4];
+                data[i][2] = new double[4];
+            }
 
             try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
 
@@ -284,13 +306,13 @@ public class OceanLoadingCoefficientsBLQFactory {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);
                         }
-                        for (int k = 0; k < data[dataLine].length; ++k) {
+                        for (int k = 0; k < I.length; ++k) {
                             if (dataLine < 3) {
                                 // amplitude data
-                                data[dataLine][k] = Double.parseDouble(matcher.group(k + 1));
+                                data[dataLine][I[k]][J[k]] = Double.parseDouble(matcher.group(k + 1));
                             } else {
-                                // phase data
-                                data[dataLine][k] = FastMath.toRadians(Double.parseDouble(matcher.group(k + 1)));
+                                // phase data (reversed to be negative for lags)
+                                data[dataLine][I[k]][J[k]] = -FastMath.toRadians(Double.parseDouble(matcher.group(k + 1)));
                             }
                         }
                         if (dataLine < data.length - 1) {
@@ -298,7 +320,7 @@ public class OceanLoadingCoefficientsBLQFactory {
                             ++dataLine;
                         } else {
                             // it was the last data line
-                            coefficients.add(new OceanLoadingCoefficients(siteName, siteLocation,
+                            coefficients.add(new OceanLoadingCoefficients(siteName, siteLocation, TIDES,
                                                                           data[0], data[3],
                                                                           data[1], data[4],
                                                                           data[2], data[5]));
