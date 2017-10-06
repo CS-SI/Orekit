@@ -2410,6 +2410,7 @@ public enum IERSConventions {
      * @param rOp column holding ∆Rf(op) in the diurnal tides table, counting from 1
      * @param tIp column holding ∆Tf(ip) in the diurnal tides table, counting from 1
      * @param tOp column holding ∆Tf(op) in the diurnal tides table, counting from 1
+     * @return correction function for tidal displacement for diurnal tides
      * @exception OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
@@ -2498,6 +2499,7 @@ public enum IERSConventions {
      * @param rOp column holding ∆Rf(op) in the table, counting from 1
      * @param tIp column holding ∆Tf(ip) in the table, counting from 1
      * @param tOp column holding ∆Tf(op) in the table, counting from 1
+     * @return correction function for tidal displacement for zonal tides
      * @exception OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */

@@ -69,6 +69,7 @@ public class OceanLoadingCoefficients {
      * Arrays must be organized by species and sorted in increasing rate order.
      * @param siteName site name
      * @param siteLocation site location
+     * @param tides main tides, by species and increasing rate
      * @param zAmplitude amplitude along zenith axis
      * @param zPhase phase along zenith axis
      * @param wAmplitude amplitude along West
@@ -135,7 +136,7 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return tide
      */
-    public Tide getTide(final int i, int j) {
+    public Tide getTide(final int i, final int j) {
         return tides[i][j];
     }
 
@@ -144,15 +145,16 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return amplitude along zenith axis
      */
-    public double getZenithAmplitude(final int i, int j) {
+    public double getZenithAmplitude(final int i, final int j) {
         return zAmplitude[i][j];
     }
 
     /** Get the phase along zenith axis.
      * @param i species
      * @param j tide in the species
+     * @return phase along zenith axis
      */
-    public double getZenithPhase(final int i, int j) {
+    public double getZenithPhase(final int i, final int j) {
         return zPhase[i][j];
     }
 
@@ -161,7 +163,7 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return amplitude along west axis
      */
-    public double getWestAmplitude(final int i, int j) {
+    public double getWestAmplitude(final int i, final int j) {
         return wAmplitude[i][j];
     }
 
@@ -170,7 +172,7 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return phase along West axis
      */
-    public double getWestPhase(final int i, int j) {
+    public double getWestPhase(final int i, final int j) {
         return wPhase[i][j];
     }
 
@@ -179,7 +181,7 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return amplitude along South axis
      */
-    public double getSouthAmplitude(final int i, int j) {
+    public double getSouthAmplitude(final int i, final int j) {
         return sAmplitude[i][j];
     }
 
@@ -188,7 +190,7 @@ public class OceanLoadingCoefficients {
      * @param j tide in the species
      * @return phase along South axis
      */
-    public double getSouthPhase(final int i, int j) {
+    public double getSouthPhase(final int i, final int j) {
         return sPhase[i][j];
     }
 

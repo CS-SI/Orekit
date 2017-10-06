@@ -194,7 +194,7 @@ public class TidalDisplacement implements StationDisplacement {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D displacement(BodiesElements elements, final Frame earthFrame, final Vector3D referencePoint)
+    public Vector3D displacement(final BodiesElements elements, final Frame earthFrame, final Vector3D referencePoint)
         throws OrekitException {
 
         final AbsoluteDate date = elements.getDate();
@@ -303,7 +303,8 @@ public class TidalDisplacement implements StationDisplacement {
     }
 
     /** Compute the corrections in the frequency domain (step 2 in IERS procedure).
-BodiesElements arguments     * @param pointData reference point data
+     * @param elements elements affecting Earth orientation
+     * @param pointData reference point data
      * @return displacement of the reference point
      */
     private Vector3D frequencyDomainCorrection(final BodiesElements elements, final PointData pointData) {

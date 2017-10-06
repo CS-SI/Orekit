@@ -62,6 +62,9 @@ import org.orekit.utils.ParameterDriver;
  */
 public class EstimatedEarthFrameProvider implements TransformProvider {
 
+    /** Earth Angular Velocity, in rad/s, from TIRF model. */
+    public static final double EARTH_ANGULAR_VELOCITY = 7.292115146706979e-5;
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20170922L;
 
@@ -72,9 +75,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * </p>
      */
     private static final double ANGULAR_SCALE = FastMath.scalb(1.0, -22);
-
-    /** Earth Angular Velocity, in rad/s, from TIRF model. */
-    public static final double EARTH_ANGULAR_VELOCITY = 7.292115146706979e-5;
 
     /** Underlying raw UT1. */
     private final UT1Scale baseUT1;
@@ -208,7 +208,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
     }
 
     /** Get the estimated UT1 time scale.
-     * @param estimated UT1 time scale
+     * @return estimated UT1 time scale
      */
     public UT1Scale getEstimatedUT1() {
         return estimatedUT1;
@@ -265,7 +265,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
     }
-    
+
     /** Get the transform with derivatives.
      * @param date date of the transform
      * @param factory factory for the derivatives
@@ -295,7 +295,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         return getTransform(date, theta, thetaDot, xpNeg, xpNegDot, ypNeg, ypNegDot);
 
     }
-    
+
     /** Get the transform with derivatives.
      * @param date date of the transform
      * @param theta angle of the prime meridian
@@ -367,6 +367,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @return current value of the linear model
      * @exception OrekitException if reference date has not been set for the
      * offset driver
+     * @param <T> type of the filed elements
      */
     private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
@@ -442,7 +443,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> T offsetFromTAI(FieldAbsoluteDate<T> date) {
+        public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
             try {
                 final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
                 return baseUT1.offsetFromTAI(date).add(dut1);
@@ -453,7 +454,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double offsetFromTAI(AbsoluteDate date) throws OrekitExceptionWrapper {
+        public double offsetFromTAI(final AbsoluteDate date) throws OrekitExceptionWrapper {
             try {
                 final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
                 return baseUT1.offsetFromTAI(date) + dut1;

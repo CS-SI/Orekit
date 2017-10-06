@@ -62,9 +62,13 @@ public class OceanLoadingCoefficientsBLQFactory {
 
     /** Main tides. */
     private static final Tide[][] TIDES = {
-        { Tide.SSA, Tide.MM, Tide.MF },
-        { Tide.Q1,  Tide.O1, Tide.P1, Tide.K1 },
-        { Tide.N2,  Tide.M2, Tide.S2, Tide.K2 }
+        {
+            Tide.SSA, Tide.MM, Tide.MF
+        }, {
+            Tide.Q1,  Tide.O1, Tide.P1, Tide.K1
+        }, {
+            Tide.N2,  Tide.M2, Tide.S2, Tide.K2
+        }
     };
 
     /** Species index for each column. */
@@ -196,7 +200,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      *   -145.3  -88.4  178.5  -66.3 -130.5 -145.3 -131.7 -148.7  124.3  139.6   23.3
      *     90.7  111.1   74.1  111.3  176.9  165.3  175.8  164.0   48.9   25.3    4.5
      * $$
-     *   ONSALA   
+     *   ONSALA
      * $$ CSR4.0_f_PP ID: 2017-09-28 15:01:14
      * $$ Computed by OLMPP by H G Scherneck, Onsala Space Observatory, 2017
      * $$ Onsala,                    RADI TANG  lon/lat:   11.9264   57.3958    0.000
@@ -221,27 +225,33 @@ public class OceanLoadingCoefficientsBLQFactory {
         /** Pattern for fields with real type. */
         private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
 
+        /** Pattern for extracted real fields. */
+        private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
+
+        /** Pattern for end of line. */
+        private static final String  END_OF_LINE_PATTERN = "\\\\p{Space}*$";
+
         /** Pattern for site name and coordinates lines. */
         private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" +
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" +
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" +
-                                                         "\\p{Space}*$";
+                                                         REAL_FIELD_PATTERN +
+                                                         REAL_FIELD_PATTERN +
+                                                         REAL_FIELD_PATTERN +
+                                                         END_OF_LINE_PATTERN;
 
         /** Pattern for coefficients lines. */
         private static final String  DATA_LINE_PATTERN = "^" +
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // M₂ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // S₂ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // N₂ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // K₂ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // K₁ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // O₁ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // P₁ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // Q₁ tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // Mf tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // Mm tide
-                                                         "\\p{Space}*(" + REAL_TYPE_PATTERN + ")" + // Ssa tide
-                                                         "\\p{Space}*$";
+                                                         REAL_FIELD_PATTERN + // M₂ tide
+                                                         REAL_FIELD_PATTERN + // S₂ tide
+                                                         REAL_FIELD_PATTERN + // N₂ tide
+                                                         REAL_FIELD_PATTERN + // K₂ tide
+                                                         REAL_FIELD_PATTERN + // K₁ tide
+                                                         REAL_FIELD_PATTERN + // O₁ tide
+                                                         REAL_FIELD_PATTERN + // P₁ tide
+                                                         REAL_FIELD_PATTERN + // Q₁ tide
+                                                         REAL_FIELD_PATTERN + // Mf tide
+                                                         REAL_FIELD_PATTERN + // Mm tide
+                                                         REAL_FIELD_PATTERN + // Ssa tide
+                                                         END_OF_LINE_PATTERN;
 
         /** Pattern for site name and coordinates lines. */
         private final Pattern sitePattern;
@@ -251,7 +261,7 @@ public class OceanLoadingCoefficientsBLQFactory {
 
         /** Simple constructor.
          */
-        public BLQParser() {
+        BLQParser() {
             sitePattern = Pattern.compile(SITE_LINE_PATTERN);
             dataPattern = Pattern.compile(DATA_LINE_PATTERN);
         }
@@ -280,7 +290,7 @@ public class OceanLoadingCoefficientsBLQFactory {
                 data[i][2] = new double[4];
             }
 
-            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
 
                 int     lineNumber = 0;
                 int     dataLine   = -1;

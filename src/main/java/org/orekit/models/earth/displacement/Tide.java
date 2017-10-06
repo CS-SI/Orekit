@@ -97,14 +97,16 @@ public class Tide {
      * @return Doodson multipliers
      */
     private static int[] doodsonNumberToDoodsonMultipliers(final int doodsonNumber) {
+        // CHECKSTYLE: stop Indentation check
         return new int[] {
-            ((doodsonNumber / 100000) % 10),
+             (doodsonNumber / 100000) % 10,
             ((doodsonNumber /  10000) % 10) - 5,
             ((doodsonNumber /   1000) % 10) - 5,
             ((doodsonNumber /    100) % 10) - 5,
             ((doodsonNumber /     10) % 10) - 5,
             (doodsonNumber            % 10) - 5
         };
+        // CHECKSTYLE: resume Indentation check
     }
 
     /** Convert Doodson mutipliers to Doodson number.
