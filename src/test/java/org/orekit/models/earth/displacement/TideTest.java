@@ -246,62 +246,102 @@ public class TideTest {
     public void testTDFRPH1OriginalEarthRotation() throws OrekitException {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // using the reference routine hard coded simplified model for Earth rotation
-        TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
-        patchEarthRotationModel(fna, ut1);
-        BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
-        Assert.assertEquals(1.9322736160568788,
-                            Tide.M2.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
-                            5.6e-11);
-        Assert.assertEquals(303.343338720297,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(Tide.M2.getPhase(elements), FastMath.PI)),
-                            1.3e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 0, 0, 0.0, Tide.M2,
+                     1.9322736160568788, 303.343338720297,
+                     5.6e-11, 1.3e-9);
     }
 
     @Test
     public void testTDFRPH1IERSEarthRotation() throws OrekitException {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
-        TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
-        BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
-        Assert.assertEquals(1.9322736160568788,
-                            Tide.M2.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
-                            5.6e-11);
-        Assert.assertEquals(303.343338720297,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(Tide.M2.getPhase(elements), FastMath.PI)),
-                            0.014);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 0, 0, 0.0, Tide.M2,
+                     1.9322736160568788, 303.343338720297,
+                     5.6e-11, 0.014);
     }
 
     @Test
     public void testTDFRPH2OriginalEarthRotation() throws OrekitException {
-        // this is test 2 from the TDFRPH subroutine in IERS HARDISP program
-        // using the reference routine hard coded simplified model for Earth rotation
-        TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
-        patchEarthRotationModel(fna, ut1);
-        BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 12, 1, 45.0, ut1));
-        Assert.assertEquals(1.9322736160568872,
-                            Tide.M2.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
-                            5.6e-11);
-        Assert.assertEquals(291.997959322689,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(Tide.M2.getPhase(elements), FastMath.PI)),
-                            3.0e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 12, 1, 45.0, Tide.M2,
+                     1.9322736160568872, 291.997959322689,
+                     5.6e-11, 3.0e-9);
     }
 
     @Test
     public void testTDFRPH2IERSEarthRotation() throws OrekitException {
         // this is test 2 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
+        doTestTDFRPH(false,
+                     2009, 6, 25, 12, 1, 45.0, Tide.M2,
+                     1.9322736160568872, 291.997959322689,
+                     5.6e-11, 0.014);
+    }
+
+    @Test
+    public void testTDFRPHAdditionalOriginalEarthRotation() throws OrekitException {
+        // additional tests, for tides other than M2
+        // reference values were obtained running the TDFRPH subroutine
+        doTestTDFRPH(true,
+                     2009, 6, 25, 12, 1, 45.0, Tide.Q1,
+                     0.89324405952415054, 358.73529357509688,
+                     2.3e-11, 3.4e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 12, 1, 45.0, Tide.O1,
+                     0.92953570674740593, 17.795253026255523,
+                     1.5e-11, 2.5e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 12, 1, 45.0, Tide.SSA,
+                     0.0054758186189623609, 187.53041259286692,
+                     4.6e-11, 1.1e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 12, 1, 45.0, Tide.MM,
+                     0.036291647223255376, 19.059959451136820,
+                     7.5e-12, 9.5e-10);
+    }
+
+    @Test
+    public void testTDFRPHAdditionalIERSEarthRotation() throws OrekitException {
+        // additional tests, for tides other than M2
+        // reference values were obtained running the TDFRPH subroutine
+        doTestTDFRPH(false,
+                     2009, 6, 25, 12, 1, 45.0, Tide.Q1,
+                     0.89324405952415054, 358.73529357509688,
+                     2.3e-11, 0.0066);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 12, 1, 45.0, Tide.O1,
+                     0.92953570674740593, 17.795253026255523,
+                     1.5e-11, 0.0066);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 12, 1, 45.0, Tide.SSA,
+                     0.0054758186189623609, 187.53041259286692,
+                     4.6e-11, 1.1e-9);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 12, 1, 45.0, Tide.MM,
+                     0.036291647223255376, 19.059959451136820,
+                     7.5e-12, 9.5e-10);
+    }
+
+    private void doTestTDFRPH(boolean patchEarthRotation,
+                              int year, int month, int day, int hour, int minute, double second,
+                              Tide tide, double refRate, double refPhase,
+                              double toleranceRate, double tolerancePhase)
+        throws OrekitException {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
-        BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 12, 1, 45.0, ut1));
-        Assert.assertEquals(1.9322736160568872,
-                            Tide.M2.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
-                            5.6e-11);
-        Assert.assertEquals(291.997959322689,
-                            FastMath.toDegrees(MathUtils.normalizeAngle(Tide.M2.getPhase(elements), FastMath.PI)),
-                            0.014);
+        if (patchEarthRotation) {
+            patchEarthRotationModel(fna, ut1);
+        }
+        AbsoluteDate   date     = new AbsoluteDate(year, month, day, hour, minute, second, ut1);
+        BodiesElements elements = fna.evaluateAll(date);
+        Assert.assertEquals(refRate,
+                            tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
+                            toleranceRate);
+        Assert.assertEquals(refPhase,
+                            FastMath.toDegrees(MathUtils.normalizeAngle(tide.getPhase(elements), FastMath.PI)),
+                            tolerancePhase);
     }
 
     /** Patch FundamentalNutationArguments to use a simplified Earth rotation angle.
@@ -309,8 +349,10 @@ public class TideTest {
      * The angle is simply computed such that Sun is at the anti-meridian at 00h00 UT1,
      * and Earth rotates at 15°/hour between 00h00 UT1 and the current date.
      * </p>
+     * @param fna FundamentalNutationArguments to patch
+     * @param ut1 UT1 time scale to use for computing date components
      */
-    private void patchEarthRotationModel(FundamentalNutationArguments fna, final TimeScale ut1) {
+    public static void patchEarthRotationModel(FundamentalNutationArguments fna, final TimeScale ut1) {
         try {
             final Field conventionsField = FundamentalNutationArguments.class.getDeclaredField("conventions");
             conventionsField.setAccessible(true);
@@ -328,6 +370,7 @@ public class TideTest {
             valueMethod.setAccessible(true);
             final Field gmstFunctionField = FundamentalNutationArguments.class.getDeclaredField("gmstFunction");
             gmstFunctionField.setAccessible(true);
+            final TimeScalarFunction old = (TimeScalarFunction) gmstFunctionField.get(fna);
             gmstFunctionField.set(fna, new TimeScalarFunction() {
 
                 private double sunAngle(AbsoluteDate date) {
@@ -344,7 +387,11 @@ public class TideTest {
                 @Override
                 public double value(AbsoluteDate date) {
                     double dayFraction = date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY;
-                    return 2 * FastMath.PI * dayFraction + sunAngle(date);
+                    double v = 2 * FastMath.PI * dayFraction + sunAngle(date) + FastMath.PI;
+                    // the patched value is about 24 arc seconds from the IERS value (almost independent on date)
+                    double deltaArcSeconds = 3600.0 * FastMath.toDegrees(MathUtils.normalizeAngle(old.value(date) - v, 0.0));
+                    Assert.assertEquals(0.0, deltaArcSeconds, 23.7);
+                    return v;
                 }
 
                 @Override
