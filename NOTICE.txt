@@ -39,3 +39,6 @@ M. Picone, A.E. Hedin, D. Drob (Naval Research Laboratory)
 
 This product includes software translated from original work developed by
 Dominik Brodowski
+
+This product includes software translated from original work developed by
+ Duncan Agnew and copyright 2008 IERS Conventions center

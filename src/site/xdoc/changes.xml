@@ -27,7 +27,15 @@
         from Earth frames, from TOD...
       </action>
       <action dev="luc" type="add">
-        Take ground stations displacements due to tides into account in orbit determination.
+        Take ground stations displacements into account in orbit determination.
+        The predefined displacement models are the direct effect of solid tides
+        and the indirect effect of ocean loading, but users can add their own models
+        too.
+      </action>
+      <action dev="luc" type="add">
+        Added ground stations displacements due to ocean loading as per IERS conventions,
+        including all the 342 tides considered in the HARDISP.F program.
+        Computation is based on Onsala Space Observatory files in BLQ format.
       </action>
       <action dev="luc" type="add">
         Added ground points displacements due to tides as per IERS conventions.

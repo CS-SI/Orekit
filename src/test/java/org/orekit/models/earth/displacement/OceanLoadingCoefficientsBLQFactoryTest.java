@@ -110,7 +110,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
         // the coordinates for Reykjavik are *known* to be wrong in this test file
         // these test data have been extracted from the HARDISP.F file in September 2017
         // and it seems longitude and latitude have been exchanged...
-        // With the file coordinates, Reykjavik would be somewhere in the Indian Ocean, East of Madagascar
+        // With the file coordinates, Reykjavik would be somewhere in the Indian Ocean, about 1800km East of Madagascar
         // The error has been reported to IERS conventions center.
         OceanLoadingCoefficients reykjavikCoeffs = factory.getCoefficients("Reykjavik");
         Assert.assertEquals("Reykjavik", reykjavikCoeffs.getSiteName());

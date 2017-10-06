@@ -281,7 +281,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditionalOriginalEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional1OriginalEarthRotation() throws OrekitException {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(true,
@@ -303,7 +303,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditionalIERSEarthRotation() throws OrekitException {
+    public void testTDFRPHAdditional1IERSEarthRotation() throws OrekitException {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(false,
@@ -322,6 +322,50 @@ public class TideTest {
                      2009, 6, 25, 12, 1, 45.0, Tide.MM,
                      0.036291647223255376, 19.059959451136820,
                      7.5e-12, 9.5e-10);
+    }
+
+    @Test
+    public void testTDFRPHAdditional2OriginalEarthRotation() throws OrekitException {
+        // additional tests, for tides other than M2
+        // reference values were obtained running the TDFRPH subroutine
+        doTestTDFRPH(true,
+                     2009, 6, 25, 1, 10, 45.0, Tide.Q1,
+                     0.89324405952416042, 213.35982288935338,
+                     2.3e-11, 5.8e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 1, 10, 45.0, Tide.O1,
+                     0.92953570674739971, 226.51331675532856,
+                     1.5e-11, 4.1e-9);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 1, 10, 45.0, Tide.SSA,
+                     0.0054758186189598906, 186.63922310518683,
+                     4.6e-11, 9.4e-10);
+        doTestTDFRPH(true,
+                     2009, 6, 25, 1, 10, 45.0, Tide.MM,
+                     0.036291647223239284, 13.153493865960627,
+                     7.5e-12, 1.8e-9);
+    }
+
+    @Test
+    public void testTDFRPHAdditional2IERSEarthRotation() throws OrekitException {
+        // additional tests, for tides other than M2
+        // reference values were obtained running the TDFRPH subroutine
+        doTestTDFRPH(false,
+                     2009, 6, 25, 1, 10, 45.0, Tide.Q1,
+                     0.89324405952416042, 213.35982288935338,
+                     2.3e-11, 0.0066);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 1, 10, 45.0, Tide.O1,
+                     0.92953570674739971, 226.51331675532856,
+                     1.5e-11, 0.0066);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 1, 10, 45.0, Tide.SSA,
+                     0.0054758186189598906, 186.63922310518683,
+                     4.6e-11, 9.4e-10);
+        doTestTDFRPH(false,
+                     2009, 6, 25, 1, 10, 45.0, Tide.MM,
+                     0.036291647223239284, 13.153493865960627,
+                     7.5e-12, 1.8e-9);
     }
 
     private void doTestTDFRPH(boolean patchEarthRotation,
