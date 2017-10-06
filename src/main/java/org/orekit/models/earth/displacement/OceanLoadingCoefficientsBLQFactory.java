@@ -229,7 +229,7 @@ public class OceanLoadingCoefficientsBLQFactory {
         private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
 
         /** Pattern for end of line. */
-        private static final String  END_OF_LINE_PATTERN = "\\\\p{Space}*$";
+        private static final String  END_OF_LINE_PATTERN = "\\p{Space}*$";
 
         /** Pattern for site name and coordinates lines. */
         private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
