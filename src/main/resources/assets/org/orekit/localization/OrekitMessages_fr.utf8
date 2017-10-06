@@ -59,7 +59,10 @@ UNABLE_TO_FIND_RESOURCE = {0} inexistant dans le classpath
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED = aucun Paramètre d''Orientation de la Terre n''a été chargé
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Paramètres d''Orientation de la Terre manquants entre {0} et {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = paramètres d''Orientation de la Terre manquants entre {0} et {1}
+
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = paramètres d''Orientation de la Terre manquants
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = le fichier {0} n''est pas un fichier de données IERS supporté
@@ -444,3 +447,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contient pas de coefficients de Klobuch
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = date de référence non initialisée pour le paramètre {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

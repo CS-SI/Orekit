@@ -39,13 +39,21 @@ public class UT1Scale implements TimeScale {
     /** EOP history. */
     private final EOPHistory eopHistory;
 
-    /** Package private constructor for the factory.
+    /** Simple constructor.
      * @param eopHistory user supplied EOP history (may be null)
      * @param utc UTC time scale
      */
-    UT1Scale(final EOPHistory eopHistory, final UTCScale utc) {
+    protected UT1Scale(final EOPHistory eopHistory, final UTCScale utc) {
         this.eopHistory = eopHistory;
         this.utc        = utc;
+    }
+
+    /** Get the associated UTC scale.
+     * @return associated UTC scale.
+     * @since 9.1
+     */
+    public UTCScale getUTCScale() {
+        return utc;
     }
 
     /** Get the EOP history.

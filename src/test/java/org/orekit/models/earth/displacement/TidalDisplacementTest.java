@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.displacement;
 
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -27,13 +27,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -43,20 +42,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TidalDisplacementTest {
-
-    @Test
-    public void testFrame() throws OrekitException {
-        IERSConventions conventions = IERSConventions.IERS_2010;
-        Frame           itrf        = FramesFactory.getITRF(conventions, false);
-        EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
-        TidalDisplacement td = new TidalDisplacement(itrf, Constants.EIGEN5C_EARTH_MU,
-                                                     Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
-                                                     Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
-                                                     CelestialBodyFactory.getSun(),
-                                                     CelestialBodyFactory.getMoon(),
-                                                     eopHistory,true);
-        Assert.assertSame(itrf, td.getEarthFrame());
-    }
 
     @Test
     public void testIERSDisplacementNumbers() throws OrekitException {
@@ -149,9 +134,8 @@ public class TidalDisplacementTest {
                               final double tolerance)
         throws OrekitException {
 
-        Frame           itrf        = FramesFactory.getITRF(conventions, false);
-        EOPHistory      eopHistory  = FramesFactory.getEOPHistory(conventions, false);
-        TimeScale       ut1         = TimeScalesFactory.getUT1(conventions, false);
+        Frame     itrf = FramesFactory.getITRF(conventions, false);
+        TimeScale ut1  = TimeScalesFactory.getUT1(conventions, false);
 
         final double re;
         final double sunEarthSystemMassRatio ;
@@ -186,17 +170,17 @@ public class TidalDisplacementTest {
                                                                                        Vector3D.ZERO,
                                                                                        Vector3D.ZERO);
 
-        TidalDisplacement td = new TidalDisplacement(itrf, re, sunEarthSystemMassRatio, earthMoonMassRatio,
-                                                     fakeSun, fakeMoon, eopHistory, removePermanentDeformation);
+        TidalDisplacement td = new TidalDisplacement(re, sunEarthSystemMassRatio, earthMoonMassRatio,
+                                                     fakeSun, fakeMoon, conventions, removePermanentDeformation);
 
+        FundamentalNutationArguments arguments = null;
         if (replaceModels) {
             try {
                 // we override the official IERS conventions 2010 arguments with fake arguments matching DEHANTTIDEINEL.F code
                 String regularArguments = "/assets/org/orekit/IERS-conventions/2010/nutation-arguments.txt";
-                FundamentalNutationArguments fakeArguments =
-                                new FundamentalNutationArguments(conventions, ut1,
-                                                                 IERSConventions.class.getResourceAsStream(regularArguments),
-                                                                 regularArguments) {
+                arguments = new FundamentalNutationArguments(conventions, ut1,
+                                                             IERSConventions.class.getResourceAsStream(regularArguments),
+                                                             regularArguments) {
 
                     private static final long serialVersionUID = 20170913L;
 
@@ -226,37 +210,33 @@ public class TidalDisplacementTest {
 
                     }
                 };
+
+                // we override the official IERS conventions 2010 tides displacements with tides displacements matching DEHANTTIDEINEL.F code
                 String table73a = "/tides/tab7.3a-Dehant.txt";
                 Field diurnalCorrectionField = td.getClass().getDeclaredField("frequencyCorrectionDiurnal");
                 diurnalCorrectionField.setAccessible(true);
-                Constructor<?> diurnalCorrectionConstructor =
-                                diurnalCorrectionField.get(td).getClass().
-                                getDeclaredConstructor(FundamentalNutationArguments.class,
-                                                       String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
-                diurnalCorrectionConstructor.setAccessible(true);
-                diurnalCorrectionField.set(td, diurnalCorrectionConstructor.newInstance(fakeArguments, table73a, 18, 15, 16, 17, 18));
-                String table73b = "/assets/org/orekit/IERS-conventions/2010/tab7.3b.txt";
-                Field zonalCorrectionField = td.getClass().getDeclaredField("frequencyCorrectionZonal");
-                zonalCorrectionField.setAccessible(true);
-                Constructor<?> zonalCorrectionConstructor =
-                                zonalCorrectionField.get(td).getClass().
-                                getDeclaredConstructor(FundamentalNutationArguments.class,
-                                                       String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
-                zonalCorrectionConstructor.setAccessible(true);
-                zonalCorrectionField.set(td, zonalCorrectionConstructor.newInstance(fakeArguments, table73b, 18, 15, 16, 17, 18));
+                Method diurnalCorrectionGetter = IERSConventions.class.
+                                                 getDeclaredMethod("getTidalDisplacementFrequencyCorrectionDiurnal",
+                                                                   String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                diurnalCorrectionGetter.setAccessible(true);
+                diurnalCorrectionField.set(td, diurnalCorrectionGetter.invoke(null, table73a, 18, 15, 16, 17, 18));
+
             } catch (SecurityException | NoSuchMethodException | NoSuchFieldException |
-                     InvocationTargetException | InstantiationException | IllegalArgumentException | IllegalAccessException e) {
+                     InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
                 Assert.fail(e.getLocalizedMessage());
             }
-
+        } else {
+            arguments = conventions.getNutationArguments(ut1);
         }
+
 
         Vector3D fundamentalStationWettzell = new Vector3D(4075578.385, 931852.890, 4801570.154);
         AbsoluteDate date = new AbsoluteDate(2009, 4, 13, 0, 0, 0.0, ut1);
-        Vector3D displacement = td.displacement(date, fundamentalStationWettzell);
+        Vector3D displacement = td.displacement(arguments.evaluateAll(date), itrf, fundamentalStationWettzell);
         Assert.assertEquals(expectedDx, displacement.getX(), tolerance);
         Assert.assertEquals(expectedDy, displacement.getY(), tolerance);
         Assert.assertEquals(expectedDz, displacement.getZ(), tolerance);
+
 
     }
 

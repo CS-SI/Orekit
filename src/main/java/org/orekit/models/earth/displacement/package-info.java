@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.time;
-
-import org.hipparchus.RealFieldElement;
-
-/** This interface represents a multi-valued function of time.
- * @author Luc Maisonobe
+/**
+ *
+ * This package provides models computing reference points
+ * displacements on Earth surface.
+ * <p>
+ * Currently the following models are included:
+ *
+ * <ul>
+ *   <li>Displacement of ground points due to tides</li>
+ *   <li>Displacement of ground points due to ocean loading</li>
+ * </ul>
+ * @author L. Maisonobe
+ *
  */
-public interface TimeVectorFunction {
-
-    /** Compute a function of time.
-     * @param date date
-     * @return value of the function
-     */
-    double[] value(AbsoluteDate date);
-
-    /** Compute a function of time.
-     * @param date date
-     * @param <T> type of the field elements
-     * @return value of the function
-     */
-    <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
-
-}
+package org.orekit.models.earth.displacement;

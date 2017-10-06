@@ -14,26 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.time;
+package org.orekit.models.earth.displacement;
 
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.BodiesElements;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 
-/** This interface represents a multi-valued function of time.
+/** Interface for computing reference points displacement.
  * @author Luc Maisonobe
+ * @since 9.1
  */
-public interface TimeVectorFunction {
+public interface StationDisplacement {
 
-    /** Compute a function of time.
-     * @param date date
-     * @return value of the function
+    /** Compute displacement of a ground reference point.
+     * @param elements elements affecting Earth orientation
+     * @param earthFrame Earth frame in which reference point is defined
+     * @param referencePoint reference point position in {@code earthFrame}
+     * @return displacement vector to be <em>added</em> to {@code referencePoint}
+     * @exception OrekitException if displacement cannot be computed
      */
-    double[] value(AbsoluteDate date);
-
-    /** Compute a function of time.
-     * @param date date
-     * @param <T> type of the field elements
-     * @return value of the function
-     */
-    <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);
+    Vector3D displacement(BodiesElements elements, Frame earthFrame, Vector3D referencePoint)
+        throws OrekitException;
 
 }

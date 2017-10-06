@@ -24,22 +24,29 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.BodiesElements;
+import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
-import org.orekit.models.earth.TidalDisplacement;
+import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modeling a ground station that can perform some measurements.
@@ -89,22 +96,20 @@ public class GroundStation {
      */
     private static final double OFFSET_SCALE = FastMath.scalb(1.0, 0);
 
-    /** Angular scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double ANGULAR_SCALE = FastMath.scalb(1.0, -22);
+    /** Provider for Earth frame whose EOP parameters can be estimated. */
+    private final EstimatedEarthFrameProvider estimatedEarthFrameProvider;
 
-    /** Angular velocity of the Earth, in rad/s, from TIRF model. */
-    private static final double AVE = 7.292115146706979e-5;
+    /** Earth frame whose EOP parameters can be estimated. */
+    private final Frame estimatedEarthFrame;
 
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
 
-    /** Tidal displacements model (may be null). */
-    private final TidalDisplacement tidalDisplacement;
+    /** Fundamental nutation arguments. */
+    private final FundamentalNutationArguments arguments;
+
+    /** Displacement models. */
+    private final StationDisplacement[] displacements;
 
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
@@ -115,25 +120,7 @@ public class GroundStation {
     /** Driver for position offset along the zenith axis. */
     private final ParameterDriver zenithOffsetDriver;
 
-    /** Driver for prime meridian offset. */
-    private final ParameterDriver primeMeridianOffsetDriver;
-
-    /** Driver for prime meridian drift. */
-    private final ParameterDriver primeMeridianDriftDriver;
-
-    /** Driver for pole offset along X. */
-    private final ParameterDriver polarOffsetXDriver;
-
-    /** Driver for pole drift along X. */
-    private final ParameterDriver polarDriftXDriver;
-
-    /** Driver for pole offset along Y. */
-    private final ParameterDriver polarOffsetYDriver;
-
-    /** Driver for pole drift along Y. */
-    private final ParameterDriver polarDriftYDriver;
-
-    /** Build a ground station ignoring {@link TidalDisplacement tidal displacements}.
+    /** Build a ground station ignoring {@link StationDisplacement station displacements}.
      * <p>
      * The initial values for the pole and prime meridian parametric linear models
      * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
@@ -148,12 +135,12 @@ public class GroundStation {
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
      * @exception OrekitException if some frame transforms cannot be computed
-     * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     * or if Earth Orientation Parameters cannot be retrieved from the base frame.
      * @see #GroundStation(TopocentricFrame, TidalDisplacement)
      */
     public GroundStation(final TopocentricFrame baseFrame)
-                    throws OrekitException {
-        this(baseFrame, null);
+        throws OrekitException {
+        this(baseFrame, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
     }
 
     /** Simple constructor.
@@ -170,17 +157,35 @@ public class GroundStation {
      * </p>
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
-     * @param tidalDisplacement tidal displacement to use, null tidal displacements should
-     * not be applied
+     * @param eopHistory EOP history associated with Earth frames
+     * @param displacements ground station displacement model (tides, ocean loading,
+     * atmospheric loading, thermal effects...)
      * @exception OrekitException if some frame transforms cannot be computed
      * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
      * @since 9.1
      */
-    public GroundStation(final TopocentricFrame baseFrame, final TidalDisplacement tidalDisplacement)
+    public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
+                         final StationDisplacement... displacements)
         throws OrekitException {
 
-        this.baseFrame         = baseFrame;
-        this.tidalDisplacement = tidalDisplacement;
+        this.baseFrame = baseFrame;
+
+        if (eopHistory == null) {
+            throw new OrekitException(OrekitMessages.NO_EARTH_ORIENTATION_PARAMETERS);
+        }
+
+        final UT1Scale baseUT1 = TimeScalesFactory.getUT1(eopHistory);
+        this.estimatedEarthFrameProvider = new EstimatedEarthFrameProvider(baseUT1);
+        this.estimatedEarthFrame = new Frame(baseFrame.getParent(), estimatedEarthFrameProvider,
+                                             baseFrame.getParent() + "-estimated");
+
+        if (displacements.length == 0) {
+            arguments = null;
+        } else {
+            arguments = eopHistory.getConventions().getNutationArguments(estimatedEarthFrameProvider.getEstimatedUT1());
+        }
+
+        this.displacements = displacements.clone();
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, OFFSET_SCALE,
@@ -194,38 +199,14 @@ public class GroundStation {
                                                       0.0, OFFSET_SCALE,
                                                       Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-        this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
-                                                             0.0, ANGULAR_SCALE,
-                                                            -FastMath.PI, FastMath.PI);
-
-        this.primeMeridianDriftDriver = new ParameterDriver("prime-meridian-drift",
-                                                            0.0, ANGULAR_SCALE,
-                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        this.polarOffsetXDriver = new ParameterDriver("polar-offset-X",
-                                                      0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
-
-        this.polarDriftXDriver = new ParameterDriver("polar-drift-X",
-                                                     0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        this.polarOffsetYDriver = new ParameterDriver("polar-offset-Y",
-                                                      0.0, ANGULAR_SCALE,
-                                                      -FastMath.PI, FastMath.PI);
-
-        this.polarDriftYDriver = new ParameterDriver("polar-drift-Y",
-                                                     0.0, ANGULAR_SCALE,
-                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
     }
 
-    /** Get the tidal displacement model.
-     * @return tidal displacement model (null if tidal displacement is ignored)
+    /** Get the displacement models.
+     * @return displacement models (empty if no model has been set up)
      * @since 9.1
      */
-    public TidalDisplacement getTidalDisplacement() {
-        return tidalDisplacement;
+    public StationDisplacement[] getDisplacements() {
+        return displacements;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -259,7 +240,7 @@ public class GroundStation {
      * @return driver for prime meridian rotation
      */
     public ParameterDriver getPrimeMeridianOffsetDriver() {
-        return primeMeridianOffsetDriver;
+        return estimatedEarthFrameProvider.getPrimeMeridianOffsetDriver();
     }
 
     /** Get a driver allowing to add a prime meridian rotation rate.
@@ -272,7 +253,7 @@ public class GroundStation {
      * @return driver for prime meridian rotation rate
      */
     public ParameterDriver getPrimeMeridianDriftDriver() {
-        return primeMeridianDriftDriver;
+        return estimatedEarthFrameProvider.getPrimeMeridianDriftDriver();
     }
 
     /** Get a driver allowing to add a polar offset along X.
@@ -282,7 +263,7 @@ public class GroundStation {
      * @return driver for polar offset along X
      */
     public ParameterDriver getPolarOffsetXDriver() {
-        return polarOffsetXDriver;
+        return estimatedEarthFrameProvider.getPolarOffsetXDriver();
     }
 
     /** Get a driver allowing to add a polar drift along X.
@@ -292,7 +273,7 @@ public class GroundStation {
      * @return driver for polar drift along X
      */
     public ParameterDriver getPolarDriftXDriver() {
-        return polarDriftXDriver;
+        return estimatedEarthFrameProvider.getPolarDriftXDriver();
     }
 
     /** Get a driver allowing to add a polar offset along Y.
@@ -302,7 +283,7 @@ public class GroundStation {
      * @return driver for polar offset along Y
      */
     public ParameterDriver getPolarOffsetYDriver() {
-        return polarOffsetYDriver;
+        return estimatedEarthFrameProvider.getPolarOffsetYDriver();
     }
 
     /** Get a driver allowing to add a polar drift along Y.
@@ -312,7 +293,7 @@ public class GroundStation {
      * @return driver for polar drift along Y
      */
     public ParameterDriver getPolarDriftYDriver() {
-        return polarDriftYDriver;
+        return estimatedEarthFrameProvider.getPolarDriftYDriver();
     }
 
     /** Get the base frame associated with the station.
@@ -326,6 +307,36 @@ public class GroundStation {
         return baseFrame;
     }
 
+    /** Get the estimated Earth frame, including the estimated linear models for pole and prime meridian.
+     * <p>
+     * This frame is bound to the {@link #getPrimeMeridianOffsetDriver() driver for prime meridian offset},
+     * {@link #getPrimeMeridianDriftDriver() driver prime meridian drift},
+     * {@link #getPolarOffsetXDriver() driver for polar offset along X},
+     * {@link #getPolarDriftXDriver() driver for polar drift along X},
+     * {@link #getPolarOffsetYDriver() driver for polar offset along Y},
+     * {@link #getPolarDriftYDriver() driver for polar drift along Y}, so its orientation changes when
+     * the {@link ParameterDriver#setValue(double) setValue} methods of the drivers are called.
+     * </p>
+     * @return estimated Earth frame
+     * @since 9.1
+     */
+    public Frame getEstimatedEarthFrame() {
+        return estimatedEarthFrame;
+    }
+
+    /** Get the estimated UT1 scale, including the estimated linear models for prime meridian.
+     * <p>
+     * This time scale is bound to the {@link #getPrimeMeridianOffsetDriver() driver for prime meridian offset},
+     * and {@link #getPrimeMeridianDriftDriver() driver prime meridian drift}, so its offset from UTC changes when
+     * the {@link ParameterDriver#setValue(double) setValue} methods of the drivers are called.
+     * </p>
+     * @return estimated Earth frame
+     * @since 9.1
+     */
+    public UT1Scale getEstimatedUT1() {
+        return estimatedEarthFrameProvider.getEstimatedUT1();
+    }
+
     /** Get the geodetic point at the center of the offset frame.
      * @return geodetic point at the center of the offset frame
      * @exception OrekitException if frames transforms cannot be computed
@@ -337,8 +348,34 @@ public class GroundStation {
         return getOffsetGeodeticPoint(null);
     }
 
+    /** Get the station displacement.
+     * @param date current date
+     * @param position raw position of the station in Earth frame
+     * before displacement is applied
+     * @return station displacement
+     * @exception OrekitException if displacement cannot be computed
+     * @since 9.1
+     */
+    private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position)
+        throws OrekitException {
+        try {
+            Vector3D displacement = Vector3D.ZERO;
+            if (arguments != null) {
+                final BodiesElements elements = arguments.evaluateAll(date);
+                for (final StationDisplacement sd : displacements) {
+                    // we consider all displacements apply to the same initial position,
+                    // i.e. they apply simultaneously, not according to some order
+                    displacement = displacement.add(sd.displacement(elements, estimatedEarthFrame, position));
+                }
+            }
+            return displacement;
+        } catch (OrekitExceptionWrapper oew) {
+            throw oew.getException();
+        }
+    }
+
     /** Get the geodetic point at the center of the offset frame.
-     * @param date current date (may be null if tidal displacement is ignored)
+     * @param date current date (may be null if displacements are ignored)
      * @return geodetic point at the center of the offset frame
      * @exception OrekitException if frames transforms cannot be computed
      * @since 9.1
@@ -351,13 +388,11 @@ public class GroundStation {
         final double    y          = parametricModel(northOffsetDriver);
         final double    z          = parametricModel(zenithOffsetDriver);
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
+        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
-        if (tidalDisplacement != null && date != null) {
-            // apply displacement due to tides
-            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
-            origin = origin.add(tidalDisplacement.displacement(date.shiftedBy(dut1), origin));
+        if (date != null) {
+            origin = origin.add(computeDisplacement(date, origin));
         }
 
         return baseShape.transform(origin, baseShape.getBodyFrame(), null);
@@ -381,41 +416,17 @@ public class GroundStation {
     public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date)
         throws OrekitException {
 
-        // take parametric prime meridian shift into account
-        final double theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
-        final double thetaDot = parametricModel(primeMeridianDriftDriver);
-        final Transform meridianShift =
-                        new Transform(date,
-                                      new Rotation(Vector3D.PLUS_K, -theta, RotationConvention.FRAME_TRANSFORM),
-                                      new Vector3D(-thetaDot, Vector3D.PLUS_K));
-
-        // take parametric pole shift into account
-        final double xp     = linearModel(date, polarOffsetXDriver, polarDriftXDriver);
-        final double yp     = linearModel(date, polarOffsetYDriver, polarDriftYDriver);
-        final double xpDot  = parametricModel(polarDriftXDriver);
-        final double ypDot  = parametricModel(polarDriftYDriver);
-        final Transform poleShift =
-                        new Transform(date,
-                                      new Transform(date,
-                                                    new Rotation(Vector3D.PLUS_I, yp, RotationConvention.FRAME_TRANSFORM),
-                                                    new Vector3D(ypDot, 0.0, 0.0)),
-                                      new Transform(date,
-                                                    new Rotation(Vector3D.PLUS_J, xp, RotationConvention.FRAME_TRANSFORM),
-                                                    new Vector3D(0.0, xpDot, 0.0)));
+        // take Earth offsets into account
+        final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(date).getInverse();
 
         // take station offset into account
         final double    x          = parametricModel(eastOffsetDriver);
         final double    y          = parametricModel(northOffsetDriver);
         final double    z          = parametricModel(zenithOffsetDriver);
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
-
+        final Transform baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
-        if (tidalDisplacement != null) {
-            // apply displacement due to tides
-            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
-            origin = origin.add(tidalDisplacement.displacement(date.shiftedBy(dut1), origin));
-        }
+        origin = origin.add(computeDisplacement(date, origin));
 
         final GeodeticPoint originGP = baseShape.transform(origin, baseShape.getBodyFrame(), date);
         final Transform offsetToIntermediate =
@@ -427,7 +438,6 @@ public class GroundStation {
                                       new Transform(date, origin));
 
         // combine all transforms together
-        final Transform intermediateToBody = new Transform(date, poleShift, meridianShift);
         final Transform bodyToInert        = baseFrame.getParent().getTransformTo(inertial, date);
 
         return new Transform(date, offsetToIntermediate, new Transform(date, intermediateToBody, bodyToInert));
@@ -458,34 +468,11 @@ public class GroundStation {
         final Field<DerivativeStructure>         field = date.getField();
         final FieldVector3D<DerivativeStructure> zero  = FieldVector3D.getZero(field);
         final FieldVector3D<DerivativeStructure> plusI = FieldVector3D.getPlusI(field);
-        final FieldVector3D<DerivativeStructure> plusJ = FieldVector3D.getPlusJ(field);
         final FieldVector3D<DerivativeStructure> plusK = FieldVector3D.getPlusK(field);
 
-        // take parametric prime meridian shift into account
-        final DerivativeStructure theta    = linearModel(factory, date,
-                                                         primeMeridianOffsetDriver, primeMeridianDriftDriver,
-                                                         indices);
-        final DerivativeStructure thetaDot = parametricModel(factory, primeMeridianDriftDriver, indices);
-        final FieldTransform<DerivativeStructure> meridianShift =
-                        new FieldTransform<>(date,
-                                             new FieldRotation<>(plusK, theta.negate(), RotationConvention.FRAME_TRANSFORM),
-                                             new FieldVector3D<>(thetaDot.negate(), plusK));
-
-        // take parametric pole shift into account
-        final DerivativeStructure xp    = linearModel(factory, date,
-                                                      polarOffsetXDriver, polarDriftXDriver, indices);
-        final DerivativeStructure yp    = linearModel(factory, date,
-                                                      polarOffsetYDriver, polarDriftYDriver, indices);
-        final DerivativeStructure xpDot = parametricModel(factory, polarDriftXDriver, indices);
-        final DerivativeStructure ypDot = parametricModel(factory, polarDriftYDriver, indices);
-        final FieldTransform<DerivativeStructure> poleShift =
-                        new FieldTransform<>(date,
-                                             new FieldTransform<>(date,
-                                                             new FieldRotation<>(plusI, yp, RotationConvention.FRAME_TRANSFORM),
-                                                             new FieldVector3D<>(ypDot, field.getZero(), field.getZero())),
-                                             new FieldTransform<>(date,
-                                                             new FieldRotation<>(plusJ, xp, RotationConvention.FRAME_TRANSFORM),
-                                                             new FieldVector3D<>(field.getZero(), xpDot, field.getZero())));
+        // take Earth offsets into account
+        final FieldTransform<DerivativeStructure> intermediateToBody =
+                        estimatedEarthFrameProvider.getTransform(date, factory, indices).getInverse();
 
         // take station offset into account
         final DerivativeStructure  x          = parametricModel(factory, eastOffsetDriver,   indices);
@@ -495,12 +482,7 @@ public class GroundStation {
         final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
 
         FieldVector3D<DerivativeStructure>            origin   = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
-        if (tidalDisplacement != null) {
-            // apply displacement due to tides
-            final AbsoluteDate aDate = date.toAbsoluteDate();
-            final double dut1 = linearModel(aDate, primeMeridianOffsetDriver, primeMeridianDriftDriver) / AVE;
-            origin = origin.add(tidalDisplacement.displacement(aDate.shiftedBy(dut1), origin.toVector3D()));
-        }
+        origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
         final FieldGeodeticPoint<DerivativeStructure> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), date);
         final FieldTransform<DerivativeStructure> offsetToIntermediate =
                         new FieldTransform<>(date,
@@ -511,56 +493,12 @@ public class GroundStation {
                                              new FieldTransform<>(date, origin));
 
         // combine all transforms together
-        final FieldTransform<DerivativeStructure> intermediateToBody = new FieldTransform<>(date, poleShift, meridianShift);
         final FieldTransform<DerivativeStructure> bodyToInert        = baseFrame.getParent().getTransformTo(inertial, date);
 
-        return new FieldTransform<>(date, offsetToIntermediate, new FieldTransform<>(date, intermediateToBody, bodyToInert));
+        return new FieldTransform<>(date,
+                                    offsetToIntermediate,
+                                    new FieldTransform<>(date, intermediateToBody, bodyToInert));
 
-    }
-
-    /** Evaluate a parametric linear model.
-     * @param date current date
-     * @param offsetDriver driver for the offset parameter
-     * @param driftDriver driver for the drift parameter
-     * @return current value of the linear model
-     * @exception OrekitException if reference date has not been set for the
-     * offset driver
-     */
-    private double linearModel(final AbsoluteDate date,
-                               final ParameterDriver offsetDriver, final ParameterDriver driftDriver)
-        throws OrekitException {
-        if (offsetDriver.getReferenceDate() == null) {
-            throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                      offsetDriver.getName());
-        }
-        final double dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final double offset = parametricModel(offsetDriver);
-        final double drift  = parametricModel(driftDriver);
-        return dt * drift + offset;
-    }
-
-    /** Evaluate a parametric linear model.
-     * @param factory factory for the derivatives
-     * @param date current date
-     * @param offsetDriver driver for the offset parameter
-     * @param driftDriver driver for the drift parameter
-     * @param indices indices of the estimated parameters in derivatives computations
-     * @return current value of the linear model
-     * @exception OrekitException if reference date has not been set for the
-     * offset driver
-     */
-    private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
-                                            final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices)
-        throws OrekitException {
-        if (offsetDriver.getReferenceDate() == null) {
-            throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                      offsetDriver.getName());
-        }
-        final DerivativeStructure dt     = date.durationFrom(offsetDriver.getReferenceDate());
-        final DerivativeStructure offset = parametricModel(factory, offsetDriver, indices);
-        final DerivativeStructure drift  = parametricModel(factory, driftDriver, indices);
-        return dt.multiply(drift).add(offset);
     }
 
     /** Evaluate a parametric model.
