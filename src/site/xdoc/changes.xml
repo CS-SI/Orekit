@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed a singularity error in derivatives for perfectly circular orbits in DSST third body force model.
+        Fixes issue #364.
+      </action>
       <action dev="luc" type="fix" due-to="Lucian Bărbulescu">
         Fixed an error in array size computation for Hansen coefficients.
         Fixes issue #363.
