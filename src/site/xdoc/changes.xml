@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added ITRF2005 and ITRF2008 to the frames recognized by OEMParser.
+        Fixes issue #361.
+      </action>
       <action dev="evan" type="fix">
         Fixed FiniteDifferencePropagatorConverter so that the scale factor is only applied
         once instead of twice.
