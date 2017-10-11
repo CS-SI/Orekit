@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Lucian Bărbulescu">
+        Fixed an error in array size computation for Hansen coefficients.
+        Fixes issue #363.
+      </action>
       <action dev="luc" type="add">
         Added a way to retrieve EOP from frames by walking the frames hierarchy tree
         using parent frame links. This allows to retrieve EOP from topocentric frames,
