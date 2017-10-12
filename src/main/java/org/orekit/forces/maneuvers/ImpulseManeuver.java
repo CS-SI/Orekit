@@ -59,7 +59,7 @@ import org.orekit.utils.PVCoordinates;
  * node on an equatorial orbit! This is a real case that has been encountered
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
-     * @param <T> class type for the generic version
+ * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
 public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<ImpulseManeuver<T>> {

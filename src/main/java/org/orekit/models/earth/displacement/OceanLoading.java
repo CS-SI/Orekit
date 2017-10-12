@@ -412,7 +412,7 @@ public class OceanLoading implements StationDisplacement {
             // phase for the current tide, including corrections
             final double correction;
             if (tide.getTauMultiplier() == 0) {
-                correction = -FastMath.PI;
+                correction = FastMath.PI;
             } else if (tide.getTauMultiplier() == 1) {
                 correction = 0.5 * FastMath.PI;
             } else {
@@ -447,17 +447,17 @@ public class OceanLoading implements StationDisplacement {
             y[i] = selector.apply(data[i]);
         }
         final PolynomialSplineFunction psf = new SplineInterpolator().interpolate(rates, y);
-        final double[] knots = psf.getKnots();
-        final double   minRate = knots[0];
-        final double   valueAtMinRate = psf.value(minRate);
-        final double   maxRate = knots[knots.length - 1];
-        final double   valueAtMaxRate = psf.value(maxRate);
 
         // as per HARDISP program EVAL subroutine, if spline evaluation is outside of range,
         // the closest value is used. This occurs for example for long period tides.
         // The main tides have rates 0.0821°/h, 0.5444°/h and 1.0980°/h. However,
         // tide 55565 has rate 0.0022°/h, which is below the min rate and tide 75565 has
         // rate 1.1002°/h, which is above max rate
+        final double[] knots          = psf.getKnots();
+        final double   minRate        = knots[0];
+        final double   valueAtMinRate = psf.value(minRate);
+        final double   maxRate        = knots[knots.length - 1];
+        final double   valueAtMaxRate = psf.value(maxRate);
         return t -> (t < minRate) ? valueAtMinRate : (t > maxRate) ? valueAtMaxRate : psf.value(t);
 
     }
