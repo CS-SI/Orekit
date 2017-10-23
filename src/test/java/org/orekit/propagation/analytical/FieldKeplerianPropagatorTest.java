@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical;
 
 
-import java.io.IOException;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
@@ -86,72 +84,72 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testSameDateCartesian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testSameDateCartesian() throws OrekitException {
         doTestSameDateCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testSameDateKeplerian() throws OrekitException {
         doTestSameDateKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testPropagatedCartesian() throws OrekitException {
         doTestPropagatedCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testPropagatedKeplerian() throws OrekitException {
         doTestPropagatedKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() throws OrekitException, ClassNotFoundException, IOException{
+    public void testAscendingNode() throws OrekitException {
         doTestAscendingNode(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() throws OrekitException, ClassNotFoundException, IOException{
+    public void testStopAtTargetDate() throws OrekitException {
         doTestStopAtTargetDate(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() throws OrekitException, ClassNotFoundException, IOException{
+    public void testFixedStep() throws OrekitException {
         doTestFixedStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() throws OrekitException, ClassNotFoundException, IOException{
+    public void testVariableStep() throws OrekitException {
         doTestVariableStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() throws OrekitException, ClassNotFoundException, IOException{
+    public void testEphemeris() throws OrekitException {
         doTestEphemeris(Decimal64Field.getInstance());}
 
 
     @Test
-    public void testIssue14() throws OrekitException, ClassNotFoundException, IOException{
+    public void testIssue14() throws OrekitException {
         doTestIssue14(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() throws OrekitException, ClassNotFoundException, IOException{
+    public void testIssue107() throws OrekitException {
         doTestIssue107(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() throws OrekitException, ClassNotFoundException, IOException{
+    public void testMu() throws OrekitException {
         doTestMu(Decimal64Field.getInstance());
     }
 

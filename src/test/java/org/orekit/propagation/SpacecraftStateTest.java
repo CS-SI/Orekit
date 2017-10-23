@@ -290,7 +290,7 @@ public class SpacecraftStateTest {
 
     @Test
     public void testSerialization()
-            throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, OrekitException {
+            throws IOException, ClassNotFoundException, OrekitException {
 
         propagator.resetInitialState(propagator.getInitialState().
                                      addAdditionalState("p1", 12.25).
