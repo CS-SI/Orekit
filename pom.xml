@@ -41,7 +41,7 @@
     <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
-    <orekit.hipparchus.version>1.1</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.2</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
