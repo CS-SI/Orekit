@@ -201,7 +201,11 @@ public enum OrekitMessages implements Localizable {
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
     NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
-    STATION_NOT_FOUND("station {0} not found, known stations: {1}");
+    STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
+    UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
+    UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
+    UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0}"),
+    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}");
 
 
     // CHECKSTYLE: resume JavadocVariable check

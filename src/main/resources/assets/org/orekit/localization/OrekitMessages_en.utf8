@@ -449,4 +449,16 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = file {0} does not contain Klobuchar coefficien
 NO_REFERENCE_DATE_FOR_PARAMETER = no reference date set for parameter {0}
 
 # station {0} not found, known stations: {1}
-STATION_NOT_FOUND = <MISSING TRANSLATION>
+STATION_NOT_FOUND = station {0} not found, known stations: {1}
+
+# unknown satellite system {0}
+UNKNOWN_SATELLITE_SYSTEM = unknown satellite system {0}
+
+# unknown satellite antenna code {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE = unknown satellite antenna code {0}
+
+# unknown RINEX frequency {0}
+UNKNOWN_RINEX_FREQUENCY = unknown RINEX frequency {0}
+
+# unsupported format for file {0}
+UNSUPPORTED_FILE_FORMAT = unsupported format for file {0}

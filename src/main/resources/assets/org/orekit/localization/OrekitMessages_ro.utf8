@@ -450,3 +450,15 @@ NO_REFERENCE_DATE_FOR_PARAMETER = nicio dată de referință nu este specificat�
 
 # station {0} not found, known stations: {1}
 STATION_NOT_FOUND = <MISSING TRANSLATION>
+
+# unknown satellite system {0}
+UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# unknown satellite antenna code {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
+
+# unknown RINEX frequency {0}
+UNKNOWN_RINEX_FREQUENCY = <MISSING TRANSLATION>
+
+# unsupported format for file {0}
+UNSUPPORTED_FILE_FORMAT = <MISSING TRANSLATION>
