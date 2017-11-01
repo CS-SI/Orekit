@@ -20,7 +20,15 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.2" date="TBC"
+    <release version="7.2.1" date="2017-11-01"
+            description="Version 7.2.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+    </release>
+    <release version="7.2" date="2016-04-05"
              description="Version 7.2 is a minor release of Orekit. It introduces several new
              features and bug fixes. The most important features introduced in version 7.2
              are handling of GLONASS and QZSS time scales, support for local time zones

@@ -37,6 +37,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -114,6 +115,14 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 // set up a reader for line-oriented bulletin B files
                 final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
                 reader.setContentHandler(new EOPContentHandler(name));
+                // disable external entities
+                reader.setEntityResolver(new EntityResolver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public InputSource resolveEntity(final String publicId, final String systemId) {
+                        return new InputSource();
+                    }
+                });
 
                 // read all file, ignoring header
                 reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));
