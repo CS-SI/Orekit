@@ -114,6 +114,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 // set up a reader for line-oriented bulletin B files
                 final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
                 reader.setContentHandler(new EOPContentHandler(name));
+                // disable external entities
+                reader.setEntityResolver((publicId, systemId) -> new InputSource());
 
                 // read all file, ignoring header
                 reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));

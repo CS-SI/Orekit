@@ -20,6 +20,14 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="9.0.1" date="2017-11-01"
+            description="Version 9.0.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+    </release>
     <release version="9.0" date="2017-07-26"
              description="Version 9.0 is a major release of Orekit. It introduces several new
              features and bug fixes. New features introduced in version 9.0 are Taylor algebra
