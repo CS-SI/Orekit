@@ -24,6 +24,10 @@
             description="Version 9.0.1 is a patch release of Orekit.
             It fixes security issus 368.">
       <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML TDM files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML EOP files.
         Part of issue #368.
       </action>
