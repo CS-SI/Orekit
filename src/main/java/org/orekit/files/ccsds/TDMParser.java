@@ -35,6 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -1008,6 +1009,12 @@ public class TDMParser extends DefaultHandler {
             {
                 throw new SAXException(e);
             }
+        }
+
+        @Override
+        public InputSource resolveEntity(final String publicId, final String systemId) {
+            // disable external entities
+            return new InputSource();
         }
 
         /** Parse a line in an observation data block.
