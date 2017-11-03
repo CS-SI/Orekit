@@ -43,10 +43,10 @@ as required.
 
 |  package |                                              link                                                             |
 |----------|---------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-7.2.1-sources.zip](https://www.orekit.org/forge/attachments/download/xxx/orekit-7.2.1-sources.zip)    |
-|  binary  | [orekit-7.2.1.jar](https://www.orekit.org/forge/attachments/download/xxx/orekit-7.2.1.jar)                    |
-|  javadoc | [orekit-7.2.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/xxx/orekit-7.2.1-javadoc.jar)    |
-version 7.2.1 downloads (release date: 2017-11-01)
+|  source  | [orekit-7.2.1-sources.zip](https://www.orekit.org/forge/attachments/download/678/orekit-7.2.1-sources.zip)    |
+|  binary  | [orekit-7.2.1.jar](https://www.orekit.org/forge/attachments/download/679/orekit-7.2.1.jar)                    |
+|  javadoc | [orekit-7.2.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/680/orekit-7.2.1-javadoc.jar)    |
+version 7.2.1 downloads (release date: 2017-11-03)
 
 |  package |                                              link                                                         |
 |----------|-----------------------------------------------------------------------------------------------------------|
