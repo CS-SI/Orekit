@@ -37,10 +37,13 @@
     <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
-    <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
+    <orekit.build-helper-maven-plugin.version>3.0.0</orekit.build-helper-maven-plugin.version>
+    <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
+    <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
+    <orekit.maven-install-plugin.version>2.5.2</orekit.maven-install-plugin.version>
     <orekit.hipparchus.version>1.2</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
@@ -334,8 +337,8 @@
         <version>${orekit.maven-assembly-plugin.version}</version>
         <configuration>
           <descriptors>
-            <descriptor>src/main/assembly/source-assembly.xml</descriptor>
-            <descriptor>src/main/assembly/binary-assembly.xml</descriptor>
+            <descriptor>src/main/assembly/source-jar-assembly.xml</descriptor>
+            <descriptor>src/main/assembly/source-distribution-assembly.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>
@@ -688,22 +691,81 @@
       <id>release</id>
       <build>
         <plugins>
-           <plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>${orekit.maven-source-plugin.version}</version>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${orekit.maven-javadoc-plugin.version}</version>
             <executions>
               <execution>
-                <id>create-source-jar</id>
+                <id>attach-javadocs</id>
                 <goals>
                   <goal>jar</goal>
                 </goals>
-                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>${orekit.nexus-staging-maven-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>${orekit.build-helper-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${basedir}/target/orekit-${project.version}-sources.jar</file>
+                      <type>source-jar</type>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${orekit.maven-gpg-plugin.version}</version>
+            <configuration>
+              <gpgArguments>
+                <arg>--digest-algo=SHA512</arg>
+              </gpgArguments>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>${orekit.maven-install-plugin.version}</version>
+            <configuration>
+              <createChecksum>true</createChecksum>
+            </configuration>
+          </plugin>
         </plugins>
-      </build>
+     </build>
     </profile>
     <profile>
       <id>eclipse</id>
