@@ -1,0 +1,849 @@
+     1.4            M                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT   
+########################################################### COMMENT             
+  This file is NOT an original ANTEX file                   COMMENT             
+  It has been stripped down for tests purposes              COMMENT             
+  Many records have been removed, truncated or even edited  COMMENT             
+  Do NOT use this file except for test purposes             COMMENT             
+########################################################### COMMENT             
+                                                            END OF HEADER       
+                                                            START OF ANTENNA    
+BLOCK IIA           G01                 G032      1992-079A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1992    11    22     0     0    0.0000000                 VALID FROM          
+  2008    10    16    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2319.50                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2319.50                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIA           G01                 G037      1993-032A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2008    10    23     0     0    0.0000000                 VALID FROM          
+  2009     1     6    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2289.30                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2289.30                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIR-M         G01                 G049      2009-014A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2009     3    24     0     0    0.0000000                 VALID FROM          
+  2011     5     6    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+      0.00      0.00    963.20                              NORTH / EAST / UP   
+   NOAZI   10.70   10.10    8.00    4.60    0.50   -3.80   -7.50   -9.70  -10.30   -9.50   -7.40   -4.10    0.30    6.00   12.10   22.00   30.40   40.60
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+      0.00      0.00    963.20                              NORTH / EAST / UP   
+   NOAZI   10.70   10.10    8.00    4.60    0.50   -3.80   -7.50   -9.70  -10.30   -9.50   -7.40   -4.10    0.30    6.00   12.10   22.00   30.40   40.60
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIA           G01                 G035      1993-054A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2011     6     2     0     0    0.0000000                 VALID FROM          
+  2011     7    12    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2574.20                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2574.20                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIF           G01                 G063      2011-036A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2011     7    16     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    394.00      0.00   1501.80                              NORTH / EAST / UP   
+   NOAZI    6.10    4.40    2.80    1.30   -0.20   -1.40   -2.80   -3.90   -4.40   -4.40   -3.70   -2.30   -0.20    3.00    5.70   12.40   18.20   23.50
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    394.00      0.00   1501.80                              NORTH / EAST / UP   
+   NOAZI    6.10    4.40    2.80    1.30   -0.20   -1.40   -2.80   -3.90   -4.40   -4.40   -3.70   -2.30   -0.20    3.00    5.70   12.40   18.20   23.50
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK II            G02                 G013      1989-044A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1989     6    10     0     0    0.0000000                 VALID FROM          
+  2004     5    12    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2658.40                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2658.40                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIR-B         G02                 G061      2004-045A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2004    11     6     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+      1.30     -1.10    728.80                              NORTH / EAST / UP   
+   NOAZI   10.70   10.10    8.00    4.60    0.50   -3.80   -7.50   -9.70  -10.30   -9.50   -7.40   -4.10    0.30    6.00   12.10   22.00   30.40   40.60
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+      1.30     -1.10    728.80                              NORTH / EAST / UP   
+   NOAZI   10.70   10.10    8.00    4.60    0.50   -3.80   -7.50   -9.70  -10.30   -9.50   -7.40   -4.10    0.30    6.00   12.10   22.00   30.40   40.60
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK I             G03                 G011      1985-093A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1985    10     9     0     0    0.0000000                 VALID FROM          
+  1994     4    17    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    210.00      0.00   1884.50                              NORTH / EAST / UP   
+   NOAZI   -1.00   -2.60   -1.20   -0.90    0.50    1.40    2.00    2.00    1.70    0.50   -0.10   -0.60   -0.70   -0.60   -0.30
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    210.00      0.00   1884.50                              NORTH / EAST / UP   
+   NOAZI   -1.00   -2.60   -1.20   -0.90    0.50    1.40    2.00    2.00    1.70    0.50   -0.10   -0.60   -0.70   -0.60   -0.30
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIA           G03                 G033      1996-019A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1996     3    28     0     0    0.0000000                 VALID FROM          
+  2014     8    18    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2757.30                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2757.30                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIA           G03                 G035      1993-054A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2014     9     5     0     0    0.0000000                 VALID FROM          
+  2014    10    20    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    279.00      0.00   2574.20                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    279.00      0.00   2574.20                              NORTH / EAST / UP   
+   NOAZI   -0.80   -0.90   -0.90   -0.80   -0.40    0.20    0.80    1.30    1.40    1.20    0.70    0.00   -0.40   -0.70   -0.90   -0.90   -0.90   -0.90
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BLOCK IIF           G03                 G069      2014-068A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  17.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2014    10    29     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   G01                                                      START OF FREQUENCY  
+    394.00      0.00   1550.60                              NORTH / EAST / UP   
+   NOAZI    6.10    4.40    2.80    1.30   -0.20   -1.40   -2.80   -3.90   -4.40   -4.40   -3.70   -2.30   -0.20    3.00    5.70   12.40   18.20   23.50
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+    394.00      0.00   1550.60                              NORTH / EAST / UP   
+   NOAZI    6.10    4.40    2.80    1.30   -0.20   -1.40   -2.80   -3.90   -4.40   -4.40   -3.70   -2.30   -0.20    3.00    5.70   12.40   18.20   23.50
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS             R01                 R779      1998-077A TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1998    12    30     0     0    0.0000000                 VALID FROM          
+  2004    12    25    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2084.10                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2084.10                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS             R01                 R796      2004-053A TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2004    12    26     0     0    0.0000000                 VALID FROM          
+  2009    12    13    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2058.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2058.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R01                 R730      2009-070A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2009    12    14     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2306.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2306.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS             R02                 R794      2003-056B TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2003    12    10     0     0    0.0000000                 VALID FROM          
+  2008    12    24    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   1989.50                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   1989.50                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R02                 R728      2008-067C TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2008    12    25     0     0    0.0000000                 VALID FROM          
+  2013     6    30    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2399.30                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2399.30                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R02                 R747      2013-019A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2013     7     1     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2413.70                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2413.70                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS             R03                 R763      1994-076A TYPE / SERIAL NO    
+                                             0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  1994    11    20     0     0    0.0000000                 VALID FROM          
+  2001    11    30    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+ATTENTION! ROUNDED BLOCK MEAN Z-OFFSET VALUE!               COMMENT             
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2050.00                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2050.00                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS             R03                 R789      2001-053B TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2001    12     1     0     0    0.0000000                 VALID FROM          
+  2008    12    24    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2042.50                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2042.50                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R03                 R727      2008-067A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2008    12    25     0     0    0.0000000                 VALID FROM          
+  2010     9    30    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2321.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2321.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R03                 R722      2007-065B TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2010    10     1     0     0    0.0000000                 VALID FROM          
+  2010    12    15    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2469.30                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2469.30                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R03                 R727      2008-067A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2010    12    16     0     0    0.0000000                 VALID FROM          
+  2011     3    10    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2321.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2321.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R03                 R715      2006-062C TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2011     3    11     0     0    0.0000000                 VALID FROM          
+  2011    10    12    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2351.60                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2351.60                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-K1          R03                 R801      2011-009A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2011    10    13     0     0    0.0000000                 VALID FROM          
+  2011    11    30    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2014.70                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2014.70                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GLONASS-M           R03                 R744      2011-064A TYPE / SERIAL NO    
+                    COD/ESA                  0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2011    12     1     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+   -545.00      0.00   2517.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+   -545.00      0.00   2517.20                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GALILEO-2           E01                 E210      2016-030B TYPE / SERIAL NO    
+                    DLR/GFZ                  0    09-JUN-16 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  13.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     5                                                      # OF FREQUENCIES    
+  2016     5    24     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+OFFSET UPDATE IN GPS WEEK 1915                              COMMENT             
+   E01                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E01                                                      END OF FREQUENCY    
+   E05                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E05                                                      END OF FREQUENCY    
+   E06                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E06                                                      END OF FREQUENCY    
+   E07                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E07                                                      END OF FREQUENCY    
+   E08                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E08                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+GALILEO-2           E02                 E211      2016-030A TYPE / SERIAL NO    
+                    DLR/GFZ                  0    09-JUN-16 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  13.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     5                                                      # OF FREQUENCIES    
+  2016     5    24     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+OFFSET UPDATE IN GPS WEEK 1915                              COMMENT             
+   E01                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E01                                                      END OF FREQUENCY    
+   E05                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E05                                                      END OF FREQUENCY    
+   E06                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E06                                                      END OF FREQUENCY    
+   E07                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E07                                                      END OF FREQUENCY    
+   E08                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E08                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA
+GALILEO-1           E11                 E101      2011-060A TYPE / SERIAL NO    
+CHAMBER             ESA                      1    09-FEB-12 METH / BY / # / DATE
+    30.0                                                    DAZI
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN
+     5                                                      # OF FREQUENCIES
+  2011    10    21     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+Derived from Signal-Component: E5A-I                        COMMENT
+   E05                                                      START OF FREQUENCY
+   -169.80     25.85    791.85                              NORTH / EAST / UP
+   NOAZI   -0.28   -0.26   -0.21   -0.14   -0.05    0.03    0.11    0.16    0.20    0.20    0.18    0.13    0.06   -0.05   -0.19
+     0.0   -0.28   -0.28   -0.25   -0.22   -0.18   -0.14   -0.11   -0.09   -0.07   -0.06   -0.06   -0.07   -0.09   -0.12   -0.18
+    30.0   -0.28   -0.28   -0.28   -0.33   -0.46   -0.69   -1.04   -1.50   -2.07   -2.74   -3.50   -4.35   -5.27   -6.27   -7.34
+    60.0   -0.28   -0.26   -0.20   -0.09    0.04    0.18    0.31    0.42    0.49    0.52    0.51    0.45    0.35    0.21    0.03
+    90.0   -0.28   -0.25   -0.15    0.05    0.37    0.79    1.29    1.87    2.51    3.18    3.89    4.63    5.41    6.22    7.08
+   120.0   -0.28   -0.26   -0.23   -0.18   -0.14   -0.10   -0.07   -0.05   -0.04   -0.04   -0.06   -0.09   -0.14   -0.20   -0.29
+   150.0   -0.28   -0.27   -0.27   -0.34   -0.50   -0.77   -1.14   -1.62   -2.20   -2.87   -3.62   -4.44   -5.35   -6.32   -7.37
+   180.0   -0.28   -0.25   -0.19   -0.10    0.00    0.11    0.20    0.28    0.32    0.32    0.29    0.21    0.10   -0.05   -0.22
+   210.0   -0.28   -0.24   -0.12    0.11    0.44    0.88    1.40    1.99    2.62    3.29    3.99    4.71    5.45    6.20    6.98
+   240.0   -0.28   -0.25   -0.18   -0.08    0.02    0.11    0.18    0.24    0.26    0.24    0.20    0.11   -0.03   -0.23   -0.49
+   270.0   -0.28   -0.26   -0.25   -0.29   -0.42   -0.65   -0.99   -1.45   -2.02   -2.70   -3.48   -4.35   -5.32   -6.39   -7.55
+   300.0   -0.28   -0.27   -0.23   -0.16   -0.07    0.03    0.12    0.21    0.27    0.30    0.29    0.25    0.17    0.05   -0.11
+   330.0   -0.28   -0.27   -0.20   -0.03    0.24    0.62    1.10    1.67    2.31    3.01    3.76    4.55    5.39    6.27    7.21
+   360.0   -0.28   -0.28   -0.25   -0.22   -0.18   -0.14   -0.11   -0.09   -0.07   -0.06   -0.06   -0.07   -0.09   -0.12   -0.18
+   E05                                                      END OF FREQUENCY
+Derived from Signal-Component: E5B-I                        COMMENT
+   E07                                                      START OF FREQUENCY
+   -170.11     27.01    797.95                              NORTH / EAST / UP
+   NOAZI   -0.32   -0.31   -0.28   -0.24   -0.18   -0.10   -0.03    0.04    0.10    0.13    0.12    0.07   -0.04   -0.19   -0.41
+     0.0   -0.32   -0.35   -0.36   -0.36   -0.32   -0.26   -0.17   -0.06    0.07    0.21    0.34    0.45    0.54    0.58    0.59
+    30.0   -0.32   -0.33   -0.36   -0.45   -0.62   -0.89   -1.27   -1.75   -2.35   -3.05   -3.86   -4.77   -5.78   -6.88   -8.08
+    60.0   -0.32   -0.30   -0.25   -0.18   -0.11   -0.03    0.02    0.06    0.05   -0.01   -0.12   -0.30   -0.54   -0.85   -1.22
+    90.0   -0.32   -0.27   -0.15    0.06    0.37    0.80    1.33    1.96    2.65    3.39    4.16    4.93    5.70    6.47    7.22
+   120.0   -0.32   -0.27   -0.20   -0.11   -0.02    0.08    0.19    0.29    0.39    0.46    0.51    0.51    0.45    0.34    0.15
+   150.0   -0.32   -0.28   -0.27   -0.32   -0.48   -0.74   -1.12   -1.62   -2.23   -2.95   -3.79   -4.73   -5.78   -6.95   -8.22
+   180.0   -0.32   -0.28   -0.23   -0.18   -0.13   -0.09   -0.06   -0.06   -0.09   -0.17   -0.31   -0.50   -0.74   -1.04   -1.39
+   210.0   -0.32   -0.29   -0.20   -0.02    0.28    0.69    1.20    1.81    2.49    3.22    3.97    4.73    5.49    6.23    6.96
+   240.0   -0.32   -0.32   -0.28   -0.22   -0.13   -0.02    0.11    0.25    0.38    0.49    0.57    0.60    0.57    0.48    0.30
+   270.0   -0.32   -0.35   -0.39   -0.47   -0.62   -0.87   -1.21   -1.67   -2.22   -2.89   -3.66   -4.53   -5.51   -6.60   -7.79
+   300.0   -0.32   -0.36   -0.38   -0.37   -0.34   -0.30   -0.25   -0.21   -0.18   -0.19   -0.23   -0.33   -0.47   -0.67   -0.91
+   330.0   -0.32   -0.36   -0.34   -0.22    0.02    0.39    0.89    1.51    2.23    3.02    3.87    4.75    5.65    6.56    7.50
+   360.0   -0.32   -0.35   -0.36   -0.36   -0.32   -0.26   -0.17   -0.06    0.07    0.21    0.34    0.45    0.54    0.58    0.59
+   E07                                                      END OF FREQUENCY
+Derived from Signal-Component: E6-C                         COMMENT
+   E06                                                      START OF FREQUENCY
+   -170.93     29.75    709.86                              NORTH / EAST / UP
+   NOAZI   -0.03   -0.02   -0.01   -0.00    0.01    0.01    0.01   -0.01   -0.02   -0.04   -0.05   -0.05   -0.02    0.03    0.11
+     0.0   -0.03   -0.04   -0.04   -0.05   -0.07   -0.08   -0.11   -0.12   -0.13   -0.12   -0.09   -0.04    0.03    0.13    0.26
+    30.0   -0.03   -0.03   -0.06   -0.17   -0.38   -0.71   -1.17   -1.74   -2.40   -3.14   -3.94   -4.79   -5.66   -6.55   -7.46
+    60.0   -0.03   -0.00    0.03    0.07    0.11    0.14    0.14    0.13    0.10    0.05    0.00   -0.04   -0.06   -0.06   -0.02
+    90.0   -0.03    0.01    0.09    0.25    0.50    0.84    1.28    1.80    2.40    3.07    3.81    4.61    5.50    6.46    7.51
+   120.0   -0.03    0.00    0.03    0.04    0.04    0.03    0.00   -0.03   -0.06   -0.09   -0.11   -0.11   -0.10   -0.07   -0.04
+   150.0   -0.03   -0.01   -0.04   -0.14   -0.35   -0.69   -1.14   -1.70   -2.36   -3.09   -3.88   -4.73   -5.61   -6.52   -7.47
+   180.0   -0.03   -0.01    0.01    0.05    0.08    0.10    0.12    0.11    0.09    0.06    0.02   -0.00   -0.02    0.00    0.06
+   210.0   -0.03   -0.02    0.05    0.20    0.45    0.81    1.26    1.80    2.42    3.12    3.88    4.71    5.61    6.59    7.67
+   240.0   -0.03   -0.04   -0.04   -0.03   -0.03   -0.03   -0.03   -0.04   -0.04   -0.04   -0.04   -0.02    0.01    0.04    0.08
+   270.0   -0.03   -0.06   -0.12   -0.25   -0.48   -0.82   -1.28   -1.84   -2.51   -3.25   -4.05   -4.91   -5.81   -6.74   -7.71
+   300.0   -0.03   -0.06   -0.07   -0.08   -0.08   -0.07   -0.07   -0.07   -0.06   -0.06   -0.04   -0.01    0.05    0.14    0.29
+   330.0   -0.03   -0.04   -0.01    0.10    0.32    0.64    1.08    1.63    2.28    3.02    3.85    4.77    5.79    6.91    8.15
+   360.0   -0.03   -0.04   -0.04   -0.05   -0.07   -0.08   -0.11   -0.12   -0.13   -0.12   -0.09   -0.04    0.03    0.13    0.26
+   E06                                                      END OF FREQUENCY
+Derived from Signal-Component: E1-C                         COMMENT
+   E01                                                      START OF FREQUENCY
+   -169.37     29.63    811.77                              NORTH / EAST / UP
+   NOAZI   -1.47   -1.38   -1.15   -0.82   -0.46   -0.12    0.16    0.36    0.47    0.48    0.39    0.21   -0.07   -0.46   -0.96
+     0.0   -1.47   -1.45   -1.24   -0.91   -0.52   -0.13    0.22    0.48    0.66    0.73    0.69    0.55    0.29   -0.09   -0.60
+    30.0   -1.47   -1.46   -1.28   -0.98   -0.63   -0.26    0.10    0.42    0.72    1.00    1.27    1.55    1.88    2.30    2.88
+    60.0   -1.47   -1.45   -1.29   -1.04   -0.76   -0.48   -0.25   -0.08    0.01    0.02   -0.05   -0.20   -0.42   -0.73   -1.14
+    90.0   -1.47   -1.42   -1.23   -0.97   -0.68   -0.41   -0.22   -0.12   -0.14   -0.31   -0.64   -1.16   -1.90   -2.90   -4.25
+   120.0   -1.47   -1.37   -1.12   -0.78   -0.40   -0.05    0.25    0.47    0.60    0.64    0.57    0.39    0.11   -0.31   -0.86
+   150.0   -1.47   -1.33   -1.02   -0.63   -0.20    0.21    0.56    0.87    1.12    1.32    1.49    1.65    1.82    2.05    2.39
+   180.0   -1.47   -1.30   -0.99   -0.59   -0.19    0.16    0.43    0.59    0.65    0.59    0.42    0.14   -0.25   -0.75   -1.39
+   210.0   -1.47   -1.31   -1.02   -0.65   -0.28    0.03    0.24    0.32    0.24    0.00   -0.42   -1.05   -1.91   -3.05   -4.53
+   240.0   -1.47   -1.34   -1.07   -0.73   -0.37   -0.04    0.22    0.39    0.47    0.46    0.35    0.14   -0.16   -0.56   -1.05
+   270.0   -1.47   -1.37   -1.13   -0.81   -0.46   -0.12    0.19    0.45    0.68    0.88    1.07    1.28    1.53    1.87    2.36
+   300.0   -1.47   -1.40   -1.18   -0.86   -0.51   -0.18    0.08    0.26    0.35    0.35    0.26    0.09   -0.16   -0.52   -1.01
+   330.0   -1.47   -1.42   -1.21   -0.88   -0.51   -0.17    0.09    0.24    0.23    0.06   -0.30   -0.87   -1.69   -2.81   -4.32
+   360.0   -1.47   -1.45   -1.24   -0.91   -0.52   -0.13    0.22    0.48    0.66    0.73    0.69    0.55    0.29   -0.09   -0.60
+   E01                                                      END OF FREQUENCY
+Derived from Signal-Component: E5-Q (AltBOC)                COMMENT
+   E08                                                      START OF FREQUENCY
+   -169.95     26.42    792.86                              NORTH / EAST / UP
+   NOAZI   -0.35   -0.34   -0.30   -0.25   -0.19   -0.12   -0.05    0.00    0.05    0.06    0.05    0.01   -0.07   -0.20   -0.36
+     0.0   -0.35   -0.36   -0.36   -0.35   -0.32   -0.28   -0.23   -0.17   -0.10   -0.03    0.04    0.10    0.14    0.15    0.14
+    30.0   -0.35   -0.35   -0.38   -0.45   -0.61   -0.87   -1.25   -1.73   -2.31   -3.00   -3.78   -4.65   -5.61   -6.65   -7.78
+    60.0   -0.35   -0.33   -0.28   -0.20   -0.11   -0.01    0.08    0.14    0.17    0.16    0.09   -0.02   -0.19   -0.41   -0.67
+    90.0   -0.35   -0.31   -0.21   -0.01    0.30    0.71    1.22    1.82    2.48    3.19    3.93    4.69    5.48    6.28    7.10
+   120.0   -0.35   -0.31   -0.27   -0.21   -0.15   -0.09   -0.04    0.02    0.07    0.10    0.12    0.11    0.07   -0.01   -0.14
+   150.0   -0.35   -0.32   -0.32   -0.40   -0.56   -0.84   -1.22   -1.72   -2.31   -3.01   -3.80   -4.68   -5.65   -6.71   -7.86
+   180.0   -0.35   -0.31   -0.27   -0.20   -0.14   -0.07   -0.01    0.02    0.02   -0.02   -0.10   -0.23   -0.40   -0.62   -0.88
+   210.0   -0.35   -0.31   -0.21   -0.02    0.29    0.70    1.21    1.80    2.46    3.16    3.89    4.63    5.39    6.15    6.92
+   240.0   -0.35   -0.33   -0.29   -0.22   -0.13   -0.04    0.05    0.14    0.21    0.26    0.28    0.25    0.18    0.05   -0.16
+   270.0   -0.35   -0.35   -0.38   -0.45   -0.60   -0.84   -1.20   -1.66   -2.23   -2.90   -3.67   -4.54   -5.50   -6.57   -7.74
+   300.0   -0.35   -0.36   -0.36   -0.33   -0.28   -0.22   -0.15   -0.10   -0.06   -0.04   -0.07   -0.13   -0.24   -0.39   -0.59
+   330.0   -0.35   -0.36   -0.32   -0.19    0.06    0.42    0.91    1.50    2.17    2.92    3.72    4.57    5.45    6.36    7.31
+   360.0   -0.35   -0.36   -0.36   -0.35   -0.32   -0.28   -0.23   -0.17   -0.10   -0.03    0.04    0.10    0.14    0.15    0.14
+   E08                                                      END OF FREQUENCY
+                                                            END OF ANTENNA
+                                                            START OF ANTENNA    
+BEIDOU-2G           C01                 C003      2010-001A TYPE / SERIAL NO    
+                                             0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0   9.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     4                                                      # OF FREQUENCIES    
+  2010     1    16     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+CONVENTIONAL MGEX VALUES                                    COMMENT             
+FREQUENCY CODES C01 AND C02 BOTH REFER TO BEIDOU SIGNAL B1  COMMENT             
+   C01                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C01                                                      END OF FREQUENCY    
+   C02                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C02                                                      END OF FREQUENCY    
+   C06                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C06                                                      END OF FREQUENCY    
+   C07                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C07                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BEIDOU-2I           C06                 C005      2010-036A TYPE / SERIAL NO    
+                                             0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0   9.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     4                                                      # OF FREQUENCIES    
+  2010     7    31     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+CONVENTIONAL MGEX VALUES                                    COMMENT             
+FREQUENCY CODES C01 AND C02 BOTH REFER TO BEIDOU SIGNAL B1  COMMENT             
+   C01                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C01                                                      END OF FREQUENCY    
+   C02                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C02                                                      END OF FREQUENCY    
+   C06                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C06                                                      END OF FREQUENCY    
+   C07                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C07                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+BEIDOU-2M           C11                 C012      2012-018A TYPE / SERIAL NO    
+                                             0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     4                                                      # OF FREQUENCIES    
+  2012     4    29     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+CONVENTIONAL MGEX VALUES                                    COMMENT             
+FREQUENCY CODES C01 AND C02 BOTH REFER TO BEIDOU SIGNAL B1  COMMENT             
+   C01                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C01                                                      END OF FREQUENCY    
+   C02                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C02                                                      END OF FREQUENCY    
+   C06                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C06                                                      END OF FREQUENCY    
+   C07                                                      START OF FREQUENCY  
+    600.00      0.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   C07                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+QZSS                J01                 J001      2010-045A TYPE / SERIAL NO    
+                    JAXA                     0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  10.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     4                                                      # OF FREQUENCIES    
+  2010     9    11     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+FREQUENCY-SPECIFIC VALUES REFERRING TO MAIN L-ANT ANTENNA   COMMENT             
+   J01                                                      START OF FREQUENCY  
+     -0.90      2.90   3197.90                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   J01                                                      END OF FREQUENCY    
+   J02                                                      START OF FREQUENCY  
+     -0.90      2.90   2992.90                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   J02                                                      END OF FREQUENCY    
+   J05                                                      START OF FREQUENCY  
+     -0.90      2.90   3077.90                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   J05                                                      END OF FREQUENCY    
+   J06                                                      START OF FREQUENCY  
+     -0.90      2.90   3147.90                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   J06                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+IRNSS-1IGSO         I01                 I001      2013-034A TYPE / SERIAL NO    
+                    ISRO                     0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2013     7     1     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   I05                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I05                                                      END OF FREQUENCY    
+   I09                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I09                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+IRNSS-1GEO          I03                 I003      2014-061A TYPE / SERIAL NO    
+                    ISRO                     0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2014    10    15     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   I05                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I05                                                      END OF FREQUENCY    
+   I09                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I09                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+IRNSS-1IGSO         I04                 I004      2015-018A TYPE / SERIAL NO    
+                    ISRO                     0    20-JUL-15 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  14.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2015     3    28     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  SINEX CODE          
+   I05                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I05                                                      END OF FREQUENCY    
+   I09                                                      START OF FREQUENCY  
+     11.40      1.10   1280.80                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   I09                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+3S-02-TSADM     NONE                                        TYPE / SERIAL NO    
+CONVERTED           TUM                      1    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  80.0   5.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+IGS14_1972                                                  SINEX CODE          
+CONVERTED FROM igs_01.pcv                                   COMMENT             
+   G01                                                      START OF FREQUENCY  
+      2.36      3.07    254.34                              NORTH / EAST / UP   
+   NOAZI    0.00   -0.23   -0.71   -1.44   -2.24   -3.13   -3.98   -4.61   -5.00   -4.94   -4.48   -3.52   -2.06   -0.08    2.59    6.06   10.43
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+      0.51      3.54    283.95                              NORTH / EAST / UP   
+   NOAZI    0.00   -0.03   -0.21   -0.68   -1.19   -1.68   -2.30   -2.67   -3.02   -3.02   -2.76   -1.96   -0.73    0.77    2.57    4.67    7.02
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+3S-02-TSATE     NONE                                        TYPE / SERIAL NO    
+CONVERTED           TUM                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  90.0   5.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+IGS14_1972                                                  SINEX CODE          
+CONVERTED FROM igs_01.pcv                                   COMMENT             
+   G01                                                      START OF FREQUENCY  
+      0.66     -0.53    152.84                              NORTH / EAST / UP   
+   NOAZI    0.00   -0.23   -0.91   -1.94   -3.24   -4.63   -5.98   -7.11   -7.90   -8.24   -8.08   -7.42   -6.26   -4.58   -2.31    0.66    4.43    9.03   14.19
+   G01                                                      END OF FREQUENCY    
+   G02                                                      START OF FREQUENCY  
+     -0.29     -0.66    163.35                              NORTH / EAST / UP   
+   NOAZI    0.00   -0.13   -0.51   -1.08   -1.79   -2.58   -3.40   -4.17   -4.82   -5.22   -5.26   -4.86   -4.03   -2.83   -1.33    0.47    2.72    5.65    9.44
+   G02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      
+                                                            START OF ANTENNA    
+AERAT1675_120   SPKE                                        TYPE / SERIAL NO    
+ROBOT               Geo++ GmbH               1    04-AUG-14 METH / BY / # / DATE
+    15.0                                                    DAZI                
+     0.0  90.0   5.0                                        ZEN1 / ZEN2 / DZEN  
+     1                                                      # OF FREQUENCIES    
+IGS14_1972                                                  SINEX CODE          
+# Number of Calibrated Antennas GPS:      001               COMMENT             
+# Number of Individual Calibrations GPS:  015               COMMENT             
+# Number of Calibrated Antennas GLO:      001               COMMENT             
+# Number of Individual Calibrations GLO:  015               COMMENT             
+# GLONASS PCV (metric)                                      COMMENT             
+#  derived from Delta PCV per 25.0 MHz                      COMMENT             
+#  for frequency channel number  k=0                        COMMENT             
+   G01                                                      START OF FREQUENCY  
+     -0.01     +0.57    +80.51                              NORTH / EAST / UP   
+   NOAZI   +0.00   -0.07   -0.28   -0.61   -1.01   -1.46   -1.94   -2.43   -2.92   -3.38   -3.75   -3.95   -3.87   -3.37   -2.31   -0.58   +1.86   +4.91   +8.28
+     0.0   +0.00   -0.09   -0.33   -0.68   -1.11   -1.57   -2.04   -2.49   -2.92   -3.32   -3.63   -3.76   -3.57   -2.90   -1.65   +0.24   +2.77   +5.81   +9.16
+    15.0   +0.00   -0.09   -0.33   -0.68   -1.10   -1.57   -2.04   -2.50   -2.93   -3.33   -3.63   -3.75   -3.57   -2.96   -1.79   +0.02   +2.49   +5.55   +8.98
+    30.0   +0.00   -0.10   -0.32   -0.67   -1.09   -1.56   -2.05   -2.54   -3.03   -3.46   -3.80   -3.97   -3.85   -3.33   -2.26   -0.54   +1.88   +4.92   +8.35
+    45.0   +0.00   -0.10   -0.32   -0.64   -1.05   -1.52   -2.02   -2.55   -3.08   -3.57   -3.95   -4.16   -4.08   -3.59   -2.56   -0.86   +1.56   +4.62   +7.99
+    60.0   +0.00   -0.10   -0.31   -0.62   -1.00   -1.45   -1.95   -2.49   -3.03   -3.53   -3.93   -4.12   -4.01   -3.48   -2.39   -0.64   +1.84   +4.94   +8.29
+    75.0   +0.00   -0.09   -0.31   -0.60   -0.97   -1.39   -1.86   -2.38   -2.90   -3.38   -3.74   -3.88   -3.72   -3.13   -1.98   -0.17   +2.37   +5.52   +8.93
+    90.0   +0.00   -0.09   -0.30   -0.60   -0.95   -1.36   -1.81   -2.30   -2.80   -3.25   -3.58   -3.71   -3.54   -2.95   -1.80   +0.02   +2.56   +5.71   +9.16
+   105.0   +0.00   -0.09   -0.30   -0.60   -0.97   -1.38   -1.83   -2.31   -2.80   -3.26   -3.62   -3.80   -3.69   -3.17   -2.09   -0.33   +2.15   +5.25   +8.65
+   120.0   +0.00   -0.08   -0.30   -0.60   -0.98   -1.41   -1.88   -2.38   -2.90   -3.39   -3.81   -4.07   -4.05   -3.62   -2.61   -0.92   +1.50   +4.53   +7.84
+   135.0   +0.00   -0.08   -0.28   -0.59   -0.97   -1.41   -1.90   -2.42   -2.97   -3.50   -3.95   -4.24   -4.26   -3.85   -2.87   -1.20   +1.19   +4.19   +7.46
+   150.0   +0.00   -0.07   -0.27   -0.56   -0.93   -1.36   -1.84   -2.36   -2.91   -3.43   -3.87   -4.13   -4.10   -3.65   -2.63   -0.94   +1.47   +4.49   +7.77
+   165.0   +0.00   -0.06   -0.24   -0.52   -0.87   -1.27   -1.72   -2.22   -2.74   -3.22   -3.61   -3.81   -3.72   -3.22   -2.17   -0.45   +1.99   +5.04   +8.33
+   180.0   +0.00   -0.05   -0.23   -0.49   -0.82   -1.20   -1.63   -2.10   -2.59   -3.04   -3.40   -3.59   -3.50   -3.02   -2.00   -0.31   +2.13   +5.20   +8.53
+   195.0   +0.00   -0.05   -0.21   -0.48   -0.81   -1.20   -1.64   -2.11   -2.59   -3.05   -3.43   -3.66   -3.65   -3.26   -2.33   -0.71   +1.70   +4.80   +8.20
+   210.0   +0.00   -0.04   -0.21   -0.49   -0.85   -1.27   -1.73   -2.23   -2.73   -3.22   -3.65   -3.95   -4.01   -3.70   -2.83   -1.24   +1.15   +4.27   +7.78
+   225.0   +0.00   -0.04   -0.22   -0.51   -0.90   -1.35   -1.84   -2.36   -2.88   -3.40   -3.85   -4.17   -4.23   -3.87   -2.94   -1.29   +1.14   +4.27   +7.80
+   240.0   +0.00   -0.04   -0.23   -0.54   -0.95   -1.41   -1.90   -2.40   -2.91   -3.41   -3.83   -4.10   -4.07   -3.57   -2.47   -0.66   +1.85   +4.95   +8.35
+   255.0   +0.00   -0.05   -0.24   -0.57   -0.98   -1.44   -1.90   -2.37   -2.83   -3.27   -3.64   -3.83   -3.69   -3.05   -1.78   +0.17   +2.74   +5.77   +8.97
+   270.0   +0.00   -0.05   -0.26   -0.59   -1.01   -1.47   -1.92   -2.36   -2.77   -3.16   -3.48   -3.62   -3.45   -2.78   -1.50   +0.46   +3.02   +5.99   +9.06
+   285.0   +0.00   -0.06   -0.27   -0.62   -1.06   -1.53   -2.00   -2.44   -2.85   -3.23   -3.54   -3.71   -3.60   -3.03   -1.88   -0.04   +2.44   +5.39   +8.48
+   300.0   +0.00   -0.07   -0.29   -0.65   -1.10   -1.59   -2.09   -2.57   -3.02   -3.44   -3.80   -4.03   -4.01   -3.57   -2.56   -0.86   +1.54   +4.49   +7.66
+   315.0   +0.00   -0.07   -0.30   -0.67   -1.12   -1.63   -2.15   -2.66   -3.15   -3.61   -4.02   -4.30   -4.32   -3.92   -2.94   -1.26   +1.13   +4.09   +7.30
+   330.0   +0.00   -0.08   -0.31   -0.68   -1.13   -1.62   -2.13   -2.64   -3.13   -3.61   -4.02   -4.28   -4.25   -3.76   -2.68   -0.90   +1.54   +4.52   +7.72
+   345.0   +0.00   -0.09   -0.32   -0.68   -1.12   -1.59   -2.07   -2.55   -3.01   -3.46   -3.83   -4.02   -3.88   -3.27   -2.06   -0.18   +2.34   +5.35   +8.59
+   360.0   +0.00   -0.09   -0.33   -0.68   -1.11   -1.57   -2.04   -2.49   -2.92   -3.32   -3.63   -3.76   -3.57   -2.90   -1.65   +0.24   +2.77   +5.81   +9.16
+   G01                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      

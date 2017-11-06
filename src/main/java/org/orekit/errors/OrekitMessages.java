@@ -205,6 +205,7 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
     UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0}"),
+    WRONG_COLUMNS_NUMBER("wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)"),
     UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}");
 
 

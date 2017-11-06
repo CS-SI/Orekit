@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss;
 
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -34,18 +36,19 @@ public class Antenna {
     /** Sinex code. */
     private final String sinexCode;
 
-    /** Phase center eccentricities (m). */
-    private final Vector3D eccentricities;
+    /** Frequencies patterns. */
+    private final Map<Frequency, FrequencyPattern> patterns;
 
     /** Simple constructor.
      * @param type antenna type
      * @param sinexCode sinex code
-     * @param eccentricities phase center eccentricities (m)
+     * @param patterns frequencies patterns
      */
-    protected Antenna(final String type, final String sinexCode, final Vector3D eccentricities) {
-        this.type           = type;
-        this.sinexCode      = sinexCode;
-        this.eccentricities = eccentricities;
+    protected Antenna(final String type, final String sinexCode,
+                      final Map<Frequency, FrequencyPattern> patterns) {
+        this.type      = type;
+        this.sinexCode = sinexCode;
+        this.patterns  = patterns;
     }
 
     /** Get the type of the antenna.
@@ -63,10 +66,20 @@ public class Antenna {
     }
 
     /** Get the phase center eccentricities.
-     * @return hase center eccentricities (m)
+     * @param frequency frequency of the signal to consider
+     * @return phase center eccentricities (m)
      */
-    public Vector3D getEccentricities() {
-        return eccentricities;
+    public Vector3D getEccentricities(final Frequency frequency) {
+        return patterns.get(frequency).getEccentricities();
+    }
+
+    /** Get the phase in a signal direction.
+     * @param frequency frequency of the signal to consider
+     * @param direction signal direction in antenna reference frame
+     * @return phase
+     */
+    public double getPhase(final Frequency frequency, final Vector3D direction) {
+        return patterns.get(frequency).getPhase(direction);
     }
 
 }

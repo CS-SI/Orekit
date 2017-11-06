@@ -460,5 +460,8 @@ UNKNOWN_SATELLITE_ANTENNA_CODE = unknown satellite antenna code {0}
 # unknown RINEX frequency {0}
 UNKNOWN_RINEX_FREQUENCY = unknown RINEX frequency {0}
 
+# wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
+WRONG_COLUMNS_NUMBER = wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
+
 # unsupported format for file {0}
 UNSUPPORTED_FILE_FORMAT = unsupported format for file {0}

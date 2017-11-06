@@ -21,8 +21,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import org.hipparchus.analysis.interpolation.BicubicInterpolator;
+import org.hipparchus.analysis.interpolation.BivariateGridInterpolator;
+import org.hipparchus.analysis.interpolation.LinearInterpolator;
+import org.hipparchus.analysis.interpolation.UnivariateInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
@@ -32,41 +40,94 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * Factory for GNSS antennas (both receiver and satellite).
+ * <p>
+ * The factory creates antennas by parsing an
+ * <a href="ftp://www.igs.org/pub/station/general/antex14.txt">ANTEX</a> file.
+ * </p>
  *
  * @author Luc Maisonobe
  * @since 9.1
- * @see <a href="ftp://www.igs.org/pub/station/general/antex14.txt">ANTEX: The Antenna Exchange Format, Version 1.4</a>
- *
  */
-public class AntennaFactory {
+public class AntexLoader {
 
     /** Default supported files name pattern for antex files. */
     public static final String DEFAULT_ANTEX_SUPPORTED_NAMES = "^\\w{5}(?:_\\d{4})?\\.atx$";
 
-    /** Satellites antennas. */
-    private final List<SatelliteAntenna> satellitesAntennas;
+    /** Interpolator for azimut-independent phase. */
+    private final UnivariateInterpolator interpolator1D;
 
-    /** Receiver antennas. */
+    /** Interpolator for azimut-dependent phase. */
+    private final BivariateGridInterpolator interpolator2D;
+
+    /** Satellites antennas. */
+    private final List<TimeSpanMap<SatelliteAntenna>> satellitesAntennas;
+
+    /** Receivers antennas. */
     private final List<ReceiverAntenna> receiversAntennas;
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      * @exception OrekitException if no antex file can be read
      */
-    public AntennaFactory(final String supportedNames)
+    public AntexLoader(final String supportedNames)
         throws OrekitException {
-        this.satellitesAntennas = new ArrayList<>();
-        this.receiversAntennas  = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new AntexParser());
+        interpolator1D     = new LinearInterpolator();
+        interpolator2D     = new BicubicInterpolator();
+        satellitesAntennas = new ArrayList<>();
+        receiversAntennas  = new ArrayList<>();
+        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+    }
+
+    /** Add a satellite antenna.
+     * @param antenna satellite antenna to add
+     */
+    private void addSatelliteAntenna(final SatelliteAntenna antenna) {
+        final Optional<TimeSpanMap<SatelliteAntenna>> existing =
+                        satellitesAntennas.
+                        stream().
+                        filter(m -> {
+                            final SatelliteAntenna first = m.getTransitions().first().getBefore();
+                            return first.getSatelliteSystem() == antenna.getSatelliteSystem() &&
+                                   first.getPrnNumber() == antenna.getPrnNumber();
+                        }).findFirst();
+        if (existing.isPresent()) {
+            // this is an update for a satellite antenna, with new time span
+            existing.get().addValidAfter(antenna, antenna.getValidFrom());
+        } else {
+            // this is a new satellite antenna
+            satellitesAntennas.add(new TimeSpanMap<>(antenna));
+        }
+    }
+
+    /** Get parsed satellites antennas.
+     * @return unmodifiable view of parsed satellites antennas
+     */
+    public List<TimeSpanMap<SatelliteAntenna>> getSatellitesAntennas() {
+        return Collections.unmodifiableList(satellitesAntennas);
+    }
+
+    /** Add a receiver antenna.
+     * @param antenna receiver antenna to add
+     */
+    private void addReceiverAntenna(final ReceiverAntenna antenna) {
+        receiversAntennas.add(antenna);
+    }
+
+    /** Get parsed receivers antennas.
+     * @return unmodifiable view of parsed receivers antennas
+     */
+    public List<ReceiverAntenna> getReceiversAntennas() {
+        return Collections.unmodifiableList(receiversAntennas);
     }
 
     /** Parser for antex files.
      * @see <a href="ftp://www.igs.org/pub/station/general/antex14.txt">ANTEX: The Antenna Exchange Format, Version 1.4</a>
      */
-    private class AntexParser implements DataLoader {
+    private class Parser implements DataLoader {
 
         /** Index of label in data lines. */
         private static final int LABEL_START = 60;
@@ -92,21 +153,27 @@ public class AntennaFactory {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
 
                 // placeholders for parsed data
-                int                  lineNumber           = 0;
-                SatelliteSystem      satelliteSystem      = null;
-                String               antennaType          = null;
-                SatelliteAntennaCode satelliteAntennaCode = null;
-                String               serialNumber         = null;
-                int                  prnNumber            = -1;
-                int                  satelliteCode        = -1;
-                String               cosparID             = null;
-                AbsoluteDate         validFrom            = AbsoluteDate.PAST_INFINITY;
-                AbsoluteDate         validUntil           = AbsoluteDate.FUTURE_INFINITY;
-                String               sinexCode            = null;
-                Vector3D             eccentricities       = Vector3D.ZERO;
-                Frequency            frequency            = null;
-                boolean              inFrequency          = false;
-                boolean              inRMS                = false;
+                int                              lineNumber           = 0;
+                SatelliteSystem                  satelliteSystem      = null;
+                String                           antennaType          = null;
+                SatelliteAntennaCode             satelliteAntennaCode = null;
+                String                           serialNumber         = null;
+                int                              prnNumber            = -1;
+                int                              satelliteCode        = -1;
+                String                           cosparID             = null;
+                AbsoluteDate                     validFrom            = AbsoluteDate.PAST_INFINITY;
+                AbsoluteDate                     validUntil           = AbsoluteDate.FUTURE_INFINITY;
+                String                           sinexCode            = null;
+                double[]                         azimuthGrid          = null;
+                double[]                         polarGrid            = null;
+                double[]                         grid1D               = null;
+                double[][]                       grid2D               = null;
+                Vector3D                         eccentricities       = Vector3D.ZERO;
+                int                              nbFrequencies        = -1;
+                Frequency                        frequency            = null;
+                Map<Frequency, FrequencyPattern> patterns             = null;
+                boolean                          inFrequency          = false;
+                boolean                          inRMS                = false;
 
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     ++lineNumber;
@@ -139,8 +206,15 @@ public class AntennaFactory {
                             cosparID             = null;
                             validFrom            = AbsoluteDate.PAST_INFINITY;
                             validUntil           = AbsoluteDate.FUTURE_INFINITY;
+                            sinexCode            = null;
+                            azimuthGrid          = null;
+                            polarGrid            = null;
+                            grid1D               = null;
+                            grid2D               = null;
                             eccentricities       = Vector3D.ZERO;
+                            nbFrequencies        = -1;
                             frequency            = null;
+                            patterns             = null;
                             inFrequency          = false;
                             inRMS                = false;
                             break;
@@ -157,6 +231,7 @@ public class AntennaFactory {
                                         case GLONASS:
                                         case GALILEO:
                                         case COMPASS:
+                                        case IRNSS:
                                             prnNumber = n;
                                             break;
                                         case QZSS:
@@ -181,14 +256,30 @@ public class AntennaFactory {
                         case "METH / BY / # / DATE" :
                             // ignored
                             break;
-                        case "DAZI" :
-                            // TODO
+                        case "DAZI" : {
+                            final double stepDegrees = parseDouble(line,  2, 6);
+                            if (stepDegrees > 0.001) {
+                                // we wrap azimuth before 0° and after 360° to ensure smoothness
+                                azimuthGrid = new double[3 + (int) FastMath.round(360.0 / stepDegrees)];
+                                for (int i = 0; i < azimuthGrid.length; ++i) {
+                                    azimuthGrid[i] = FastMath.toRadians((i - 1) * stepDegrees);
+                                }
+                            }
                             break;
-                        case "ZEN1 / ZEN2 / DZEN" :
-                            // TODO
+                        }
+                        case "ZEN1 / ZEN2 / DZEN" : {
+                            final double startDegrees = parseDouble(line,  2, 6);
+                            final double endDegrees   = parseDouble(line,  8, 6);
+                            final double stepDegrees  = parseDouble(line, 14, 6);
+                            polarGrid = new double[1 + (int) FastMath.round((endDegrees - startDegrees) / stepDegrees)];
+                            for (int i = 0; i < polarGrid.length; ++i) {
+                                polarGrid[i] = FastMath.toRadians(startDegrees + i * stepDegrees);
+                            }
                             break;
+                        }
                         case "# OF FREQUENCIES" :
-                            // TODO
+                            nbFrequencies = parseInt(line, 0, 6);
+                            patterns      = new HashMap<>(nbFrequencies);
                             break;
                         case "VALID FROM" :
                             validFrom = new AbsoluteDate(parseInt(line,     0,  6),
@@ -214,6 +305,10 @@ public class AntennaFactory {
                         case "START OF FREQUENCY" :
                             try {
                                 frequency = Frequency.valueOf(parseString(line, 3, 3));
+                                grid1D    = new double[polarGrid.length];
+                                if (azimuthGrid != null) {
+                                    grid2D    = new double[azimuthGrid.length][polarGrid.length];
+                                }
                             } catch (IllegalArgumentException iae) {
                                 throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                           parseString(line, 3, 3));
@@ -228,6 +323,22 @@ public class AntennaFactory {
                             }
                             break;
                         case "END OF FREQUENCY" :
+                            if (azimuthGrid == null) {
+                                patterns.put(frequency,
+                                             new FrequencyPattern(eccentricities,
+                                                                  polarGrid[0], polarGrid[polarGrid.length - 1],
+                                                                  interpolator1D.interpolate(polarGrid, grid1D),
+                                                                  null));
+                            } else {
+                                patterns.put(frequency,
+                                             new FrequencyPattern(eccentricities,
+                                                                  polarGrid[0], polarGrid[polarGrid.length - 1],
+                                                                  interpolator1D.interpolate(polarGrid, grid1D),
+                                                                  interpolator2D.interpolate(azimuthGrid, polarGrid, grid2D)));
+                            }
+                            frequency   = null;
+                            grid1D      = null;
+                            grid2D      = null;
                             inFrequency = false;
                             break;
                         case "START OF FREQ RMS" :
@@ -238,18 +349,35 @@ public class AntennaFactory {
                             break;
                         case "END OF ANTENNA" :
                             if (satelliteAntennaCode == null) {
-                                receiversAntennas.add(new ReceiverAntenna(antennaType, sinexCode, eccentricities, serialNumber));
+                                addReceiverAntenna(new ReceiverAntenna(antennaType, sinexCode, patterns, serialNumber));
                             } else {
-                                satellitesAntennas.add(new SatelliteAntenna(antennaType, sinexCode, eccentricities,
-                                                                            satelliteSystem, prnNumber, satelliteCode,
-                                                                            cosparID, validFrom, validUntil));
+                                addSatelliteAntenna(new SatelliteAntenna(antennaType, sinexCode, patterns,
+                                                                         satelliteSystem, prnNumber, satelliteCode,
+                                                                         cosparID, validFrom, validUntil));
                             }
                             break;
                         default :
                             if (inFrequency) {
-                                // TODO
+                                final String[] fields = line.trim().split("\\s+");
+                                if (fields.length != polarGrid.length + 1) {
+                                    throw new OrekitException(OrekitMessages.WRONG_COLUMNS_NUMBER,
+                                                              name, lineNumber, polarGrid.length + 1, fields.length);
+                                }
+                                if ("NOAZI".equals(fields[0])) {
+                                    // azimuth-independent phase
+                                    for (int i = 0; i < grid1D.length; ++i) {
+                                        grid1D[i] = Double.parseDouble(fields[i + 1]);
+                                    }
+                                } else {
+                                    // azimuth-dependent phase
+                                    final double step = 360.0 / (azimuthGrid.length - 3);
+                                    final int    k    = (int) FastMath.round(Double.parseDouble(fields[0]) / step);
+                                    for (int i = 0; i < grid2D[k].length; ++i) {
+                                        grid2D[k][i] = Double.parseDouble(fields[i + 1]);
+                                    }
+                                }
                             } else if (inRMS) {
-                                // TODO
+                                // RMS section is ignored (there are no RMS section in both igs08.atx and igs14.atx)s
                             } else {
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                           lineNumber, name, line);
@@ -267,7 +395,7 @@ public class AntennaFactory {
          * @return parsed string
          */
         private String parseString(final String line, final int start, final int length) {
-            return line.substring(start, start + length).trim();
+            return line.substring(start, FastMath.min(line.length(), start + length)).trim();
         }
 
         /** Extract an integer from a line.

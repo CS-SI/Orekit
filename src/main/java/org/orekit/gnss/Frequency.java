@@ -78,6 +78,12 @@ public enum Frequency {
     /** QZSS LEX. */
     J06(SatelliteSystem.QZSS,    "LEX"),
 
+    /** IRNSS L1. */
+    I05(SatelliteSystem.QZSS,    "L1"),
+
+    /** IRNSS S. */
+    I09(SatelliteSystem.QZSS,    "S"),
+
     /** SBAS L1. */
     S01(SatelliteSystem.SBAS,    "L1"),
 

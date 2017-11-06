@@ -45,6 +45,9 @@ public enum SatelliteSystem {
     /** Quasi-Zenith Satellite System system. */
     QZSS('J'),
 
+    /** Indian Regional Navigation Satellite System system. */
+    IRNSS('I'),
+
     /** SBAS system. */
     SBAS('S'),
 

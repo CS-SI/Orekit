@@ -16,7 +16,8 @@
  */
 package org.orekit.gnss;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import java.util.Map;
+
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -50,7 +51,7 @@ public class SatelliteAntenna extends Antenna {
     /** Simple constructor.
      * @param type antenna type
      * @param sinexCode sinex code
-     * @param eccentricities phase center eccentricities (m)
+     * @param patterns frequencies patterns
      * @param satelliteSystem satellite system
      * @param prnNumber PRN number
      * @param satelliteCode satellite code
@@ -58,11 +59,12 @@ public class SatelliteAntenna extends Antenna {
      * @param validFrom start of validity
      * @param validUntil end of validity
      */
-    public SatelliteAntenna(final String type, final String sinexCode, final Vector3D eccentricities,
+    public SatelliteAntenna(final String type, final String sinexCode,
+                            final Map<Frequency, FrequencyPattern> patterns,
                             final SatelliteSystem satelliteSystem, final int prnNumber,
                             final int satelliteCode, final String cosparID,
                             final AbsoluteDate validFrom, final AbsoluteDate validUntil) {
-        super(type, sinexCode, eccentricities);
+        super(type, sinexCode, patterns);
         this.satelliteSystem = satelliteSystem;
         this.prnNumber       = prnNumber;
         this.satelliteCode   = satelliteCode;

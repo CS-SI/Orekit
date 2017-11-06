@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import java.util.Map;
 
 /**
  * GNSS receiver antenna model.
@@ -34,12 +34,13 @@ public class ReceiverAntenna extends Antenna {
     /** Simple constructor.
      * @param type antenna type
      * @param sinexCode sinex code
-     * @param eccentricities phase center eccentricities (m)
+     * @param patterns frequencies patterns
      * @param serialNumber serial number
      */
-    public ReceiverAntenna(final String type, final String sinexCode, final Vector3D eccentricities,
+    public ReceiverAntenna(final String type, final String sinexCode,
+                           final Map<Frequency, FrequencyPattern> patterns,
                            final String serialNumber) {
-        super(type, sinexCode, eccentricities);
+        super(type, sinexCode, patterns);
         this.serialNumber = serialNumber;
     }
 

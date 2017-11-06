@@ -43,28 +43,28 @@ public enum SatelliteAntennaCode {
     BEIDOU_3I("BEIDOU-3I"),
 
     /** GPS Block I     : SVN 01-11. */
-    BLOCK_I("I"),
+    BLOCK_I("BLOCK I"),
 
     /** GPS Block II    : SVN 13-21. */
-    BLOCK_II("II"),
+    BLOCK_II("BLOCK II"),
 
     /** GPS Block IIA   : SVN 22-40. */
-    BLOCK_IIA("IIA"),
+    BLOCK_IIA("BLOCK IIA"),
 
     /** GPS Block IIR   : SVN 41, 43-46, 51, 54, 56. */
-    BLOCK_IIR_A("IIR-A"),
+    BLOCK_IIR_A("BLOCK IIR-A"),
 
     /** GPS Block IIR   : SVN 47, 59-61. */
-    BLOCK_IIR_B("IIR-B"),
+    BLOCK_IIR_B("BLOCK IIR-B"),
 
     /** GPS Block IIR-M : SVN 48-50, 52-53, 55, 57-58. */
-    BLOCK_IIR_M("IIR-M"),
+    BLOCK_IIR_M("BLOCK IIR-M"),
 
     /** GPS Block IIF   : SVN 62-73. */
-    BLOCK_IIF("IIF"),
+    BLOCK_IIF("BLOCK IIF"),
 
     /** GPS Block IIIA  : SVN 74-81. */
-    BLOCK_IIIA("IIIA"),
+    BLOCK_IIIA("BLOCK IIIA"),
 
     /** Galileo In-Orbit Validation Element A (GIOVE-A). */
     GALILEO_0A("GALILEO-0A"),
