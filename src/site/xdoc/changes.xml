@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed derivatives computation in turn-around range ionospheric delay modifier.
+        Fixes issue #369.
+      </action>
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML TDM files.
         Part of issue #368.
