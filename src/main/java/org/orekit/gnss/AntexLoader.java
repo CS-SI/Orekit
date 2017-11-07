@@ -307,11 +307,11 @@ public class AntexLoader {
                                 frequency = Frequency.valueOf(parseString(line, 3, 3));
                                 grid1D    = new double[polarGrid.length];
                                 if (azimuthGrid != null) {
-                                    grid2D    = new double[azimuthGrid.length][polarGrid.length];
+                                    grid2D = new double[azimuthGrid.length][polarGrid.length];
                                 }
                             } catch (IllegalArgumentException iae) {
                                 throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                          parseString(line, 3, 3));
+                                                          parseString(line, 3, 3), name, lineNumber);
                             }
                             inFrequency = true;
                             break;
@@ -322,7 +322,14 @@ public class AntexLoader {
                                                               parseDouble(line, 20, 10) * MM_TO_M);
                             }
                             break;
-                        case "END OF FREQUENCY" :
+                        case "END OF FREQUENCY" : {
+                            final String endFrequency = parseString(line, 3, 3);
+                            if (!frequency.toString().equals(endFrequency)) {
+                                throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
+                                                          name, lineNumber, frequency.toString(), endFrequency);
+
+                            }
+
                             if (azimuthGrid == null) {
                                 patterns.put(frequency,
                                              new FrequencyPattern(eccentricities,
@@ -341,6 +348,7 @@ public class AntexLoader {
                             grid2D      = null;
                             inFrequency = false;
                             break;
+                        }
                         case "START OF FREQ RMS" :
                             inRMS = true;
                             break;
@@ -370,14 +378,22 @@ public class AntexLoader {
                                     }
                                 } else {
                                     // azimuth-dependent phase
-                                    final double step = 360.0 / (azimuthGrid.length - 3);
-                                    final int    k    = (int) FastMath.round(Double.parseDouble(fields[0]) / step);
+                                    final double stepDegrees = 360.0 / (azimuthGrid.length - 3);
+                                    final int    k           = 1 + (int) FastMath.round(Double.parseDouble(fields[0]) / stepDegrees);
                                     for (int i = 0; i < grid2D[k].length; ++i) {
                                         grid2D[k][i] = Double.parseDouble(fields[i + 1]);
                                     }
+                                    if (k == 2) {
+                                        // copy the data from just above 0° to just above 360°
+                                       System.arraycopy(grid2D[k], 0, grid2D[grid2D.length - 1], 0, grid2D[k].length); 
+                                    }
+                                    if (k == grid2D.length - 2) {
+                                        // copy the data from just below 360° to just below 0°
+                                       System.arraycopy(grid2D[k], 0, grid2D[0], 0, grid2D[k].length); 
+                                    }
                                 }
                             } else if (inRMS) {
-                                // RMS section is ignored (there are no RMS section in both igs08.atx and igs14.atx)s
+                                // RMS section is ignored (furthermore there are no RMS sections in both igs08.atx and igs14.atx)
                             } else {
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                           lineNumber, name, line);

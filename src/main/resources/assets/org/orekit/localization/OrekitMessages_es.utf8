@@ -457,8 +457,11 @@ UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
 
-# unknown RINEX frequency {0}
+# unknown RINEX frequency {0} in file {1}, line {2}
 UNKNOWN_RINEX_FREQUENCY = <MISSING TRANSLATION>
+
+# mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
+MISMATCHED_FREQUENCIES = <MISSING TRANSLATION>
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = <MISSING TRANSLATION>
