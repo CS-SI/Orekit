@@ -189,9 +189,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-                stateDerivatives[irow][jcol] = stateDerivatives[irow][jcol] +
-                                               masterDjac[irow][jcol] +
-                                               slaveDjac[irow][jcol];
+                stateDerivatives[irow][jcol] += masterDjac[irow][jcol] + slaveDjac[irow][jcol];
             }
         }
         estimated.setStateDerivatives(0, stateDerivatives);
