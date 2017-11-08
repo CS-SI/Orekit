@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added handling of IGS ANTEX GNSS antenna models file.
+      </action>
       <action dev="luc" type="fix">
         Fixed a singularity error in derivatives for perfectly circular orbits in DSST third body force model.
         Fixes issue #364.

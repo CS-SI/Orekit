@@ -200,6 +200,11 @@
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
 
+  * GNSS
+
+    * computation of Dilution Of Precision
+    * loading of ANTEX antenna models file
+
   * Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files

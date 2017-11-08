@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.antenna;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -24,6 +24,10 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.Frequency;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.antenna.AntexLoader;
+import org.orekit.gnss.antenna.SatelliteAntenna;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap;
@@ -135,7 +139,7 @@ public class AntexLoaderTest {
 
         checkSatellite(loader.getSatellitesAntennas().get( 8), 2011, 10, 21,
                        SatelliteSystem.GALILEO, "GALILEO-1",  101, 11,
-                       Frequency.E06, 120.0, 8.0, -0.06);
+                       Frequency.E06, 110.0, 22.0 / 3.0, 0.64);
 
         checkSatellite(loader.getSatellitesAntennas().get( 9), 2010,  1, 16,
                        SatelliteSystem.COMPASS, "BEIDOU-2G",    3, 1,
@@ -235,10 +239,10 @@ public class AntexLoaderTest {
         Assert.assertEquals(satCode,        antenna.getSatelliteCode());
         Assert.assertEquals(prnNumber,      antenna.getPrnNumber());
         Assert.assertEquals(oneMilliSecond, date.durationFrom(antenna.getValidFrom()), 1.0e-10);
-        Assert.assertEquals(phase,
+        Assert.assertEquals(phase * 0.001,
                             antenna.getPhase(freq,
                                              new Vector3D(FastMath.toRadians(az), FastMath.toRadians(90 - pol))),
-                            1.0e-6);
+                            1.0e-10);
     }
 
 }

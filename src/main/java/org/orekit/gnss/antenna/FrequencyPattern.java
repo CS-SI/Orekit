@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.antenna;
 
-import org.hipparchus.analysis.BivariateFunction;
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 
@@ -34,27 +32,17 @@ public class FrequencyPattern {
     /** Phase center eccentricities (m). */
     private final Vector3D eccentricities;
 
-    /** Azimuth independent phase model. */
-    private final UnivariateFunction azimuthIndependentPhase;
-
-    /** Azimuth dependent phase model. */
-    private final BivariateFunction azimuthDependentPhase;
+    /** Phase center variation. */
+    private final PhaseCenterVariation phaseCenterVariation;
 
     /** Simple constructor.
      * @param eccentricities phase center eccentricities (m)
-     * @param azimuthIndependentPhasehase phase model (function argument
-     * is zenith angle for receiver antennas, nadir angle for GNSS satellite)
-     * @param azimuthDependentPhasehase phase model (first function argument is azimuth, second function argument
-     * is polar angle, i.e. zenith for receiver antennas, nadir angle for GNSS satellite),
-     * may be null
+     * @param phaseCenterVariation phase center variation function
      */
     protected FrequencyPattern(final Vector3D eccentricities,
-                               final double polarAngleStart, final double polarAngleEnd,
-                               final UnivariateFunction azimuthIndependentPhase,
-                               final BivariateFunction azimuthDependentPhase) {
-        this.eccentricities          = eccentricities;
-        this.azimuthIndependentPhase = azimuthIndependentPhase;
-        this.azimuthDependentPhase   = azimuthDependentPhase;
+                               final PhaseCenterVariation phaseCenterVariation) {
+        this.eccentricities       = eccentricities;
+        this.phaseCenterVariation = phaseCenterVariation;
     }
 
     /** Get the phase center eccentricities.
@@ -69,12 +57,8 @@ public class FrequencyPattern {
      * @return phase
      */
     public double getPhase(final Vector3D direction) {
-        if (azimuthDependentPhase == null) {
-            return azimuthIndependentPhase.value(0.5 * FastMath.PI - direction.getDelta());
-        } else {
-            return azimuthDependentPhase.value(direction.getAlpha() + FastMath.PI,
-                                               0.5 * FastMath.PI - direction.getDelta());
-        }
+        return phaseCenterVariation.value(0.5 * FastMath.PI - direction.getDelta(),
+                                          direction.getAlpha());
     }
 
 }

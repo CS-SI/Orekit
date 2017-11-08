@@ -14,35 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.orekit.gnss.antenna.AntexLoader;
-import org.orekit.utils.TimeSpanMap;
+package org.orekit.gnss.antenna;
 
 /**
- * Factory for the attitude providers for different navigation satellites.
- *
+ * Model for antennas phase center variations.
  * @author Luc Maisonobe
  * @since 9.1
- * @see <a href="http://acc.igs.org/orbits/eclips_May2017.tar">Kouba model for eclipse/noon turn of GNSS satellites</a>
- *
  */
-public class GNSSAttitudeProviderFactory {
+public interface PhaseCenterVariation {
 
-    /** Maximum PRN index. */
-    private static final int MAX_PRN = 136;
-
-    /** Full list of providers. */
-    private final List<TimeSpanMap<GNSSAttitudeProvider>> providers;
-
-    /** Simple constructor.
-     * @param loader loader for ANTEX file
+    /**
+     * Evaluate phase center variation in one signal direction.
+     * @param polarAngle angle from antenna axial direction
+     * (zenith angle for receiver antennas, nadir angle for
+     * GNSS satellites antennas)
+     * @param azimuthAngle angle around axial direction
+     * @return phase center variation in the signal direction (m)
      */
-    public GNSSAttitudeProviderFactory(final AntexLoader loader) {
-        providers = new ArrayList<TimeSpanMap<GNSSAttitudeProvider>>(MAX_PRN + 1);
-    }
+    double value(double polarAngle, double azimuthAngle);
 
 }

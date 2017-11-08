@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.antenna;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,10 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.hipparchus.analysis.interpolation.BicubicInterpolator;
-import org.hipparchus.analysis.interpolation.BivariateGridInterpolator;
-import org.hipparchus.analysis.interpolation.LinearInterpolator;
-import org.hipparchus.analysis.interpolation.UnivariateInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
@@ -38,6 +34,8 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.Frequency;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap;
@@ -57,12 +55,6 @@ public class AntexLoader {
     /** Default supported files name pattern for antex files. */
     public static final String DEFAULT_ANTEX_SUPPORTED_NAMES = "^\\w{5}(?:_\\d{4})?\\.atx$";
 
-    /** Interpolator for azimut-independent phase. */
-    private final UnivariateInterpolator interpolator1D;
-
-    /** Interpolator for azimut-dependent phase. */
-    private final BivariateGridInterpolator interpolator2D;
-
     /** Satellites antennas. */
     private final List<TimeSpanMap<SatelliteAntenna>> satellitesAntennas;
 
@@ -75,8 +67,6 @@ public class AntexLoader {
      */
     public AntexLoader(final String supportedNames)
         throws OrekitException {
-        interpolator1D     = new LinearInterpolator();
-        interpolator2D     = new BicubicInterpolator();
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
@@ -164,8 +154,10 @@ public class AntexLoader {
                 AbsoluteDate                     validFrom            = AbsoluteDate.PAST_INFINITY;
                 AbsoluteDate                     validUntil           = AbsoluteDate.FUTURE_INFINITY;
                 String                           sinexCode            = null;
-                double[]                         azimuthGrid          = null;
-                double[]                         polarGrid            = null;
+                double                           azimuthStep          = Double.NaN;
+                double                           polarStart           = Double.NaN;
+                double                           polarStop            = Double.NaN;
+                double                           polarStep            = Double.NaN;
                 double[]                         grid1D               = null;
                 double[][]                       grid2D               = null;
                 Vector3D                         eccentricities       = Vector3D.ZERO;
@@ -207,8 +199,10 @@ public class AntexLoader {
                             validFrom            = AbsoluteDate.PAST_INFINITY;
                             validUntil           = AbsoluteDate.FUTURE_INFINITY;
                             sinexCode            = null;
-                            azimuthGrid          = null;
-                            polarGrid            = null;
+                            azimuthStep          = Double.NaN;
+                            polarStart           = Double.NaN;
+                            polarStop            = Double.NaN;
+                            polarStep            = Double.NaN;
                             grid1D               = null;
                             grid2D               = null;
                             eccentricities       = Vector3D.ZERO;
@@ -254,29 +248,16 @@ public class AntexLoader {
                             }
                             break;
                         case "METH / BY / # / DATE" :
-                            // ignored
+                            // ignoreds
                             break;
-                        case "DAZI" : {
-                            final double stepDegrees = parseDouble(line,  2, 6);
-                            if (stepDegrees > 0.001) {
-                                // we wrap azimuth before 0° and after 360° to ensure smoothness
-                                azimuthGrid = new double[3 + (int) FastMath.round(360.0 / stepDegrees)];
-                                for (int i = 0; i < azimuthGrid.length; ++i) {
-                                    azimuthGrid[i] = FastMath.toRadians((i - 1) * stepDegrees);
-                                }
-                            }
+                        case "DAZI" :
+                            azimuthStep = FastMath.toRadians(parseDouble(line,  2, 6));
                             break;
-                        }
-                        case "ZEN1 / ZEN2 / DZEN" : {
-                            final double startDegrees = parseDouble(line,  2, 6);
-                            final double endDegrees   = parseDouble(line,  8, 6);
-                            final double stepDegrees  = parseDouble(line, 14, 6);
-                            polarGrid = new double[1 + (int) FastMath.round((endDegrees - startDegrees) / stepDegrees)];
-                            for (int i = 0; i < polarGrid.length; ++i) {
-                                polarGrid[i] = FastMath.toRadians(startDegrees + i * stepDegrees);
-                            }
+                        case "ZEN1 / ZEN2 / DZEN" :
+                            polarStart = FastMath.toRadians(parseDouble(line,  2, 6));
+                            polarStop  = FastMath.toRadians(parseDouble(line,  8, 6));
+                            polarStep  = FastMath.toRadians(parseDouble(line, 14, 6));
                             break;
-                        }
                         case "# OF FREQUENCIES" :
                             nbFrequencies = parseInt(line, 0, 6);
                             patterns      = new HashMap<>(nbFrequencies);
@@ -305,9 +286,9 @@ public class AntexLoader {
                         case "START OF FREQUENCY" :
                             try {
                                 frequency = Frequency.valueOf(parseString(line, 3, 3));
-                                grid1D    = new double[polarGrid.length];
-                                if (azimuthGrid != null) {
-                                    grid2D = new double[azimuthGrid.length][polarGrid.length];
+                                grid1D    = new double[1 + (int) FastMath.round((polarStop - polarStart) / polarStep)];
+                                if (azimuthStep > 0.001) {
+                                    grid2D = new double[1 + (int) FastMath.round(2 * FastMath.PI / azimuthStep)][grid1D.length];
                                 }
                             } catch (IllegalArgumentException iae) {
                                 throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
@@ -330,19 +311,22 @@ public class AntexLoader {
 
                             }
 
-                            if (azimuthGrid == null) {
-                                patterns.put(frequency,
-                                             new FrequencyPattern(eccentricities,
-                                                                  polarGrid[0], polarGrid[polarGrid.length - 1],
-                                                                  interpolator1D.interpolate(polarGrid, grid1D),
-                                                                  null));
+                            final PhaseCenterVariation phaseCenterVariation;
+                            if (grid2D == null) {
+                                double max = 0;
+                                for (final double v : grid1D) {
+                                    max = FastMath.max(max, FastMath.abs(v));
+                                }
+                                if (max == 0.0) {
+                                    // there are no known variations for this pattern
+                                    phaseCenterVariation = (polarAngle, azimuthAngle) -> 0.0;
+                                } else {
+                                    phaseCenterVariation = new OneDVariation(polarStart, polarStep, grid1D);
+                                }
                             } else {
-                                patterns.put(frequency,
-                                             new FrequencyPattern(eccentricities,
-                                                                  polarGrid[0], polarGrid[polarGrid.length - 1],
-                                                                  interpolator1D.interpolate(polarGrid, grid1D),
-                                                                  interpolator2D.interpolate(azimuthGrid, polarGrid, grid2D)));
+                                phaseCenterVariation = new TwoDVariation(polarStart, polarStep, azimuthStep, grid2D);
                             }
+                            patterns.put(frequency, new FrequencyPattern(eccentricities, phaseCenterVariation));
                             frequency   = null;
                             grid1D      = null;
                             grid2D      = null;
@@ -367,29 +351,21 @@ public class AntexLoader {
                         default :
                             if (inFrequency) {
                                 final String[] fields = line.trim().split("\\s+");
-                                if (fields.length != polarGrid.length + 1) {
+                                if (fields.length != grid1D.length + 1) {
                                     throw new OrekitException(OrekitMessages.WRONG_COLUMNS_NUMBER,
-                                                              name, lineNumber, polarGrid.length + 1, fields.length);
+                                                              name, lineNumber, grid1D.length + 1, fields.length);
                                 }
                                 if ("NOAZI".equals(fields[0])) {
                                     // azimuth-independent phase
                                     for (int i = 0; i < grid1D.length; ++i) {
-                                        grid1D[i] = Double.parseDouble(fields[i + 1]);
+                                        grid1D[i] = Double.parseDouble(fields[i + 1]) * MM_TO_M;
                                     }
+                                    
                                 } else {
                                     // azimuth-dependent phase
-                                    final double stepDegrees = 360.0 / (azimuthGrid.length - 3);
-                                    final int    k           = 1 + (int) FastMath.round(Double.parseDouble(fields[0]) / stepDegrees);
+                                    final int k = (int) FastMath.round(FastMath.toRadians(Double.parseDouble(fields[0])) / azimuthStep);
                                     for (int i = 0; i < grid2D[k].length; ++i) {
-                                        grid2D[k][i] = Double.parseDouble(fields[i + 1]);
-                                    }
-                                    if (k == 2) {
-                                        // copy the data from just above 0° to just above 360°
-                                       System.arraycopy(grid2D[k], 0, grid2D[grid2D.length - 1], 0, grid2D[k].length); 
-                                    }
-                                    if (k == grid2D.length - 2) {
-                                        // copy the data from just below 360° to just below 0°
-                                       System.arraycopy(grid2D[k], 0, grid2D[0], 0, grid2D[k].length); 
+                                        grid2D[k][i] = Double.parseDouble(fields[i + 1]) * MM_TO_M;
                                     }
                                 }
                             } else if (inRMS) {

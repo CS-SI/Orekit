@@ -14,35 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.orekit.gnss.antenna.AntexLoader;
-import org.orekit.utils.TimeSpanMap;
-
 /**
- * Factory for the attitude providers for different navigation satellites.
+ *
+ * This package provides classes related to receiver and satellites antenna modeling.
  *
  * @author Luc Maisonobe
  * @since 9.1
- * @see <a href="http://acc.igs.org/orbits/eclips_May2017.tar">Kouba model for eclipse/noon turn of GNSS satellites</a>
  *
  */
-public class GNSSAttitudeProviderFactory {
-
-    /** Maximum PRN index. */
-    private static final int MAX_PRN = 136;
-
-    /** Full list of providers. */
-    private final List<TimeSpanMap<GNSSAttitudeProvider>> providers;
-
-    /** Simple constructor.
-     * @param loader loader for ANTEX file
-     */
-    public GNSSAttitudeProviderFactory(final AntexLoader loader) {
-        providers = new ArrayList<TimeSpanMap<GNSSAttitudeProvider>>(MAX_PRN + 1);
-    }
-
-}
+package org.orekit.gnss.antenna;
