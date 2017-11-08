@@ -24,6 +24,21 @@
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
       </action>
+      <action dev="maxime" type="fix">
+        Fixed derivatives computation in turn-around range ionospheric delay modifier.
+        Fixes issue #369.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML TDM files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed NPE in OrekitException when localized string is null.
+      </action>
       <action dev="luc" type="fix">
         Fixed a singularity error in derivatives for perfectly circular orbits in DSST third body force model.
         Fixes issue #364.
@@ -96,6 +111,18 @@
       <action dev="luc" type="update">
         Use a git-flow like branching workflow, with a develop branch for bleeding-edge
         development, and master branch for stable published versions.
+      </action>
+    </release>
+    <release version="9.0.1" date="2017-11-01"
+            description="Version 9.0.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML TDM files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
       </action>
     </release>
     <release version="9.0" date="2017-07-26"
@@ -422,6 +449,14 @@
         Fixes issue #244.
       </action>
     </release>
+    <release version="8.0.1" date="2017-11-01"
+            description="Version 8.0.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+    </release>
     <release version="8.0" date="2016-06-30"
              description="Version 8.0 is a major release of Orekit. It introduces several new
              features and bug fixes as well as a major dependency change. New features introduced
@@ -503,6 +538,14 @@
         NumericalPropagator.getGeneratedEphemeris() near the start/end date of
         the generated ephemeris.
         Fixes issue #238
+      </action>
+    </release>
+    <release version="7.2.1" date="2017-11-01"
+            description="Version 7.2.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
       </action>
     </release>
     <release version="7.2" date="2016-04-05"

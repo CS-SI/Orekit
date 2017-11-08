@@ -17,10 +17,12 @@
 package org.orekit.frames;
 
 
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
@@ -34,6 +36,33 @@ import org.orekit.utils.IERSConventions;
 public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
 
     private static final ChronologicalComparator COMP = new ChronologicalComparator();
+
+    @Test
+    public void testExternalResourcesAreIgnoredIssue368() throws OrekitException {
+        // setup
+        setRoot("external-resources");
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        RapidDataAndPredictionXMLLoader loader =
+                new RapidDataAndPredictionXMLLoader("^finals2000A\\..*\\.xml$");
+
+        // action
+        try {
+            loader.fillHistory(converter, history);
+
+            // verify
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // Malformed URL exception indicates external resource was disabled
+            // file not found exception indicates parser tried to load the resource
+            Assert.assertThat(e.getCause(),
+                    CoreMatchers.instanceOf(MalformedURLException.class));
+        }
+
+        // problem if any EOP data is loaded
+        Assert.assertEquals(0, history.size());
+    }
 
     @Test
     public void testStartDateDaily1980() throws OrekitException {

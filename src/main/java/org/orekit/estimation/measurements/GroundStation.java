@@ -42,7 +42,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -136,7 +135,7 @@ public class GroundStation {
      * model (no station offset, no polar motion, no meridian shift)
      * @exception OrekitException if some frame transforms cannot be computed
      * or if Earth Orientation Parameters cannot be retrieved from the base frame.
-     * @see #GroundStation(TopocentricFrame, TidalDisplacement)
+     * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
      */
     public GroundStation(final TopocentricFrame baseFrame)
         throws OrekitException {
