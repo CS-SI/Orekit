@@ -24,7 +24,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 9.1
  */
-class OneDVariation implements PhaseCenterVariation {
+class OneDVariation implements PhaseCenterVariationFunction {
 
     /** Start polar angle. */
     private final double polarStart;

@@ -74,13 +74,13 @@ public class Antenna {
         return patterns.get(frequency).getEccentricities();
     }
 
-    /** Get the phase in a signal direction.
+    /** Get the value of the phase center variation in a signal direction.
      * @param frequency frequency of the signal to consider
      * @param direction signal direction in antenna reference frame
-     * @return phase
+     * @return value of the phase center variation (m)
      */
-    public double getPhase(final Frequency frequency, final Vector3D direction) {
-        return patterns.get(frequency).getPhase(direction);
+    public double getPhaseCenterVariation(final Frequency frequency, final Vector3D direction) {
+        return patterns.get(frequency).getPhaseCenterVariation(direction);
     }
 
 }

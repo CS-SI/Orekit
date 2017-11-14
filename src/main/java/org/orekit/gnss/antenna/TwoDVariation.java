@@ -25,7 +25,7 @@ import org.hipparchus.util.MathUtils;
  * @author Luc Maisonobe
  * @since 9.1
  */
-class TwoDVariation implements PhaseCenterVariation {
+class TwoDVariation implements PhaseCenterVariationFunction {
 
     /** Start polar angle. */
     private final double polarStart;

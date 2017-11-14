@@ -229,7 +229,8 @@ public class AntexLoaderTest {
                                 final int year, final int month, final int day,
                                 final SatelliteSystem system, final String type,
                                 final int satCode, final int prnNumber,
-                                final Frequency freq, final double az, final double pol, final double phase) {
+                                final Frequency freq, final double az, final double pol,
+                                final double phaseCenterVariation) {
         final double oneMilliSecond = 0.001;
         final AbsoluteDate date = new AbsoluteDate(year, month, day, 0, 0, oneMilliSecond,
                                                    TimeScalesFactory.getGPS());
@@ -239,9 +240,10 @@ public class AntexLoaderTest {
         Assert.assertEquals(satCode,        antenna.getSatelliteCode());
         Assert.assertEquals(prnNumber,      antenna.getPrnNumber());
         Assert.assertEquals(oneMilliSecond, date.durationFrom(antenna.getValidFrom()), 1.0e-10);
-        Assert.assertEquals(phase * 0.001,
-                            antenna.getPhase(freq,
-                                             new Vector3D(FastMath.toRadians(az), FastMath.toRadians(90 - pol))),
+        Assert.assertEquals(phaseCenterVariation * 0.001,
+                            antenna.getPhaseCenterVariation(freq,
+                                                            new Vector3D(FastMath.toRadians(az),
+                                                                         FastMath.toRadians(90 - pol))),
                             1.0e-10);
     }
 

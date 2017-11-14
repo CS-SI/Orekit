@@ -21,7 +21,7 @@ package org.orekit.gnss.antenna;
  * @author Luc Maisonobe
  * @since 9.1
  */
-public interface PhaseCenterVariation {
+public interface PhaseCenterVariationFunction {
 
     /**
      * Evaluate phase center variation in one signal direction.

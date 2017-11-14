@@ -311,7 +311,7 @@ public class AntexLoader {
 
                             }
 
-                            final PhaseCenterVariation phaseCenterVariation;
+                            final PhaseCenterVariationFunction phaseCenterVariation;
                             if (grid2D == null) {
                                 double max = 0;
                                 for (final double v : grid1D) {

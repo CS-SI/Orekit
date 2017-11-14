@@ -32,17 +32,17 @@ public class FrequencyPattern {
     /** Phase center eccentricities (m). */
     private final Vector3D eccentricities;
 
-    /** Phase center variation. */
-    private final PhaseCenterVariation phaseCenterVariation;
+    /** Phase center variation function. */
+    private final PhaseCenterVariationFunction phaseCenterVariationFunction;
 
     /** Simple constructor.
      * @param eccentricities phase center eccentricities (m)
-     * @param phaseCenterVariation phase center variation function
+     * @param phaseCenterVariationFunction phase center variation function
      */
     protected FrequencyPattern(final Vector3D eccentricities,
-                               final PhaseCenterVariation phaseCenterVariation) {
-        this.eccentricities       = eccentricities;
-        this.phaseCenterVariation = phaseCenterVariation;
+                               final PhaseCenterVariationFunction phaseCenterVariationFunction) {
+        this.eccentricities               = eccentricities;
+        this.phaseCenterVariationFunction = phaseCenterVariationFunction;
     }
 
     /** Get the phase center eccentricities.
@@ -52,13 +52,13 @@ public class FrequencyPattern {
         return eccentricities;
     }
 
-    /** Get the phase in a signal direction.
+    /** Get the value of the phase center variation in a signal direction.
      * @param direction signal direction in antenna reference frame
-     * @return phase
+     * @return value of the phase center variation
      */
-    public double getPhase(final Vector3D direction) {
-        return phaseCenterVariation.value(0.5 * FastMath.PI - direction.getDelta(),
-                                          direction.getAlpha());
+    public double getPhaseCenterVariation(final Vector3D direction) {
+        return phaseCenterVariationFunction.value(0.5 * FastMath.PI - direction.getDelta(),
+                                                  direction.getAlpha());
     }
 
 }
