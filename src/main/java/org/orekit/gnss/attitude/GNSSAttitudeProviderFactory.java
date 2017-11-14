@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.attitude;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Luc Maisonobe
  * @since 9.1
  * @see <a href="http://acc.igs.org/orbits/eclips_May2017.tar">Kouba model for eclipse/noon turn of GNSS satellites</a>
+ * @see <a href="https://www.sciencedirect.com/science/article/pii/S0273117715004378">GNSS satellite geometry and attitude models</a>
  *
  */
 public class GNSSAttitudeProviderFactory {

@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.attitude;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.time.AbsoluteDate;
 
 /**
  * Attitude providers for navigation satellites.
+ *
+ * <p>
+ * The attitude mode is compliant with IGS conventions for
+ * spacecraft frame, i.e. the +Z axis is towards Earth and
+ * the +X axis is in the Sun direction. This may be different
+ * from some manufacturers conventions, for example for
+ * GPS blocks IIR/IIRM whose X axis convention is opposite.
+ * </p>
  *
  * @author Luc Maisonobe
  * @since 9.1
