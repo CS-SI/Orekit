@@ -21,7 +21,7 @@
   </properties>
   <body>
     <release version="9.1" date="2017-11-26"
-             description="Version 9.0 is a minor release of Orekit. It introduces a few new
+             description="Version 9.1 is a minor release of Orekit. It introduces a few new
              features and bug fixes. New features introduced in version 9.1 are some
              frames in OEM parser, retrieval of EOP from frames and ground station displacements
              modelling (both displacements due to tides and displacements due to ocean loading),
