@@ -16,15 +16,20 @@
  */
 package org.orekit.files.ccsds;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,11 +44,13 @@ import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.HelmertTransformation.Predefined;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -444,6 +451,63 @@ public class OEMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(91, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
+        }
+    }
+
+    /**
+     * Check the parser can parse several ITRF frames. Test case for #361.
+     *
+     * @throws OrekitException on error.
+     */
+    @Test
+    public void testITRFFrames() throws OrekitException {
+        // setup
+        Charset utf8 = StandardCharsets.UTF_8;
+        IERSConventions conventions = IERSConventions.IERS_2010;
+        boolean simpleEop = true;
+        Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEop);
+        OEMParser parser = new OEMParser()
+                .withSimpleEOP(simpleEop)
+                .withConventions(conventions);
+        // frames to check
+        List<Pair<String, Frame>> frames = new ArrayList<>();
+        frames.add(new Pair<>("ITRF-93", Predefined.ITRF_2008_TO_ITRF_93
+                .createTransformedITRF(itrf2008, "ITRF93")));
+        frames.add(new Pair<>("ITRF-97", Predefined.ITRF_2008_TO_ITRF_97
+                .createTransformedITRF(itrf2008, "ITRF97")));
+        frames.add(new Pair<>("ITRF2000", Predefined.ITRF_2008_TO_ITRF_2000
+                .createTransformedITRF(itrf2008, "ITRF2000")));
+        frames.add(new Pair<>("ITRF2005", Predefined.ITRF_2008_TO_ITRF_2005
+                .createTransformedITRF(itrf2008, "ITRF2005")));
+        frames.add(new Pair<>("ITRF2008", itrf2008));
+        // arbitrary date
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2017, 11, 8, 15, 22, 23, utc);
+
+        for (Pair<String, Frame> frame : frames) {
+            final String frameName = frame.getFirst();
+
+            InputStream pre = OEMParserTest.class
+                    .getResourceAsStream("/ccsds/OEMExample7.txt.pre");
+            InputStream middle = new ByteArrayInputStream(
+                    ("REF_FRAME = " + frameName).getBytes(utf8));
+            InputStream post = OEMParserTest.class
+                    .getResourceAsStream("/ccsds/OEMExample7.txt.post");
+            InputStream input =
+                    new SequenceInputStream(pre, new SequenceInputStream(middle, post));
+
+            // action
+            OEMFile actual = parser.parse(input);
+
+            // verify
+            EphemeridesBlock actualBlock = actual.getEphemeridesBlocks().get(0);
+            Assert.assertEquals(actualBlock.getFrameString(), frameName);
+            // check expected frame
+            Frame actualFrame = actualBlock.getFrame();
+            Frame expectedFrame = frame.getSecond();
+            Assert.assertEquals(actualFrame.getName(), expectedFrame.getName());
+            Assert.assertEquals(actualFrame.getTransformProvider(),
+                    expectedFrame.getTransformProvider());
         }
     }
 
