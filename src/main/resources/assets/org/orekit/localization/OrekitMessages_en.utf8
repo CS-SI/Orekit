@@ -449,4 +449,4 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = file {0} does not contain Klobuchar coefficien
 NO_REFERENCE_DATE_FOR_PARAMETER = no reference date set for parameter {0}
 
 # station {0} not found, known stations: {1}
-STATION_NOT_FOUND = <MISSING TRANSLATION>
+STATION_NOT_FOUND = station {0} not found, known stations: {1}
