@@ -205,7 +205,7 @@ public class GroundStation {
      * @since 9.1
      */
     public StationDisplacement[] getDisplacements() {
-        return displacements;
+        return displacements.clone();
     }
 
     /** Get a driver allowing to change station position along East axis.
