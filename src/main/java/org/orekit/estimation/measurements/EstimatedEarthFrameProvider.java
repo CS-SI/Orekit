@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
@@ -29,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
@@ -429,6 +431,23 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
                factory.variable(index, driver.getValue());
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes the files supported names, the ephemeris type
+     * and the body name.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(baseUT1,
+                                      primeMeridianOffsetDriver.getValue(),
+                                      primeMeridianDriftDriver.getValue(),
+                                      polarOffsetXDriver.getValue(),
+                                      polarDriftXDriver.getValue(),
+                                      polarOffsetYDriver.getValue(),
+                                      polarDriftYDriver.getValue());
+    }
+
     /** Local time scale for estimated UT1. */
     private class EstimatedUT1Scale extends UT1Scale {
 
@@ -467,6 +486,77 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         @Override
         public String getName() {
             return baseUT1.getName() + "/estimated";
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20171124L;
+
+        /** Underlying raw UT1. */
+        private final UT1Scale baseUT1;
+
+        /** Current prime meridian offset. */
+        private final double primeMeridianOffset;
+
+        /** Current prime meridian drift. */
+        private final double primeMeridianDrift;
+
+        /** Current pole offset along X. */
+        private final double polarOffsetX;
+
+        /** Current pole drift along X. */
+        private final double polarDriftX;
+
+        /** Current pole offset along Y. */
+        private final double polarOffsetY;
+
+        /** Current pole drift along Y. */
+        private final double polarDriftY;
+
+     
+        /** Simple constructor.
+         * @param baseUT1 underlying raw UT1
+         * @param primeMeridianOffset current prime meridian offset
+         * @param primeMeridianDrift current prime meridian drift
+         * @param polarOffsetX current pole offset along X
+         * @param polarDriftX current pole drift along X
+         * @param polarOffsetY current pole offset along Y
+         * @param polarDriftY current pole drift along Y
+         */
+        DataTransferObject(final  UT1Scale baseUT1,
+                           final double primeMeridianOffset, final double primeMeridianDrift,
+                           final double polarOffsetX,        final double polarDriftX,
+                           final double polarOffsetY,        final double polarDriftY) {
+            this.baseUT1             = baseUT1;
+            this.primeMeridianOffset = primeMeridianOffset;
+            this.primeMeridianDrift  = primeMeridianDrift;
+            this.polarOffsetX        = polarOffsetX;
+            this.polarDriftX         = polarDriftX;
+            this.polarOffsetY        = polarOffsetY;
+            this.polarDriftY         = polarDriftY;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EstimatedEarthFrameProvider}.
+         * @return replacement {@link EstimatedEarthFrameProvider}
+         */
+        private Object readResolve() {
+            try {
+                final EstimatedEarthFrameProvider provider = new EstimatedEarthFrameProvider(baseUT1);
+                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset);
+                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift);
+                provider.getPolarOffsetXDriver().setValue(polarOffsetX);
+                provider.getPolarDriftXDriver().setValue(polarDriftX);
+                provider.getPolarOffsetYDriver().setValue(polarOffsetY);
+                provider.getPolarDriftYDriver().setValue(polarDriftY);
+                return provider;
+            } catch (OrekitException oe) {
+                // this should never happen as values already come from previous drivers
+                throw new OrekitInternalError(oe);
+            }
         }
 
     }
