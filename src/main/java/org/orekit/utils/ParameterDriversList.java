@@ -73,27 +73,59 @@ public class ParameterDriversList {
      */
     public void add(final ParameterDriver driver) throws OrekitException {
 
-        for (final DelegatingDriver d : delegating) {
-            if (d.getName().equals(driver.getName())) {
-                // the parameter is already managed by existing drivers
+        final DelegatingDriver existingHere = findByName(driver.getName());
+        final DelegatingDriver alreadyBound = getAssociatedDelegatingDriver(driver);
 
-                for (final ParameterDriver existing : d.drivers) {
-                    if (existing == driver) {
-                        // the driver is already known, don't duplicate it
-                        return;
-                    }
-                }
-
+        if (existingHere != null) {
+            if (alreadyBound != null) {
+                // ensure we don't get intermixed change forwarders that call each other recursively
+                existingHere.setForwarder(alreadyBound.getForwarder());
+            } else {
                 // this is a new driver for an already managed parameter
-                d.add(driver);
-                return;
-
+                existingHere.add(driver);
+            }
+        } else {
+            if (alreadyBound != null) {
+                // the driver is new here, but already bound to other drivers in other lists
+                delegating.add(alreadyBound);
+            } else {
+                // this is the first driver we have for this parameter name
+                final DelegatingDriver created   = new DelegatingDriver(driver);
+                final ChangesForwarder forwarder = new ChangesForwarder(created);
+                created.setForwarder(forwarder);
+                delegating.add(created);
             }
         }
 
-        // this is the first driver we have for this parameter name
-        delegating.add(new DelegatingDriver(driver));
+    }
 
+    /** Get a {@link DelegatingDriver delegating driver} bound to a driver.
+     * @param driver driver to check
+     * @return a {@link DelegatingDriver delegating driver} bound to a driver, or
+     * null if this driver is not associated with any {@link DelegatingDriver delegating driver}
+     * @since 9.1
+     */
+    private DelegatingDriver getAssociatedDelegatingDriver(final ParameterDriver driver) {
+        for (final ParameterObserver observer : driver.getObservers()) {
+            if (observer instanceof ChangesForwarder) {
+                return ((ChangesForwarder) observer).getDelegatingDriver();
+            }
+        }
+        return null;
+    }
+
+    /** Find  a {@link DelegatingDriver delegating driver} by name.
+     * @param name name to check
+     * @return a {@link DelegatingDriver delegating driver} managing this parameter name
+     * @since 9.1
+     */
+    private DelegatingDriver findByName(final String name) {
+        for (final DelegatingDriver d : delegating) {
+            if (d.getName().equals(name)) {
+                return d;
+            }
+        }
+        return null;
     }
 
     /** Sort the parameters lexicographically.
@@ -150,7 +182,7 @@ public class ParameterDriversList {
         private final List<ParameterDriver> drivers;
 
         /** Observer for propagating changes between all drivers. */
-        private final ChangesForwarder forwarder;
+        private ChangesForwarder forwarder;
 
         /** Simple constructor.
          * @param driver first driver in the series
@@ -166,13 +198,38 @@ public class ParameterDriversList {
             setReferenceDate(driver.getReferenceDate());
             setSelected(driver.isSelected());
 
-            // when the value or reference date of the delegating driver change,
-            // all underlying drivers must reproduce the change
-            forwarder = new ChangesForwarder();
+        }
 
+        /** Set the changes forwarder.
+         * @param forwarder new changes forwarder
+         * @exception OrekitException if forwarder generates one
+         * @since 9.1
+         */
+        void setForwarder(final ChangesForwarder forwarder)
+            throws OrekitException {
+
+            // remove the previous observer if any
+            if (this.forwarder != null) {
+                removeObserver(this.forwarder);
+                for (final ParameterDriver driver : drivers) {
+                    driver.removeObserver(this.forwarder);
+                }
+            }
+
+            // add the new observer
+            this.forwarder = forwarder;
             addObserver(forwarder);
-            driver.addObserver(forwarder);
+            for (final ParameterDriver driver : drivers) {
+                driver.addObserver(forwarder);
+            }
 
+        }
+
+        /** Get the changes forwarder.
+         * @return changes forwarder
+         */
+        ChangesForwarder getForwarder() {
+            return forwarder;
         }
 
         /** Add a driver.
@@ -181,6 +238,13 @@ public class ParameterDriversList {
          */
         private void add(final ParameterDriver driver)
             throws OrekitException {
+
+            for (final ParameterDriver d : drivers) {
+                if (d == driver) {
+                    // the driver is already known, don't add it again
+                    return;
+                }
+            }
 
             setValue(driver.getValue());
             setReferenceDate(driver.getReferenceDate());
@@ -207,78 +271,96 @@ public class ParameterDriversList {
             return Collections.unmodifiableList(drivers);
         }
 
-        /** Local observer for propagating changes, avoiding infinite recursion. */
-        private class ChangesForwarder implements ParameterObserver {
+    }
 
-            /** Root of the current update chain. */
-            private ParameterDriver root;
+    /** Local observer for propagating changes, avoiding infinite recursion. */
+    private static class ChangesForwarder implements ParameterObserver {
 
-            /** Depth of the current update chain. */
-            private int depth;
+        /** DelegatingDriver we are associated with. */
+        private final DelegatingDriver delegating;
 
-            /** {@inheritDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver)
-                throws OrekitException {
-                try {
-                    updateAll(driver, d -> {
-                        try {
-                            d.setValue(driver.getValue());
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
-                    });
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
-                }
-            }
+        /** Root of the current update chain. */
+        private ParameterDriver root;
 
-            /** {@inheritDoc} */
-            @Override
-            public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
-                updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
-            }
+        /** Depth of the current update chain. */
+        private int depth;
 
-            /** {@inheritDoc} */
-            @Override
-            public void nameChanged(final String previousName, final ParameterDriver driver) {
-                updateAll(driver, d -> d.setName(driver.getName()));
-            }
+        /** Simple constructor.
+         * @param delegating delegatingDriver we are associated with
+         */
+        ChangesForwarder(final DelegatingDriver delegating) {
+            this.delegating = delegating;
+        }
 
-            /** {@inheritDoc} */
-            @Override
-            public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
-                updateAll(driver, d -> d.setSelected(driver.isSelected()));
-            }
+        /** Get the {@link DelegatingDriver} associated with this instance.
+         * @return {@link DelegatingDriver} associated with this instance
+         * @since 9.1
+         */
+        DelegatingDriver getDelegatingDriver() {
+            return delegating;
+        }
 
-            /** Update all bound parameters.
-             * @param driver driver triggering the update
-             * @param updater updater to use
-             */
-            private void updateAll(final ParameterDriver driver, final Updater updater) {
-
-                final boolean firstCall = depth++ == 0;
-                if (firstCall) {
-                    root = driver;
-                }
-
-                if (driver == DelegatingDriver.this) {
-                    // propagate change downwards, which will trigger recursive calls
-                    for (final ParameterDriver d : drivers) {
-                        if (d != root) {
-                            updater.update(d);
-                        }
+        /** {@inheritDoc} */
+        @Override
+        public void valueChanged(final double previousValue, final ParameterDriver driver)
+            throws OrekitException {
+            try {
+                updateAll(driver, d -> {
+                    try {
+                        d.setValue(driver.getValue());
+                    } catch (OrekitException oe) {
+                        throw new OrekitExceptionWrapper(oe);
                     }
-                } else if (firstCall) {
-                    // first call started from an underlying driver, propagate change upwards
-                    updater.update(DelegatingDriver.this);
-                }
+                });
+            } catch (OrekitExceptionWrapper oew) {
+                throw oew.getException();
+            }
+        }
 
-                if (--depth == 0) {
-                    // this is the end of the root call
-                    root = null;
-                }
+        /** {@inheritDoc} */
+        @Override
+        public void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setReferenceDate(driver.getReferenceDate()));
+        }
 
+        /** {@inheritDoc} */
+        @Override
+        public void nameChanged(final String previousName, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setName(driver.getName()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setSelected(driver.isSelected()));
+        }
+
+        /** Update all bound parameters.
+         * @param driver driver triggering the update
+         * @param updater updater to use
+         */
+        private void updateAll(final ParameterDriver driver, final Updater updater) {
+
+            final boolean firstCall = depth++ == 0;
+            if (firstCall) {
+                root = driver;
+            }
+
+            if (driver == getDelegatingDriver()) {
+                // propagate change downwards, which will trigger recursive calls
+                for (final ParameterDriver d : delegating.drivers) {
+                    if (d != root) {
+                        updater.update(d);
+                    }
+                }
+            } else if (firstCall) {
+                // first call started from an underlying driver, propagate change upwards
+                updater.update(getDelegatingDriver());
+            }
+
+            if (--depth == 0) {
+                // this is the end of the root call
+                root = null;
             }
 
         }

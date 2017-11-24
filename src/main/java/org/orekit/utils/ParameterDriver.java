@@ -17,6 +17,8 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
@@ -120,7 +122,7 @@ public class ParameterDriver {
         this.referenceDate  = null;
         this.value          = referenceValue;
         this.selected       = false;
-        this.observers      = new ArrayList<ParameterObserver>();
+        this.observers      = new ArrayList<>();
     }
 
 
@@ -138,6 +140,27 @@ public class ParameterDriver {
         throws OrekitException {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
+    }
+
+    /** Remove an observer.
+     * @param observer observer to remove
+     * @since 9.1
+     */
+    public void removeObserver(final ParameterObserver observer) {
+        for (final Iterator<ParameterObserver> iterator = observers.iterator(); iterator.hasNext();) {
+            if (iterator.next() == observer) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /** Get the observers for this driver.
+     * @return an unmodifiable view of the observers for this driver
+     * @since 9.1
+     */
+    public List<ParameterObserver> getObservers() {
+        return Collections.unmodifiableList(observers);
     }
 
     /** Change the name of this parameter driver.
@@ -241,8 +264,8 @@ public class ParameterDriver {
     /** Set parameter value.
      * <p>
      * If {@code newValue} is below {@link #getMinValue()}, it will
-     * be silently to {@link #getMinValue()}. If {@code newValue} is
-     * above {@link #getMaxValue()}, it will be silently to {@link
+     * be silently set to {@link #getMinValue()}. If {@code newValue} is
+     * above {@link #getMaxValue()}, it will be silently set to {@link
      * #getMaxValue()}.
      * </p>
      * @param newValue new value

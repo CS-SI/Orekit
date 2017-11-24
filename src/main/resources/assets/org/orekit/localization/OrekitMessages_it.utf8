@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nessun Parametro d''Orientamento della 
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametri d''Orientamento della Terra mancanti tra {0} e {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = Parametri d''Orientamento della Terra mancanti
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = il file {0} non è un file di dati IERS supportato
 
@@ -444,3 +447,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = il file {0} non contiene i coefficienti di Klo
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = data di riferimento non inizializzata per il parametro {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = stazione {0} non trovata, stazioni conosciute: {1}

@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="9.0.1"   />
+  <property name="project.version"         value="9.1"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"      value="1.1"                                           />
+  <property name="hipparchus.version"      value="1.2"                                           />
   <property name="hipparchus.core.jar"     value="hipparchus-core-${hipparchus.version}.jar"     />
   <property name="hipparchus.geometry.jar" value="hipparchus-geometry-${hipparchus.version}.jar" />
   <property name="hipparchus.ode.jar"      value="hipparchus-ode-${hipparchus.version}.jar"      />

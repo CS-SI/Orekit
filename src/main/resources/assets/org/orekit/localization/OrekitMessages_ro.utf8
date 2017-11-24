@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nici un Parametru de Orientare al Păm�
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pamântului lipsesc între {0} și {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pamântului lipsesc
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = fișierul {0} nu este un fișier IERS de date suportat
 
@@ -444,3 +447,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = Fișierul {0} nu conține coeficienți Klobuch
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = nicio dată de referință nu este specificată pentru parametrul {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = stația {0} nu a fost găsită, stații cunoscute: {1}

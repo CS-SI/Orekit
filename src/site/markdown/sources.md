@@ -19,16 +19,23 @@
 In order to get the source for officially released versions, go to the
 [Files](https://www.orekit.org/forge/projects/orekit/files) tab in Orekit
 forge and select one of the orekit-x.y-src.zip files. The x.y part in the name
- specifies the version. If this is the first time you download the library and
- you have not yet set up your own data set with UTC-TAI history, JPL ephemerides,
- IERS Earth Orientation Parameters ... you may want to also download the
- orekit-data.zip file which is an example file suitable for a quick start (see
- [configuration](./configuration.html) for further reading about data configuration).
+specifies the version. If this is the first time you download the library and
+you have not yet set up your own data set with UTC-TAI history, JPL ephemerides,
+IERS Earth Orientation Parameters ... you may want to also download the
+orekit-data.zip file which is an example file suitable for a quick start (see
+[configuration](./configuration.html) for further reading about data configuration).
+ 
+It is also possible to retrieve published versions from the Git repository
+(see next section below), if retrieving either release-x.y branches or the
+master branch.
 
 ## Development version
 
 The development of the Orekit project is done using the [Git](http://git-scm.com/)
-source code control system. Orekit Git master repository is available online.
+source code control system. Orekit Git master repository is available online. The
+latest developments are in the develop branch. This is the one you want to retrieve
+if you need the latest feature before they are published in an official release.
+See [guidelines](./guidelines.html) for the branching workflow used in Orekit.
 
  * you can browse it using the [Repository](https://www.orekit.org/forge/projects/orekit/repository)
     tab in Orekit forge

@@ -810,8 +810,8 @@ public class KeplerianPropagatorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(propagator.getGeneratedEphemeris());
 
-        Assert.assertTrue(bos.size() > 2300);
-        Assert.assertTrue(bos.size() < 2400);
+        Assert.assertTrue(bos.size() > 2400);
+        Assert.assertTrue(bos.size() < 2500);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

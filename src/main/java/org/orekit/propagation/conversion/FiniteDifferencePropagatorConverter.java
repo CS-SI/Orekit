@@ -27,7 +27,6 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 /** Propagator converter using finite differences to compute the Jacobian.
  * @author Pascal Parraud
@@ -103,28 +102,15 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
             final double[] arg = point.toArray();
             final MultivariateVectorFunction f = new ObjectiveFunction();
 
-            final double[] increment = new double[arg.length];
-            int index = 0;
-            for (final ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    increment[index++] = driver.getScale();
-                }
-            }
-            for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    increment[index++] = driver.getScale();
-                }
-            }
-
             final double[][] jacob = new double[getTargetSize()][arg.length];
             final double[] eval = f.value(arg);
             final double[] arg1 = new double[arg.length];
             for (int j = 0; j < arg.length; j++) {
                 System.arraycopy(arg, 0, arg1, 0, arg.length);
-                arg1[j] += increment[j];
+                arg1[j] += 1;
                 final double[] eval1 = f.value(arg1);
                 for (int t = 0; t < eval.length; t++) {
-                    jacob[t][j] = (eval1[t] - eval[t]) / increment[j];
+                    jacob[t][j] = eval1[t] - eval[t];
                 }
             }
 

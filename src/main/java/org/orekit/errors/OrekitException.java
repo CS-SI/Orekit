@@ -163,7 +163,16 @@ public class OrekitException extends Exception implements LocalizedException {
      * @return a message string
      */
     private static String buildMessage(final Locale locale, final Localizable specifier, final Object... parts) {
-        return (specifier == null) ? "" : new MessageFormat(specifier.getLocalizedString(locale), locale).format(parts);
+        if (specifier == null) {
+            return "";
+        } else {
+            final String localizedString = specifier.getLocalizedString(locale);
+            if (localizedString == null) {
+                return "";
+            } else {
+                return new MessageFormat(localizedString, locale).format(parts);
+            }
+        }
     }
 
 }

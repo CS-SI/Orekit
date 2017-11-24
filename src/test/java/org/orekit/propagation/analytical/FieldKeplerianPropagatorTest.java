@@ -17,16 +17,18 @@
 package org.orekit.propagation.analytical;
 
 
-import java.io.IOException;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.stat.descriptive.rank.Max;
+import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Tuple;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +50,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
@@ -78,6 +81,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class FieldKeplerianPropagatorTest {
@@ -86,72 +90,131 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testSameDateCartesian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testTuple() throws OrekitException {
+
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
+                                                6.2, PositionAngle.TRUE,
+                                                FramesFactory.getEME2000(), initDate, mu);
+        TimeStampedPVCoordinates pv0 = k0.getPVCoordinates();
+        TimeStampedPVCoordinates pv1 = new TimeStampedPVCoordinates(pv0.getDate(),
+                                                                    pv0.getPosition(),
+                                                                    pv0.getVelocity().add(new Vector3D(2.0, pv0.getVelocity().normalize())));
+        KeplerianOrbit k1 = new KeplerianOrbit(pv1, k0.getFrame(), k0.getMu());
+        FieldOrbit<Tuple> twoOrbits =
+                        new FieldKeplerianOrbit<>(new Tuple(k0.getA(),                             k1.getA()),
+                                                  new Tuple(k0.getE(),                             k1.getE()),
+                                                  new Tuple(k0.getI(),                             k1.getI()),
+                                                  new Tuple(k0.getPerigeeArgument(),               k1.getPerigeeArgument()),
+                                                  new Tuple(k0.getRightAscensionOfAscendingNode(), k1.getRightAscensionOfAscendingNode()),
+                                                  new Tuple(k0.getMeanAnomaly(),                   k1.getMeanAnomaly()),
+                                                  PositionAngle.MEAN,
+                                                  FramesFactory.getEME2000(),
+                                                  new FieldAbsoluteDate<>(initDate, new Tuple(0.0, 0.0)),
+                                                  mu);
+        Field<Tuple> field = twoOrbits.getDate().getField();
+        FieldPropagator<Tuple> propagator = new FieldKeplerianPropagator<>(twoOrbits);
+        Min minTangential = new Min();
+        Max maxTangential = new Max();
+        Min minRadial     = new Min();
+        Max maxRadial     = new Max();
+        propagator.setMasterMode(field.getZero().add(10.0),
+                                 (s, isLast) -> {
+                                     FieldVector3D<Tuple> p = s.getPVCoordinates().getPosition();
+                                     FieldVector3D<Tuple> v = s.getPVCoordinates().getVelocity();
+                                     Vector3D p0 = new Vector3D(p.getX().getComponent(0),
+                                                                p.getY().getComponent(0),
+                                                                p.getZ().getComponent(0));
+                                     Vector3D v0 = new Vector3D(v.getX().getComponent(0),
+                                                                v.getY().getComponent(0),
+                                                                v.getZ().getComponent(0));
+                                     Vector3D t  = v0.normalize();
+                                     Vector3D r  = Vector3D.crossProduct(v0, Vector3D.crossProduct(p0, v0)).normalize();
+                                     Vector3D p1 = new Vector3D(p.getX().getComponent(1),
+                                                                p.getY().getComponent(1),
+                                                                p.getZ().getComponent(1));
+                                     double dT = Vector3D.dotProduct(p1.subtract(p0), t);
+                                     double dR = Vector3D.dotProduct(p1.subtract(p0), r);
+                                     minTangential.increment(dT);
+                                     maxTangential.increment(dT);
+                                     minRadial.increment(dR);
+                                     maxRadial.increment(dR);
+                                 });
+        propagator.propagate(twoOrbits.getDate().shiftedBy(Constants.JULIAN_DAY / 8));
+        Assert.assertEquals(-72525.685, minTangential.getResult(), 1.0e-3);
+        Assert.assertEquals(   926.046, maxTangential.getResult(), 1.0e-3);
+        Assert.assertEquals(   -92.800, minRadial.getResult(),     1.0e-3);
+        Assert.assertEquals(  7739.532, maxRadial.getResult(),     1.0e-3);
+        
+    }
+
+    @Test
+    public void testSameDateCartesian() throws OrekitException {
         doTestSameDateCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testSameDateKeplerian() throws OrekitException {
         doTestSameDateKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testPropagatedCartesian() throws OrekitException {
         doTestPropagatedCartesian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() throws OrekitException, ClassNotFoundException, IOException{
+    public void testPropagatedKeplerian() throws OrekitException {
         doTestPropagatedKeplerian(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() throws OrekitException, ClassNotFoundException, IOException{
+    public void testAscendingNode() throws OrekitException {
         doTestAscendingNode(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() throws OrekitException, ClassNotFoundException, IOException{
+    public void testStopAtTargetDate() throws OrekitException {
         doTestStopAtTargetDate(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() throws OrekitException, ClassNotFoundException, IOException{
+    public void testFixedStep() throws OrekitException {
         doTestFixedStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() throws OrekitException, ClassNotFoundException, IOException{
+    public void testVariableStep() throws OrekitException {
         doTestVariableStep(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() throws OrekitException, ClassNotFoundException, IOException{
+    public void testEphemeris() throws OrekitException {
         doTestEphemeris(Decimal64Field.getInstance());}
 
 
     @Test
-    public void testIssue14() throws OrekitException, ClassNotFoundException, IOException{
+    public void testIssue14() throws OrekitException {
         doTestIssue14(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() throws OrekitException, ClassNotFoundException, IOException{
+    public void testIssue107() throws OrekitException {
         doTestIssue107(Decimal64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() throws OrekitException, ClassNotFoundException, IOException{
+    public void testMu() throws OrekitException {
         doTestMu(Decimal64Field.getInstance());
     }
 

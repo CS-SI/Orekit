@@ -156,7 +156,7 @@ public class FootprintOverlapDetectorTest {
 
     @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, OrekitException {
+      throws IOException, ClassNotFoundException, OrekitException {
 
         // observe continental France plus Corsica
         final SphericalPolygonsSet france = buildFrance();

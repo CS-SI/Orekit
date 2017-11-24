@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
@@ -295,6 +296,22 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(RefStatEle[2], odsatW3.getElevStat().getMean(),              angleAccuracy);
         Assert.assertEquals(RefStatEle[3], odsatW3.getElevStat().getStandardDeviation(), angleAccuracy);
 
+        RealMatrix covariances = odsatW3.getCovariances();
+        Assert.assertEquals(28, covariances.getRowDimension());
+        Assert.assertEquals(28, covariances.getColumnDimension());
+
+        // drag coefficient variance
+        Assert.assertEquals(0.77754, covariances.getEntry(6, 6), 1.0e-5);
+
+        // leak-X constant term variance
+        Assert.assertEquals(2.1016e-12, covariances.getEntry(7, 7), 1.0e-16);
+
+        // leak-Y constant term variance
+        Assert.assertEquals(2.8869e-11, covariances.getEntry(9, 9), 1.0e-15);
+
+        // leak-Z constant term variance
+        Assert.assertEquals(9.0489e-11, covariances.getEntry(11, 11), 1.0e-15);
+
     }
 
    private class ResultOD {
@@ -304,14 +321,16 @@ public class OrbitDeterminationTest {
        private StreamingStatistics rangeStat;
        private StreamingStatistics azimStat;
        private StreamingStatistics elevStat;
-       private  ParameterDriversList propagatorParameters  ;
-       private  ParameterDriversList measurementsParameters;
+       private ParameterDriversList propagatorParameters  ;
+       private ParameterDriversList measurementsParameters;
+       private RealMatrix covariances;
        ResultOD(ParameterDriversList  propagatorParameters,
                 ParameterDriversList  measurementsParameters,
                 int numberOfIteration, int numberOfEvaluation, TimeStampedPVCoordinates estimatedPV,
                 StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
                 StreamingStatistics azimStat, StreamingStatistics elevStat,
-                StreamingStatistics posStat, StreamingStatistics velStat) {
+                StreamingStatistics posStat, StreamingStatistics velStat,
+                RealMatrix covariances) {
 
            this.propagatorParameters   = propagatorParameters;
            this.measurementsParameters = measurementsParameters;
@@ -321,39 +340,36 @@ public class OrbitDeterminationTest {
            this.rangeStat              =  rangeStat;
            this.azimStat               = azimStat;
            this.elevStat               = elevStat;
+           this.covariances            = covariances;
        }
 
+       public int getNumberOfIteration() {
+           return numberOfIteration;
+       }
 
-    public int getNumberOfIteration() {
-        return numberOfIteration;
-    }
+       public int getNumberOfEvaluation() {
+           return numberOfEvaluation;
+       }
 
+       public PVCoordinates getEstimatedPV() {
+           return estimatedPV;
+       }
 
-    public int getNumberOfEvaluation() {
-        return numberOfEvaluation;
-    }
+       public StreamingStatistics getRangeStat() {
+           return rangeStat;
+       }
 
+       public StreamingStatistics getAzimStat() {
+           return azimStat;
+       }
 
-    public PVCoordinates getEstimatedPV() {
-        return estimatedPV;
-    }
+       public StreamingStatistics getElevStat() {
+           return elevStat;
+       }
 
-
-    public StreamingStatistics getRangeStat() {
-        return rangeStat;
-    }
-
-
-
-    public StreamingStatistics getAzimStat() {
-        return azimStat;
-    }
-
-
-    public StreamingStatistics getElevStat() {
-        return elevStat;
-    }
-
+       public RealMatrix getCovariances() {
+           return covariances;
+       }
 
    }
 
@@ -514,7 +530,8 @@ public class OrbitDeterminationTest {
                             estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
                             rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                             azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
-                            positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary());
+                            positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                            estimator.getPhysicalCovariances(1.0e-10));
     }
 
     /** Sort parameters changes.

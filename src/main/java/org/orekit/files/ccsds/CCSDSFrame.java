@@ -82,6 +82,39 @@ public enum CCSDSFrame {
 
     },
 
+    /** International Celestial Reference Frame 2008. */
+    ITRF2008(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP)
+                throws OrekitException {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return FramesFactory.getITRF(conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Celestial Reference Frame 2005. */
+    ITRF2005(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP)
+            throws OrekitException {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            final Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEOP);
+            final HelmertTransformation.Predefined predefinedHT =
+                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
+            return predefinedHT.createTransformedITRF(itrf2008, toString());
+        }
+
+    },
+
     /** International Celestial Reference Frame 2000. */
     ITRF2000(null) {
 

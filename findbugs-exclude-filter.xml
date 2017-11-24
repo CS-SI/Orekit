@@ -49,6 +49,7 @@
       <Class name="~.*\.MODProvider$" />
       <Class name="~.*\.TIRFProvider$" />
       <Class name="~.*\.CartesianOrbit$" />
+      <Class name="~.*\.EstimatedEarthFrameProvider$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>

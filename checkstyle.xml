@@ -92,6 +92,11 @@
           <property name="onCommentFormat" value="CHECKSTYLE\: resume FallThrough check"/>
           <property name="checkFormat" value="FallThrough"/>
         </module>
+        <module name="SuppressionCommentFilter">
+          <property name="offCommentFormat" value="CHECKSTYLE\: stop Indentation check"/>
+          <property name="onCommentFormat" value="CHECKSTYLE\: resume Indentation check"/>
+          <property name="checkFormat" value="IndentationCheck"/>
+        </module>
     </module>
     <module name="RegexpHeader">
       <property name="headerFile" value="${checkstyle.header.file}" />

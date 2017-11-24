@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = os parámetros de orientación da Terra
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan Parámetros de Orientación da Terra entre {0} e {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = o ficheiro {0} non é un ficheiro de datos IERS soportado
 
@@ -444,3 +447,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

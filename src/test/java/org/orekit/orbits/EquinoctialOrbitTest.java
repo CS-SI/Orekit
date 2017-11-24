@@ -854,7 +854,7 @@ public class EquinoctialOrbitTest {
 
     @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -891,7 +891,7 @@ public class EquinoctialOrbitTest {
 
     @Test
     public void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         double r2 = position.getNormSq();
