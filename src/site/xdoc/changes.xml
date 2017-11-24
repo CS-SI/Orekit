@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="9.2" date="TBD" description="TBD">
+    </release>
     <release version="9.1" date="2017-11-26"
              description="Version 9.1 is a minor release of Orekit. It introduces a few new
              features and bug fixes. New features introduced in version 9.1 are some
