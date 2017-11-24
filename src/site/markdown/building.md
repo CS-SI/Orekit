@@ -37,7 +37,7 @@ As with all maven enabled projects, building official released versions of
 Orekit is straightforward (see below for the special case of development versions),
 simply run:
 
-    mvn assembly:single
+    mvn package assembly:single
 
 The preceding command will perform all dependencies retrieval, compilation,
 tests and packaging for you. At the end, it will create several files named

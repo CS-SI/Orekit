@@ -20,9 +20,26 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.1" date="TBD" description="TBD">
+    <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
+      </action>
+    </release>
+    <release version="9.1" date="2017-11-26"
+             description="Version 9.1 is a minor release of Orekit. It introduces a few new
+             features and bug fixes. New features introduced in version 9.1 are some
+             frames in OEM parser, retrieval of EOP from frames and ground station displacements
+             modelling (both displacements due to tides and displacements due to ocean loading),
+             and retrieval of covariance matrix in orbit determination. Several bugs have been fixed.
+             Version 9.1 depends on Hipparchus 1.2.">
+      <action dev="evan" type="add">
+        Added ITRF2005 and ITRF2008 to the frames recognized by OEMParser.
+        Fixes issue #361.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed FiniteDifferencePropagatorConverter so that the scale factor is only applied
+        once instead of twice.
+        Fixes issue #362.
       </action>
       <action dev="maxime" type="fix">
         Fixed derivatives computation in turn-around range ionospheric delay modifier.

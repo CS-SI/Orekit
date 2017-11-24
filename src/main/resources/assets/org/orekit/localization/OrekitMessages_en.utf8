@@ -468,3 +468,4 @@ WRONG_COLUMNS_NUMBER = wrong number of columns in file {0}, line {1} (expected {
 
 # unsupported format for file {0}
 UNSUPPORTED_FILE_FORMAT = unsupported format for file {0}
+

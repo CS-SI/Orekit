@@ -38,7 +38,7 @@ Orekit is used underneath the [Rugged](https://www.orekit.org/rugged/) sensor-to
 Sentinel-2 Image Processing Facility to process terabytes of data each day.
 
 As Orekit is open-source, we cannot know about all uses as people are
-not require to notify us of anything.
+not required to notify us of anything.
 
 ### Is Orekit validated?
 
@@ -72,15 +72,21 @@ The time package has been validated by its unit tests only, but since the behavi
 simpler it can be checked by hand. The unit tests include a lot of borderline cases
 (for example behavior during the introduction of a leap second).
 
-The Sun and Moon classes for version 3.1 are very low precision and are defined in a
-pseudo-inertial frame with loose definition. They can be compared only with very specific
-software. Their accuracy is probably limited to about 10 arcseconds. They have been replaced
-by accurate reference models in the version 4.0.
+The Sun and Moon classes for version 3.1 were very low precision and defined in a
+pseudo-inertial frame with loose definition. They could be compared only with very specific
+software. Their accuracy was probably limited to about 10 arcseconds. They have been replaced
+by accurate reference models in the version 4.0. The new models have been validated against
+reference NASA programs.
 
 Numerical propagation has been validated by CNES independently of the Orekit team against
 some very high accuracy propagators (Zoom). They told us the results were good (down to
 centimeter level for simple force models), but we don't have a thorough breakdown of errors
 for various orbits and force models.
+
+Accurate force models including tides have been validated by Naval Research Laboratory against
+their reference OCEAN program in 2014. A paper has been published at the 2014 AIAA/AAS Astrodynamics
+Specialist Conference in San Diego. A new round of validation is expected to be realized
+once accurate GNSS modeling is completed (this feature is under development as of end 2017).
 
 Validation is a continuous task for us, we are always working on improving it. We would be
 happy to also have other teams perform independent validation runs. We have already received
@@ -88,13 +94,16 @@ some feedback and new test cases after the first version was published.
 
 ### Is Orekit thread-safe?
 
-Versions up to 5.X are *not* thread-safe. Note that simply wrapping Orekit calls
-in synchronized blocks is not a solution as it completely breaks all data caching features,
-so performances are reduced by a large factor.
+Versions up to 5.X were *not* thread-safe. Note that simply wrapping Orekit calls
+in synchronized blocks was not a solution as it completely broke all data caching features,
+so performances were reduced by a large factor.
 
 As thread-safety was an important need for many people, this problem has been addressed and
 starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
-for which sequential access is natural (like numerical propagators) are <em>not</em> thread-safe.
+for which sequential access is natural are <em>not</em> thread-safe. Since version 9.0,
+it is even possible to use different threads for multi-satellite propagation (and orbit
+determination) with inter-thread scheduling for parallel propagation (but each propagation
+is performed in a dedicated thread).
 
 ## Installation
 
@@ -117,8 +126,12 @@ Math to Hipparchus
   Orekit 7.0   | Apache Commons Math 3.4.1
   Orekit 7.1   | Apache Commons Math 3.6
   Orekit 7.2   | Apache Commons Math 3.6.1
+  Orekit 7.2.1 | Apache Commons Math 3.6.1
   Orekit 8.0   | Hipparchus          1.0
+  Orekit 8.0.1 | Hipparchus          1.0
   Orekit 9.0   | Hipparchus          1.1
+  Orekit 9.0.1 | Hipparchus          1.1
+  Orekit 9.1   | Hipparchus          1.2
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
@@ -180,7 +193,7 @@ to configure Orekit to load data. Orekit supports by default either the IERS UTC
 USNO tai-utc.dat file. If either file is found in the Orekit configuration, it will be automatically loaded
 and the message should not appear.
 
-Configuring data loading is explained in the configuration page For a start, the simplest configuration
+Configuring data loading is explained in the configuration page. For a start, the simplest configuration
 is to download the orekit-data.zip file from the download page, to unzip it anywhere you want, note the
 path of the orekit-data folder that will be created and add the following lines at the start of
 your program:
@@ -190,4 +203,4 @@ your program:
     manager.addProvider(new DirectoryCrawler(orekitData));
 
 Using a folder allows one to change the data in it after the initial download, e.g., adding new EOP files as they
-are published by IERS.
+are published by IERS. Updating the content of the orekit-data remains the responsibility of the user.

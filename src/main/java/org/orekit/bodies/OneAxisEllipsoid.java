@@ -80,16 +80,16 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
-     * <table border="1" cellpadding="5">
+     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;">
      * <caption>Ellipsoid Models</caption>
-     * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
-     * <tr><td bgcolor="#eeeeff">GRS 80</td>
+     * <tr style="background-color:#c9d5c9;"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
+     * <tr><td style="background-color:#c9d5c9;">GRS 80</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_EQUATORIAL_RADIUS Constants.GRS80_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_FLATTENING Constants.GRS80_EARTH_FLATTENING}</td></tr>
-     * <tr><td bgcolor="#eeeeff">WGS84</td>
+     * <tr><td style="background-color:#c9d5c9;">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
-     * </table>
+     * </table summary="">
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
