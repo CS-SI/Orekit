@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +80,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testEstimateStationPosition() throws OrekitException {
+    public void testEstimateStationPosition() throws OrekitException, IOException, ClassNotFoundException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -159,6 +164,35 @@ public class GroundStationTest {
         Assert.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
         Assert.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
         Assert.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
+
+        Assert.assertTrue(bos.size() > 145000);
+        Assert.assertTrue(bos.size() < 150000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
+        Assert.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
+                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
+                            deserialized.getPrimeMeridianDriftDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarOffsetXDriver().getValue(),
+                            deserialized.getPolarOffsetXDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarDriftXDriver().getValue(),
+                            deserialized.getPolarDriftXDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarOffsetYDriver().getValue(),
+                            deserialized.getPolarOffsetYDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarDriftYDriver().getValue(),
+                            deserialized.getPolarDriftYDriver().getValue(),
+                            1.0e-15);
 
     }
 
