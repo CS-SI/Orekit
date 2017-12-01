@@ -117,7 +117,7 @@ public class Range extends AbstractMeasurement<Range> {
                                                                 final SpacecraftState[] states)
         throws OrekitException {
 
-        final SpacecraftState state = states[0];
+        final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters

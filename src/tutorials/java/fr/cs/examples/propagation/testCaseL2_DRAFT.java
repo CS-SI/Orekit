@@ -31,13 +31,13 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.L2Frame;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -51,12 +51,12 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 /**
  *
  * @author Guillaume Obrecht
- *
+ * @author Luc Maisonabe
+ * @author Julio Hernanz
  */
-
 public class testCaseL2_DRAFT {
 
-    public static void main(String[] args) throws OrekitException {
+  public static void main(String[] args) throws OrekitException {
 
         // configure Orekit
         File home       = new File(System.getProperty("user.home"));
@@ -74,158 +74,152 @@ public class testCaseL2_DRAFT {
 
         // Time settings
         final AbsoluteDate initialDate = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
-        double integrationTime = 5000000;
-        double integrationStep = 50000;
+        double integrationTime = 5.0e6;
+        double outputStep = 600.0;
 
         // Initial conditions
-        final double x = -2;
-        final double y = -1;
-        final double z = 0;
-        final double Vx = 1000;
-        final double Vy = -1000;
-        final double Vz = 0;
-        final PVCoordinates initialScWrtBary = new PVCoordinates(new Vector3D(x,y,z), new Vector3D(Vx,Vy,Vz));
+        // The output is *very* sensitive to these conditions, as L2 point in unstable
 
+        // with these initial conditions, we have a trajectory starting below L2 and not fast
+        // enough to stay there, so it falls back towards Earth/Moon and first makes several
+        // loops around Moon before falling to Earth and starting looping around Earth
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 11.856, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations fall back to Earth,
+//        // while L2-centered propagation remains near Moon until the end
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.7, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations remain near Moon until the end,
+//        // while L2-centered propagation falls back to Earth
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.8, -0.001));
+
+//        // with these initial conditions, Earth-centered propagations leave the Earth/Moon system immediately,
+//        // while L2-centered propagation falls back to Earth
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 26.9, -0.001));
+
+//        // with these initial conditions, all propagations leave the Earth/Moon system immediately
+//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                              new Vector3D(0.0, 27.0, -0.001));
+
+          final PVCoordinates initialPVInL2 = new PVCoordinates(Vector3D.ZERO,
+                                                                new Vector3D(0.0, 27.0, -0.001));
+        
         // Integration parameters
         final double minStep = 0.001;
-        final double maxstep = 1000.0;
-        final double positionTolerance = 10.0;
-        final OrbitType propagationType = OrbitType.CARTESIAN;
+        final double maxstep = 3600.0;
 
         // Load Bodies
+        final CelestialBody sun   = CelestialBodyFactory.getSun();
         final CelestialBody earth = CelestialBodyFactory.getEarth();
-        final CelestialBody moon = CelestialBodyFactory.getMoon();
         final CelestialBody earthMoonBary = CelestialBodyFactory.getEarthMoonBarycenter();
-        final double muEarth = earth.getGM();
 
         // Create frames to compare
-        final Frame frame1 = FramesFactory.getEME2000();
-        final Frame frame2 = FramesFactory.getICRF();
-        final Frame frame3 = earthMoonBary.getBodyOrientedFrame();
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Frame l2Frame = new L2Frame(sun, earth);
+        final Frame earthMoonBaryFrame = earthMoonBary.getInertiallyOrientedFrame();
+        final Frame outputFrame = l2Frame;
 
-        final Frame referenceFrame = frame1;
-        final Frame outputFrame = frame3;
-
-        // Compute position of L2
-        final Vector3D posMoon = moon.getPVCoordinates(initialDate, frame3).getPosition();
-        final Vector3D posEarth = earth.getPVCoordinates(initialDate, frame3).getPosition();
-        final double r2 = posMoon.getNorm();
-
-        final Vector3D earthToMoon = (posMoon.subtract(posEarth));
-        final double R = earthToMoon.getNorm();
-        final Vector3D unitVector = earthToMoon.normalize();
-
-        final double q = moon.getGM() / earth.getGM();
-        final double epsilon = Math.pow(q/3, 1/3);
-
-        final double L2 = r2 + R * (-epsilon + 1/3 * Math.pow(epsilon, 2)) + 1/9 * Math.pow(epsilon, 3);
-
-        final Vector3D posL2 = new Vector3D(L2,unitVector);
-        System.out.print(posL2.getX() + ", " + posL2.getY() + ", " + posL2.getZ() +"\n");
-
-
-        // Initial position
-        Vector3D initialPosition = posL2.add( new Vector3D(x,y,z) );
-        final PVCoordinates initialPV = new PVCoordinates(initialPosition, new Vector3D(Vx,Vy,Vz));
-
-
-        final Orbit referenceOrbit = new CartesianOrbit(initialScWrtBary, referenceFrame, initialDate, muEarth);
-
+        // tolerances for integrators
+        final double positionTolerance = 10.0;
+        final double velocityTolerance = 0.01;
+        final double massTolerance     = 1.0e-6;
+        final double[] vecAbsoluteTolerances = {
+            positionTolerance, positionTolerance, positionTolerance,
+            velocityTolerance, velocityTolerance, velocityTolerance,
+            massTolerance
+        };
+        final double[] vecRelativeTolerances = new double[vecAbsoluteTolerances.length];
 
         // 1: Propagation in Earth-centered inertial reference frame
 
-        final Frame integrationFrame1 = frame1;
+        final Frame integrationFrame1 = eme2000;
 
-        System.out.print("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " + integrationFrame1.isPseudoInertial() + ")\n");
+        System.out.println("1- Propagation in Earth-centered inertial reference frame (pseudo_inertial: " +
+                           integrationFrame1.isPseudoInertial() + ")");
 
-        final org.orekit.frames.Transform initialTransform1 = frame3.getTransformTo(integrationFrame1, initialDate);
-        final PVCoordinates initialConditions1 = initialTransform1.transformPVCoordinates(initialPV);
+        final PVCoordinates initialConditions1 = l2Frame.getTransformTo(integrationFrame1, initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
 
-        final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1, initialDate, muEarth);
+        final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1,
+                                                                initialDate, sun.getGM());
         final SpacecraftState initialState1 = new SpacecraftState(initialOrbit1);
 
-        final double[][] tolerances1 = NumericalPropagator.tolerances(positionTolerance, initialOrbit1, propagationType);
 
         AdaptiveStepsizeIntegrator integrator1 =
-                new DormandPrince853Integrator(minStep, maxstep, tolerances1[0], tolerances1[1]);
+                new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances, vecRelativeTolerances);
 
         NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
-        propagator1.setOrbitType(propagationType);
+        propagator1.setOrbitType(OrbitType.CARTESIAN);
+        propagator1.addForceModel(new ThirdBodyAttraction(earth));
         propagator1.setInitialState(initialState1);
-
-        propagator1.setMasterMode(integrationStep, new TutorialStepHandler("L2sc1.txt", "L2earth1.txt", "L2moon1.txt", outputFrame, earth, moon));
-
-        final ForceModel moonAttraction1 = new ThirdBodyAttraction(moon);
-        propagator1.addForceModel(moonAttraction1);
+        propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
 
 
-
         // 2: Propagation in Celestial reference frame
 
-        final Frame integrationFrame2 = frame2;
+        final Frame integrationFrame2 = gcrf;
 
-        System.out.print("2- Propagation in Celestial reference frame (pseudo_inertial: " + integrationFrame2.isPseudoInertial() + ")\n");
+        System.out.println("2- Propagation in Celestial reference frame (pseudo_inertial: " +
+                           integrationFrame2.isPseudoInertial() + ")");
 
-        final PVCoordinates initialConditions2 = initialTransform1.transformPVCoordinates(initialPV);
+        final PVCoordinates initialConditions2 = l2Frame.getTransformTo(integrationFrame2, initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
 
-        final AbsolutePVCoordinates initialOrbit2 = new AbsolutePVCoordinates(integrationFrame2, initialDate, initialConditions2);
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit2);
-
-        final double[][] tolerances2 = NumericalPropagator.tolerances(positionTolerance, referenceOrbit, propagationType);
+        final AbsolutePVCoordinates initialAbsPV2 = new AbsolutePVCoordinates(integrationFrame2, initialDate,
+                                                                              initialConditions2);
+        final SpacecraftState initialState2 = new SpacecraftState(initialAbsPV2);
 
         AdaptiveStepsizeIntegrator integrator2 =
-                new DormandPrince853Integrator(minStep, maxstep, tolerances2[0], tolerances2[1]);
+                new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances, vecRelativeTolerances);
 
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
-        propagator2.setOrbitType(propagationType);
-        propagator2.setInitialState(initialState);
-
-        propagator2.setMasterMode(integrationStep, new TutorialStepHandler("L2sc2.txt", "L2earth2.txt", "L2moon2.txt", outputFrame, earth, moon));
-
-        final ForceModel earthAttraction2 = new ThirdBodyAttraction(moon);
-        final ForceModel moonAttraction2 = new ThirdBodyAttraction(moon);
-        propagator2.addForceModel(earthAttraction2);
-        propagator2.addForceModel(moonAttraction2);
+        propagator2.setOrbitType(null);
+        propagator2.setIgnoreCentralAttraction(true);
+        propagator2.addForceModel(new ThirdBodyAttraction(earth));
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        propagator2.setInitialState(initialState2);
+        propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
 
+        // 3: Propagation in L2 centered frame
 
+        final Frame integrationFrame3 = l2Frame;
 
-        // 3: Propagation in barycentric frame
-        // TODO: replace by frame centered on L2
-        final Frame integrationFrame3 = frame3;
+        System.out.println("3- Propagation in L2 reference frame (pseudo_inertial: " +
+                           integrationFrame3.isPseudoInertial() + ")");
 
-        System.out.print("3- Propagation in barycentric reference frame (pseudo_inertial: " + integrationFrame3.isPseudoInertial() + ")\n");
+        final PVCoordinates initialConditions3 = l2Frame.getTransformTo(integrationFrame3,  initialDate).
+                                                 transformPVCoordinates(initialPVInL2);
 
-        final PVCoordinates initialConditions3 = initialPV;
+        final AbsolutePVCoordinates initialAbsPV3 = new AbsolutePVCoordinates(integrationFrame3, initialDate,
+                                                                              initialConditions3);
+        Attitude arbitraryAttitude3 = new Attitude(integrationFrame3,
+                new TimeStampedAngularCoordinates(initialDate,
+                                                  new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
+                                                  new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J)));
+        final SpacecraftState initialState3 = new SpacecraftState(initialAbsPV3, arbitraryAttitude3);
 
-        final AbsolutePVCoordinates initialOrbit3 = new AbsolutePVCoordinates(integrationFrame3, initialDate, initialConditions3);
-        Attitude arbitraryAttitude3 = new Attitude( integrationFrame3,
-                new TimeStampedAngularCoordinates( initialDate, new PVCoordinates( Vector3D.PLUS_I, Vector3D.ZERO ), new PVCoordinates( Vector3D.PLUS_I, Vector3D.ZERO )) );
-        final SpacecraftState initialState3 = new SpacecraftState(initialOrbit3, arbitraryAttitude3);
-
-
-        final double[][] tolerances3 = NumericalPropagator.tolerances(positionTolerance, referenceOrbit, propagationType);
         AdaptiveStepsizeIntegrator integrator3 =
-                new DormandPrince853Integrator(minStep, maxstep, tolerances3[0], tolerances3[1]);
+                new DormandPrince853Integrator(minStep, maxstep, vecAbsoluteTolerances, vecRelativeTolerances);
 
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
-        propagator3.setOrbitType(propagationType);
+        propagator3.setOrbitType(null);
+        propagator3.setIgnoreCentralAttraction(true);
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
         propagator3.setInitialState(initialState3);
-
-        final ForceModel earthAttraction3 = new ThirdBodyAttraction(moon);
-        final ForceModel moonAttraction3 = new ThirdBodyAttraction(moon);
-        propagator3.addForceModel(earthAttraction3);
-        propagator3.addForceModel(moonAttraction3);
-
-        final ForceModel inertial = new InertialForces(referenceFrame);
-        propagator3.addForceModel(inertial);
-
-        propagator3.setMasterMode(integrationStep, new TutorialStepHandler("L2sc3.txt", "L2earth3.txt", "L2moon3.txt", outputFrame, earth, moon));
+        propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv3 = finalState3.getPVCoordinates(outputFrame);
@@ -235,63 +229,29 @@ public class testCaseL2_DRAFT {
         final Vector3D pos1 = pv1.getPosition();
         final Vector3D pos2 = pv2.getPosition();
         final Vector3D pos3 = pv3.getPosition();
+        System.out.format(Locale.US, "Differences between trajectories:%n");
+        System.out.format(Locale.US, "    1/3: %10.6f [m]%n", Vector3D.distance(pos1, pos3));
+        System.out.format(Locale.US, "    2/3: %10.6f [m]%n", Vector3D.distance(pos2, pos3));
+        System.out.format(Locale.US, "    1/2: %10.6f [m]%n", Vector3D.distance(pos1, pos2));
 
-        final Vector3D diff1 = pos1.subtract(pos3);
-        final Vector3D diff2 = pos2.subtract(pos3);
-
-        double ratio1[] = new double[3];
-        ratio1[0] = diff1.getX() / pos3.getX() * 100;
-        ratio1[1] = diff1.getY() / pos3.getY() * 100;
-        ratio1[2] = diff1.getZ() / pos3.getZ() * 100;
-
-        double ratio2[] = new double[3];
-        ratio2[0] = diff2.getX() / pos3.getX() * 100;
-        ratio2[1] = diff2.getY() / pos3.getY() * 100;
-        ratio2[2] = diff2.getZ() / pos3.getZ() * 100;
-
-
-        System.out.print("Errors from reference trajectory "
-                + "(3: Jupiter-centered inertial frame) [m]\n");
-        System.out.print("1: " + diff1 + "\n"
-                + "   norm: "+ diff1.getNorm() + "\n");
-        System.out.print("2: " + diff2 + "\n"
-                + "   norm: "+ diff2.getNorm() + "\n");
     }
 
+    private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
-
-
-
-
-private static class TutorialStepHandler implements OrekitFixedStepHandler {
-
-        private PrintWriter file;
-
-        private PrintWriter body1File;
-
-        private PrintWriter body2File;
+        private File        outFile;
+        private PrintWriter out;
 
         private Frame outputFrame;
 
-        private CelestialBody body1;
-
-        private CelestialBody body2;
-
-        private TutorialStepHandler(final String fileName, final String body1FileName, final String body2FileName, final Frame frame, final CelestialBody body1_, final CelestialBody body2_)
-                throws OrekitException {
+        private TutorialStepHandler(final String fileName, final Frame frame)
+            throws OrekitException {
             try {
-                file = new PrintWriter(fileName);
-                body1File = new PrintWriter(body1FileName);
-                body2File = new PrintWriter(body2FileName);
+                outFile = new File(new File(System.getProperty("user.home")), fileName);
+                out = new PrintWriter(outFile);
                 outputFrame = frame;
-                body1 = body1_;
-                body2 = body2_;
             } catch (IOException ioe) {
                 throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
             }
-        }
-
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
@@ -302,54 +262,30 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
                 final AbsoluteDate d = currentState.getDate();
                 final PVCoordinates pv = currentState.getPVCoordinates(outputFrame);
-                final PVCoordinates bodyPV1 = body1.getPVCoordinates(d, outputFrame);
-                final PVCoordinates bodyPV2 = body2.getPVCoordinates(d, outputFrame);
 
-
-
-
-                    file.format(Locale.US, "%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
-                            pv.getPosition().getX(),
-                            pv.getPosition().getY(),
-                            pv.getPosition().getZ(),
-                            pv.getVelocity().getX(),
-                            pv.getVelocity().getY(),
-                            pv.getVelocity().getZ());
-
-
-
-                    body1File.format(Locale.US, "%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
-                            bodyPV1.getPosition().getX(),
-                            bodyPV1.getPosition().getY(),
-                            bodyPV1.getPosition().getZ(),
-                            bodyPV1.getVelocity().getX(),
-                            bodyPV1.getVelocity().getY(),
-                            bodyPV1.getVelocity().getZ());
-
-
-
-                body2File.format(Locale.US, "%12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
-                            bodyPV2.getPosition().getX(),
-                            bodyPV2.getPosition().getY(),
-                            bodyPV2.getPosition().getZ(),
-                            bodyPV2.getVelocity().getX(),
-                            bodyPV2.getVelocity().getY(),
-                            bodyPV2.getVelocity().getZ());
-
-
+                out.format(Locale.US, "%s %12.6f %12.6f %12.6f %12.6f %12.6f %12.6f%n",
+                           d,
+                           pv.getPosition().getX(),
+                           pv.getPosition().getY(),
+                           pv.getPosition().getZ(),
+                           pv.getVelocity().getX(),
+                           pv.getVelocity().getY(),
+                           pv.getVelocity().getZ());
 
                 if (isLast) {
                     final PVCoordinates finalPv = currentState.getPVCoordinates(outputFrame);
                     System.out.println();
                     System.out.format(Locale.US, "%s %12.0f %12.0f %12.0f %12.0f %12.0f %12.0f%n",
-                            currentState.getDate(),
-                            finalPv.getPosition().getX(),
-                            finalPv.getPosition().getY(),
-                            finalPv.getPosition().getZ(),
-                            finalPv.getVelocity().getX(),
-                            finalPv.getVelocity().getY(),
-                            finalPv.getVelocity().getZ());
+                                      d,
+                                      finalPv.getPosition().getX(),
+                                      finalPv.getPosition().getY(),
+                                      finalPv.getPosition().getZ(),
+                                      finalPv.getVelocity().getX(),
+                                      finalPv.getVelocity().getY(),
+                                      finalPv.getVelocity().getZ());
                     System.out.println();
+                    out.close();
+                    System.out.println("trajectory saved in " + outFile.getAbsolutePath());
                 }
             } catch (OrekitException oe) {
                 System.err.println(oe.getMessage());

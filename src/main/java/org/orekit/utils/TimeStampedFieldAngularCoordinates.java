@@ -143,6 +143,19 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
         this.date = date;
     }
 
+    /** Builds an instance for a regular {@link TimeStampedAngularCoordinates}.
+     * @param field fields to which the elements belong
+     * @param ac coordinates to convert
+     * @since 9.0
+     */
+    public TimeStampedFieldAngularCoordinates(final Field<T> field,
+                                              final TimeStampedAngularCoordinates ac) {
+        this(new FieldAbsoluteDate<>(field, ac.getDate()),
+             new FieldRotation<>(field, ac.getRotation()),
+             new FieldVector3D<>(field, ac.getRotationRate()),
+             new FieldVector3D<>(field, ac.getRotationAcceleration()));
+    }
+
     /** Revert a rotation/rotation rate pair.
      * Build a pair which reverse the effect of another pair.
      * @return a new pair whose effect is the reverse of the effect

@@ -41,11 +41,9 @@ public interface ParameterObserver {
      * @param previousReferenceDate previous date (null if it is the first time
      * the reference date is changed)
      * @param driver parameter driver that has been changed
-     * @exception OrekitException if date is invalid for the driven model
      * @since 9.0
      */
-    default void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver)
-        throws OrekitException {
+    default void referenceDateChanged(final AbsoluteDate previousReferenceDate, final ParameterDriver driver) {
         // nothing by default
     }
 
@@ -55,11 +53,21 @@ public interface ParameterObserver {
      * </p>
      * @param previousName previous name
      * @param driver parameter driver that has been changed
-     * @exception OrekitException if name is invalid for the driven model
      * @since 9.0
      */
-    default void nameChanged(final String previousName, final ParameterDriver driver)
-        throws OrekitException {
+    default void nameChanged(final String previousName, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter selection status has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousSelection previous selection
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void selectionChanged(final boolean previousSelection, final ParameterDriver driver) {
         // nothing by default
     }
 

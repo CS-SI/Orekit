@@ -74,9 +74,9 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * name conflict occurs
      */
     public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
-                               final boolean twoWay,
-                               final AbsoluteDate date, final double range,
-                               final double sigma, final double baseWeight)
+                                final boolean twoWay,
+                                final AbsoluteDate date, final double range,
+                                final double sigma, final double baseWeight)
         throws OrekitException {
         super(date, range, sigma, baseWeight, Arrays.asList(satellite1Index, satellite2Index));
         this.twoway = twoWay;
@@ -109,8 +109,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final Field<DerivativeStructure>         field   = factory.getDerivativeField();
 
         // coordinates of both satellites
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva1 = getCoordinates(states[0], 0, factory);
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva2 = getCoordinates(states[1], 6, factory);
+        final SpacecraftState state1 = states[getPropagatorsIndices().get(0)];
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva1 = getCoordinates(state1, 0, factory);
+        final SpacecraftState state2 = states[getPropagatorsIndices().get(1)];
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> pva2 = getCoordinates(state2, 6, factory);
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
@@ -123,7 +125,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final DerivativeStructure tauD = signalTimeOfFlight(pva2, s1Downlink.getPosition(), arrivalDate);
 
         // Transit state
-        final double              delta      = getDate().durationFrom(states[1].getDate());
+        final double              delta      = getDate().durationFrom(state2.getDate());
         final DerivativeStructure deltaMTauD = tauD.negate().add(delta);
 
         // prepare the evaluation
@@ -140,12 +142,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                                 transitStateDS.getDate());
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       states[0].shiftedBy(deltaMTauD.getValue()),
-                                                       states[1].shiftedBy(deltaMTauD.getValue())
+                                                       state1.shiftedBy(deltaMTauD.getValue()),
+                                                       state2.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       states[0].shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
-                                                       states[1].shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
-                                                       states[0].shiftedBy(delta).getPVCoordinates()
+                                                       state1.shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
+                                                       state2.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       state1.shiftedBy(delta).getPVCoordinates()
                                                    });
 
             // Range value
@@ -155,11 +157,11 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       states[0].shiftedBy(deltaMTauD.getValue()),
-                                                       states[1].shiftedBy(deltaMTauD.getValue())
+                                                       state1.shiftedBy(deltaMTauD.getValue()),
+                                                       state2.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       states[1].shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
-                                                       states[0].shiftedBy(delta).getPVCoordinates()
+                                                       state2.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       state1.shiftedBy(delta).getPVCoordinates()
                                                    });
 
             // Range value

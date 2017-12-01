@@ -37,7 +37,7 @@ As with all maven enabled projects, building official released versions of
 Orekit is straightforward (see below for the special case of development versions),
 simply run:
 
-    mvn assembly:single
+    mvn package assembly:single
 
 The preceding command will perform all dependencies retrieval, compilation,
 tests and packaging for you. At the end, it will create several files named
@@ -95,9 +95,37 @@ site at the [Eclipse Foundation](http://www.eclipse.org/downloads/).
 
 The simplest way to use Orekit with Eclipse is to follow these steps:
 
-  * unpack the distribution inside your Eclipse workspace
+  * using your operating system tools, unpack the source distribution directly
+    inside your Eclipse workspace. The source distribution file name has a name
+    of the form orekit-x.y-sources.zip where x.y is the version number. Unpacking
+    this zip file should create a folder of the form orekit-x.y in your workspace.
 
-  * import the project as an "Existing Maven Project"
+  * using Eclipse, import the project by selecting in the top level "File" menu
+    the entry "Import..."
 
-Everything should be configured automatically, including the dependency
-to the underlying mathematical library.
+  * in the wizard that should appear, select "Maven -> Existing Maven Projects"
+
+  * select the folder you just created in your workspace by unpacking the
+    source distribution. The "pom.xml" file describing the project will be
+    automatically selected. Click finish
+
+The Orekit library should be configured automatically, including the dependency
+to the underlying mathematical library. Note however that the tutorials
+that are present in the source distribution are not automatically added by
+this process (because the tutorials correspond to extra code and as such they
+are not referenced in the pom.xml file).
+
+Now you have an orekit-x.y project in you workspace, and you can create your
+own application projects that will depend on the Orekit project.
+
+You can also check everything works correctly by running the junit tests.
+
+If you want to go further and run the tutorials, you should update the
+project configuration to add them. In the Eclipse Package Explorer tab,
+right-click on the orekit-x.y project and select from the conext menu
+the entry "Build Path -> Configure Build Path...". Then in the wizard that
+should appear, select the "Source" tab in the right pane, click the button
+"Add Folder...", open the "tutorials" folder, select the two sub-folders
+"java" and "resource" and click "OK". Now the projects should display the
+tutorials. Note that since 9.0, you need to have an "orekit-data" folder
+in your home directory in order to run the tutorials.

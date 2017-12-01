@@ -90,14 +90,14 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      * @return the alpha coefficients array
      */
     public double[] getAlpha() {
-        return alpha;
+        return alpha.clone();
     }
 
     /** Returns the beta coefficients array.
      * @return the beta coefficients array
      */
     public double[] getBeta() {
-        return beta;
+        return beta.clone();
     }
 
     /** Returns the supported names of the loader.

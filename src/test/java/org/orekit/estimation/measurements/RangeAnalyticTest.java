@@ -30,8 +30,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,10 +41,11 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.StateFunction;
 
 public class RangeAnalyticTest {
-
 
     /**
      * Test the values of the range comparing the observed values and the estimated values
@@ -117,7 +116,7 @@ public class RangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.1e-7, 1.8e-6, 6.3e-5, 3.5e-8, 1.4e-7, 7.7e-6);
+                                    4.1e-7, 1.9e-6, 6.3e-5, 4.7e-11, 4.7e-11, 5.6e-11);
     }
 
     /**
@@ -321,11 +320,11 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 7.0e-09);
-        Assert.assertEquals(0.0, absErrorsMin, 1.6e-07);
-        Assert.assertEquals(0.0, absErrorsMax, 1.7e-07);
-        Assert.assertEquals(0.0, relErrorsMedian, 4.4e-15);
-        Assert.assertEquals(0.0, relErrorsMax, 1.7e-14);
+        Assert.assertEquals(0.0, absErrorsMedian, 3.8e-08);
+        Assert.assertEquals(0.0, absErrorsMin,    2.0e-07);
+        Assert.assertEquals(0.0, absErrorsMax,    2.3e-07);
+        Assert.assertEquals(0.0, relErrorsMedian, 6.5e-15);
+        Assert.assertEquals(0.0, relErrorsMax,    2.4e-14);
     }
 
     /**
@@ -399,11 +398,12 @@ public class RangeAnalyticTest {
 
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
-                        jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                        jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }
-                        }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                        }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                           OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
                         jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);

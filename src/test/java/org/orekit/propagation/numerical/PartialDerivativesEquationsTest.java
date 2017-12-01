@@ -82,7 +82,7 @@ public class PartialDerivativesEquationsTest {
         pv = new PVCoordinates(p, v);
         state = new SpacecraftState(new CartesianOrbit(pv, eci, date, gm))
                 .addAdditionalState("pde", new double[2 * 3 * 6]);
-        pde.setInitialJacobians(state, 6);
+        pde.setInitialJacobians(state);
 
     }
 
@@ -120,8 +120,10 @@ public class PartialDerivativesEquationsTest {
          */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
 
+        /** {@inheritDoc} */
         @Override
-        public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) throws OrekitException {
+        public boolean dependsOnPositionOnly() {
+            return false;
         }
 
         @Override
@@ -131,21 +133,19 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
-                                                                          Frame frame,
-                                                                          FieldVector3D<DerivativeStructure> position,
-                                                                          FieldVector3D<DerivativeStructure> velocity,
-                                                                          FieldRotation<DerivativeStructure> rotation,
-                                                                          DerivativeStructure mass)
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
             throws OrekitException {
-            this.accelerationDerivativesPosition = position;
-            this.accelerationDerivativesVelocity = velocity;
-            return position;
+            return s.getPVCoordinates().getPosition();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName) throws OrekitException {
-            return null;
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters)
+            throws OrekitException {
+            this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
+            return s.getPVCoordinates().getPosition();
         }
 
         @Override

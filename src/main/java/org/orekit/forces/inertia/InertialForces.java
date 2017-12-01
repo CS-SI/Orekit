@@ -20,32 +20,51 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 /** Inertial force model.
- *
+ * <p>
+ * This force model adds the pseudo-forces due to inertia between the
+ * integrating frame and a reference inertial frame from which
+ * this force model is built.
+ * </p>
+ * <p>
+ * Two typical use-cases are propagating {@link AbsolutePVCoordinates} in either:
+ * </p>
+ * <ul>
+ *   <li>a non-inertial frame (for example propagating in the rotating {@link
+ *       org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF}
+ *       frame),</li>
+ *   <li>an inertial frame that is not related to the main attracting body (for example
+ *       propagating in {@link org.orekit.frames.FramesFactory#getEME2000() EME2000} frame a
+ *       trajectory about the Sun and Jupiter).</li>
+ * </ul>
+ * <p>
+ * In the second used case above, the attraction from the two main bodies, i.e. the Sun and
+ * Jupiter, should be represented by {@link org.orekit.forces.gravity.SingleBodyAbsoluteAttraction}
+ * instances.
+ * </p>
+ * @see org.orekit.forces.gravity.SingleBodyAbsoluteAttraction
  * @author Guillaume Obrecht
- *
+ * @author Luc Maisonobe
  */
-public class InertialForces extends AbstractParameterizable implements ForceModel  {
+public class InertialForces extends AbstractForceModel  {
 
     /** Reference inertial frame to use to compute inertial forces. */
     private Frame referenceInertialFrame;
@@ -66,84 +85,63 @@ public class InertialForces extends AbstractParameterizable implements ForceMode
 
     /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s,
-                                final TimeDerivativesEquations adder)
-        throws OrekitException {
-
-        if (s.getFrame() != referenceInertialFrame) {
-            // TODO check and clean
-
-//            // Method 1: use (private) method compositeAcceleration() from Transform)
-//            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-//            final Transform noninertToSat = s.toTransform();
-//            Vector3D inertialAccelerations = Transform.compositeAcceleration(noninertToInert, noninertToSat);
-//            inertialAccelerations = noninertToInert.transformVector(inertialAccelerations);
-
-//            // Method 2: extract acceleration from Transform
-//            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-//            final Transform noninertToSat = s.toTransform();
-//            final Transform combined = new Transform(s.getDate(), noninertToInert, noninertToSat);
-//            Vector3D inertialAccelerations = combined.getAcceleration();
-//            inertialAccelerations = noninertToInert.transformVector(combined.getAcceleration());
-
-            // Method 3: Formulas for inertial accelerations
-            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-            final Vector3D rotationRate = noninertToInert.getRotationRate();
-            final Vector3D rotationAcceleration = noninertToInert.getRotationAcceleration();
-            final Vector3D satPosition = s.getPVCoordinates().getPosition();
-            final Vector3D satVelocity = s.getPVCoordinates().getVelocity();
-
-            // Relative acceleration
-            final Vector3D aRelative = noninertToInert.getAcceleration();
-
-            // Centrifugal acceleration
-            final Vector3D aCentrifug = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, satPosition));
-
-            // Euler acceleration
-            final Vector3D aEuler = Vector3D.crossProduct(rotationAcceleration, satPosition);
-
-            // Coriolis acceleration
-            final Vector3D aCoriolis = Vector3D.crossProduct(rotationRate, satVelocity);
-
-            // Total of inertial accelerations
-            final Vector3D inertialAccelerations = new Vector3D(1, aRelative, -1, aCentrifug, -1, aEuler, -2, aCoriolis);
-
-            adder.addXYZAcceleration(inertialAccelerations.getX(), inertialAccelerations.getY(), inertialAccelerations.getZ());
-        }
+    public boolean dependsOnPositionOnly() {
+        return false;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                      final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation,
-                                                                      final DerivativeStructure mass) throws OrekitException {
-        // TODO implement this method
-        throw new UnsupportedOperationException();
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
+        throws OrekitException {
+
+        final Transform inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
+        final Vector3D  a1                = inertToStateFrame.getCartesian().getAcceleration();
+        final Rotation  r1                = inertToStateFrame.getAngular().getRotation();
+        final Vector3D  o1                = inertToStateFrame.getAngular().getRotationRate();
+        final Vector3D  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
+
+        final Vector3D  p2                = s.getPVCoordinates().getPosition();
+        final Vector3D  v2                = s.getPVCoordinates().getVelocity();
+
+        final Vector3D crossCrossP        = Vector3D.crossProduct(o1,    Vector3D.crossProduct(o1, p2));
+        final Vector3D crossV             = Vector3D.crossProduct(o1,    v2);
+        final Vector3D crossDotP          = Vector3D.crossProduct(oDot1, p2);
+
+        // we intentionally DON'T include s.getPVCoordinates().getAcceleration()
+        // because we want only the coupling effect of the frames transforms
+        return r1.applyTo(a1).subtract(new Vector3D(2, crossV, 1, crossCrossP, 1, crossDotP));
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
-                                                                      final String paramName)
+    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                         final T[] parameters)
         throws OrekitException {
-        // this method will be removed some time
-        return null;
+
+        final FieldTransform<T> inertToStateFrame = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
+        final FieldVector3D<T>  a1                = inertToStateFrame.getCartesian().getAcceleration();
+        final FieldRotation<T>  r1                = inertToStateFrame.getAngular().getRotation();
+        final FieldVector3D<T>  o1                = inertToStateFrame.getAngular().getRotationRate();
+        final FieldVector3D<T>  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
+
+        final FieldVector3D<T>  p2                = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>  v2                = s.getPVCoordinates().getVelocity();
+
+        final FieldVector3D<T> crossCrossP        = FieldVector3D.crossProduct(o1,    FieldVector3D.crossProduct(o1, p2));
+        final FieldVector3D<T> crossV             = FieldVector3D.crossProduct(o1,    v2);
+        final FieldVector3D<T> crossDotP          = FieldVector3D.crossProduct(oDot1, p2);
+
+        // we intentionally DON'T include s.getPVCoordinates().getAcceleration()
+        // because we want only the coupling effect of the frames transforms
+        return r1.applyTo(a1).subtract(new FieldVector3D<>(2, crossV, 1, crossCrossP, 1, crossDotP));
+
     }
 
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        // TODO implement this method
     }
 
     /** {@inheritDoc} */

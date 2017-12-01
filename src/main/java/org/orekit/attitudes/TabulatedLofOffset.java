@@ -21,18 +21,24 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * This class handles an attitude provider interpolating from a predefined table
@@ -113,6 +119,36 @@ public class TabulatedLofOffset implements AttitudeProvider {
         // compose with interpolated rotation
         return new Attitude(date, frame,
                             interpolated.addOffset(frameToLof.getAngular()));
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date,
+                                                                        final Frame frame)
+        throws OrekitException {
+
+        // get attitudes sample on which interpolation will be performed
+        final List<TimeStampedFieldAngularCoordinates<T>> sample =
+                        table.
+                        getNeighbors(date.toAbsoluteDate()).
+                        map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
+                        collect(Collectors.toList());
+
+        // interpolate
+        final TimeStampedFieldAngularCoordinates<T> interpolated =
+                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+
+        // construction of the local orbital frame, using PV from inertial frame
+        final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
+        final FieldTransform<T> inertialToLof = type.transformFromInertial(date, pv);
+
+        // take into account the specified start frame (which may not be an inertial one)
+        final FieldTransform<T> frameToInertial = frame.getTransformTo(inertialFrame, date);
+        final FieldTransform<T> frameToLof      = new FieldTransform<>(date, frameToInertial, inertialToLof);
+
+        // compose with interpolated rotation
+        return new FieldAttitude<>(date, frame,
+                                   interpolated.addOffset(frameToLof.getAngular()));
     }
 
     /** Replace the instance with a data transfer object for serialization.

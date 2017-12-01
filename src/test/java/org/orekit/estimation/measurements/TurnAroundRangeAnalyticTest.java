@@ -31,9 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +40,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class TurnAroundRangeAnalyticTest {
 
@@ -98,7 +98,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    5.9e-9, 2.2e-8, 4.8e-7, 8.1e-5, 3.6e-4, 1.4e-2);
+                                    5.9e-9, 2.0e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
     }
 
     /**
@@ -136,7 +136,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.1e-9, 2.3e-8, 5.0e-7, 8.1e-5, 3.6e-4, 1.4e-2);
+                                    6.2e-9, 1.9e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
     }
 
     /**
@@ -313,11 +313,11 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
-        Assert.assertEquals(0.0, absErrorsMin, 9.0e-08);
-        Assert.assertEquals(0.0, absErrorsMax, 1.1e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 2.0e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 6.4e-15);
+        Assert.assertEquals(0.0, absErrorsMedian, 8.4e-08);
+        Assert.assertEquals(0.0, absErrorsMin,    9.0e-08);
+        Assert.assertEquals(0.0, absErrorsMax,    2.0e-07);
+        Assert.assertEquals(0.0, relErrorsMedian, 5.1e-15);
+        Assert.assertEquals(0.0, relErrorsMax,    1.2e-14);
     }
 
     /**
@@ -400,11 +400,12 @@ public class TurnAroundRangeAnalyticTest {
 
             if (isFiniteDifferences) {
                 // Compute a reference value using finite differences
-                jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
-                }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                   OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
             } else {
                 // Compute a reference value using TurnAroundRange class function
                 jacobianRef = ((TurnAroundRange) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
@@ -597,7 +598,7 @@ public class TurnAroundRangeAnalyticTest {
                 if (isFiniteDifferences) {
                     // Compute a reference value using finite differences
                     final ParameterFunction dMkdP =
-                                    EstimationUtils.differentiate(new ParameterFunction() {
+                                    Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver) throws OrekitException {

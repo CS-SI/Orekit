@@ -41,7 +41,8 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class InterpolatingTransformProviderTest {
 
     @Test
-    public void testCacheHitWithDerivatives() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedConstructor() throws OrekitException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -70,6 +71,34 @@ public class InterpolatingTransformProviderTest {
     }
 
     @Test
+    public void testCacheHitWithDerivatives() throws OrekitException {
+
+        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
+        CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
+        CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
+        InterpolatingTransformProvider interpolatingProvider =
+                new InterpolatingTransformProvider(rawProvider,
+                                                   CartesianDerivativesFilter.USE_PVA,
+                                                   AngularDerivativesFilter.USE_RR,
+                                                   5, 0.8, 10, 60.0, 60.0);
+
+        for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
+            Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
+            Transform interpolated = interpolatingProvider.getTransform(t0.shiftedBy(dt));
+            Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
+            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           7.0e-15);
+            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           3.0e-14);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            1.3e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.2e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 1.2e-14);
+
+        }
+        Assert.assertEquals(10,   rawProvider.getCount());
+        Assert.assertEquals(3001, referenceProvider.getCount());
+
+    }
+
+    @Test
     public void testCacheHitWithoutDerivatives() throws OrekitException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
@@ -79,7 +108,6 @@ public class InterpolatingTransformProviderTest {
                 new InterpolatingTransformProvider(rawProvider,
                                                    CartesianDerivativesFilter.USE_P,
                                                    AngularDerivativesFilter.USE_R,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
@@ -111,7 +139,6 @@ public class InterpolatingTransformProviderTest {
                 },
                 CartesianDerivativesFilter.USE_PVA,
                 AngularDerivativesFilter.USE_RRA,
-                AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
     }
@@ -125,7 +152,6 @@ public class InterpolatingTransformProviderTest {
                 new InterpolatingTransformProvider(rawProvider,
                                                    CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_RRA,
-                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
@@ -137,8 +163,8 @@ public class InterpolatingTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(interpolatingProvider);
 
-        Assert.assertTrue(bos.size () >  500);
-        Assert.assertTrue(bos.size () <  600);
+        Assert.assertTrue(bos.size () >  450);
+        Assert.assertTrue(bos.size () <  550);
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bis);

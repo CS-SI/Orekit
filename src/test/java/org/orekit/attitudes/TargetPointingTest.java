@@ -17,10 +17,13 @@
 package org.orekit.attitudes;
 
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -35,20 +38,25 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class TargetPointingTest {
@@ -347,6 +355,8 @@ public class TargetPointingTest {
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
+        checkField(Decimal64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
+
         // Compute difference between both attitude providers
         // *********************************************
         // Difference between attitudes
@@ -403,6 +413,27 @@ public class TargetPointingTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
+
+    }
+
+    private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
+                                                            final Orbit orbit, final AbsoluteDate date,
+                                                            final Frame frame)
+        throws OrekitException {
+
+        final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
+        final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
+        final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
+        final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
+        Assert.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+
+        final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
+        final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 1.0e-15);
 
     }
 

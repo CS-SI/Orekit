@@ -49,12 +49,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.745e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.781e-8);
     }
 
     @Test
     public void testConversionPositionOnly() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 1.839e-7);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.208e-8);
     }
 
     protected void checkFit(final Orbit orbit,

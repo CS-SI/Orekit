@@ -68,6 +68,7 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_FIND_RESOURCE("unable to find resource {0} in classpath"),
     NO_EARTH_ORIENTATION_PARAMETERS_LOADED("no Earth Orientation Parameters loaded"),
     MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES("missing Earth Orientation Parameters between {0} and {1}"),
+    NO_EARTH_ORIENTATION_PARAMETERS("missing Earth Orientation Parameters"),
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
     INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
     UNEXPECTED_DATA_AFTER_LINE_IN_FILE("unexpected data after line {0} in file {1}: {2}"),
@@ -137,7 +138,7 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_MONTH("unknown month \"{0}\""),
     SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
-    STATE_JACOBIAN_NEITHER_6X6_NOR_7X7("state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix"),
+    STATE_JACOBIAN_NOT_6X6("state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix"),
     STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH("state Jacobian has {0} rows but parameters Jacobian has {1} rows"),
     INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH("initial Jacobian matrix has {0} columns, but {1} parameters have been selected"),
     ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE("orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}"),
@@ -205,7 +206,8 @@ public enum OrekitMessages implements Localizable {
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
-    NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}");
+    NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
+    STATION_NOT_FOUND("station {0} not found, known stations: {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 

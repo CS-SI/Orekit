@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +33,14 @@ import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -62,8 +69,18 @@ import org.orekit.utils.ParameterDriver;
 
 public class GroundStationTest {
 
+    @Deprecated
     @Test
-    public void testEstimateStationPosition() throws OrekitException {
+    public void testDeprecatedMethod() throws OrekitException {
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        for (final GroundStation station : context.stations) {
+            Assert.assertThat(station.getOffsetGeodeticPoint(),
+                              OrekitMatchers.geodeticPointCloseTo(station.getOffsetGeodeticPoint(null), 1.0e-15));
+        }
+    }
+
+    @Test
+    public void testEstimateStationPosition() throws OrekitException, IOException, ClassNotFoundException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -94,7 +111,9 @@ public class GroundStationTest {
                                                                            parent.transform(baseOrigin.subtract(deltaParent),
                                                                                             parent.getBodyFrame(),
                                                                                             null),
-                                                                           base.getName() + movedSuffix));
+                                                                           base.getName() + movedSuffix),
+                                                      context.ut1.getEOPHistory(),
+                                                      context.stations.get(0).getDisplacements());
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -121,19 +140,60 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.5e-6,
-                                     0.0, 2.1e-6,
+                                     0.0, 5.6e-7,
                                      0.0, 1.4e-6,
-                                     0.0, 6.2e-10);
+                                     0.0, 4.8e-7,
+                                     0.0, 2.6e-10);
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
-        GeodeticPoint result = moved.getOffsetGeodeticPoint();
+        GeodeticPoint result = moved.getOffsetGeodeticPoint(null);
+
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
-        Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  6.5e-15);
-        Assert.assertEquals(reference.getLongitude(), result.getLongitude(), 1.5e-14);
-        Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  1.6e-7);
+        Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  1.4e-14);
+        Assert.assertEquals(reference.getLongitude(), result.getLongitude(), 2.9e-14);
+        Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.6e-7);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(9,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(9,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(9,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(9,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
+        Assert.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
+        Assert.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
+
+        Assert.assertTrue(bos.size() > 145000);
+        Assert.assertTrue(bos.size() < 150000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
+        Assert.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
+                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
+                            deserialized.getPrimeMeridianDriftDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarOffsetXDriver().getValue(),
+                            deserialized.getPolarOffsetXDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarDriftXDriver().getValue(),
+                            deserialized.getPolarDriftXDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarOffsetYDriver().getValue(),
+                            deserialized.getPolarOffsetYDriver().getValue(),
+                            1.0e-15);
+        Assert.assertEquals(moved.getPolarDriftYDriver().getValue(),
+                            deserialized.getPolarDriftYDriver().getValue(),
+                            1.0e-15);
+
     }
 
     @Test
@@ -175,6 +235,7 @@ public class GroundStationTest {
                                                                new RangeMeasurementCreator(linearEOPContext),
                                                                1.0, 5.0, 60.0);
 
+        Utils.clearFactories();
         Context zeroEOPContext = EstimationTestUtils.eccentricContext("zero-EOP:regular-data/de431-ephemerides:potential:potential:tides");
         for (double dt = -2 * Constants.JULIAN_DAY; dt < 2 * Constants.JULIAN_DAY; dt += 300.0) {
             AbsoluteDate date = refDate.shiftedBy(dt);
@@ -234,30 +295,27 @@ public class GroundStationTest {
 
         estimator.estimate();
 
-        // Angular velocity of the Earth, in rad/s, from TIRF model
-        final double ave = 7.292115146706979e-5;
-
-        final double computedDut1 = station.getPrimeMeridianOffsetDriver().getValue() / ave;
-        final double computedLOD  = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / ave);
+        final double computedDut1  = station.getPrimeMeridianOffsetDriver().getValue() / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY;
+        final double computedLOD   = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY);
         final double computedXp    = station.getPolarOffsetXDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        Assert.assertEquals(dut10, computedDut1, 2.0e-9);
-        Assert.assertEquals(lod,   computedLOD,  9.0e-10);
-        Assert.assertEquals(xp0,   computedXp,    2.0e-8);
-        Assert.assertEquals(xpDot, computedXpDot, 9.0e-9);
-        Assert.assertEquals(yp0,   computedYp,    7.0e-9);
-        Assert.assertEquals(ypDot, computedYpDot, 7.0e-9);
+        Assert.assertEquals(dut10, computedDut1,  4.3e-10);
+        Assert.assertEquals(lod,   computedLOD,   4.9e-10);
+        Assert.assertEquals(xp0,   computedXp,    5.6e-9);
+        Assert.assertEquals(xpDot, computedXpDot, 7.2e-9);
+        Assert.assertEquals(yp0,   computedYp,    1.1e-9);
+        Assert.assertEquals(ypDot, computedYpDot, 2.8e-11);
 
-        // threshold to use if orbit is estimated
-        // (i.e. when commenting out the loop above setting orbital parameters drivers to not selected)
-        // Assert.assertEquals(dut10, computedDut1,  1.7e-4);
-        // Assert.assertEquals(lod,   computedLOD,   3.0e-10);
-        // Assert.assertEquals(xp0,   computedXp,    5.0e-9);
-        // Assert.assertEquals(xpDot, computedXpDot, 6.0e-9);
-        // Assert.assertEquals(yp0,   computedYp,    4.0e-8);
-        // Assert.assertEquals(ypDot, computedYpDot, 4.0e-8);
+        // thresholds to use if orbit is estimated
+        // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")
+//         Assert.assertEquals(dut10, computedDut1,  6.6e-3);
+//         Assert.assertEquals(lod,   computedLOD,   1.1e-9);
+//         Assert.assertEquals(xp0,   computedXp,    3.3e-8);
+//         Assert.assertEquals(xpDot, computedXpDot, 2.2e-8);
+//         Assert.assertEquals(yp0,   computedYp,    3.3e-8);
+//         Assert.assertEquals(ypDot, computedYpDot, 3.8e-8);
 
     }
 
@@ -1111,7 +1169,6 @@ public class GroundStationTest {
             }
         };
         DSFactory factory11 = new DSFactory(1, 1);
-
         RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
 
         double maxRotationValueError          = 0;

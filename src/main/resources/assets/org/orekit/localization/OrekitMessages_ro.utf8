@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nici un Parametru de Orientare al Păm�
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pamântului lipsesc între {0} și {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pamântului lipsesc
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = fișierul {0} nu este un fișier IERS de date suportat
 
@@ -268,8 +271,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matricea Jacobiană asociată tipului {0} est
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobianul de stare nu a fost inițializat încă
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobianul de stare este o matrice {0}x{1}, ar trebui sa fie o matrice 6x6 sau o matrice 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = Jacobianul de stare este o matrice {0}x{1}, ar trebui sa fie o matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii dar Jacobianul parametrilor are {1} linii
@@ -462,3 +465,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = Fișierul {0} nu conține coeficienți Klobuch
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = nicio dată de referință nu este specificată pentru parametrul {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = stația {0} nu a fost găsită, stații cunoscute: {1}

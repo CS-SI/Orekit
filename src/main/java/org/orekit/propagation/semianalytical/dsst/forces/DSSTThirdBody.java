@@ -1037,20 +1037,11 @@ public class DSSTThirdBody implements DSSTForceModel {
          *  */
         private final double c;
 
-        /** c².*/
-        private final double c2;
-
         /** db / dh. */
         private final double dbdh;
 
         /** db / dk. */
         private final double dbdk;
-
-        /** de / dh. */
-        private final double dedh;
-
-        /** de / dk. */
-        private final double dedk;
 
         /** dc / dh = e * db/dh + b * de/dh. */
         private final double dcdh;
@@ -1075,7 +1066,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         WnsjEtomjmsCoefficient() {
             //initialise fields
             c = ecc * b;
-            c2 = c * c;
+            final double c2 = c * c;
 
             //b² * χ
             final double b2Chi = b * b * X;
@@ -1083,13 +1074,17 @@ public class DSSTThirdBody implements DSSTForceModel {
             dbdh = h * b2Chi;
             dbdk = k * b2Chi;
 
-            //Compute derivatives of e
-            dedh = h / ecc;
-            dedk = k / ecc;
-
             //Compute derivatives of c
-            dcdh = ecc * dbdh + b * dedh;
-            dcdk = ecc * dbdk + b * dedk;
+            if (ecc == 0.0) {
+                // we are at a perfectly circular orbit singularity here
+                // we arbitrarily consider the perigee is along the X axis,
+                // i.e cos(ω + Ω) = h/ecc 1 and sin(ω + Ω) = k/ecc = 0
+                dcdh = ecc * dbdh + b;
+                dcdk = ecc * dbdk;
+            } else {
+                dcdh = ecc * dbdh + b * h / ecc;
+                dcdk = ecc * dbdk + b * k / ecc;
+            }
 
             //Compute the powers (1 - c²)<sup>n</sup> and (1 + c²)<sup>n</sup>
             omc2tn = new double[maxAR3Pow + maxFreqF + 2];
@@ -1166,7 +1161,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the derivative of coef2 by k
             final double dcoef2dk = dcoef2db * dbdk;
 
-            // the jacobi polinomial value
+            // the jacobi polynomial value
             final double jacobi = jac.getValue();
             // the derivative of the Jacobi polynomial by h
             final double djacobidh = jac.getPartialDerivative(1) * hXXX;

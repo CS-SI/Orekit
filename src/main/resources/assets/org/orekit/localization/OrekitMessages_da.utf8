@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = ingen jordorienteringsparametre er indl
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametre mellem {0} og {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en understøttet IERS datafil
 
@@ -268,8 +271,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Jacobian-matricen associeret med type {0} er 
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobian-tilstanden er endnu ikke blevet initialiseret
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobian-tilstanden er en {0}x{1} matrice, den skal enten være en 6x6 eller en 7x7 matrice
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = Jacobian-tilstanden er en {0}x{1} matrice, den skal enten være en 6x6 matrice
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobian-tilstanden har {0} rækker men Jacobian parametrene har {1} rækker
@@ -462,3 +465,7 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = filen {0} indeholder ikke Klobuchar koefficien
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = ingen referencedato angivet for parameteren {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>
+

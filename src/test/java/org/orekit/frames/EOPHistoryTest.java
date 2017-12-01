@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -61,6 +64,24 @@ public class EOPHistoryTest {
     }
 
     @Test
+    public void testFieldOutOfRange() throws OrekitException {
+        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        FieldAbsoluteDate<Decimal64> endDate = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+                                                                       2006, 3, 5, TimeScalesFactory.getUTC());
+        for (double t = -1000; t < 1000 ; t += 3) {
+            FieldAbsoluteDate<Decimal64> date = endDate.shiftedBy(t);
+            Decimal64 dt = history.getUT1MinusUTC(date);
+            if (t <= 0) {
+                Assert.assertTrue(dt.getReal() < 0.29236);
+                Assert.assertTrue(dt.getReal() > 0.29233);
+            } else {
+                // no more data after end date
+                Assert.assertEquals(0.0, dt.getReal(), 1.0e-10);
+            }
+        }
+    }
+
+    @Test
     public void testContinuityThreshold() {
         try {
             FramesFactory.setEOPContinuityThreshold(0.5 * Constants.JULIAN_DAY);
@@ -84,6 +105,22 @@ public class EOPHistoryTest {
                 Assert.assertEquals(-0.6612, dtu1, 3.0e-5);
             } else {
                 Assert.assertEquals(0.3388, dtu1, 3.0e-5);
+            }
+        }
+    }
+
+    @Test
+    public void testFieldUTCLeap() throws OrekitException {
+        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        FieldAbsoluteDate<Decimal64> endLeap = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+                                                                       2006, 1, 1, TimeScalesFactory.getUTC());
+        for (double dt = -200; dt < 200; dt += 3) {
+            final FieldAbsoluteDate<Decimal64> date = endLeap.shiftedBy(dt);
+            Decimal64 dtu1 = history.getUT1MinusUTC(date);
+            if (dt <= 0) {
+                Assert.assertEquals(-0.6612, dtu1.getReal(), 3.0e-5);
+            } else {
+                Assert.assertEquals(0.3388, dtu1.getReal(), 3.0e-5);
             }
         }
     }

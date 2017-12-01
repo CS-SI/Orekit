@@ -31,8 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.StateFunction;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -45,6 +43,8 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesRangeTest {
@@ -243,8 +243,8 @@ public class InterSatellitesRangeTest {
         Assert.assertEquals(0.0, absErrorsMedian, 1.3e-7);
         Assert.assertEquals(0.0, absErrorsMin,    7.3e-7);
         Assert.assertEquals(0.0, absErrorsMax,    1.8e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 9.0e-13);
-        Assert.assertEquals(0.0, relErrorsMax,    3.1e-12);
+        Assert.assertEquals(0.0, relErrorsMedian, 1.0e-12);
+        Assert.assertEquals(0.0, relErrorsMax,    3.2e-12);
 
 
     }
@@ -312,13 +312,14 @@ public class InterSatellitesRangeTest {
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                    jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) throws OrekitException {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
                             return measurement.estimate(0, 0, s).getEstimatedValue();
                         }
-                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
+                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
 
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);

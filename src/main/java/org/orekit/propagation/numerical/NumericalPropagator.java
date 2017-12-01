@@ -36,7 +36,6 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -148,6 +147,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
+    /** boolean to ignore or not the creation of a NewtonianAttraction. */
+    private boolean ignoreCentralAttraction = false;
+
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -169,6 +171,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
+        this.ignoreCentralAttraction = ignoreCentralAttraction;
+    }
+
      /** Set the central attraction coefficient μ.
       * <p>
       * Setting the central attraction coefficient is
@@ -180,7 +186,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @see #getAllForceModels()
      */
     public void setMu(final double mu) {
-        addForceModel(new NewtonianAttraction(mu));
+        if (ignoreCentralAttraction) {
+            superSetMu(mu);
+        } else {
+            addForceModel(new NewtonianAttraction(mu));
+        }
     }
 
     /** Set the central attraction coefficient μ only in upper class.
@@ -385,9 +395,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 // propagation uses absolute position-velocity-acceleration
                 final Vector3D p = new Vector3D(y[0],    y[1],    y[2]);
                 final Vector3D v = new Vector3D(y[3],    y[4],    y[5]);
-                final Vector3D a = new Vector3D(yDot[3], yDot[4], yDot[5]);
-                final AbsolutePVCoordinates absPva =
-                                new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                final Vector3D a;
+                final AbsolutePVCoordinates absPva;
+                if (yDot == null) {
+                    absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v));
+                } else {
+                    a = new Vector3D(yDot[3], yDot[4], yDot[5]);
+                    absPva = new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                }
+
                 final Attitude attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
                 return new SpacecraftState(absPva, attitude, mass);
             } else {
@@ -533,6 +549,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             currentState = state;
@@ -549,27 +566,29 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.addContribution(state, this);
             }
 
+            if (getOrbitType() == null) {
+                // position derivative is velocity, and was not added above in the force models
+                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
+                final Vector3D velocity = currentState.getPVCoordinates().getVelocity();
+                yDot[0] += velocity.getX();
+                yDot[1] += velocity.getY();
+                yDot[2] += velocity.getZ();
+            }
+
+
             return yDot.clone();
 
         }
 
         /** {@inheritDoc} */
+        @Override
         public void addKeplerContribution(final double mu) {
             if (getOrbitType() == null) {
-
-                // propagation uses absolute position-velocity-acceleration
-                final PVCoordinates pv = currentState.getPVCoordinates();
-
-                // position derivative is velocity
-                final Vector3D velocity = pv.getVelocity();
-                yDot[0] += velocity.getX();
-                yDot[1] += velocity.getY();
-                yDot[2] += velocity.getZ();
 
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final Vector3D position = pv.getPosition();
+                    final Vector3D position = currentState.getPVCoordinates().getPosition();
                     final double r2         = position.getNormSq();
                     final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                     yDot[3] += coeff * position.getX();
@@ -584,22 +603,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void addXYZAcceleration(final double x, final double y, final double z) {
+        public void addNonKeplerianAcceleration(final Vector3D gamma)
+            throws OrekitException {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
-                yDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
+                yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
             }
         }
 
         /** {@inheritDoc} */
-        public void addAcceleration(final Vector3D gamma, final Frame frame)
-            throws OrekitException {
-            final Transform t = frame.getTransformTo(currentState.getFrame(), currentState.getDate());
-            final Vector3D gammInRefFrame = t.transformVector(gamma);
-            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public void addMassDerivative(final double q) {
             if (q > 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
@@ -745,4 +758,3 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
 }
-

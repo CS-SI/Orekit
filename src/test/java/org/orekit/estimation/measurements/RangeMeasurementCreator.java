@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -25,18 +27,43 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 public class RangeMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final Vector3D antennaPhaseCenter;
 
     public RangeMeasurementCreator(final Context context) {
-        this.context = context;
+        this(context, Vector3D.ZERO);
+    }
+
+    public RangeMeasurementCreator(final Context context, final Vector3D antennaPhaseCenter) {
+        this.context            = context;
+        this.antennaPhaseCenter = antennaPhaseCenter;
+    }
+
+    public void init(SpacecraftState s0, AbsoluteDate t, double step) {
+        for (final GroundStation station : context.stations) {
+            for (ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                                                        station.getNorthOffsetDriver(),
+                                                        station.getZenithOffsetDriver(),
+                                                        station.getPrimeMeridianOffsetDriver(),
+                                                        station.getPrimeMeridianDriftDriver(),
+                                                        station.getPolarOffsetXDriver(),
+                                                        station.getPolarDriftXDriver(),
+                                                        station.getPolarOffsetYDriver(),
+                                                        station.getPolarDriftYDriver())) {
+                if (driver.getReferenceDate() == null) {
+                    driver.setReferenceDate(s0.getDate());
+                }
+            }
+
+        }
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
@@ -45,16 +72,15 @@ public class RangeMeasurementCreator extends MeasurementCreator {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
-                final Vector3D         position  = currentState.getPVCoordinates().getPosition();
-                final TopocentricFrame topo      = station.getBaseFrame();
+                final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
 
-                if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+                if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) throws OrekitExceptionWrapper {
                             try {
-                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(x));
+                                final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
                                 final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                                 return d - x * Constants.SPEED_OF_LIGHT;
                             } catch (OrekitException oe) {
@@ -64,13 +90,13 @@ public class RangeMeasurementCreator extends MeasurementCreator {
                     }, -1.0, 1.0);
                     final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                     final Vector3D stationAtReception =
-                                    topo.getTransformTo(inertial, receptionDate).transformPosition(Vector3D.ZERO);
+                                    station.getOffsetToInertial(inertial, receptionDate).transformPosition(Vector3D.ZERO);
                     final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
                     final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) throws OrekitExceptionWrapper {
                             try {
-                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(-x));
+                                final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x));
                                 final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                                 return d - x * Constants.SPEED_OF_LIGHT;
                             } catch (OrekitException oe) {
@@ -80,7 +106,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
                     }, -1.0, 1.0);
                     final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
                     final Vector3D stationAtEmission  =
-                                    topo.getTransformTo(inertial, emissionDate).transformPosition(Vector3D.ZERO);
+                                    station.getOffsetToInertial(inertial, emissionDate).transformPosition(Vector3D.ZERO);
                     final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
                     addMeasurement(new Range(station, receptionDate,
                                              0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));

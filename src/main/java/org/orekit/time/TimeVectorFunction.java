@@ -31,7 +31,7 @@ public interface TimeVectorFunction {
 
     /** Compute a function of time.
      * @param date date
-     * @param <T> type of the filed elements
+     * @param <T> type of the field elements
      * @return value of the function
      */
     <T extends RealFieldElement<T>> T[] value(FieldAbsoluteDate<T> date);

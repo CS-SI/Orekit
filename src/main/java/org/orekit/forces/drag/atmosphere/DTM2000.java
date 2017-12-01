@@ -417,7 +417,7 @@ public class DTM2000 implements Atmosphere {
     }
 
     /** Local holder for intermediate results ensuring the model is reentrant. */
-    private class Computation {
+    private static class Computation {
 
         /** Number of days in current year. */
         private final int day;
@@ -886,7 +886,7 @@ public class DTM2000 implements Atmosphere {
     /** Local holder for intermediate results ensuring the model is reentrant.
      * @param <T> type of the field elements
      */
-    private class FieldComputation<T extends RealFieldElement<T>> {
+    private static class FieldComputation<T extends RealFieldElement<T>> {
 
         /** Number of days in current year. */
         private int day;

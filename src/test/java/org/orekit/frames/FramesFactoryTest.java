@@ -44,6 +44,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
@@ -161,8 +163,6 @@ public class FramesFactoryTest {
                                  new InterpolatingTransformProvider(raw,
                                                                     CartesianDerivativesFilter.USE_P,
                                                                     AngularDerivativesFilter.USE_R,
-                                                                    AbsoluteDate.PAST_INFINITY,
-                                                                    AbsoluteDate.FUTURE_INFINITY,
                                                                     4, Constants.JULIAN_DAY, 10,
                                                                     Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
                                  "sine");
@@ -204,8 +204,6 @@ public class FramesFactoryTest {
                                  new ShiftingTransformProvider(raw,
                                                                CartesianDerivativesFilter.USE_P,
                                                                AngularDerivativesFilter.USE_R,
-                                                               AbsoluteDate.PAST_INFINITY,
-                                                               AbsoluteDate.FUTURE_INFINITY,
                                                                4, Constants.JULIAN_DAY, 10,
                                                                Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
                                  "sine");
@@ -562,6 +560,34 @@ public class FramesFactoryTest {
         doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
                           Constants.JULIAN_DAY / 4, 3600, true,
                           8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
+    }
+
+    @Test
+    public void testNoEOPHistoryFound() throws OrekitException {
+        Assert.assertNull(FramesFactory.findEOP(null));
+        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getEcliptic(IERSConventions.IERS_2010)));
+        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getGCRF()));
+        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getTEME()));
+        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getICRF()));
+        Assert.assertNull(FramesFactory.findEOP(CelestialBodyFactory.getEarth().getBodyOrientedFrame()));
+        Assert.assertNull(FramesFactory.findEOP(FramesFactory.getGTOD(false)));
+    }
+
+    @Test
+    public void testEOPHistoryFound() throws OrekitException {
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, true)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getCIRF(IERSConventions.IERS_2010, false)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getITRF(IERSConventions.IERS_2010, false)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, true)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getTOD(IERSConventions.IERS_2010, false)));
+        Assert.assertNotNull(FramesFactory.findEOP(FramesFactory.getGTOD(true)));
+        Assert.assertNotNull(FramesFactory.findEOP(new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                             Constants.WGS84_EARTH_FLATTENING,
+                                                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                                                        new GeodeticPoint(FastMath.toRadians(-22.27113),
+                                                                                          FastMath.toRadians(166.44332),
+                                                                                          0.0), "Nouméa")));
     }
 
     private void doTestDerivatives(AbsoluteDate ref,

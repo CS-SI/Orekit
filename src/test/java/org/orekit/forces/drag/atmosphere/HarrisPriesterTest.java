@@ -16,6 +16,11 @@
  */
 package org.orekit.forces.drag.atmosphere;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,8 +33,10 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -212,6 +219,59 @@ public class HarrisPriesterTest {
 
         // COMPUTE DENSITY KG/M3 RHO
         hp.getDensity(date, pos, earthFrame);
+    }
+
+    @Test
+    public void testVelocityDerivative() throws OrekitException {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
+        final Vector3D pos = earth.getBodyFrame().getTransformTo(eme2000, date).
+                             transformPosition(earth.transform(new GeodeticPoint(-1.7, 4.2, 987654.321)));
+        double dP = 100.0;
+        double dVxdX = gradientComponent(hp, pos, Vector3D.PLUS_I, dP, eme2000, v -> v.getX());
+        double dVxdY = gradientComponent(hp, pos, Vector3D.PLUS_J, dP, eme2000, v -> v.getX());
+        double dVxdZ = gradientComponent(hp, pos, Vector3D.PLUS_K, dP, eme2000, v -> v.getX());
+        double dVydX = gradientComponent(hp, pos, Vector3D.PLUS_I, dP, eme2000, v -> v.getY());
+        double dVydY = gradientComponent(hp, pos, Vector3D.PLUS_J, dP, eme2000, v -> v.getY());
+        double dVydZ = gradientComponent(hp, pos, Vector3D.PLUS_K, dP, eme2000, v -> v.getY());
+        double dVzdX = gradientComponent(hp, pos, Vector3D.PLUS_I, dP, eme2000, v -> v.getZ());
+        double dVzdY = gradientComponent(hp, pos, Vector3D.PLUS_J, dP, eme2000, v -> v.getZ());
+        double dVzdZ = gradientComponent(hp, pos, Vector3D.PLUS_K, dP, eme2000, v -> v.getZ());
+
+        DSFactory factory = new DSFactory(3, 1);
+        FieldVector3D<DerivativeStructure> dsPos = new FieldVector3D<>(factory.variable(0, pos.getX()),
+                                                                       factory.variable(1, pos.getY()),
+                                                                       factory.variable(2, pos.getZ()));
+        FieldVector3D<DerivativeStructure> dsVel = hp.getVelocity(new FieldAbsoluteDate<>(factory.getDerivativeField(),
+                                                                                          date),
+                                                                  dsPos, eme2000);
+        Assert.assertEquals(dVxdX, dsVel.getX().getPartialDerivative(1, 0, 0), 1.0e-16);
+        Assert.assertEquals(dVxdY, dsVel.getX().getPartialDerivative(0, 1, 0), 1.0e-16);
+        Assert.assertEquals(dVxdZ, dsVel.getX().getPartialDerivative(0, 0, 1), 1.0e-16);
+        Assert.assertEquals(dVydX, dsVel.getY().getPartialDerivative(1, 0, 0), 1.0e-16);
+        Assert.assertEquals(dVydY, dsVel.getY().getPartialDerivative(0, 1, 0), 1.0e-16);
+        Assert.assertEquals(dVydZ, dsVel.getY().getPartialDerivative(0, 0, 1), 1.0e-16);
+        Assert.assertEquals(dVzdX, dsVel.getZ().getPartialDerivative(1, 0, 0), 1.0e-16);
+        Assert.assertEquals(dVzdY, dsVel.getZ().getPartialDerivative(0, 1, 0), 1.0e-16);
+        Assert.assertEquals(dVzdZ, dsVel.getZ().getPartialDerivative(0, 0, 1), 1.0e-16);
+
+    }
+
+    private double gradientComponent(final Atmosphere atm, final Vector3D position, final Vector3D direction,
+                                     final double dP, final Frame frame, final ComponentGetter getter) {
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, dP);
+        UnivariateFunction f = delta -> {
+            try {
+                return getter.get(atm.getVelocity(date, new Vector3D(1,  position, delta, direction), frame));
+            } catch (OrekitException oe) {
+                return Double.NaN;
+            }
+        };
+        return differentiator.differentiate(f).value(new DSFactory(1, 1).variable(0, 0.0)).getPartialDerivative(1);
+    }
+
+    private interface ComponentGetter {
+        double get(Vector3D v);
     }
 
     @Before

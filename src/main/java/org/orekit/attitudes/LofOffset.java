@@ -16,15 +16,21 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -133,4 +139,25 @@ public class LofOffset implements AttitudeProvider {
 
     }
 
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date,
+                                                                        final Frame frame)
+        throws OrekitException {
+
+        // construction of the local orbital frame, using PV from inertial frame
+        final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
+        final FieldTransform<T> inertialToLof = type.transformFromInertial(date, pv);
+
+        // take into account the specified start frame (which may not be an inertial one)
+        final FieldTransform<T> frameToInertial = frame.getTransformTo(inertialFrame, date);
+        final FieldTransform<T> frameToLof = new FieldTransform<>(date, frameToInertial, inertialToLof);
+
+        // compose with offset rotation
+        return new FieldAttitude<>(date, frame,
+                                   frameToLof.getRotation().compose(offset, RotationConvention.FRAME_TRANSFORM),
+                                   FieldRotation.applyTo(offset, frameToLof.getRotationRate()),
+                                   FieldRotation.applyTo(offset, frameToLof.getRotationAcceleration()));
+
+    }
 }

@@ -24,9 +24,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -36,7 +33,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class RangeRateTest {
 
@@ -73,11 +73,12 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -92,7 +93,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.4e-8);
+        Assert.assertEquals(0, maxRelativeError, 1.6e-8);
 
     }
 
@@ -132,11 +133,12 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -205,7 +207,7 @@ public class RangeRateTest {
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
@@ -217,7 +219,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 9.1e-9);
+        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -271,7 +273,7 @@ public class RangeRateTest {
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
@@ -320,11 +322,12 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationUtils.differentiate(new StateFunction() {
+                    Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, 1, OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
+            }, 1, propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -397,7 +400,7 @@ public class RangeRateTest {
                 Assert.assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {
@@ -409,7 +412,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.1e-8);
+        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 

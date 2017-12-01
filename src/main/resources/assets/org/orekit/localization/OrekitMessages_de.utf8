@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = Orientierungsparameter der Erde sind ni
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Orientierungsparameter der Erde zwischen {0} und {1} fehlen
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = Datei {0} ist keine unterstützte IERS-Datendatei
 
@@ -268,8 +271,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Jacobi Matrix des Typs {0} ist singulär für
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobi Zustandsmatrix wurde noch nicht initialisiert
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobi Zustandsmatrix ist eine {0}x{1} Matrix, sollte aber entweder eine 6x6 oder 7x7 Matrix sein
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = Jacobi Zustandsmatrix ist eine {0}x{1} Matrix, sollte aber entweder eine 6x6 Matrix sein
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobi Zustandsmatrix hat {0} Zeilen, aber Jacobi Parametermatrix hat {1} Zeilen
@@ -462,3 +465,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

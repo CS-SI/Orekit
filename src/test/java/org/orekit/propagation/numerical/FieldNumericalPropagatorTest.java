@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.lang.reflect.Array;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -44,6 +46,7 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.Relativity;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -75,6 +78,7 @@ import org.orekit.propagation.integration.FieldAdditionalEquations;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -88,7 +92,7 @@ public class FieldNumericalPropagatorTest {
     private double               mu;
 
     @Test(expected=OrekitException.class)
-    public void testErr1() throws OrekitException{
+    public void testNotInitialised1() throws OrekitException{
         doTestNotInitialised1(Decimal64Field.getInstance());
     }
 
@@ -102,7 +106,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testErr2() throws OrekitException{
+    public void testNotInitialised2() throws OrekitException{
         doTestNotInitialised2(Decimal64Field.getInstance());
     }
 
@@ -112,6 +116,23 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() throws OrekitException {
+        doTestDeprecatedMethods(Decimal64Field.getInstance());
+    }
+
+    @Deprecated
+    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
+        throws OrekitException {
+        FieldNumericalPropagator<T>  propagator = createPropagator(field);
+        propagator.addForceModel(new Relativity(mu));
+        Assert.assertEquals(2, propagator.getAllForceModels().size());
+        Assert.assertEquals(1, propagator.getForceModels().size());
+        Assert.assertSame(propagator.getAllForceModels().get(0), propagator.getForceModels().get(0));
+        Assert.assertSame(propagator.getAllForceModels().get(1), propagator.getNewtonianAttractionForceModel());
     }
 
     @Test
@@ -132,7 +153,7 @@ public class FieldNumericalPropagatorTest {
         propagator.propagate(end);
         FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
         CountingHandler<D, T> handler = new CountingHandler<D, T>();
-        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), end).withHandler(handler);
+        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), toArray(end)).withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -168,7 +189,7 @@ public class FieldNumericalPropagatorTest {
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         FieldAbsoluteDate<T> eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
-        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), eventDate)
+        FieldDateDetector<T> detector = new FieldDateDetector<>(zero.add(10), zero.add(1e-9), toArray(eventDate))
                 .withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
@@ -219,9 +240,9 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
         // setup
-        FieldDateDetector<T> d1 = new FieldDateDetector<>(zero.add(10), zero.add(1), initDate.shiftedBy(15))
+        FieldDateDetector<T> d1 = new FieldDateDetector<>(zero.add(10), zero.add(1), toArray(initDate.shiftedBy(15)))
                 .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
-        FieldDateDetector<T> d2 = new FieldDateDetector<>(zero.add(10), zero.add(1), initDate.shiftedBy(15.5))
+        FieldDateDetector<T> d2 = new FieldDateDetector<>(zero.add(10), zero.add(1), toArray(initDate.shiftedBy(15.5)))
                 .withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T>());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
@@ -626,7 +647,7 @@ public class FieldNumericalPropagatorTest {
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
-        for (ForceModel force: propagator.getForceModels()) {
+        for (ForceModel force: propagator.getAllForceModels()) {
             newPropagator.addForceModel(force);
         }
         return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
@@ -874,10 +895,6 @@ public class FieldNumericalPropagatorTest {
         propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
-
-
-
-
 
         propagator.addAdditionalEquations(new FieldAdditionalEquations<T>() {
 
@@ -1599,12 +1616,15 @@ public class FieldNumericalPropagatorTest {
                                                              error60s,
                                                              error120s, error300s,
                                                              error600s, error900s);
-        np.addEventDetector(new FieldDateDetector<>(zero.add(30.0), zero.add(1.0e-9), reference,
-                                                    reference.shiftedBy( 60.0),
-                                                    reference.shiftedBy(120.0),
-                                                    reference.shiftedBy(300.0),
-                                                    reference.shiftedBy(600.0),
-                                                    reference.shiftedBy(900.0)).
+        @SuppressWarnings("unchecked")
+        FieldTimeStamped<T>[] dates = (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 6);
+        dates[0] = reference;
+        dates[1] = reference.shiftedBy( 60.0);
+        dates[2] = reference.shiftedBy(120.0);
+        dates[3] = reference.shiftedBy(300.0);
+        dates[4] = reference.shiftedBy(600.0);
+        dates[5] = reference.shiftedBy(900.0);
+        np.addEventDetector(new FieldDateDetector<T>(zero.add(30.0), zero.add(1.0e-9), (FieldTimeStamped<T>[]) dates).
                             withHandler(checker));
         np.propagate(reference.shiftedBy(1000.0));
     }
@@ -1814,6 +1834,13 @@ public class FieldNumericalPropagatorTest {
 
         propagator.setInitialState(initialState);
         return propagator;
+    }
+
+    private <T extends RealFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        final FieldTimeStamped<T>[] array = (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 1);
+        array[0] = date;
+        return array;
     }
 
     @Before

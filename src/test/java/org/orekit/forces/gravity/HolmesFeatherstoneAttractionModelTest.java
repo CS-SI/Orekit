@@ -17,13 +17,22 @@
 package org.orekit.forces.gravity;
 
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.stream.Stream;
+
 import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.dfp.Dfp;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -40,17 +49,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModelTest;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
+import org.orekit.forces.gravity.potential.TideSystemProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -61,8 +78,11 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -76,9 +96,277 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 
-public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTest {
+public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
+
+    private static final int SCALING = 930;
+
+    @Override
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
+                                                                         final AbsoluteDate date, final  Frame frame,
+                                                                         final FieldVector3D<DerivativeStructure> position,
+                                                                         final FieldVector3D<DerivativeStructure> velocity,
+                                                                         final FieldRotation<DerivativeStructure> rotation,
+                                                                         final DerivativeStructure mass)
+        throws OrekitException {
+        try {
+            java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
+            bodyFrameField.setAccessible(true);
+            Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
+
+            // get the position in body frame
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+            final Transform toBodyFrame   = fromBodyFrame.getInverse();
+            final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+
+            // compute gradient and Hessian
+            final GradientHessian gh   = gradientHessian((HolmesFeatherstoneAttractionModel) forceModel,
+                                                         date, positionBody);
+
+            // gradient of the non-central part of the gravity field
+            final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
+
+            // Hessian of the non-central part of the gravity field
+            final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
+            final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
+            final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
+
+            // distribute all partial derivatives in a compact acceleration vector
+            final double[] derivatives = new double[1 + mass.getFreeParameters()];
+            final DerivativeStructure[] accDer = new DerivativeStructure[3];
+            for (int i = 0; i < 3; ++i) {
+
+                // first element is value of acceleration (i.e. gradient of field)
+                derivatives[0] = gInertial[i];
+
+                // next three elements are one row of the Jacobian of acceleration (i.e. Hessian of field)
+                derivatives[1] = hInertial.getEntry(i, 0);
+                derivatives[2] = hInertial.getEntry(i, 1);
+                derivatives[3] = hInertial.getEntry(i, 2);
+
+                // next elements (three or four depending on mass being used or not) are left as 0
+
+                accDer[i] = mass.getFactory().build(derivatives);
+
+            }
+
+            return new FieldVector3D<>(accDer);
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
+    private GradientHessian gradientHessian(final HolmesFeatherstoneAttractionModel hfModel,
+                                           final AbsoluteDate date, final Vector3D position)
+        throws OrekitException {
+        try {
+
+        java.lang.reflect.Field providerField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("provider");
+        providerField.setAccessible(true);
+        NormalizedSphericalHarmonicsProvider provider = (NormalizedSphericalHarmonicsProvider) providerField.get(hfModel);
+        java.lang.reflect.Method createDistancePowersArrayMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("createDistancePowersArray", Double.TYPE);
+        createDistancePowersArrayMethod.setAccessible(true);
+        java.lang.reflect.Method createCosSinArraysMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("createCosSinArrays", Double.TYPE, Double.TYPE);
+        createCosSinArraysMethod.setAccessible(true);
+        java.lang.reflect.Method computeTesseralMethod =
+                        HolmesFeatherstoneAttractionModel.class.getDeclaredMethod("computeTesseral",
+                                                                                  Integer.TYPE, Integer.TYPE, Integer.TYPE,
+                                                                                  Double.TYPE, Double.TYPE, Double.TYPE,
+                                                                                  double[].class, double[].class, double[].class,
+                                                                                  double[].class, double[].class, double[].class);
+        computeTesseralMethod.setAccessible(true);
+
+        final int degree = provider.getMaxDegree();
+        final int order  = provider.getMaxOrder();
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
+
+        // allocate the columns for recursion
+        double[] pnm0Plus2  = new double[degree + 1];
+        double[] pnm0Plus1  = new double[degree + 1];
+        double[] pnm0       = new double[degree + 1];
+        double[] pnm1Plus1  = new double[degree + 1];
+        double[] pnm1       = new double[degree + 1];
+        final double[] pnm2 = new double[degree + 1];
+
+        // compute polar coordinates
+        final double x    = position.getX();
+        final double y    = position.getY();
+        final double z    = position.getZ();
+        final double x2   = x * x;
+        final double y2   = y * y;
+        final double z2   = z * z;
+        final double r2   = x2 + y2 + z2;
+        final double r    = FastMath.sqrt (r2);
+        final double rho2 = x2 + y2;
+        final double rho  = FastMath.sqrt(rho2);
+        final double t    = z / r;   // cos(theta), where theta is the polar angle
+        final double u    = rho / r; // sin(theta), where theta is the polar angle
+        final double tOu  = z / rho;
+
+        // compute distance powers
+        final double[] aOrN = (double[]) createDistancePowersArrayMethod.invoke(hfModel, provider.getAe() / r);
+
+        // compute longitude cosines/sines
+        final double[][] cosSinLambda = (double[][]) createCosSinArraysMethod.invoke(hfModel, position.getX() / rho, position.getY() / rho);
+
+        // outer summation over order
+        int    index = 0;
+        double value = 0;
+        final double[]   gradient = new double[3];
+        final double[][] hessian  = new double[3][3];
+        for (int m = degree; m >= 0; --m) {
+
+            // compute tesseral terms
+            index = ((Integer) computeTesseralMethod.invoke(hfModel, m, degree, index, t, u, tOu,
+                                                            pnm0Plus2, pnm0Plus1, pnm1Plus1, pnm0, pnm1, pnm2)).intValue();
+
+            if (m <= order) {
+                // compute contribution of current order to field (equation 5 of the paper)
+
+                // inner summation over degree, for fixed order
+                double sumDegreeS               = 0;
+                double sumDegreeC               = 0;
+                double dSumDegreeSdR            = 0;
+                double dSumDegreeCdR            = 0;
+                double dSumDegreeSdTheta        = 0;
+                double dSumDegreeCdTheta        = 0;
+                double d2SumDegreeSdRdR         = 0;
+                double d2SumDegreeSdRdTheta     = 0;
+                double d2SumDegreeSdThetadTheta = 0;
+                double d2SumDegreeCdRdR         = 0;
+                double d2SumDegreeCdRdTheta     = 0;
+                double d2SumDegreeCdThetadTheta = 0;
+                for (int n = FastMath.max(2, m); n <= degree; ++n) {
+                    final double qSnm         = aOrN[n] * harmonics.getNormalizedSnm(n, m);
+                    final double qCnm         = aOrN[n] * harmonics.getNormalizedCnm(n, m);
+                    final double nOr          = n / r;
+                    final double nnP1Or2      = nOr * (n + 1) / r;
+                    final double s0           = pnm0[n] * qSnm;
+                    final double c0           = pnm0[n] * qCnm;
+                    final double s1           = pnm1[n] * qSnm;
+                    final double c1           = pnm1[n] * qCnm;
+                    final double s2           = pnm2[n] * qSnm;
+                    final double c2           = pnm2[n] * qCnm;
+                    sumDegreeS               += s0;
+                    sumDegreeC               += c0;
+                    dSumDegreeSdR            -= nOr * s0;
+                    dSumDegreeCdR            -= nOr * c0;
+                    dSumDegreeSdTheta        += s1;
+                    dSumDegreeCdTheta        += c1;
+                    d2SumDegreeSdRdR         += nnP1Or2 * s0;
+                    d2SumDegreeSdRdTheta     -= nOr * s1;
+                    d2SumDegreeSdThetadTheta += s2;
+                    d2SumDegreeCdRdR         += nnP1Or2 * c0;
+                    d2SumDegreeCdRdTheta     -= nOr * c1;
+                    d2SumDegreeCdThetadTheta += c2;
+                }
+
+                // contribution to outer summation over order
+                final double sML = cosSinLambda[1][m];
+                final double cML = cosSinLambda[0][m];
+                value            = value         * u + sML * sumDegreeS + cML * sumDegreeC;
+                gradient[0]      = gradient[0]   * u + sML * dSumDegreeSdR + cML * dSumDegreeCdR;
+                gradient[1]      = gradient[1]   * u + m * (cML * sumDegreeS - sML * sumDegreeC);
+                gradient[2]      = gradient[2]   * u + sML * dSumDegreeSdTheta + cML * dSumDegreeCdTheta;
+                hessian[0][0]    = hessian[0][0] * u + sML * d2SumDegreeSdRdR + cML * d2SumDegreeCdRdR;
+                hessian[1][0]    = hessian[1][0] * u + m * (cML * dSumDegreeSdR - sML * dSumDegreeCdR);
+                hessian[2][0]    = hessian[2][0] * u + sML * d2SumDegreeSdRdTheta + cML * d2SumDegreeCdRdTheta;
+                hessian[1][1]    = hessian[1][1] * u - m * m * (sML * sumDegreeS + cML * sumDegreeC);
+                hessian[2][1]    = hessian[2][1] * u + m * (cML * dSumDegreeSdTheta - sML * dSumDegreeCdTheta);
+                hessian[2][2]    = hessian[2][2] * u + sML * d2SumDegreeSdThetadTheta + cML * d2SumDegreeCdThetadTheta;
+
+            }
+
+            // rotate the recursion arrays
+            final double[] tmp0 = pnm0Plus2;
+            pnm0Plus2 = pnm0Plus1;
+            pnm0Plus1 = pnm0;
+            pnm0      = tmp0;
+            final double[] tmp1 = pnm1Plus1;
+            pnm1Plus1 = pnm1;
+            pnm1      = tmp1;
+
+        }
+
+        // scale back
+        value = FastMath.scalb(value, SCALING);
+        for (int i = 0; i < 3; ++i) {
+            gradient[i] = FastMath.scalb(gradient[i], SCALING);
+            for (int j = 0; j <= i; ++j) {
+                hessian[i][j] = FastMath.scalb(hessian[i][j], SCALING);
+            }
+        }
+
+
+        // apply the global mu/r factor
+        final double muOr = provider.getMu() / r;
+        value         *= muOr;
+        gradient[0]    = muOr * gradient[0] - value / r;
+        gradient[1]   *= muOr;
+        gradient[2]   *= muOr;
+        hessian[0][0]  = muOr * hessian[0][0] - 2 * gradient[0] / r;
+        hessian[1][0]  = muOr * hessian[1][0] -     gradient[1] / r;
+        hessian[2][0]  = muOr * hessian[2][0] -     gradient[2] / r;
+        hessian[1][1] *= muOr;
+        hessian[2][1] *= muOr;
+        hessian[2][2] *= muOr;
+
+        // convert gradient and Hessian from spherical to Cartesian
+        final SphericalCoordinates sc = new SphericalCoordinates(position);
+        return new GradientHessian(sc.toCartesianGradient(gradient),
+                                   sc.toCartesianHessian(hessian, gradient));
+
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
+                 SecurityException | InvocationTargetException | NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    /** Container for gradient and Hessian. */
+    private static class GradientHessian implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130219L;
+
+        /** Gradient. */
+        private final double[] gradient;
+
+        /** Hessian. */
+        private final double[][] hessian;
+
+        /** Simple constructor.
+         * <p>
+         * A reference to the arrays is stored, they are <strong>not</strong> cloned.
+         * </p>
+         * @param gradient gradient
+         * @param hessian hessian
+         */
+        public GradientHessian(final double[] gradient, final double[][] hessian) {
+            this.gradient = gradient;
+            this.hessian  = hessian;
+        }
+
+        /** Get a reference to the gradient.
+         * @return gradient (a reference to the internal array is returned)
+         */
+        public double[] getGradient() {
+            return gradient;
+        }
+
+        /** Get a reference to the Hessian.
+         * @return Hessian (a reference to the internal array is returned)
+         */
+        public double[][] getHessian() {
+            return hessian;
+        }
+
+    }
 
     @Test
     public void testRelativeNumericPrecision() throws OrekitException {
@@ -90,6 +378,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
                 new HolmesFeatherstoneAttractionModel(itrf, provider);
+        Assert.assertTrue(model.dependsOnPositionOnly());
+
 
         // Note that despite it uses adjustable high accuracy, the reference model
         // uses unstable formulas and hence loses lots of digits near poles.
@@ -106,7 +396,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         for (double theta = 0.01; theta < 3.14; theta += 0.1) {
             Vector3D position = new Vector3D(r * FastMath.sin(theta), 0.0, r * FastMath.cos(theta));
             Dfp refValue = refModel.nonCentralPart(null, position);
-            double value = model.nonCentralPart(null, position);
+            double value = model.nonCentralPart(null, position, model.getMu());
             double relativeError = error(refValue, value).divide(refValue).toDouble();
             Assert.assertEquals(0, relativeError, 7.0e-15);
         }
@@ -128,8 +418,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double refValue = provider.getMu() / position.getNorm() +
-                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position);
-                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position);
+                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position, model.getMu());
+                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position, model.getMu());
                 Assert.assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
             }
         }
@@ -380,7 +670,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                 double norm  = FastMath.sqrt(refGradient[0] * refGradient[0] +
                                              refGradient[1] * refGradient[1] +
                                              refGradient[2] * refGradient[2]);
-                double[] gradient = model.gradient(null, position);
+                double[] gradient = model.gradient(null, position, model.getMu());
                 double errorX = refGradient[0] - gradient[0];
                 double errorY = refGradient[1] - gradient[1];
                 double errorZ = refGradient[2] - gradient[2];
@@ -407,7 +697,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double[][] refHessian = hessian(model, null, position, 1.0e-3);
-                double[][] hessian = model.gradientHessian(null, position).getHessian();
+                double[][] hessian = gradientHessian(model, null, position).getHessian();
                 double normH2 = 0;
                 double normE2 = 0;
                 for (int i = 0; i < 3; ++i) {
@@ -431,32 +721,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                               final AbsoluteDate date, final Vector3D position, final double h)
         throws OrekitException {
         return new double[] {
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
                           h),
-            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K))),
-                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K))),
+            differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.nonCentralPart(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
                           h)
         };
     }
@@ -465,32 +755,32 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                final AbsoluteDate date, final Vector3D position, final double h)
         throws OrekitException {
         return new double[][] {
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_I)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_I)), model.getMu()),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_J)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_J)), model.getMu()),
                           h),
-            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K))),
-                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K))),
+            differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(-1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+1 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+2 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+3 * h, Vector3D.PLUS_K)), model.getMu()),
+                          model.gradient(date, position.add(new Vector3D(+4 * h, Vector3D.PLUS_K)), model.getMu()),
                           h)
         };
     }
@@ -701,6 +991,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
     // test the difference with the Cunningham model
     @Test
+    @Deprecated
     public void testZonalWithCunninghamReference()
         throws OrekitException {
         // initialization
@@ -741,7 +1032,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        }), 1.0));
+        })));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -752,6 +1043,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     }
 
     @Test
+    @Deprecated
     public void testCompleteWithCunninghamReference()
         throws OrekitException {
 
@@ -782,8 +1074,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator.removeForceModels();
 
         propagator.addForceModel(new CunninghamAttractionModel(itrf,
-                                                               GravityFieldFactory.getUnnormalizedProvider(69, 69),
-                                                               1.0));
+                                                               GravityFieldFactory.getUnnormalizedProvider(69, 69)));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cOrb = propagator.propagate(targetDate);
@@ -793,6 +1084,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     }
 
     @Test
+    @Deprecated
     public void testIssue97() throws OrekitException {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -813,7 +1105,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                           GravityFieldFactory.getNormalizedProvider(i, i));
             final ForceModel cunninghamModel =
                     new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                  GravityFieldFactory.getUnnormalizedProvider(i, i), 1.0);
+                                                  GravityFieldFactory.getUnnormalizedProvider(i, i));
             double relativeError = accelerationRelativeError(holmesFeatherstoneModel, cunninghamModel, state);
             Assert.assertEquals(0.0, relativeError, 8.0e-15);
         }
@@ -848,11 +1140,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                              SpacecraftState state)
         throws OrekitException {
 
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        testModel.addContribution(state, accelerationRetriever);
-        final Vector3D testAcceleration = accelerationRetriever.getAcceleration();
-        referenceModel.addContribution(state, accelerationRetriever);
-        final Vector3D referenceAcceleration = accelerationRetriever.getAcceleration();
+        final Vector3D testAcceleration = testModel.acceleration(state, testModel.getParameters());
+        final Vector3D referenceAcceleration = referenceModel.acceleration(state, referenceModel.getParameters());
 
         return testAcceleration.subtract(referenceAcceleration).getNorm() /
                referenceAcceleration.getNorm();
@@ -954,6 +1243,61 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                            50000, tolerances[0], 7.8e-6);
     }
 
+    @Test
+    public void testStateJacobianVs80Implementation()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVs80Implementation(state, hfModel,
+                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             2.0e-15, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVsFiniteDifferences()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        HolmesFeatherstoneAttractionModel hfModel =
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        SpacecraftState state = new SpacecraftState(orbit);
+
+        checkStateJacobianVsFiniteDifferences(state, hfModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
+
+    }
+
     @Before
     public void setUp() {
         itrf   = null;
@@ -1011,6 +1355,325 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
     private Frame   itrf;
     private NumericalPropagator propagator;
+
+    /** Restricted version of the Cunningham attraction model.
+     * <p>
+     * This class implements only a small part of the ForceModel interface, for test purposes only.
+     * </p>
+     */
+    private static class CunninghamAttractionModel extends AbstractForceModel implements TideSystemProvider {
+        
+        /** Provider for the spherical harmonics. */
+        private final UnnormalizedSphericalHarmonicsProvider provider;
+
+        /** Rotating body. */
+        private final Frame bodyFrame;
+
+        /** Driver for gravitational parameter. */
+        private final ParameterDriver gmParameterDriver;
+
+        /** Creates a new instance.
+       * @param centralBodyFrame rotating body frame
+       * @param provider provider for spherical harmonics
+       */
+        public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                         final UnnormalizedSphericalHarmonicsProvider provider)
+            throws OrekitException {
+            this.provider     = provider;
+            try {
+                gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                        provider.getMu(), FastMath.scalb(1.0, 32), 0.0, Double.POSITIVE_INFINITY);
+            } catch (OrekitException oe) {
+                // this should never occur as valueChanged above never throws an exception
+                throw new OrekitInternalError(oe);
+            }
+            this.bodyFrame    = centralBodyFrame;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TideSystem getTideSystem() {
+            return provider.getTideSystem();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
+            throws OrekitException {
+
+            final double mu = parameters[0];
+
+            // get the position in body frame
+            final AbsoluteDate date = s.getDate();
+            final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
+            final Transform toBodyFrame   = fromBodyFrame.getInverse();
+            final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+
+            final double x = relative.getX();
+            final double y = relative.getY();
+            final double z = relative.getZ();
+
+            final double x2 = x * x;
+            final double y2 = y * y;
+            final double z2 = z * z;
+            final double r2 = x2 + y2 + z2;
+            final double r = FastMath.sqrt(r2);
+            final double equatorialRadius = provider.getAe();
+            if (r <= equatorialRadius) {
+                throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
+            }
+
+            // define some intermediate variables
+            final double onR2 = 1 / r2;
+            final double onR3 = onR2 / r;
+            final double rEqOnR2  = equatorialRadius / r2;
+            final double rEqOnR4  = rEqOnR2 / r2;
+            final double rEq2OnR2 = equatorialRadius * rEqOnR2;
+
+            double cmx   = -x * rEqOnR2;
+            double cmy   = -y * rEqOnR2;
+            double cmz   = -z * rEqOnR2;
+
+            final double dx   = -2 * cmx;
+            final double dy   = -2 * cmy;
+            final double dz   = -2 * cmz;
+
+            // intermediate variables gradients
+            // since dcy/dx = dcx/dy, dcz/dx = dcx/dz and dcz/dy = dcy/dz,
+            // we reuse the existing variables
+
+            double dcmxdx = (x2 - y2 - z2) * rEqOnR4;
+            double dcmxdy =  dx * y * onR2;
+            double dcmxdz =  dx * z * onR2;
+            double dcmydy = (y2 - x2 - z2) * rEqOnR4;
+            double dcmydz =  dy * z * onR2;
+            double dcmzdz = (z2 - x2 - y2) * rEqOnR4;
+
+            final double ddxdx = -2 * dcmxdx;
+            final double ddxdy = -2 * dcmxdy;
+            final double ddxdz = -2 * dcmxdz;
+            final double ddydy = -2 * dcmydy;
+            final double ddydz = -2 * dcmydz;
+            final double ddzdz = -2 * dcmzdz;
+
+            final double donr2dx = -dx * rEqOnR2;
+            final double donr2dy = -dy * rEqOnR2;
+            final double donr2dz = -dz * rEqOnR2;
+
+            // potential coefficients (4 per matrix)
+            double vrn  = 0.0;
+            double vin  = 0.0;
+            double vrd  = 1.0 / (equatorialRadius * r);
+            double vid  = 0.0;
+            double vrn1 = 0.0;
+            double vin1 = 0.0;
+            double vrn2 = 0.0;
+            double vin2 = 0.0;
+
+            // gradient coefficients (4 per matrix)
+            double gradXVrn  = 0.0;
+            double gradXVin  = 0.0;
+            double gradXVrd  = -x * onR3 / equatorialRadius;
+            double gradXVid  = 0.0;
+            double gradXVrn1 = 0.0;
+            double gradXVin1 = 0.0;
+            double gradXVrn2 = 0.0;
+            double gradXVin2 = 0.0;
+
+            double gradYVrn  = 0.0;
+            double gradYVin  = 0.0;
+            double gradYVrd  = -y * onR3 / equatorialRadius;
+            double gradYVid  = 0.0;
+            double gradYVrn1 = 0.0;
+            double gradYVin1 = 0.0;
+            double gradYVrn2 = 0.0;
+            double gradYVin2 = 0.0;
+
+            double gradZVrn  = 0.0;
+            double gradZVin  = 0.0;
+            double gradZVrd  = -z * onR3 / equatorialRadius;
+            double gradZVid  = 0.0;
+            double gradZVrn1 = 0.0;
+            double gradZVin1 = 0.0;
+            double gradZVrn2 = 0.0;
+            double gradZVin2 = 0.0;
+
+            // acceleration coefficients
+            double vdX = 0.0;
+            double vdY = 0.0;
+            double vdZ = 0.0;
+
+            // start calculating
+            for (int m = 0; m <= provider.getMaxOrder(); m++) {
+
+                double cx = cmx;
+                double cy = cmy;
+                double cz = cmz;
+
+                double dcxdx = dcmxdx;
+                double dcxdy = dcmxdy;
+                double dcxdz = dcmxdz;
+                double dcydy = dcmydy;
+                double dcydz = dcmydz;
+                double dczdz = dcmzdz;
+
+                for (int n = m; n <= provider.getMaxDegree(); n++) {
+
+                    if (n == m) {
+                        // calculate the first element of the next column
+
+                        vrn      = equatorialRadius * vrd;
+                        vin      = equatorialRadius * vid;
+
+                        gradXVrn = equatorialRadius * gradXVrd;
+                        gradXVin = equatorialRadius * gradXVid;
+                        gradYVrn = equatorialRadius * gradYVrd;
+                        gradYVin = equatorialRadius * gradYVid;
+                        gradZVrn = equatorialRadius * gradZVrd;
+                        gradZVin = equatorialRadius * gradZVid;
+
+                        final double tmpGradXVrd = (cx + dx) * gradXVrd - (cy + dy) * gradXVid + (dcxdx + ddxdx) * vrd - (dcxdy + ddxdy) * vid;
+                        gradXVid = (cy + dy) * gradXVrd + (cx + dx) * gradXVid + (dcxdy + ddxdy) * vrd + (dcxdx + ddxdx) * vid;
+                        gradXVrd = tmpGradXVrd;
+
+                        final double tmpGradYVrd = (cx + dx) * gradYVrd - (cy + dy) * gradYVid + (dcxdy + ddxdy) * vrd - (dcydy + ddydy) * vid;
+                        gradYVid = (cy + dy) * gradYVrd + (cx + dx) * gradYVid + (dcydy + ddydy) * vrd + (dcxdy + ddxdy) * vid;
+                        gradYVrd = tmpGradYVrd;
+
+                        final double tmpGradZVrd = (cx + dx) * gradZVrd - (cy + dy) * gradZVid + (dcxdz + ddxdz) * vrd - (dcydz + ddydz) * vid;
+                        gradZVid = (cy + dy) * gradZVrd + (cx + dx) * gradZVid + (dcydz + ddydz) * vrd + (dcxdz + ddxdz) * vid;
+                        gradZVrd = tmpGradZVrd;
+
+                        final double tmpVrd = (cx + dx) * vrd - (cy + dy) * vid;
+                        vid = (cy + dy) * vrd + (cx + dx) * vid;
+                        vrd = tmpVrd;
+
+                    } else if (n == m + 1) {
+                        // calculate the second element of the column
+                        vrn = cz * vrn1;
+                        vin = cz * vin1;
+
+                        gradXVrn = cz * gradXVrn1 + dcxdz * vrn1;
+                        gradXVin = cz * gradXVin1 + dcxdz * vin1;
+
+                        gradYVrn = cz * gradYVrn1 + dcydz * vrn1;
+                        gradYVin = cz * gradYVin1 + dcydz * vin1;
+
+                        gradZVrn = cz * gradZVrn1 + dczdz * vrn1;
+                        gradZVin = cz * gradZVin1 + dczdz * vin1;
+
+                    } else {
+                        // calculate the other elements of the column
+                        final double inv   = 1.0 / (n - m);
+                        final double coeff = n + m - 1.0;
+
+                        vrn = (cz * vrn1 - coeff * rEq2OnR2 * vrn2) * inv;
+                        vin = (cz * vin1 - coeff * rEq2OnR2 * vin2) * inv;
+
+                        gradXVrn = (cz * gradXVrn1 - coeff * rEq2OnR2 * gradXVrn2 + dcxdz * vrn1 - coeff * donr2dx * vrn2) * inv;
+                        gradXVin = (cz * gradXVin1 - coeff * rEq2OnR2 * gradXVin2 + dcxdz * vin1 - coeff * donr2dx * vin2) * inv;
+                        gradYVrn = (cz * gradYVrn1 - coeff * rEq2OnR2 * gradYVrn2 + dcydz * vrn1 - coeff * donr2dy * vrn2) * inv;
+                        gradYVin = (cz * gradYVin1 - coeff * rEq2OnR2 * gradYVin2 + dcydz * vin1 - coeff * donr2dy * vin2) * inv;
+                        gradZVrn = (cz * gradZVrn1 - coeff * rEq2OnR2 * gradZVrn2 + dczdz * vrn1 - coeff * donr2dz * vrn2) * inv;
+                        gradZVin = (cz * gradZVin1 - coeff * rEq2OnR2 * gradZVin2 + dczdz * vin1 - coeff * donr2dz * vin2) * inv;
+                    }
+
+                    // increment variables
+                    cx += dx;
+                    cy += dy;
+                    cz += dz;
+
+                    dcxdx += ddxdx;
+                    dcxdy += ddxdy;
+                    dcxdz += ddxdz;
+                    dcydy += ddydy;
+                    dcydz += ddydz;
+                    dczdz += ddzdz;
+
+                    vrn2 = vrn1;
+                    vin2 = vin1;
+                    gradXVrn2 = gradXVrn1;
+                    gradXVin2 = gradXVin1;
+                    gradYVrn2 = gradYVrn1;
+                    gradYVin2 = gradYVin1;
+                    gradZVrn2 = gradZVrn1;
+                    gradZVin2 = gradZVin1;
+
+                    vrn1 = vrn;
+                    vin1 = vin;
+                    gradXVrn1 = gradXVrn;
+                    gradXVin1 = gradXVin;
+                    gradYVrn1 = gradYVrn;
+                    gradYVin1 = gradYVin;
+                    gradZVrn1 = gradZVrn;
+                    gradZVin1 = gradZVin;
+
+                    // compute the acceleration due to the Cnm and Snm coefficients
+                    // ignoring the central attraction
+                    if (n > 0) {
+                        final double cnm = harmonics.getUnnormalizedCnm(n, m);
+                        final double snm = harmonics.getUnnormalizedSnm(n, m);
+                        vdX += cnm * gradXVrn + snm * gradXVin;
+                        vdY += cnm * gradYVrn + snm * gradYVin;
+                        vdZ += cnm * gradZVrn + snm * gradZVin;
+                    }
+
+                }
+
+                // increment variables
+                cmx += dx;
+                cmy += dy;
+                cmz += dz;
+
+                dcmxdx += ddxdx;
+                dcmxdy += ddxdy;
+                dcmxdz += ddxdz;
+                dcmydy += ddydy;
+                dcmydz += ddydz;
+                dcmzdz += ddzdz;
+
+            }
+
+            // compute acceleration in inertial frame
+            return fromBodyFrame.transformVector(new Vector3D(mu * vdX, mu * vdY, mu * vdZ));
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                             final T[] parameters) {
+            throw new UnsupportedOperationException();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[] {
+                gmParameterDriver
+            };
+        }
+
+    }
 
 }
 

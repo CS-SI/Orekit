@@ -159,7 +159,7 @@ public class TDMFile {
      *  - a measurement, the value of the observation.
      * @author Maxime Journot
      */
-    public class ObservationsBlock {
+    public static class ObservationsBlock {
 
         /** Meta-data for the block. */
         private TDMMetaData metaData;
@@ -199,7 +199,7 @@ public class TDMFile {
         }
 
         /** Adds an observation data line.
-         *          * @param keyword the keyword
+         * @param keyword the keyword
          * @param epoch the timetag
          * @param measurement the measurement
          */
@@ -255,7 +255,7 @@ public class TDMFile {
      * @see Keyword
      * @author mjournot
      */
-    public class Observation {
+    public static class Observation {
 
         /** CCSDS Keyword: the type of the observation. */
         private String keyword;
@@ -327,7 +327,7 @@ public class TDMFile {
      * @author Maxime Journot
      * @since 9.0
      */
-    public class TDMMetaData {
+    public static class TDMMetaData {
 
         /** Time System used in the tracking data session. */
         private CcsdsTimeScale timeSystem;

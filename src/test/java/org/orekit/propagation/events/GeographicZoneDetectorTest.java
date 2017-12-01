@@ -94,7 +94,7 @@ public class GeographicZoneDetectorTest {
 
     @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, OrekitException {
+      throws IOException, ClassNotFoundException, OrekitException {
 
         final double r = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         final BodyShape earth = new OneAxisEllipsoid(r, Constants.WGS84_EARTH_FLATTENING,

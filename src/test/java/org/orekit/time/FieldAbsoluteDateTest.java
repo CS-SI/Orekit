@@ -221,6 +221,11 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
+    public void testAccuracyIssue348() throws OrekitException {
+        doTestAccuracyIssue348(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testIterationAccuracy() {
         doTestIterationAccuracy(Decimal64Field.getInstance());
     }
@@ -587,6 +592,7 @@ public class FieldAbsoluteDateTest {
         }
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     private <T extends RealFieldElement<T>> void doTestEquals(final Field<T> field) {
         FieldAbsoluteDate<T> d1 =
             new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),
@@ -852,6 +858,18 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(sec, recomputedSec, FastMath.ulp(sec));
     }
 
+    private <T extends RealFieldElement<T>> void doTestAccuracyIssue348(final Field<T> field)
+        throws OrekitException {
+        FieldAbsoluteDate<T> tF = new FieldAbsoluteDate<>(field,
+                                                          new DateComponents(1970, 01, 01),
+                                                          new TimeComponents(3, 25, 45.6789),
+                                                          TimeScalesFactory.getUTC());
+        AbsoluteDate tA = tF.toAbsoluteDate();
+        double delta = -0.01;
+        T recomputedDelta = tF.shiftedBy(delta).durationFrom(tA);
+        Assert.assertEquals(delta, recomputedDelta.getReal(), 1.0e-17);
+    }
+
     private <T extends RealFieldElement<T>> void doTestIterationAccuracy(final Field<T> field) {
 
         final TimeScale tai = TimeScalesFactory.getTAI();
@@ -864,7 +882,7 @@ public class FieldAbsoluteDateTest {
         // 0.125 is representable exactly in double precision
         // error will be null
         checkIteration(0.125, t0, 10000, 1.0e-15, 0.0, 1.0e-15);
-}
+    }
 
     private <T extends RealFieldElement<T>> void checkIteration(final double step, final FieldAbsoluteDate<T> t0, final int nMax,
                                 final double maxErrorFactor,

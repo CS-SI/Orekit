@@ -226,6 +226,7 @@ public class DateComponentsTest {
         Assert.assertEquals(-5377, DateComponents.parseDate("1985-W15-5").getJ2000Day());
     }
 
+    @SuppressWarnings("unlikely-arg-type")
     @Test
     public void testComparisons() {
         DateComponents[][] dates = {

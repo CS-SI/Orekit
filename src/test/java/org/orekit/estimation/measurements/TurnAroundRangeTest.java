@@ -31,9 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
-import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +40,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TurnAroundRangeTest {
@@ -132,12 +132,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMedian = 2.6e-6;
         double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 4.6e-6;
-        double refErrorQSMedian = 3.8e-7;
+        double refErrorQMMax    = 5.6e-6;
+        double refErrorQSMedian = 3.7e-7;
         double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.4e-7;
+        double refErrorQSMax    = 7.7e-7;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
@@ -160,12 +160,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorQMMedian = 2.5e-6;
+        double refErrorQMMedian = 2.6e-6;
         double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 4.6e-6;
-        double refErrorQSMedian = 3.8e-7;
+        double refErrorQMMax    = 5.6e-6;
+        double refErrorQSMedian = 3.7e-7;
         double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.4e-7;
+        double refErrorQSMax    = 7.7e-7;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
@@ -263,10 +263,10 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assert.assertEquals(0.0, absErrorsMedian, 3.5e-8);
+        Assert.assertEquals(0.0, absErrorsMedian, 1.4e-7);
         Assert.assertEquals(0.0, absErrorsMin, 5.0e-7);
-        Assert.assertEquals(0.0, absErrorsMax, 3.6e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 5.9e-15);
+        Assert.assertEquals(0.0, absErrorsMax, 4.9e-7);
+        Assert.assertEquals(0.0, relErrorsMedian, 8.9e-15);
         Assert.assertEquals(0.0, relErrorsMax , 2.9e-14);
     }
 
@@ -336,11 +336,12 @@ public class TurnAroundRangeTest {
             final double[][] jacobianRef;
 
             // Compute a reference value using finite differences
-            jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+            jacobianRef = Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
-            }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+            }, measurement.getDimension(), propagator.getAttitudeProvider(),
+               OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
 
             Assert.assertEquals(jacobianRef.length, jacobian.length);
             Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -502,7 +503,7 @@ public class TurnAroundRangeTest {
 
                 // Compute a reference value using finite differences
                 final ParameterFunction dMkdP =
-                                EstimationUtils.differentiate(new ParameterFunction() {
+                                Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver) throws OrekitException {

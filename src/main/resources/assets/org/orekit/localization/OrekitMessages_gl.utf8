@@ -61,6 +61,9 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = os parámetros de orientación da Terra
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan Parámetros de Orientación da Terra entre {0} e {1}
 
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = o ficheiro {0} non é un ficheiro de datos IERS soportado
 
@@ -268,8 +271,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matriz xacobiana asociada ao tipo {0} é sing
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = a xacobiana do estado non foi aínda inicializada
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = a xacobiana do estado es una matriz {0}x{1}, y debería ser una matriz 6x6 o 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = a xacobiana do estado es una matriz {0}x{1}, y debería ser una matriz 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = a xacobiana do estado ten {0} liñas mentres que a xacobiana de parámetros ten {1}
@@ -462,3 +465,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = <MISSING TRANSLATION>
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+ /* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -854,7 +854,7 @@ public class EquinoctialOrbitTest {
 
     @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -891,7 +891,7 @@ public class EquinoctialOrbitTest {
 
     @Test
     public void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         double r2 = position.getNormSq();
@@ -1101,6 +1101,37 @@ public class EquinoctialOrbitTest {
         EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
                             orbit.toString());
+    }
+
+    @Test
+    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+
+        final Frame eme2000     = FramesFactory.getEME2000();
+
+        // Define GEO satellite position
+        final Vector3D position = new Vector3D(42164140, 0, 0);
+        // Build PVCoodrinates starting from its position and computing the corresponding circular velocity
+        final PVCoordinates pv  = new PVCoordinates(position,
+                                       new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
+        // Build a KeplerianOrbit in eme2000
+        final Orbit orbit = new EquinoctialOrbit(pv, eme2000, date, mu);
+
+        // Build another KeplerianOrbit as a copy of the first one
+        final Orbit orbitCopy = new EquinoctialOrbit(orbit);
+
+        // Shift the orbit of a time-interval
+        final Orbit shiftedOrbit = orbit.shiftedBy(10); // This works good
+        final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
+                                              shiftedOrbitCopy.getPVCoordinates().getPosition()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
+                                              shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                            1.0e-10);
+
     }
 
     @Before

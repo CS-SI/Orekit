@@ -776,7 +776,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(new CIRFProvider(eopHistory),
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       6, Constants.JULIAN_DAY / 24,
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -952,7 +951,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(gtodRaw,
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       todInterpolating.getGridPoints(), todInterpolating.getStep(),
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -1058,7 +1056,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -1185,7 +1182,6 @@ public class FramesFactory {
                         new ShiftingTransformProvider(temeRaw,
                                                       CartesianDerivativesFilter.USE_PVA,
                                                       AngularDerivativesFilter.USE_R,
-                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                       todShifting.getGridPoints(), todShifting.getStep(),
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
@@ -1302,6 +1298,45 @@ public class FramesFactory {
 
         // transform from origin to destination via common
         return new FieldTransform<>(date, commonToOrigin.getInverse(), commonToDestination);
+
+    }
+
+    /** Retrieve EOP from a frame hierarchy.
+     * <p>
+     * The frame hierarchy tree is walked from specified frame up to root
+     * goind though parent frames, and the providers are checked to see if they
+     * reference EOP history.the first EOP history found is returned.
+     * </p>
+     * @param start frame from which to start search, will typically be some
+     * Earth related frame, like a topocentric frame or an ITRF frame
+     * @return EOP history found while walking the frames tree, or null if
+     * no EOP history is found
+     * @since 9.1
+     */
+    public static EOPHistory findEOP(final Frame start) {
+
+        for (Frame frame = start; frame != null; frame = frame.getParent()) {
+
+            TransformProvider peeled = frame.getTransformProvider();
+
+            boolean peeling = true;
+            while (peeling) {
+                if (peeled instanceof InterpolatingTransformProvider) {
+                    peeled = ((InterpolatingTransformProvider) peeled).getRawProvider();
+                } else if (peeled instanceof ShiftingTransformProvider) {
+                    peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
+                } else if (peeled instanceof EOPBasedTransformProvider &&
+                           ((EOPBasedTransformProvider) peeled).getEOPHistory() != null) {
+                    return ((EOPBasedTransformProvider) peeled).getEOPHistory();
+                } else {
+                    peeling = false;
+                }
+            }
+
+        }
+
+        // no history found
+        return null;
 
     }
 

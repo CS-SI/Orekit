@@ -247,7 +247,7 @@ public class StreamingOemWriter {
      */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
     /** String format used for all key/value pair lines. **/
-    private static final String KV_FORMAT = "%s = %s" + NEW_LINE;
+    private static final String KV_FORMAT = "%s = %s%n";
     /** Factor for converting meters to km. */
     private static final double M_TO_KM = 1e-3;
     /** Suffix of the name of the inertial frame attached to a planet. */

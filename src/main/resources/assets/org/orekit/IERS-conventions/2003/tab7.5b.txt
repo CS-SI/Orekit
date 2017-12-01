@@ -1,0 +1,11 @@
+# Extract from IERS conventions 2003 (table 7.5b)
+
+Table 7.3b: Corrections due to the frequency dependence of Love and Shida numbers for zonal tides.
+Units: mm. All terms with radial correction ≥ 0.05 mm are shown. Nominal values are
+h = 0.6078 and l = 0.0847. Frequencies are given in degrees per hour.
+Name Frequency Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  ∆Rf(ip) ∆Rf(op)  ∆Tf(ip) ∆Tf(op)
+     0.00221   55,565   0  0  0  0   1  0   0  0  0  0  1   0.47    0.16     0.23    0.07
+Ssa  0.08214   57,555   0  0  2  0   0  0   0  0 -2  2 -2  -0.20   -0.11    -0.12   -0.05
+Mm   0.54438   65,455   0  1  0 -1   0  0  -1  0  0  0  0  -0.11   -0.09    -0.08   -0.04
+Mf   1.09804   75,555   0  2  0  0   0  0   0  0 -2  0 -2  -0.13   -0.15    -0.11   -0.07
+     1.10024   75,565   0  2  0  0   1  0   0  0 -2  0 -1  -0.05   -0.06    -0.05   -0.03

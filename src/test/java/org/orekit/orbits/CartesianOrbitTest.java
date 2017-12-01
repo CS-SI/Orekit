@@ -274,7 +274,7 @@ public class CartesianOrbitTest {
 
     @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -310,7 +310,7 @@ public class CartesianOrbitTest {
 
     @Test
     public void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         double r2 = position.getNormSq();
@@ -709,6 +709,37 @@ public class CartesianOrbitTest {
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals("Cartesian parameters: {2000-01-01T11:58:55.816, P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0), A(0.1551640482651465, -0.15933073547362608, 5.25993394342302E-4)}",
                             orbit.toString());
+    }
+
+    @Test
+    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+
+        final Frame eme2000     = FramesFactory.getEME2000();
+
+        // Define GEO satellite position
+        final Vector3D position = new Vector3D(42164140, 0, 0);
+        // Build PVCoodrinates starting from its position and computing the corresponding circular velocity
+        final PVCoordinates pv  = new PVCoordinates(position,
+                                       new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
+        // Build a KeplerianOrbit in eme2000
+        final Orbit orbit = new CartesianOrbit(pv, eme2000, date, mu);
+
+        // Build another KeplerianOrbit as a copy of the first one
+        final Orbit orbitCopy = new CartesianOrbit(orbit);
+
+        // Shift the orbit of a time-interval
+        final Orbit shiftedOrbit = orbit.shiftedBy(10); // This works good
+        final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
+                                              shiftedOrbitCopy.getPVCoordinates().getPosition()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
+                                              shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                            1.0e-10);
+
     }
 
     @Before

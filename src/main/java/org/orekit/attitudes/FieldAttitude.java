@@ -102,6 +102,7 @@ public class FieldAttitude<T extends RealFieldElement<T>>
                          final FieldRotation<T> attitude, final FieldVector3D<T> spin, final FieldVector3D<T> acceleration) {
         this(referenceFrame, new TimeStampedFieldAngularCoordinates<>(date, attitude, spin, acceleration));
     }
+
     /** Creates a new instance.
      * @param date date at which attitude is defined
      * @param referenceFrame reference frame from which attitude is defined
@@ -116,6 +117,14 @@ public class FieldAttitude<T extends RealFieldElement<T>>
                                                                       new FieldRotation<>(field, attitude),
                                                                       new FieldVector3D<>(field, spin),
                                                                       new FieldVector3D<>(field, acceleration)));
+    }
+
+    /** Builds an instance for a regular {@link Attitude}.
+     * @param field fields to which the elements belong
+     * @param attitude attitude to convert
+     */
+    public FieldAttitude(final Field<T> field, final Attitude attitude) {
+        this(attitude.getReferenceFrame(), new TimeStampedFieldAngularCoordinates<>(field, attitude.getOrientation()));
     }
 
     /** Get a time-shifted attitude.

@@ -21,13 +21,17 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 
 /**
@@ -79,6 +83,28 @@ public class TabulatedProvider implements AttitudeProvider {
 
         // build the attitude
         return new Attitude(referenceFrame, interpolated);
+
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                        final FieldAbsoluteDate<T> date,
+                                                                        final Frame frame)
+        throws OrekitException {
+
+        // get attitudes sample on which interpolation will be performed
+        final List<TimeStampedFieldAngularCoordinates<T>> sample =
+                        table.
+                        getNeighbors(date.toAbsoluteDate()).
+                        map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
+                        collect(Collectors.toList());
+
+        // interpolate
+        final TimeStampedFieldAngularCoordinates<T> interpolated =
+                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+
+        // build the attitude
+        return new FieldAttitude<>(referenceFrame, interpolated);
 
     }
 

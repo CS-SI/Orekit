@@ -688,13 +688,11 @@ public class NRLMSISE00Test {
 
     private double getOutputTemperature(Object o, int index) {
         try {
-            Method getTemperature = getOutputClass().
-                                    getDeclaredMethod("getTemperature", Integer.TYPE);
-            getTemperature.setAccessible(true);
-            return ((Double) getTemperature.invoke(o, index)).doubleValue();
-        } catch (NoSuchMethodException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException e) {
+            java.lang.reflect.Field temperaturesField = getOutputClass().getDeclaredField("temperatures");
+            temperaturesField.setAccessible(true);
+            return ((double[]) temperaturesField.get(o))[index];
+         } catch (NoSuchFieldException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException e) {
             Assert.fail(e.getLocalizedMessage());
             return Double.NaN;
         }
@@ -759,13 +757,11 @@ public class NRLMSISE00Test {
 
     private double getFieldOutputTemperature(Object o, int index) {
         try {
-            Method getTemperature = getFieldOutputClass().
-                                    getDeclaredMethod("getTemperature", Integer.TYPE);
-            getTemperature.setAccessible(true);
-            return ((RealFieldElement<?>) getTemperature.invoke(o, index)).getReal();
-        } catch (NoSuchMethodException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException |
-                 InvocationTargetException e) {
+            java.lang.reflect.Field temperaturesField = getFieldOutputClass().getDeclaredField("temperatures");
+            temperaturesField.setAccessible(true);
+            return ((RealFieldElement[]) temperaturesField.get(o))[index].getReal();
+        } catch (NoSuchFieldException | SecurityException |
+                 IllegalAccessException | IllegalArgumentException e) {
             Assert.fail(e.getLocalizedMessage());
             return Double.NaN;
         }

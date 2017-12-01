@@ -59,7 +59,10 @@ UNABLE_TO_FIND_RESOURCE = {0} inexistant dans le classpath
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED = aucun Paramètre d''Orientation de la Terre n''a été chargé
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Paramètres d''Orientation de la Terre manquants entre {0} et {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = paramètres d''Orientation de la Terre manquants entre {0} et {1}
+
+# missing Earth Orientation Parameters
+NO_EARTH_ORIENTATION_PARAMETERS = paramètres d''Orientation de la Terre manquants
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = le fichier {0} n''est pas un fichier de données IERS supporté
@@ -268,8 +271,8 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matrice jacobienne associée au type {0} e
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la jacobienne de l''état n''a pas encore été initialisée
 
-# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = la jacobienne de l''état est une matrice {0}x{1}, alors qu''elle devrait être soit une matrice 6x6 soit une matrice 7x7
+# state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
+STATE_JACOBIAN_NOT_6X6 = la jacobienne de l''état est une matrice {0}x{1}, alors qu''elle devrait être une matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la jacobienne de l''état a {0} lignes alors que la jacobienne des paramètres en a {1}
@@ -462,3 +465,6 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = {0} ne contient pas de coefficients de Klobuch
 
 # no reference date set for parameter {0}
 NO_REFERENCE_DATE_FOR_PARAMETER = date de référence non initialisée pour le paramètre {0}
+
+# station {0} not found, known stations: {1}
+STATION_NOT_FOUND = <MISSING TRANSLATION>

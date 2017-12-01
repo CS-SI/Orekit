@@ -60,12 +60,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
     /** Filter for angular derivatives to use in interpolation. */
     private final AngularDerivativesFilter aFilter;
 
-    /** Earliest supported date. */
-    private final AbsoluteDate earliest;
-
-    /** Latest supported date. */
-    private final AbsoluteDate latest;
-
     /** Grid points time step. */
     private final double step;
 
@@ -82,8 +76,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @param rawProvider provider for raw (non-interpolated) transforms
      * @param cFilter filter for derivatives from the sample to use in interpolation
      * @param aFilter filter for derivatives from the sample to use in interpolation
-     * @param earliest earliest supported date
-     * @param latest latest supported date
      * @param gridPoints number of interpolation grid points
      * @param step grid points time step
      * @param maxSlots maximum number of independent cached time slots
@@ -92,24 +84,49 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      * @param newSlotInterval time interval above which a new slot is created
      * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @since 9.1
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
                                           final CartesianDerivativesFilter cFilter,
                                           final AngularDerivativesFilter aFilter,
-                                          final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
                                           final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.rawProvider = rawProvider;
         this.cFilter     = cFilter;
         this.aFilter     = aFilter;
-        this.earliest    = earliest;
-        this.latest      = latest;
         this.step        = step;
         this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
                                                                   new TransformGenerator(gridPoints,
                                                                                          rawProvider,
                                                                                          step));
         this.fieldCaches = new HashMap<>();
+    }
+
+    /** Simple constructor.
+     * @param rawProvider provider for raw (non-interpolated) transforms
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
+     * @param earliest was earliest supported date, but is ignored now and can safely be null
+     * @param latest was latest supported date, but is ignored now and can safely be null
+     * @param gridPoints number of interpolation grid points
+     * @param step grid points time step
+     * @param maxSlots maximum number of independent cached time slots
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxSpan maximum duration span in seconds of one slot
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param newSlotInterval time interval above which a new slot is created
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @deprecated as of 9.1, replaced by {@link #InterpolatingTransformProvider(TransformProvider,
+     * CartesianDerivativesFilter, AngularDerivativesFilter, int, double, int, double, double)}
+     */
+    @Deprecated
+    public InterpolatingTransformProvider(final TransformProvider rawProvider,
+                                          final CartesianDerivativesFilter cFilter,
+                                          final AngularDerivativesFilter aFilter,
+                                          final AbsoluteDate earliest, final AbsoluteDate latest,
+                                          final int gridPoints, final double step,
+                                          final int maxSlots, final double maxSpan, final double newSlotInterval) {
+        this(rawProvider, cFilter, aFilter, gridPoints, step, maxSlots, maxSpan, newSlotInterval);
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -196,7 +213,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      */
     private Object writeReplace() {
         return new DTO(rawProvider, cFilter.getMaxOrder(), aFilter.getMaxOrder(),
-                       earliest, latest, cache.getNeighborsSize(), step,
+                       cache.getNeighborsSize(), step,
                        cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
 
@@ -204,7 +221,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
+        private static final long serialVersionUID = 20170823L;
 
         /** Provider for raw (non-interpolated) transforms. */
         private final TransformProvider rawProvider;
@@ -214,12 +231,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
         /** Angular derivatives to use in interpolation. */
         private final int aDerivatives;
-
-        /** Earliest supported date. */
-        private final AbsoluteDate earliest;
-
-        /** Latest supported date. */
-        private final AbsoluteDate latest;
 
         /** Number of grid points. */
         private final int gridPoints;
@@ -240,8 +251,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * @param rawProvider provider for raw (non-interpolated) transforms
          * @param cDerivatives derivation order for Cartesian coordinates
          * @param aDerivatives derivation order for angular coordinates
-         * @param earliest earliest supported date
-         * @param latest latest supported date
          * @param gridPoints number of interpolation grid points
          * @param step grid points time step
          * @param maxSlots maximum number of independent cached time slots
@@ -252,19 +261,16 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * in the {@link GenericTimeStampedCache time-stamped cache}
          */
         private DTO(final TransformProvider rawProvider, final int cDerivatives, final int aDerivatives,
-                    final AbsoluteDate earliest, final AbsoluteDate latest,
                     final int gridPoints, final double step,
                     final int maxSlots, final double maxSpan, final double newSlotInterval) {
-            this.rawProvider      = rawProvider;
-            this.cDerivatives     = cDerivatives;
-            this.aDerivatives     = aDerivatives;
-            this.earliest         = earliest;
-            this.latest           = latest;
-            this.gridPoints       = gridPoints;
-            this.step             = step;
-            this.maxSlots         = maxSlots;
-            this.maxSpan          = maxSpan;
-            this.newSlotInterval  = newSlotInterval;
+            this.rawProvider     = rawProvider;
+            this.cDerivatives    = cDerivatives;
+            this.aDerivatives    = aDerivatives;
+            this.gridPoints      = gridPoints;
+            this.step            = step;
+            this.maxSlots        = maxSlots;
+            this.maxSpan         = maxSpan;
+            this.newSlotInterval = newSlotInterval;
         }
 
         /** Replace the deserialized data transfer object with a {@link InterpolatingTransformProvider}.
@@ -275,7 +281,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
             return new InterpolatingTransformProvider(rawProvider,
                                                       CartesianDerivativesFilter.getFilter(cDerivatives),
                                                       AngularDerivativesFilter.getFilter(aDerivatives),
-                                                      earliest, latest, gridPoints, step,
+                                                      gridPoints, step,
                                                       maxSlots, maxSpan, newSlotInterval);
         }
 
