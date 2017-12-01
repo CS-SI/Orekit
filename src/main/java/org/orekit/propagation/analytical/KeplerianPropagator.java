@@ -19,7 +19,9 @@ package org.orekit.propagation.analytical;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
 import org.orekit.attitudes.Attitude;
@@ -120,7 +122,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
                                 getAttitudeProvider().getAttitude(initialOrbit,
                                                                   initialOrbit.getDate(),
                                                                   initialOrbit.getFrame()),
-                                mass, mu);
+                                mass, mu, Collections.emptyMap());
         states = new TimeSpanMap<SpacecraftState>(initialState);
         super.resetInitialState(initialState);
 
@@ -135,16 +137,21 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * @param attitude current attitude
      * @param mass current mass
      * @param mu gravity coefficient to use
+     * @param additionalStates additional states
      * @return fixed orbit
      */
     private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass,
-                                     final double mu) {
+                                     final double mu, final Map<String, double[]> additionalStates) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
         type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
         final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                       orbit.getDate(), mu, orbit.getFrame());
-        return new SpacecraftState(fixedOrbit, attitude, mass);
+        SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
+        for (final Map.Entry<String, double[]> entry : additionalStates.entrySet()) {
+            fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+        }
+        return fixedState;
     }
 
     /** {@inheritDoc} */
@@ -156,7 +163,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
         final SpacecraftState fixedState = fixState(state.getOrbit(),
                                                     state.getAttitude(),
                                                     state.getMass(),
-                                                    mu);
+                                                    mu,
+                                                    state.getAdditionalStates());
 
         initialState = fixedState;
         states       = new TimeSpanMap<SpacecraftState>(initialState);

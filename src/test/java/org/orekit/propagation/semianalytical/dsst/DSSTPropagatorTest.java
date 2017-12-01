@@ -60,6 +60,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -93,6 +94,54 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
+
+    @Test
+    public void testIssue363() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
+        CircularOrbit orbit = new CircularOrbit(7389068.5, 1.0e-15, 1.0e-15, 1.709573, 1.308398, 0, PositionAngle.MEAN,
+                                                FramesFactory.getTOD(IERSConventions.IERS_2010, false),
+                                                date, Constants.WGS84_EARTH_MU);
+        SpacecraftState osculatingState = new SpacecraftState(orbit, 1116.2829);
+
+        List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
+
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+
+        SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
+        Assert.assertEquals( 0.421,   osculatingState.getA()             - meanState.getA(),             1.0e-3);
+        Assert.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx() - meanState.getEquinoctialEx(), 1.0e-10);
+        Assert.assertEquals(15.22e-8, osculatingState.getEquinoctialEy() - meanState.getEquinoctialEy(), 1.0e-10);
+        Assert.assertEquals(-3.15e-8, osculatingState.getHx()            - meanState.getHx(),            1.0e-10);
+        Assert.assertEquals( 2.83e-8, osculatingState.getHy()            - meanState.getHy(),            1.0e-10);
+        Assert.assertEquals(15.96e-8, osculatingState.getLM()            - meanState.getLM(),            1.0e-10);
+
+    }
+
+    @Test
+    public void testIssue364() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
+        CircularOrbit orbit = new CircularOrbit(7389068.5, 0.0, 0.0, 1.709573, 1.308398, 0, PositionAngle.MEAN,
+                                                FramesFactory.getTOD(IERSConventions.IERS_2010, false),
+                                                date, Constants.WGS84_EARTH_MU);
+        SpacecraftState osculatingState = new SpacecraftState(orbit, 1116.2829);
+
+        List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
+
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+
+        SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
+        Assert.assertEquals( 0.421,   osculatingState.getA()             - meanState.getA(),             1.0e-3);
+        Assert.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx() - meanState.getEquinoctialEx(), 1.0e-10);
+        Assert.assertEquals(15.22e-8, osculatingState.getEquinoctialEy() - meanState.getEquinoctialEy(), 1.0e-10);
+        Assert.assertEquals(-3.15e-8, osculatingState.getHx()            - meanState.getHx(),            1.0e-10);
+        Assert.assertEquals( 2.83e-8, osculatingState.getHy()            - meanState.getHy(),            1.0e-10);
+        Assert.assertEquals(15.96e-8, osculatingState.getLM()            - meanState.getLM(),            1.0e-10);
+
+    }
 
     @Test
     public void testHighDegreesSetting() throws OrekitException {

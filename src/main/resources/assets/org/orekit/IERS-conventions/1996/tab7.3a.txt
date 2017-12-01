@@ -1,0 +1,19 @@
+# Extract from IERS conventions 1996 (table 7.3a)
+
+Table 7.3a: Corrections due to the frequency dependence of Love and Shida numbers for diurnal tides. Units:
+mm. All terms with radial correction ≥ 0.05 mm are shown. Nominal values are h = 0.6026 and
+l = 0.0831 for the elastic case, and hR = 0.6078 and lR = 0.0847 for the real parts in the anelastic
+case. Frequencies are given in degrees per hour.
+
+Name Frequency Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  ∆Rf(el) ∆Tf(el)  ∆Rf(anel) ∆Tf(anel)
+ Q₁  13.39866  135,655  1 -2  0  1   0  0   1  0  2  0  2  -0.11   -0.01     -0.09      0.00
+     13.94083  145,545  1 -1  0  0  -1  0   0  0  2  0  1  -0.12    0.01     -0.10      0.00
+ O₁  13.94303  145,555  1 -1  0  0   0  0   0  0  2  0  2  -0.63   -0.04     -0.53      0.02
+ No₁ 14.49669  155,655  1  0  0  1   0  0   1  0  0  0  0   0.07    0.00      0.06     -0.00
+ π₁  14.91787  162,556  1  1 -3  0   0  1   0  1  2 -2  2  -0.06    0.00     -0.05      0.00
+ P₁  14.95893  163,555  1  1 -2  0   0  0   0  0  2 -2  2  -1.29    0.05     -1.23      0.07
+     15.03886  165,545  1  1  0  0  -1  0   0  0  0  0 -1  -0.23    0.01     -0.22      0.01
+ K₁  15.04107  165,555  1  1  0  0   0  0   0  0  0  0  0  12.25   -0.65     12.04     -0.72
+     15.04328  165,565  1  1  0  0   1  0   0  0  0  0  1   1.77   -0.09      1.74     -0.10
+ ψ₁  15.08214  166,554  1  1  1  0   0 -1   0 -1  0  0  0  -0.51    0.03     -0.50      0.03
+ φ₁  15.12321  167,555  1  1  2  0   0  0   0  0 -2  2 -2  -0.11    0.01     -0.11      0.01

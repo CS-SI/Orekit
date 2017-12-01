@@ -1,0 +1,49 @@
+# Alternative values for IERS conventions 2010 table 7.3a
+# the values below correspond to the hard-coded model in
+# Véronique Dehant program DEHANTTIDEINEL.F (subroutine STEP2DIU.F, array DATDI)
+# available at <ftp://tai.bipm.org/iers/conv2010/chapter7/dehanttideinel/>
+# and Copyright (C) 2008 IERS Conventions Center
+
+# Note that the 25th row in the reference program array specifies 0 for the
+# coefficient associated with Doodson argument s (DATDI(1, 25), which would
+# therefore correspond to tide 156,564 with frequency 14.53532. However, this
+# seems inconsistent with the both rest of the table, which sorted in increasing
+# frequency and with table 6.5a which doesn't list it as an "important" tide.
+# This is most probably a typo and the coefficient should probably be 1 instead
+# of 0, which would correspond to tide 166,564 with frequency 15.08434. This
+# would be in correct increasing frequency order and this tide is listed
+# in table 6.5a. As this table is used *only* for a test case and comparison
+# with this reference program, this typo has *not* been fixed.
+
+Name Frequency Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  ∆Rf(ip) ∆Rf(op)  ∆Tf(ip) ∆Tf(op)
+2Q₁  12.85429  125,755  1 -3  0  2   0  0   2  0  2  0  2  -0.01    0.00     0.00    0.00
+ σ₁  12.92714  127,555  1 -3  2  0   0  0   0  0  2  2  2  -0.01    0.00     0.00    0.00
+     13.39645  135,645  1 -2  0  1  -1  0   1  0  2  0  1  -0.02    0.00     0.00    0.00
+ Q₁  13.39866  135,655  1 -2  0  1   0  0   1  0  2  0  2  -0.08    0.00    -0.01    0.01
+ ρ₁  13.47151  137,455  1 -2  2 -1   0  0  -1  0  2  2  2  -0.02    0.00     0.00    0.00
+     13.94083  145,545  1 -1  0  0  -1  0   0  0  2  0  1  -0.10    0.00     0.00    0.00
+ O₁  13.94303  145,555  1 -1  0  0   0  0   0  0  2  0  2  -0.51    0.00    -0.02    0.03
+ τ₁  14.02517  147,555  1 -1  2  0   0  0   0  0  0  2  0   0.01    0.00     0.00    0.00
+ Nτ₁ 14.41456  153,655  1  0 -2  1   0  0   1  0  2 -2  2   0.01    0.00     0.00    0.00
+ Lk₁ 14.48741  155,455  1  0  0 -1   0  0  -1  0  2  0  2   0.02    0.00     0.00    0.00
+ No₁ 14.49669  155,655  1  0  0  1   0  0   1  0  0  0  0   0.06    0.00     0.00    0.00
+     14.49890  155,665  1  0  0  1   1  0   1  0  0  0  1   0.01    0.00     0.00    0.00
+ χ₁  14.56955  157,455  1  0  2 -1   0  0  -1  0  0  2  0   0.01    0.00     0.00    0.00
+ π₁  14.91787  162,556  1  1 -3  0   0  1   0  1  2 -2  2  -0.06    0.00     0.00    0.00
+     14.95673  163,545  1  1 -2  0  -1  0   0  0  2 -2  1   0.01    0.00     0.00    0.00
+ P₁  14.95893  163,555  1  1 -2  0   0  0   0  0  2 -2  2  -1.23   -0.07     0.06    0.01
+     15.00000  164,554  1  1 -1  0   0 -1   0 -1  2 -2  2   0.02    0.00     0.00    0.00
+ S₁  15.00000  164,556  1  1 -1  0   0  1   0  1  0  0  0   0.04    0.00     0.00    0.00
+     15.03886  165,545  1  1  0  0  -1  0   0  0  0  0 -1  -0.22    0.01     0.01    0.00
+ K₁  15.04107  165,555  1  1  0  0   0  0   0  0  0  0  0  12.00   -0.80    -0.67   -0.03
+     15.04328  165,565  1  1  0  0   1  0   0  0  0  0  1   1.73   -0.12    -0.10    0.00
+     15.04548  165,575  1  1  0  0   2  0   0  0  0  0  2  -0.04    0.00     0.00    0.00
+ ψ₁  15.08214  166,554  1  1  1  0   0 -1   0 -1  0  0  0  -0.50   -0.01     0.03    0.00
+     15.08214  166,556  1  1  1  0   0  1   0  1 -2  2 -2   0.01    0.00     0.00    0.00
+     14.53532  156,564  1  0  1  0   1 -1   0 -1  1  0  2  -0.01    0.00     0.00    0.00
+     15.11392  167,355  1  1  2 -2   0  0  -2  0  0  2  0  -0.01    0.00     0.00    0.00
+ φ₁  15.12321  167,555  1  1  2  0   0  0   0  0 -2  2 -2  -0.11    0.01     0.01    0.00
+ θ₁  15.51259  173,655  1  2 -2  1   0  0   1  0  0 -2  0  -0.01    0.00     0.00    0.00
+ J₁  15.58545  175,455  1  2  0 -1   0  0  -1  0  0  0  0  -0.02    0.00     0.00    0.00
+ Oo₁ 16.13911  185,555  1  3  0  0   0  0   0  0 -2  0 -2   0.00    0.00     0.00    0.00
+     16.14131  185,565  1  3  0  0   1  0   0  0 -2  0 -1   0.00    0.00     0.00    0.00

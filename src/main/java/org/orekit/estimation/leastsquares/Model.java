@@ -48,6 +48,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
@@ -57,17 +58,17 @@ import org.orekit.utils.ParameterDriversList;
  */
 class Model implements MultivariateJacobianFunction {
 
-    /** Estimated propagator parameters. */
-    private final ParameterDriversList estimatedPropagatorParameters;
-
-    /** Builder for propagator. */
+    /** Builders for propagators. */
     private final NumericalPropagatorBuilder[] builders;
 
-    /** Measurements. */
-    private final List<ObservedMeasurement<?>> measurements;
+    /** Array of each builder's selected propagation drivers. */
+    private final ParameterDriversList[] estimatedPropagationParameters;
 
     /** Estimated measurements parameters. */
     private final ParameterDriversList estimatedMeasurementsParameters;
+
+    /** Measurements. */
+    private final List<ObservedMeasurement<?>> measurements;
 
     /** Start columns for each estimated orbit. */
     private final int[] orbitsStartColumns;
@@ -75,8 +76,11 @@ class Model implements MultivariateJacobianFunction {
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
+    /** Map for propagation parameters columns. */
+    private final Map<String, Integer> propagationParameterColumns;
+
     /** Map for measurements parameters columns. */
-    private final Map<String, Integer> parameterColumns;
+    private final Map<String, Integer> measurementParameterColumns;
 
     /** Last evaluations. */
     private final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> evaluations;
@@ -120,10 +124,12 @@ class Model implements MultivariateJacobianFunction {
         this.builders                        = builders;
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.getDrivers().size());
-        this.evaluations                     = new IdentityHashMap<ObservedMeasurement<?>, EstimatedMeasurement<?>>(measurements.size());
+        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
+        this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
         this.mappers                         = new JacobiansMapper[builders.length];
+
 
         // allocate vector and matrix
         int rows = 0;
@@ -144,18 +150,30 @@ class Model implements MultivariateJacobianFunction {
             this.orbitsEndColumns[i] = columns;
         }
 
-        this.estimatedPropagatorParameters = new ParameterDriversList();
+        // Gather all the propagation drivers names in a list
+        final List<String> estimatedPropagationParametersNames = new ArrayList<>();
         for (int i = 0; i < builders.length; ++i) {
-            for (final ParameterDriver driver : builders[i].getPropagationParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    estimatedPropagatorParameters.add(driver);
-                    ++columns;
+            // The index i in array estimatedPropagationParameters (attribute of the class) is populated
+            // when the first call to getSelectedPropagationDriversForBuilder(i) is made
+            for (final DelegatingDriver delegating : getSelectedPropagationDriversForBuilder(i).getDrivers()) {
+                final String driverName = delegating.getName();
+                // Add the driver name if it has not been added yet
+                if (!estimatedPropagationParametersNames.contains(driverName)) {
+                    estimatedPropagationParametersNames.add(driverName);
                 }
             }
         }
+        // Populate the map of propagation drivers' columns and update the total number of columns
+        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        for (final String driverName : estimatedPropagationParametersNames) {
+            propagationParameterColumns.put(driverName, columns);
+            ++columns;
+        }
 
+
+        // Populate the map of measurement drivers' columns and update the total number of columns
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            parameterColumns.put(parameter.getName(), columns);
+            measurementParameterColumns.put(parameter.getName(), columns);
             ++columns;
         }
 
@@ -184,7 +202,7 @@ class Model implements MultivariateJacobianFunction {
         throws OrekitExceptionWrapper {
         try {
 
-            // set up the propagators parallelizer
+            // Set up the propagators parallelizer
             final NumericalPropagator[] propagators = createPropagators(point);
             final Orbit[] orbits = new Orbit[propagators.length];
             for (int i = 0; i < propagators.length; ++i) {
@@ -194,7 +212,7 @@ class Model implements MultivariateJacobianFunction {
             final PropagatorsParallelizer parallelizer =
                             new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
 
-            // reset value and Jacobian
+            // Reset value and Jacobian
             evaluations.clear();
             value.set(0.0);
             for (int i = 0; i < jacobian.getRowDimension(); ++i) {
@@ -229,6 +247,37 @@ class Model implements MultivariateJacobianFunction {
         return evaluationsCounter.getCount();
     }
 
+    /** Get the selected propagation drivers for a propagatorBuilder.
+     * @param iBuilder index of the builder in the builders' array
+     * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
+     * @exception OrekitException if orbit cannot be created with the current point
+     */
+    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder)
+        throws OrekitException {
+
+        // Lazy evaluation, create the list only if it hasn't been created yet
+        if (estimatedPropagationParameters[iBuilder] == null) {
+
+            // Gather the drivers
+            final ParameterDriversList selectedPropagationDrivers = new ParameterDriversList();
+            for (final DelegatingDriver delegating : builders[iBuilder].getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        selectedPropagationDrivers.add(driver);
+                    }
+                }
+            }
+
+            // List of propagation drivers are sorted in the BatchLSEstimator class.
+            // Hence we need to sort this list so the parameters' indexes match
+            selectedPropagationDrivers.sort();
+
+            // Add the list of selected propagation drivers to the array
+            estimatedPropagationParameters[iBuilder] = selectedPropagationDrivers;
+        }
+        return estimatedPropagationParameters[iBuilder];
+    }
+
     /** Create the propagators and parameters corresponding to an evaluation point.
      * @param point evaluation point
      * @return an array of new propagators
@@ -239,17 +288,31 @@ class Model implements MultivariateJacobianFunction {
 
         final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
 
+        // Set up the propagators
         for (int i = 0; i < builders.length; ++i) {
-            // set up the propagator
+
+            // Get the number of selected orbital drivers in the builder
             final int nbOrb    = orbitsEndColumns[i] - orbitsStartColumns[i];
-            final int nbParams = estimatedPropagatorParameters.getNbParams();
+
+            // Get the list of selected propagation drivers in the builder and its size
+            final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(i);
+            final int nbParams = selectedPropagationDrivers.getNbParams();
+
+            // Init the array of normalized parameters for the builder
             final double[] propagatorArray = new double[nbOrb + nbParams];
+
+            // Add the orbital drivers normalized values
             for (int j = 0; j < nbOrb; ++j) {
                 propagatorArray[j] = point.getEntry(orbitsStartColumns[i] + j);
             }
+
+            // Add the propagation drivers normalized values
             for (int j = 0; j < nbParams; ++j) {
-                propagatorArray[nbOrb + j] = point.getEntry(orbitsEndColumns[builders.length - 1] + j);
+                propagatorArray[nbOrb + j] =
+                                point.getEntry(propagationParameterColumns.get(selectedPropagationDrivers.getDrivers().get(j).getName()));
             }
+
+            // Build the propagator
             propagators[i] = builders[i].buildPropagator(propagatorArray);
         }
 
@@ -265,13 +328,13 @@ class Model implements MultivariateJacobianFunction {
     private MultiSatStepHandler configureMeasurements(final RealVector point)
         throws OrekitException {
 
-        // set up the measurement parameters
-        int index = orbitsEndColumns[builders.length - 1] + estimatedPropagatorParameters.getNbParams();
+        // Set up the measurement parameters
+        int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
             parameter.setNormalizedValue(point.getEntry(index++));
         }
 
-        // set up measurements handler
+        // Set up measurements handler
         final List<PreCompensation> precompensated = new ArrayList<>();
         for (final ObservedMeasurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
@@ -359,18 +422,19 @@ class Model implements MultivariateJacobianFunction {
                 }
             }
 
-            if (estimatedPropagatorParameters.getNbParams() > 0) {
-                // Jacobian of the measurement with respect to propagator parameters
-                final double[][] aYPp  = new double[6][estimatedPropagatorParameters.getNbParams()];
+            // Jacobian of the measurement with respect to propagation parameters
+            final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
+            final int nbParams = selectedPropagationDrivers.getNbParams();
+            if ( nbParams > 0) {
+                final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
-                    int jPar = orbitsEndColumns[builders.length - 1];
-                    for (int j = 0; j < estimatedPropagatorParameters.getNbParams(); ++j) {
-                        final ParameterDriver driver = estimatedPropagatorParameters.getDrivers().get(j);
-                        jacobian.addToEntry(index + i, jPar++,
-                                            weight[i] * dMdPp.getEntry(i, j) / sigma[i] * driver.getScale());
+                    for (int j = 0; j < nbParams; ++j) {
+                        final ParameterDriver delegating = selectedPropagationDrivers.getDrivers().get(j);
+                        jacobian.addToEntry(index + i, propagationParameterColumns.get(delegating.getName()),
+                                            weight[i] * dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
             }
@@ -382,7 +446,7 @@ class Model implements MultivariateJacobianFunction {
             if (driver.isSelected()) {
                 final double[] aMPm = evaluation.getParameterDerivatives(driver);
                 for (int i = 0; i < aMPm.length; ++i) {
-                    jacobian.setEntry(index + i, parameterColumns.get(driver.getName()),
+                    jacobian.setEntry(index + i, measurementParameterColumns.get(driver.getName()),
                                       weight[i] * aMPm[i] / sigma[i] * driver.getScale());
                 }
             }

@@ -47,7 +47,6 @@ import org.orekit.utils.StateFunction;
 
 public class RangeAnalyticTest {
 
-
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
@@ -117,7 +116,7 @@ public class RangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences = false;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    4.1e-7, 1.8e-6, 6.3e-5, 3.5e-8, 1.4e-7, 7.7e-6);
+                                    4.1e-7, 1.9e-6, 6.3e-5, 4.7e-11, 4.7e-11, 5.6e-11);
     }
 
     /**
@@ -321,11 +320,11 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 7.0e-09);
-        Assert.assertEquals(0.0, absErrorsMin, 1.6e-07);
-        Assert.assertEquals(0.0, absErrorsMax, 1.7e-07);
-        Assert.assertEquals(0.0, relErrorsMedian, 4.4e-15);
-        Assert.assertEquals(0.0, relErrorsMax, 1.7e-14);
+        Assert.assertEquals(0.0, absErrorsMedian, 3.8e-08);
+        Assert.assertEquals(0.0, absErrorsMin,    2.0e-07);
+        Assert.assertEquals(0.0, absErrorsMax,    2.3e-07);
+        Assert.assertEquals(0.0, relErrorsMedian, 6.5e-15);
+        Assert.assertEquals(0.0, relErrorsMax,    2.4e-14);
     }
 
     /**

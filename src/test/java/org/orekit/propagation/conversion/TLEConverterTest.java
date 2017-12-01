@@ -39,12 +39,12 @@ public class TLEConverterTest {
 
     @Test
     public void testConversionGeoPositionVelocity() throws OrekitException {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 8.540e-8);
+        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 9.350e-8);
     }
 
     @Test
     public void testConversionGeoPositionOnly() throws OrekitException {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.253e-7);
+        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.328e-7);
     }
 
     @Test
@@ -59,12 +59,12 @@ public class TLEConverterTest {
 
     @Test
     public void testConversionLeoPositionVelocityWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 1.614e-7);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 2.646e-8);
     }
 
     @Test
     public void testConversionLeoPositionOnlyWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.285e-7);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.102e-8);
     }
 
     protected void checkFit(final TLE tle,

@@ -84,7 +84,7 @@ public class MariniMurrayModel implements TroposphericModel {
     @Override
     public double pathDelay(final double elevation, final double height) {
         final double A = 0.002357 * P0 + 0.000141 * e0;
-        final double K = 1.163 * 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
+        final double K = 1.163 - 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
         final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
         final double flambda = getLaserFrequencyParameter();
 
@@ -134,7 +134,7 @@ public class MariniMurrayModel implements TroposphericModel {
         // enhancement factor, equation (4) of reference paper
         final double fw = 1.00062 + (3.14 * 1e-6) * P0 + (5.6 * 1e-7) * FastMath.pow(T0 - 273.15, 2);
 
-        final double e = rh * fw * es;
+        final double e = (rh / 100.0) * fw * es;
         return e;
     }
 }

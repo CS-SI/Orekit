@@ -20,20 +20,124 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.1" date="TBD" description="TBD">
-     <action dev="luc" type="fix">
-        Removed unused construction parameters in ShiftingTransformProvider
-        and InterpolatingTransformProvider.
-        Fixes issue #356.
-     </action>
-     <action dev="luc" type="fix">
-        Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
-        Fixes issue #355.
-     </action>
-     <action dev="luc" type="update">
-       Use a git-flow like branching workflow, with a develop branch for bleeding-edge
-       development, and master branch for stable published versions.
-     </action>
+    <release version="9.2" date="TBD" description="TBD">
+    </release>
+    <release version="9.1" date="2017-11-26"
+             description="Version 9.1 is a minor release of Orekit. It introduces a few new
+             features and bug fixes. New features introduced in version 9.1 are some
+             frames in OEM parser, retrieval of EOP from frames and ground station displacements
+             modelling (both displacements due to tides and displacements due to ocean loading),
+             and retrieval of covariance matrix in orbit determination. Several bugs have been fixed.
+             Version 9.1 depends on Hipparchus 1.2.">
+      <action dev="evan" type="add">
+        Added ITRF2005 and ITRF2008 to the frames recognized by OEMParser.
+        Fixes issue #361.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed FiniteDifferencePropagatorConverter so that the scale factor is only applied
+        once instead of twice.
+        Fixes issue #362.
+      </action>
+      <action dev="maxime" type="fix">
+        Fixed derivatives computation in turn-around range ionospheric delay modifier.
+        Fixes issue #369.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML TDM files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed NPE in OrekitException when localized string is null.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed a singularity error in derivatives for perfectly circular orbits in DSST third body force model.
+        Fixes issue #364.
+      </action>
+      <action dev="luc" type="fix" due-to="Lucian Bărbulescu">
+        Fixed an error in array size computation for Hansen coefficients.
+        Fixes issue #363.
+      </action>
+      <action dev="luc" type="add">
+        Added a way to retrieve EOP from frames by walking the frames hierarchy tree
+        using parent frame links. This allows to retrieve EOP from topocentric frames,
+        from Earth frames, from TOD...
+      </action>
+      <action dev="luc" type="add">
+        Take ground stations displacements into account in orbit determination.
+        The predefined displacement models are the direct effect of solid tides
+        and the indirect effect of ocean loading, but users can add their own models
+        too.
+      </action>
+      <action dev="luc" type="add">
+        Added ground stations displacements due to ocean loading as per IERS conventions,
+        including all the 342 tides considered in the HARDISP.F program.
+        Computation is based on Onsala Space Observatory files in BLQ format.
+      </action>
+      <action dev="luc" type="add">
+        Added ground points displacements due to tides as per IERS conventions.
+        We have slightly edited one entry in table 7.3a from IERS 2010 conventions
+        to fix a sign error identified by Dr. Hana Krásná from TU Wien (out of phase
+        radial term for the P₁ tide, which is -0.07mm in conventions when it should be
+        +0.07mm). This implies that our implementation may differ up to 0.14mm from
+        other implementations.
+      </action>
+      <action dev="luc" type="fix">
+        Avoid intermixed ChangeForwarder instances calling each other.
+        Fixes issue #360.
+      </action>
+      <action dev="maxime" type="fix">
+        Modified the way the propagation parameter drivers are mapped in the
+        Jacobian matrix in class "Model".
+        Added a test for multi-sat orbit determination with estimated
+        propagation parameters (µ and SRP coefficients).
+        Fixes issue #354.
+      </action>
+      <action dev="luc" type="fix">
+         Added a convenience method to retrieve covariance matrix in
+         physical units in orbit determination.
+         Fixes issue #353.
+      </action>
+      <action dev="luc" type="fix" due-to="Rongwang Li">
+         Fixed two errors in Marini-Murray model implementation.
+         Fixes issue #352.
+      </action>
+      <action dev="luc" type="fix">
+         Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
+         Fixes issue #350.
+      </action>
+      <action dev="luc" type="fix">
+         Copy additional states through impulse maneuvers.
+         Fixes issue #349.
+      </action>
+      <action dev="luc" type="fix">
+         Removed unused construction parameters in ShiftingTransformProvider
+         and InterpolatingTransformProvider.
+         Fixes issue #356.
+      </action>
+      <action dev="luc" type="fix">
+         Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
+         Fixes issue #355.
+      </action>
+      <action dev="luc" type="update">
+        Use a git-flow like branching workflow, with a develop branch for bleeding-edge
+        development, and master branch for stable published versions.
+      </action>
+    </release>
+    <release version="9.0.1" date="2017-11-01"
+            description="Version 9.0.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML TDM files.
+        Part of issue #368.
+      </action>
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
     </release>
     <release version="9.0" date="2017-07-26"
              description="Version 9.0 is a major release of Orekit. It introduces several new
@@ -359,6 +463,14 @@
         Fixes issue #244.
       </action>
     </release>
+    <release version="8.0.1" date="2017-11-01"
+            description="Version 8.0.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
+      </action>
+    </release>
     <release version="8.0" date="2016-06-30"
              description="Version 8.0 is a major release of Orekit. It introduces several new
              features and bug fixes as well as a major dependency change. New features introduced
@@ -440,6 +552,14 @@
         NumericalPropagator.getGeneratedEphemeris() near the start/end date of
         the generated ephemeris.
         Fixes issue #238
+      </action>
+    </release>
+    <release version="7.2.1" date="2017-11-01"
+            description="Version 7.2.1 is a patch release of Orekit.
+            It fixes security issus 368.">
+      <action dev="evan" type="fix">
+        Disabled XML external resources when parsing rapid XML EOP files.
+        Part of issue #368.
       </action>
     </release>
     <release version="7.2" date="2016-04-05"

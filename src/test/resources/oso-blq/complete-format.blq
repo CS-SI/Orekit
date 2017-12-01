@@ -1,0 +1,74 @@
+$$ Ocean loading displacement
+$$
+$$ Calculated on holt using olfg/olmpp of H.-G. Scherneck
+$$
+$$ COLUMN ORDER:  M2  S2  N2  K2  K1  O1  P1  Q1  MF  MM SSA
+$$
+$$ ROW ORDER:
+$$ AMPLITUDES (m)
+$$   RADIAL
+$$   TANGENTL    EW
+$$   TANGENTL    NS
+$$ PHASES (degrees)
+$$   RADIAL
+$$   TANGENTL    EW
+$$   TANGENTL    NS
+$$
+$$ Displacement is defined positive in upwards, South and West direction.
+$$ The phase lag is relative to Greenwich and lags positive. The
+$$ Gutenberg-Bullen Greens function is used. In the ocean tide model the
+$$ deficit of tidal water mass has been corrected by subtracting a uniform
+$$ layer of water with a certain phase lag globally.
+$$
+$$ Complete <model name> : No interpolation of ocean model was necessary
+$$ <model name>_PP       : Ocean model has been interpolated near the station
+$$                         (PP = Post-Processing)
+$$
+$$ Ocean tide model: CSR4.0, long-period tides from FES99
+$$
+$$ END HEADER
+$$
+  Goldstone
+$$ Complete CSR4.0_f
+$$ Computed by OLFG, H.-G. Scherneck, Onsala Space Observatory 2017-Sep-28
+$$ Goldstone,                 RADI TANG  lon/lat:  243.1105   35.4259    0.000
+  .00130 .00155 .00064 .00052 .01031 .00661 .00339 .00119 .00005 .00002 .00003
+  .00136 .00020 .00024 .00004 .00322 .00202 .00106 .00036 .00007 .00003 .00001
+  .00372 .00165 .00082 .00045 .00175 .00113 .00057 .00022 .00004 .00002 .00003
+    -2.7 -106.3  -62.6 -106.8   41.6   27.3   40.4   24.0 -119.1 -123.2 -169.7
+  -145.3  -88.4  178.5  -66.3 -130.5 -145.3 -131.7 -148.7  124.3  139.6   23.3
+    90.7  111.1   74.1  111.3  176.9  165.3  175.8  164.0   48.9   25.3    4.5
+$$
+  NOUMEA   
+$$ CSR4.0_f_PP ID: 2017-09-28 15:02:01
+$$ Computed by OLMPP by H G Scherneck, Onsala Space Observatory, 2017
+$$ Noumea,                    RADI TANG  lon/lat:  166.4433  -22.2711    0.000
+  .02070 .00346 .00406 .00070 .01036 .00356 .00336 .00065 .00053 .00026 .00029
+  .00613 .00092 .00153 .00021 .00071 .00039 .00023 .00008 .00003 .00001 .00001
+  .00600 .00280 .00111 .00077 .00125 .00101 .00041 .00022 .00014 .00008 .00008
+    46.9   70.7   23.8   73.2 -150.7 -170.5 -152.1  164.2 -161.8 -174.8 -177.4
+    -2.1   -8.4  -23.2  -21.6    5.0  -37.9    2.4  -57.1  -89.7 -133.6 -174.9
+   -56.2  -28.1  -57.5  -24.9 -103.8 -144.1 -105.4 -156.9 -173.2 -175.6 -179.0
+$$
+  PLEUMEUR-BODOU
+$$ CSR4.0_f_PP ID: 2017-09-28 15:02:07
+$$ Computed by OLMPP by H G Scherneck, Onsala Space Observatory, 2017
+$$ Pleumeur-Bodou,            RADI TANG  lon/lat:  356.4853   48.7856    0.000
+  .03524 .01143 .00714 .00297 .00428 .00212 .00140 .00050 .00074 .00038 .00034
+  .00929 .00303 .00193 .00078 .00067 .00053 .00022 .00015 .00007 .00003 .00004
+  .00694 .00291 .00147 .00079 .00036 .00024 .00012 .00010 .00005 .00003 .00001
+   -48.6   -8.1  -68.0   -3.7  -70.5  160.6  -76.1  109.8    9.6    6.2    1.6
+   102.2  138.5   81.9  141.8   92.2  -13.8   85.2  -63.7 -171.4 -166.9 -178.5
+    22.8   59.6    9.0   62.4    6.7  176.5   -5.9 -171.5   -8.5   -0.4    0.6
+$$
+  GMRT     
+$$ CSR4.0_f_PP ID: 2017-09-28 15:02:14
+$$ Computed by OLMPP by H G Scherneck, Onsala Space Observatory, 2017
+$$ GMRT,                      RADI TANG  lon/lat:   74.0497   19.0965    0.000
+  .00696 .00329 .00168 .00091 .00635 .00243 .00198 .00074 .00061 .00030 .00030
+  .00337 .00140 .00078 .00038 .00320 .00162 .00103 .00038 .00005 .00002 .00000
+  .00116 .00070 .00016 .00019 .00115 .00090 .00037 .00022 .00006 .00002 .00002
+   -15.3   26.2  -35.9   27.9  153.3  173.9  152.9 -171.8 -167.5 -173.7 -178.1
+  -173.2 -147.7  169.3 -147.1   -8.6  -11.6   -9.1   -9.6  -38.5  -21.3 -131.4
+  -152.6 -111.9 -173.5 -108.3   18.7   28.7   19.6   28.0   -4.9    2.9    0.0
+$$ END TABLE

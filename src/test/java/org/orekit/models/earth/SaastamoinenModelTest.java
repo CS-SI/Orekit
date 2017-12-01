@@ -78,7 +78,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testSerialization()
-      throws OrekitException, IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+      throws OrekitException, IOException, ClassNotFoundException {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
 

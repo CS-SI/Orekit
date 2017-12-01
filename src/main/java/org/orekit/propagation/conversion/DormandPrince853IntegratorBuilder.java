@@ -35,7 +35,7 @@ public class DormandPrince853IntegratorBuilder implements ODEIntegratorBuilder {
     /** Maximum step size (s). */
     private final double maxStep;
 
-    /** Minimum step size (s). */
+    /** Position error (m). */
     private final double dP;
 
     /** Build a new instance.

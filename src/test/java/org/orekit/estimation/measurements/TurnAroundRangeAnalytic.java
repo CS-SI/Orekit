@@ -230,9 +230,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final Transform FMt     = masterGroundStation.getOffsetToInertial(state.getFrame(), getDate());
         final PVCoordinates QMt = FMt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V    = QMt.getVelocity();
-        final Vector3D pos2       = transitStateLeg2.getPVCoordinates().getPosition();
+        final Vector3D pos2     = transitStateLeg2.getPVCoordinates().getPosition();
         final Vector3D P2_QMt   = QMt.getPosition().subtract(pos2);
-        final double   dMDown    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMd -
+        final double   dMDown   = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMd -
                         Vector3D.dotProduct(P2_QMt, vel);
 
         // Derivatives w/r state
@@ -240,7 +240,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtMddPy   = -P2_QMt.getY() / dMDown;
         final double dtMddPz   = -P2_QMt.getZ() / dMDown;
 
-        final double dt     = delta - tMd;
+        final double dt        = delta - tMd;
         final double dtMddVx   = dtMddPx*dt;
         final double dtMddVy   = dtMddPy*dt;
         final double dtMddVz   = dtMddPz*dt;
@@ -259,7 +259,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final PVCoordinates QSt2 = FSt2.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QSt2_P2   = pos2.subtract(QSt2.getPosition());
-        final double   dSUp    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tSu -
+        final double   dSUp      = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tSu -
                         Vector3D.dotProduct(QSt2_P2, QSt_V);
 
         // Derivatives w/r state
@@ -267,9 +267,9 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final double dtSudPx = 1./dSUp*QSt2_P2.getX() + alphaSu*dtMddPx;
         final double dtSudPy = 1./dSUp*QSt2_P2.getY() + alphaSu*dtMddPy;
         final double dtSudPz = 1./dSUp*QSt2_P2.getZ() + alphaSu*dtMddPz;
-        final double dtSudVx   = dtSudPx*dt;
-        final double dtSudVy   = dtSudPy*dt;
-        final double dtSudVz   = dtSudPz*dt;
+        final double dtSudVx = dtSudPx*dt;
+        final double dtSudVy = dtSudPy*dt;
+        final double dtSudVz = dtSudPz*dt;
 
 
         // t2 derivatives / state
@@ -293,14 +293,14 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
 
         // derivatives w/r to state
         final double alphaSd = 1./dSDown*P1_QSt2.dotProduct(vel.subtract(QSt_V));
-        final double dtSddPx   = -1./ dSDown*P1_QSt2.getX() + alphaSd*dt2dPx;
-        final double dtSddPy   = -1./ dSDown*P1_QSt2.getY() + alphaSd*dt2dPy;
-        final double dtSddPz   = -1./ dSDown*P1_QSt2.getZ() + alphaSd*dt2dPz;
+        final double dtSddPx = -1./ dSDown*P1_QSt2.getX() + alphaSd*dt2dPx;
+        final double dtSddPy = -1./ dSDown*P1_QSt2.getY() + alphaSd*dt2dPy;
+        final double dtSddPz = -1./ dSDown*P1_QSt2.getZ() + alphaSd*dt2dPz;
 
         final double dt2     = delta - t2 - tSd;
-        final double dtSddVx   = -dt2/ dSDown*P1_QSt2.getX()+alphaSd*dt2dVx;
-        final double dtSddVy   = -dt2/ dSDown*P1_QSt2.getY()+alphaSd*dt2dVy;
-        final double dtSddVz   = -dt2/ dSDown*P1_QSt2.getZ()+alphaSd*dt2dVz;
+        final double dtSddVx = -dt2/ dSDown*P1_QSt2.getX()+alphaSd*dt2dVx;
+        final double dtSddVy = -dt2/ dSDown*P1_QSt2.getY()+alphaSd*dt2dVy;
+        final double dtSddVz = -dt2/ dSDown*P1_QSt2.getZ()+alphaSd*dt2dVz;
 
         // tMu derivatives / state
         // -----------------------
@@ -310,7 +310,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         final PVCoordinates QMt1 = FMt1.transformPVCoordinates(PVCoordinates.ZERO);
 
         final Vector3D QMt1_P1   = pos1.subtract(QMt1.getPosition());
-        final double   dMUp    = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMu -
+        final double   dMUp      = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tMu -
                         Vector3D.dotProduct(QMt1_P1, QMt_V);
 
         // derivatives w/r to state

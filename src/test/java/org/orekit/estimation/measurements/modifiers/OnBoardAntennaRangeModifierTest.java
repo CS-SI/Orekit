@@ -117,7 +117,7 @@ public class OnBoardAntennaRangeModifierTest {
             EstimatedMeasurement<Range> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-7);
+            Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.6e-7);
         }
 
     }

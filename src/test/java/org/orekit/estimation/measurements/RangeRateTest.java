@@ -93,7 +93,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.4e-8);
+        Assert.assertEquals(0, maxRelativeError, 1.6e-8);
 
     }
 
@@ -219,7 +219,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 9.1e-9);
+        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
@@ -412,7 +412,7 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.1e-8);
+        Assert.assertEquals(0, maxRelativeError, 1.2e-6);
 
     }
 
