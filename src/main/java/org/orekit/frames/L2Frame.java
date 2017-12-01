@@ -33,10 +33,10 @@ public class L2Frame extends Frame {
     /** Serializable UID.*/
     private static final long serialVersionUID = 20170811L;
 
-    /** Simple constructor. Calls to {@link Frame#Frame(Frame, TransformProvider, String) Frame(Frame, TransformProvider, String)}
+    /** Simple constructor.
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-     * @throws OrekitException If frame cannot be retrieved in {@link L2TransformProvider}.
+     * @exception OrekitException If frame cannot be retrieved from {@code primaryBody}.
      */
     public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
         throws OrekitException {
