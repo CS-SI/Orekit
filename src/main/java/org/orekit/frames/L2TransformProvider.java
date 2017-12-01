@@ -100,11 +100,12 @@ class L2TransformProvider implements TransformProvider {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
-        final FieldRotation<T>      rotation    = new FieldRotation<T>(pv21.getPosition(), pv21.getVelocity(),
-                                                                       FieldVector3D.getPlusI(field),
-                                                                       FieldVector3D.getPlusJ(field));
-        return new FieldTransform<T>(date, new FieldTransform<T>(date, translation),
-                                     new FieldTransform<T>(date, rotation));
+        final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
+                                                                      FieldVector3D.getPlusI(field),
+                                                                      FieldVector3D.getPlusJ(field));
+        return new FieldTransform<T>(date,
+                                     new FieldTransform<>(date, translation),
+                                     new FieldTransform<>(date, rotation));
     }
 
     /** Compute the coordinates of the L2 point.
@@ -186,16 +187,16 @@ class L2TransformProvider implements TransformProvider {
         final T functionAccuracy = zero.add(FUNCTION_ACCURACY);
 
         final FieldBracketingNthOrderBrentSolver<T> solver =
-                        new FieldBracketingNthOrderBrentSolver<T>(relativeAccuracy,
-                                                                  absoluteAccuracy,
-                                                                  functionAccuracy,
-                                                                  MAX_ORDER);
+                        new FieldBracketingNthOrderBrentSolver<>(relativeAccuracy,
+                                                                 absoluteAccuracy,
+                                                                 functionAccuracy,
+                                                                 MAX_ORDER);
         final T r = solver.solve(MAX_EVALUATIONS, l2Equation,
                                  searchInterval[0], searchInterval[1],
                                  AllowedSolution.ANY_SIDE);
 
         // L2 point is built
-        return new FieldVector3D<T>(r.divide(bigR), primaryToSecondary);
+        return new FieldVector3D<>(r.divide(bigR), primaryToSecondary);
 
     }
 
