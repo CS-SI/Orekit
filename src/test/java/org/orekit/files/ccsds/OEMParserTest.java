@@ -50,7 +50,6 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -480,9 +479,6 @@ public class OEMParserTest {
         frames.add(new Pair<>("ITRF2005", Predefined.ITRF_2008_TO_ITRF_2005
                 .createTransformedITRF(itrf2008, "ITRF2005")));
         frames.add(new Pair<>("ITRF2008", itrf2008));
-        // arbitrary date
-        TimeScale utc = TimeScalesFactory.getUTC();
-        AbsoluteDate date = new AbsoluteDate(2017, 11, 8, 15, 22, 23, utc);
 
         for (Pair<String, Frame> frame : frames) {
             final String frameName = frame.getFirst();
