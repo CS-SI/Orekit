@@ -23,7 +23,7 @@ import org.hipparchus.util.MathUtils;
  * Interpolator for 2D phase center variation data.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 class TwoDVariation implements PhaseCenterVariationFunction {
 

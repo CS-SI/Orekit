@@ -48,7 +48,7 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public class AntexLoader {
 

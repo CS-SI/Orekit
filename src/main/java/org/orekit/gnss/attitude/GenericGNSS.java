@@ -25,7 +25,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * Attitude providers for navigation satellites for which no specialized model is known.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public class GenericGNSS extends AbstractGNSSAttitudeProvider {
 

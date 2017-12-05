@@ -26,7 +26,7 @@ import org.orekit.utils.TimeSpanMap;
  * Factory for the attitude providers for different navigation satellites.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  * @see <a href="http://acc.igs.org/orbits/eclips_May2017.tar">Kouba model for eclipse/noon turn of GNSS satellites</a>
  * @see <a href="https://www.sciencedirect.com/science/article/pii/S0273117715004378">GNSS satellite geometry and attitude models</a>
  *

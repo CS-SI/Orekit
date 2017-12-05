@@ -20,7 +20,7 @@ package org.orekit.gnss;
  * Enumerate for satellite system.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public enum Frequency {
 

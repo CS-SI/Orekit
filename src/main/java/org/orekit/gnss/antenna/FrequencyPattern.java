@@ -23,7 +23,7 @@ import org.hipparchus.util.FastMath;
  * Pattern for GNSS antenna model on one frequency.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  * @see <a href="ftp://www.igs.org/pub/station/general/antex14.txt">ANTEX: The Antenna Exchange Format, Version 1.4</a>
  *
  */

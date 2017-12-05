@@ -22,7 +22,7 @@ import org.hipparchus.util.FastMath;
  * Interpolator for 1D phase center variation data.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 class OneDVariation implements PhaseCenterVariationFunction {
 

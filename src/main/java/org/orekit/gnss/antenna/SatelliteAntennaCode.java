@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitMessages;
  * Enumerate for satellite antenna codes.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public enum SatelliteAntennaCode {
 

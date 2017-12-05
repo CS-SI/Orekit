@@ -25,7 +25,7 @@ import org.orekit.gnss.Frequency;
  * GNSS antenna model.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  * @see <a href="ftp://www.igs.org/pub/station/general/antex14.txt">ANTEX: The Antenna Exchange Format, Version 1.4</a>
  *
  */

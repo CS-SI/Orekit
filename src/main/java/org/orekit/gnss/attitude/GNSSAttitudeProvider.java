@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public interface GNSSAttitudeProvider extends AttitudeProvider {
 

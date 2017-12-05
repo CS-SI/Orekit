@@ -38,7 +38,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * Base class for attitude providers for navigation satellites.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 

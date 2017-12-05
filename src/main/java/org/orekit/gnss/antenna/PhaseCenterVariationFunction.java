@@ -19,7 +19,7 @@ package org.orekit.gnss.antenna;
 /**
  * Model for antennas phase center variations.
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  */
 public interface PhaseCenterVariationFunction {
 

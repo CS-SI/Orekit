@@ -19,7 +19,7 @@
  * This package provides classes related to navigation satellites attitude modeling.
  *
  * @author Luc Maisonobe
- * @since 9.1
+ * @since 9.2
  *
  */
 package org.orekit.gnss.attitude;
