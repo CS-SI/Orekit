@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed weights for angular measurements in W3B orbit determination.
+        Fixed in test and tutorial.
+        Fixes issue #370.
+      </action>
       <action dev="luc" type="add" due-to="Julio Hernanz">
         Added frames for L1 and L2 Lagrange points, for any pair of celestial bodies.
       </action>
