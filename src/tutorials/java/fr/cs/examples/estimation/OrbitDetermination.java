@@ -1027,8 +1027,8 @@ public class OrbitDetermination {
         return new Weights(parser.getDouble(ParameterKey.RANGE_MEASUREMENTS_BASE_WEIGHT),
                            parser.getDouble(ParameterKey.RANGE_RATE_MEASUREMENTS_BASE_WEIGHT),
                            new double[] {
-                               parser.getAngle(ParameterKey.AZIMUTH_MEASUREMENTS_BASE_WEIGHT),
-                               parser.getAngle(ParameterKey.ELEVATION_MEASUREMENTS_BASE_WEIGHT)
+                               parser.getDouble(ParameterKey.AZIMUTH_MEASUREMENTS_BASE_WEIGHT),
+                               parser.getDouble(ParameterKey.ELEVATION_MEASUREMENTS_BASE_WEIGHT)
                            },
                            parser.getDouble(ParameterKey.PV_MEASUREMENTS_BASE_WEIGHT));
     }
@@ -1234,7 +1234,7 @@ public class OrbitDetermination {
                             final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData,
                                                                                           satRangeBias, weights,
                                                                                           line, lineNumber, file.getName());
-                            if (rangeOutliersManager != null) {
+                            if (rangeRateOutliersManager != null) {
                                 rangeRate.addModifier(rangeRateOutliersManager);
                             }
                             addIfNonZeroWeight(rangeRate, measurements);
