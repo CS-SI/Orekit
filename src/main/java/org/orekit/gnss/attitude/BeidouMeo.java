@@ -25,15 +25,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Beidou Medium Earth Orbit navigation satellites.
- * <p>
- * This class and the corresponding classes for other spacecrafts
- * in the same package are based on the May 2017 version of J. Kouba eclips.f
- * subroutine available at <a href="http://acc.igs.org/orbits">IGS Analysis
- * Center Coordinator site</a>. The eclips.f code itself is not used ; its
- * hard-coded data are used and its low level models are used, but the
- * structure of the code and the API have been completely rewritten.
- * </p>
- * @author J. Kouba original fortran routine
  * @author Luc Maisonobe Java translation
  * @since 9.2
  */

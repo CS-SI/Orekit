@@ -25,8 +25,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 /**
  * Attitude providers for Glonass navigation satellites.
  * <p>
- * This class and the corresponding classes for other spacecrafts
- * in the same package are based on the May 2017 version of J. Kouba eclips.f
+ * This class is based on the May 2017 version of J. Kouba eclips.f
  * subroutine available at <a href="http://acc.igs.org/orbits">IGS Analysis
  * Center Coordinator site</a>. The eclips.f code itself is not used ; its
  * hard-coded data are used and its low level models are used, but the
