@@ -33,6 +33,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Base class for attitude providers for navigation satellites.
@@ -97,11 +98,12 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final PVCoordinates sunPV  = sun.getPVCoordinates(date, frame);
-        final PVCoordinates svPV   = pvProv.getPVCoordinates(date, frame);
-        final double        svbCos = Vector3D.dotProduct(sunPV.getPosition(), svPV.getPosition().normalize()) /
-                                     (sunPV.getPosition().getNorm() * svPV.getPosition().getNorm());
-        final double        beta   = 0.5 * FastMath.PI - Vector3D.angle(sunPV.getPosition(), svPV.getMomentum());
+        final TimeStampedPVCoordinates sunPV  = sun.getPVCoordinates(date, frame);
+        final TimeStampedPVCoordinates svPV   = pvProv.getPVCoordinates(date, frame);
+        final double                   r      = svPV.getPosition().getNorm();
+        final double                   svbCos = Vector3D.dotProduct(sunPV.getPosition(), svPV.getPosition()) /
+                                                (sunPV.getPosition().getNorm() * r);
+        final double                   beta   = 0.5 * FastMath.PI - Vector3D.angle(sunPV.getPosition(), svPV.getMomentum());
 
         // nominal yaw steering
         final PVCoordinates crossPS =
@@ -111,12 +113,12 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                         
         final TimeStampedAngularCoordinates nominalYaw =
                         new TimeStampedAngularCoordinates(date,
-                                                          MINUS_Z, new PVCoordinates(1.0 / svPV.getPosition().getNorm(), svPV),
+                                                          MINUS_Z, new PVCoordinates(1.0 / r, svPV),
                                                           PLUS_Y,  crossPS,
                                                           1.0e-9);
 
         // compute yaw correction
-        final TimeStampedAngularCoordinates corrected = correctYaw(date, svPV, beta, svbCos, nominalYaw);
+        final TimeStampedAngularCoordinates corrected = correctYaw(svPV, beta, svbCos, nominalYaw);
 
         return new Attitude(frame, corrected);
 
@@ -133,7 +135,6 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     }
 
     /** Compute yaw angle correction.
-     * @param date current date
      * @param pv spacecraft position-velocity in inertial frame
      * @param beta angle between Sun and orbital plane
      * @param svbCos cosine of the angle between spacecraft and Sun direction
@@ -141,8 +142,8 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @return corrected yaw
      * @exception OrekitException if yaw cannot be corrected 
      */
-    protected abstract TimeStampedAngularCoordinates correctYaw(AbsoluteDate date, PVCoordinates pv, double beta,
-                                                                double svbCos, TimeStampedAngularCoordinates nominal)
+    protected abstract TimeStampedAngularCoordinates correctYaw(TimeStampedPVCoordinates pv, double beta, double svbCos,
+                                                                TimeStampedAngularCoordinates nominal)
         throws OrekitException;
 
     /** Combine nominal yaw and correction.
@@ -167,12 +168,11 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     }
 
     /** Compute Orbit Normal (ON) yaw.
-     * @param date current date
      * @param pv spacecraft position-velocity in inertial frame
      * @return Orbit Normal yaw
      * @exception OrekitException if derivation order is too large (never happens with hard-coded order)
      */
-    protected TimeStampedAngularCoordinates orbitNormalYaw(final AbsoluteDate date, final PVCoordinates pv)
+    protected TimeStampedAngularCoordinates orbitNormalYaw(final TimeStampedPVCoordinates pv)
         throws OrekitException {
         final Vector3D p             = pv.getPosition();
         final Vector3D v             = pv.getVelocity();
@@ -186,7 +186,19 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                                                      velocity.toDerivativeStructureVector(2)).
                                           normalize());
 
-        return new TimeStampedAngularCoordinates(date, MINUS_Z, pv, PLUS_Y, normal, 1.0e-9);
+        return new TimeStampedAngularCoordinates(pv.getDate(), MINUS_Z, pv, PLUS_Y, normal, 1.0e-9);
+    }
+
+    /** Compute nominal yaw angle.
+     * @param pv spacecraft position-velocity in inertial frame
+     * @param beta angle between Sun and orbital plane
+     * @param nominal nominal yaw
+     */
+    protected double yawAngle(final TimeStampedPVCoordinates pv, final double beta,
+                              final TimeStampedAngularCoordinates nominal) {
+        return FastMath.copySign(Vector3D.angle(pv.getVelocity(),
+                                                nominal.getRotation().applyTo(Vector3D.PLUS_I)),
+                                 -beta);
     }
 
 }

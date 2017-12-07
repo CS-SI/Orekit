@@ -19,9 +19,9 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Beidou inclined geosynchronous orbit navigation satellites.
@@ -57,31 +57,17 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final AbsoluteDate date, final PVCoordinates pv,
-                                                       final double beta, final double svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw)
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
+                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw)
         throws OrekitException {
 
         if (FastMath.abs(beta) < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
-            return orbitNormalYaw(date, pv);
+            return orbitNormalYaw(pv);
         }
 
-        final double cNoon  = FastMath.cos(2 * BETA_0);
-        final double cNight = -cNoon;
-
-        if (svbCos < cNight) {
-            // in eclipse turn mode
-            // TODO
-            return null;
-        } else if (svbCos > cNoon) {
-            // in noon turn mode
-            // TODO
-            return null;
-        } else {
-            // in nominal yaw mode
-            return nominalYaw;
-        }
+        // in nominal yaw mode
+        return nominalYaw;
 
     }
 

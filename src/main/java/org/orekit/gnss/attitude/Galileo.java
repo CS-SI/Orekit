@@ -16,12 +16,11 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Galileo navigation satellites.
@@ -69,9 +68,8 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final AbsoluteDate date, final PVCoordinates pv,
-                                                       final double beta, final double svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
+                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
         if (FastMath.abs(beta) <= BETA_Y) {
             if (svbCos < COS_NIGHT) {

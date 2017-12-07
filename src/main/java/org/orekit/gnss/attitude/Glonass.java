@@ -18,9 +18,9 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Glonass navigation satellites.
@@ -62,12 +62,11 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final AbsoluteDate date, final PVCoordinates pv,
-                                                       final double beta, final double svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
+                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
         // noon beta angle limit from yaw rate
-        final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNormSq();
+        final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
         double       aNoon  = FastMath.atan(muRate / YAW_RATE);
         if (FastMath.abs(beta) < aNoon) {
             double       yawEnd = YAW_END_ZERO;
