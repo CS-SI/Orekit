@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
@@ -72,8 +73,8 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
-                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
         // noon beta angle limit from yaw rate
         final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
@@ -82,22 +83,22 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = FastMath.cos(NIGHT_TURN_LIMIT);
 
-        if (svbCos < cNight) {
+        if (svbCos.getValue() < cNight) {
             // in eclipse turn mode
-            final double a   = FastMath.PI - FastMath.acos(svbCos);
-            final double det = FastMath.copySign(FastMath.sqrt(a * a - beta * beta),
-                                                 -Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
-                                                                      pv.getVelocity()));
-            final double phi = FastMath.atan2(-FastMath.tan(beta), -FastMath.sin(det));
+            final DerivativeStructure a   = svbCos.acos().negate().add(FastMath.PI);
+            final DerivativeStructure det = a.multiply(a).subtract(beta.multiply(beta)).sqrt().
+                                            copySign(-Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
+                                                                          pv.getVelocity()));
+            final DerivativeStructure phi = beta.tan().negate().atan2(det.sin().negate());
             // TODO
             return null;
-        } else if (svbCos > cNoon) {
+        } else if (svbCos.getValue() > cNoon) {
             // in noon turn mode
-            final double a   = FastMath.acos(svbCos);
-            final double det = FastMath.copySign(FastMath.sqrt(a * a - beta * beta),
-                                                 Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
-                                                                     pv.getVelocity()));
-            final double phi = FastMath.atan2(-FastMath.tan(beta), FastMath.sin(det));
+            final DerivativeStructure a   = svbCos.acos();
+            final DerivativeStructure det = a.multiply(a).subtract(beta.multiply(beta)).sqrt().
+                                            copySign(Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
+                                                                         pv.getVelocity()));
+            final DerivativeStructure phi = beta.tan().negate().atan2(det.sin());
             // TODO
             return null;
         } else {

@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -44,8 +45,8 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
-                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw)
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw)
         throws OrekitException {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw

@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -67,15 +68,15 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
-                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
-        if (FastMath.abs(beta) <= BETA_Y) {
-            if (svbCos < COS_NIGHT) {
+        if (FastMath.abs(beta.getValue()) <= BETA_Y) {
+            if (svbCos.getValue() < COS_NIGHT) {
                 // in eclipse turn mode
                 // TODO
                 return null;
-            } else if (svbCos > COS_NOON) {
+            } else if (svbCos.getValue() > COS_NOON) {
                 // in noon turn mode
                 // TODO
                 return null;

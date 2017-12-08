@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -61,15 +62,15 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
-                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
         // noon beta angle limit from yaw rate
         final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
         double       aNoon  = FastMath.atan(muRate / YAW_RATE);
-        if (FastMath.abs(beta) < aNoon) {
+        if (FastMath.abs(beta.getValue()) < aNoon) {
             double       yawEnd = YAW_END_ZERO;
-            final double tan    = FastMath.tan(beta);
+            final double tan    = FastMath.tan(beta.getValue());
             for (int i = 0; i < 3; ++i) {
                 final double sin = FastMath.sin(muRate * yawEnd / YAW_RATE);
                 yawEnd = 0.5 * FastMath.abs(FastMath.atan2(-tan,  sin) - FastMath.atan2(-tan, -sin));
@@ -80,11 +81,11 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = FastMath.cos(NIGHT_TURN_LIMIT);
 
-        if (svbCos < cNight) {
+        if (svbCos.getValue() < cNight) {
             // in eclipse turn mode
             // TODO
             return null;
-        } else if (svbCos > cNoon) {
+        } else if (svbCos.getValue() > cNoon) {
             // in noon turn mode
             // TODO
             return null;

@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -61,8 +62,8 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final double beta,
-                                                       final double svbCos, final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw) {
 
         // noon beta angle limit from yaw rate
         final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
@@ -71,11 +72,11 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = FastMath.cos(NIGHT_TURN_LIMIT);
 
-        if (svbCos < cNight) {
+        if (svbCos.getValue() < cNight) {
             // in eclipse turn mode
             // TODO
             return null;
-        } else if (svbCos > cNoon) {
+        } else if (svbCos.getValue() > cNoon) {
             // in noon turn mode
             // TODO
             return null;

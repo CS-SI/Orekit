@@ -17,6 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -29,6 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -98,12 +100,16 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedPVCoordinates sunPV  = sun.getPVCoordinates(date, frame);
-        final TimeStampedPVCoordinates svPV   = pvProv.getPVCoordinates(date, frame);
-        final double                   r      = svPV.getPosition().getNorm();
-        final double                   svbCos = Vector3D.dotProduct(sunPV.getPosition(), svPV.getPosition()) /
-                                                (sunPV.getPosition().getNorm() * r);
-        final double                   beta   = 0.5 * FastMath.PI - Vector3D.angle(sunPV.getPosition(), svPV.getMomentum());
+        final TimeStampedPVCoordinates                sunPV   = sun.getPVCoordinates(date, frame);
+        final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(2);
+        final TimeStampedPVCoordinates                svPV    = pvProv.getPVCoordinates(date, frame);
+        final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(2);
+        final DerivativeStructure r      = svPVDS.getPosition().getNorm();
+        final DerivativeStructure svbCos = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
+                                           divide(sunPVDS.getPosition().getNorm().multiply(r));
+        final DerivativeStructure beta   = FieldVector3D.angle(sunPVDS.getPosition(), svPVDS.getMomentum()).
+                                           negate().
+                                           add(0.5 * FastMath.PI);
 
         // nominal yaw steering
         final PVCoordinates crossPS =
@@ -113,7 +119,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                         
         final TimeStampedAngularCoordinates nominalYaw =
                         new TimeStampedAngularCoordinates(date,
-                                                          MINUS_Z, new PVCoordinates(1.0 / r, svPV),
+                                                          MINUS_Z, new PVCoordinates(1.0 / r.getValue(), svPV),
                                                           PLUS_Y,  crossPS,
                                                           1.0e-9);
 
@@ -142,7 +148,9 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @return corrected yaw
      * @exception OrekitException if yaw cannot be corrected 
      */
-    protected abstract TimeStampedAngularCoordinates correctYaw(TimeStampedPVCoordinates pv, double beta, double svbCos,
+    protected abstract TimeStampedAngularCoordinates correctYaw(TimeStampedPVCoordinates pv,
+                                                                DerivativeStructure beta,
+                                                                DerivativeStructure svbCos,
                                                                 TimeStampedAngularCoordinates nominal)
         throws OrekitException;
 
