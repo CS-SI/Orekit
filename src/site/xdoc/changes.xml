@@ -23,6 +23,10 @@
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
+     </action>
+      <action dev="luc" type="add" >
+        Added more conversions between PV coordinates and DerivativeStructure.
+        This simplifies for example getting the time derivative of the momentum.
       </action>
       <action dev="maxime" type="fix">
         Fixed weights for angular measurements in W3B orbit determination.
