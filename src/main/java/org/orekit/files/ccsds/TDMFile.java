@@ -199,7 +199,7 @@ public class TDMFile {
         }
 
         /** Adds an observation data line.
-         *          * @param keyword the keyword
+         * @param keyword the keyword
          * @param epoch the timetag
          * @param measurement the measurement
          */

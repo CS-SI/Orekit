@@ -24,6 +24,14 @@
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
       </action>
+      <action dev="maxime" type="fix">
+        Fixed weights for angular measurements in W3B orbit determination.
+        Fixed in test and tutorial.
+        Fixes issue #370.
+      </action>
+      <action dev="luc" type="add" due-to="Julio Hernanz">
+        Added frames for L1 and L2 Lagrange points, for any pair of celestial bodies.
+      </action>
     </release>
     <release version="9.1" date="2017-11-26"
              description="Version 9.1 is a minor release of Orekit. It introduces a few new

@@ -543,7 +543,7 @@ public class FramesFactory {
 
     /** Get the unique ICRF frame.
      * <p>The ICRF frame is centered at solar system barycenter and aligned
-     * with EME2000.</p>
+     * with GCRF.</p>
      * @return the unique instance of the ICRF frame
      * @exception OrekitException if solar system ephemerides cannot be loaded
      */
