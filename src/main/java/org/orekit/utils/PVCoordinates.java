@@ -317,9 +317,8 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                 final double   v2              = velocity.getNormSq();
                 final double   pa              = Vector3D.dotProduct(position, acceleration);
                 final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
-                final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 6 * pvOr2 * pvOr2 - aOr, acceleration,
-                                                              (a * pvOr2 - aj / a) / r, velocity,
-                                                              -3 * pvOr2, keplerianJerk);
+                final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
+                                                              4 * aOr * pvOr2 - aj / (a * r), velocity);
                 x0 = factory.build(position.getX(),     velocity.getX(),      acceleration.getX());
                 y0 = factory.build(position.getY(),     velocity.getY(),      acceleration.getY());
                 z0 = factory.build(position.getZ(),     velocity.getZ(),      acceleration.getZ());
