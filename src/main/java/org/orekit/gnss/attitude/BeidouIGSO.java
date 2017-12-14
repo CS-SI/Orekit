@@ -20,6 +20,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -49,8 +50,11 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
-                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw)
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv,
+                                                       final FieldPVCoordinates<DerivativeStructure> pvDS,
+                                                       final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos,
+                                                       final TimeStampedAngularCoordinates nominalYaw)
         throws OrekitException {
 
         if (FastMath.abs(beta.getValue()) < 2 * BETA_0) {

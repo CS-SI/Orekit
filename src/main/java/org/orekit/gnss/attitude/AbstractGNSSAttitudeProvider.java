@@ -48,6 +48,10 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
 
+    /** Constant X axis. */
+    private static final PVCoordinates PLUS_X =
+            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO);
+
     /** Constant Y axis. */
     private static final PVCoordinates PLUS_Y =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
@@ -112,19 +116,16 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                            add(0.5 * FastMath.PI);
 
         // nominal yaw steering
-        final PVCoordinates crossPS =
-                        new PVCoordinates(FieldVector3D.crossProduct(svPV.toDerivativeStructureVector(2),
-                                                                     sunPV.toDerivativeStructureVector(2)).
-                                          normalize());
-                        
         final TimeStampedAngularCoordinates nominalYaw =
                         new TimeStampedAngularCoordinates(date,
-                                                          MINUS_Z, new PVCoordinates(1.0 / r.getValue(), svPV),
-                                                          PLUS_Y,  crossPS,
+                                                          svPV.normalize(),
+                                                          PVCoordinates.crossProduct(svPV, sunPV).normalize(),
+                                                          MINUS_Z,
+                                                          PLUS_Y,
                                                           1.0e-9);
 
         // compute yaw correction
-        final TimeStampedAngularCoordinates corrected = correctYaw(svPV, beta, svbCos, nominalYaw);
+        final TimeStampedAngularCoordinates corrected = correctYaw(svPV, svPVDS, beta, svbCos, nominalYaw);
 
         return new Attitude(frame, corrected);
 
@@ -142,6 +143,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
     /** Compute yaw angle correction.
      * @param pv spacecraft position-velocity in inertial frame
+     * @param pvDS spacecraft position-velocity in inertial frame
      * @param beta angle between Sun and orbital plane
      * @param svbCos cosine of the angle between spacecraft and Sun direction
      * @param nominal nominal yaw
@@ -149,9 +151,9 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @exception OrekitException if yaw cannot be corrected 
      */
     protected abstract TimeStampedAngularCoordinates correctYaw(TimeStampedPVCoordinates pv,
+                                                                FieldPVCoordinates<DerivativeStructure> pvDS,
                                                                 DerivativeStructure beta,
-                                                                DerivativeStructure svbCos,
-                                                                TimeStampedAngularCoordinates nominal)
+                                                                DerivativeStructure svbCos, TimeStampedAngularCoordinates nominal)
         throws OrekitException;
 
     /** Combine nominal yaw and correction.
@@ -201,12 +203,17 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @param pv spacecraft position-velocity in inertial frame
      * @param beta angle between Sun and orbital plane
      * @param nominal nominal yaw
+     * @exception OrekitException if the user specified order is too large
+     * (never really thrown)
      */
-    protected double yawAngle(final TimeStampedPVCoordinates pv, final double beta,
-                              final TimeStampedAngularCoordinates nominal) {
-        return FastMath.copySign(Vector3D.angle(pv.getVelocity(),
-                                                nominal.getRotation().applyTo(Vector3D.PLUS_I)),
-                                 -beta);
+    protected DerivativeStructure yawAngle(final FieldPVCoordinates<DerivativeStructure> pv,
+                                           final DerivativeStructure beta,
+                                           final TimeStampedAngularCoordinates nominal)
+        throws OrekitException {
+        final int order = pv.getPosition().getX().getOrder();
+        final FieldVector3D<DerivativeStructure> xSat =
+                        nominal.revert().applyTo(PLUS_X).toDerivativeStructureVector(order);
+        return FieldVector3D.angle(pv.getVelocity(), xSat).copySign(-beta.getReal());
     }
 
 }

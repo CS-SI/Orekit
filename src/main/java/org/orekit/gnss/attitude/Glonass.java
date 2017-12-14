@@ -19,6 +19,7 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -62,8 +63,11 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv, final DerivativeStructure beta,
-                                                       final DerivativeStructure svbCos, final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv,
+                                                       final FieldPVCoordinates<DerivativeStructure> pvDS,
+                                                       final DerivativeStructure beta,
+                                                       final DerivativeStructure svbCos,
+                                                       final TimeStampedAngularCoordinates nominalYaw) {
 
         // noon beta angle limit from yaw rate
         final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
@@ -83,10 +87,18 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
         if (svbCos.getValue() < cNight) {
             // in eclipse turn mode
+            final DerivativeStructure piMB = svbCos.acos().negate().add(FastMath.PI);
+            final DerivativeStructure det = piMB.multiply(piMB).subtract(beta.multiply(beta)).
+                                             copySign(-nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
+            DerivativeStructure       phi  = beta.tan().negate().atan2(det.negate().sin());
             // TODO
             return null;
         } else if (svbCos.getValue() > cNoon) {
             // in noon turn mode
+            final DerivativeStructure b   =  svbCos.acos();
+            final DerivativeStructure det = b.multiply(b).subtract(beta.multiply(beta)).
+                                            copySign(nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
+            DerivativeStructure       phi = beta.tan().negate().atan2(det.sin());
             // TODO
             return null;
         } else {
