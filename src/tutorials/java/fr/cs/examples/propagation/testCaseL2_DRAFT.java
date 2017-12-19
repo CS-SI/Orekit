@@ -51,8 +51,8 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 /**
  *
  * @author Guillaume Obrecht
- * @author Luc Maisonabe
  * @author Julio Hernanz
+ *
  */
 public class testCaseL2_DRAFT {
 
@@ -102,25 +102,23 @@ public class testCaseL2_DRAFT {
 //                                                              new Vector3D(0.0, 26.9, -0.001));
 
 //        // with these initial conditions, all propagations leave the Earth/Moon system immediately
-//        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                              new Vector3D(0.0, 27.0, -0.001));
+        final PVCoordinates initialPVInL2 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+                                                              new Vector3D(0.0, 27.0, -0.001));
 
-          final PVCoordinates initialPVInL2 = new PVCoordinates(Vector3D.ZERO,
-                                                                new Vector3D(0.0, 27.0, -0.001));
-        
         // Integration parameters
         final double minStep = 0.001;
         final double maxstep = 3600.0;
 
         // Load Bodies
-        final CelestialBody sun   = CelestialBodyFactory.getSun();
         final CelestialBody earth = CelestialBodyFactory.getEarth();
+        final CelestialBody moon  = CelestialBodyFactory.getMoon();
         final CelestialBody earthMoonBary = CelestialBodyFactory.getEarthMoonBarycenter();
+        final double muEarth = earth.getGM();
 
         // Create frames to compare
         final Frame eme2000 = FramesFactory.getEME2000();
         final Frame gcrf = FramesFactory.getGCRF();
-        final Frame l2Frame = new L2Frame(sun, earth);
+        final Frame l2Frame = new L2Frame(earth, moon);
         final Frame earthMoonBaryFrame = earthMoonBary.getInertiallyOrientedFrame();
         final Frame outputFrame = l2Frame;
 
@@ -146,7 +144,7 @@ public class testCaseL2_DRAFT {
                                                  transformPVCoordinates(initialPVInL2);
 
         final CartesianOrbit initialOrbit1 = new CartesianOrbit(initialConditions1, integrationFrame1,
-                                                                initialDate, sun.getGM());
+                                                                initialDate, muEarth);
         final SpacecraftState initialState1 = new SpacecraftState(initialOrbit1);
 
 
@@ -155,7 +153,7 @@ public class testCaseL2_DRAFT {
 
         NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
         propagator1.setOrbitType(OrbitType.CARTESIAN);
-        propagator1.addForceModel(new ThirdBodyAttraction(earth));
+        propagator1.addForceModel(new ThirdBodyAttraction(moon));
         propagator1.setInitialState(initialState1);
         propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
 
@@ -183,8 +181,8 @@ public class testCaseL2_DRAFT {
         NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
         propagator2.setOrbitType(null);
         propagator2.setIgnoreCentralAttraction(true);
-        propagator2.addForceModel(new ThirdBodyAttraction(earth));
-        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(sun));
+        propagator2.addForceModel(new ThirdBodyAttraction(moon));
+        propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
         propagator2.setInitialState(initialState2);
         propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
 
@@ -215,8 +213,8 @@ public class testCaseL2_DRAFT {
         NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
         propagator3.setOrbitType(null);
         propagator3.setIgnoreCentralAttraction(true);
+        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(moon));
         propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
-        propagator3.addForceModel(new SingleBodyAbsoluteAttraction(sun));
         propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
         propagator3.setInitialState(initialState3);
         propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
