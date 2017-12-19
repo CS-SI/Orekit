@@ -62,7 +62,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = ingen jordorienteringsparametre er indl
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametre mellem {0} og {1}
 
 # missing Earth Orientation Parameters
-NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+NO_EARTH_ORIENTATION_PARAMETERS = ingen jordorienteringsparametre
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en understøttet IERS datafil
@@ -467,5 +467,5 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = filen {0} indeholder ikke Klobuchar koefficien
 NO_REFERENCE_DATE_FOR_PARAMETER = ingen referencedato angivet for parameteren {0}
 
 # station {0} not found, known stations: {1}
-STATION_NOT_FOUND = <MISSING TRANSLATION>
+STATION_NOT_FOUND = station {0} blev ikke fundet, kendte stationer: {1}
 
