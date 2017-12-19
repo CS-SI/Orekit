@@ -88,17 +88,17 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         if (svbCos.getValue() < cNight) {
             // in eclipse turn mode
             final DerivativeStructure piMB = svbCos.acos().negate().add(FastMath.PI);
-            final DerivativeStructure det = piMB.multiply(piMB).subtract(beta.multiply(beta)).
+            final DerivativeStructure det  = piMB.multiply(piMB).subtract(beta.multiply(beta)).
                                              copySign(-nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
             DerivativeStructure       phi  = beta.tan().negate().atan2(det.negate().sin());
             // TODO
             return null;
         } else if (svbCos.getValue() > cNoon) {
             // in noon turn mode
-            final DerivativeStructure b   =  svbCos.acos();
-            final DerivativeStructure det = b.multiply(b).subtract(beta.multiply(beta)).
-                                            copySign(nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
-            DerivativeStructure       phi = beta.tan().negate().atan2(det.sin());
+            final DerivativeStructure b    = svbCos.acos();
+            final DerivativeStructure det  = b.multiply(b).subtract(beta.multiply(beta)).
+                                             copySign(nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
+            DerivativeStructure       phi  = beta.tan().negate().atan2(det.sin());
             // TODO
             return null;
         } else {
