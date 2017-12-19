@@ -85,7 +85,7 @@ import org.orekit.utils.PVCoordinates;
  *
  */
 
-public class testCaseJupiter {
+public class JupiterSwingBy {
 
     public static void main(String[] args) throws OrekitException {
 

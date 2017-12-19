@@ -54,7 +54,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Julio Hernanz
  *
  */
-public class testCaseL2_DRAFT {
+public class EarthMoonL2Trajectory {
 
   public static void main(String[] args) throws OrekitException {
 
@@ -155,7 +155,7 @@ public class testCaseL2_DRAFT {
         propagator1.setOrbitType(OrbitType.CARTESIAN);
         propagator1.addForceModel(new ThirdBodyAttraction(moon));
         propagator1.setInitialState(initialState1);
-        propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL2_1.txt", outputFrame));
+        propagator1.setMasterMode(outputStep, new TutorialStepHandler("L2-trajectory-in-EME2000-frame.txt", outputFrame));
 
         SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
@@ -184,7 +184,7 @@ public class testCaseL2_DRAFT {
         propagator2.addForceModel(new ThirdBodyAttraction(moon));
         propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
         propagator2.setInitialState(initialState2);
-        propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL2_2.txt", outputFrame));
+        propagator2.setMasterMode(outputStep, new TutorialStepHandler("L2-trajectory-in-GCRF-frame.txt", outputFrame));
 
         SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
@@ -217,7 +217,7 @@ public class testCaseL2_DRAFT {
         propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
         propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
         propagator3.setInitialState(initialState3);
-        propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
+        propagator3.setMasterMode(outputStep, new TutorialStepHandler("L2-trajectory-in-L2-frame.txt", outputFrame));
 
         SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
         final PVCoordinates pv3 = finalState3.getPVCoordinates(outputFrame);

@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 * @author Luc Maisonabe
 * @author Julio Hernanz
 */
-public class testCaseL1 {
+public class EarthMoonL1Trajectory {
 
     public static void main(String[] args) throws OrekitException {
 
@@ -62,31 +62,10 @@ public class testCaseL1 {
 
           // Initial conditions
           // The output is *very* sensitive to these conditions, as L1 point in unstable
-
-          // with these initial conditions, we have a trajectory starting below L1 and not fast
-          // enough to stay there, so it falls back towards Earth/Moon and first makes several
-          // loops around Moon before falling to Earth and starting looping around Earth
-//          final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                                new Vector3D(0.0, 11.856, -0.001));
-
-//          // with these initial conditions, Earth-centered propagations fall back to Earth,
-//          // while L2-centered propagation remains near Moon until the end
-//          final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                                new Vector3D(0.0, 26.7, -0.001));
-
-//          // with these initial conditions, Earth-centered propagations remain near Moon until the end,
-//          // while L2-centered propagation falls back to Earth
-//          final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                                new Vector3D(0.0, 26.8, -0.001));
-
-//          // with these initial conditions, Earth-centered propagations leave the Earth/Moon system immediately,
-//          // while L2-centered propagation falls back to Earth
-//          final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-//                                                                new Vector3D(0.0, 26.9, -0.001));
-
-//          // with these initial conditions, all propagations leave the Earth/Moon system immediately
           final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
-                                                                new Vector3D(0.0, 27.0, -0.001));
+                                                                new Vector3D(0.0, 35, -0.001));
+//          final PVCoordinates initialPVInL1 = new PVCoordinates(new Vector3D(-1420966.0, 16.0, 26880.0),
+//                                                                new Vector3D(0.0, 35.7, -0.001));
 
           // Integration parameters
           final double minStep = 0.001;
@@ -138,7 +117,7 @@ public class testCaseL1 {
           propagator1.setOrbitType(OrbitType.CARTESIAN);
           propagator1.addForceModel(new ThirdBodyAttraction(moon));
           propagator1.setInitialState(initialState1);
-          propagator1.setMasterMode(outputStep, new TutorialStepHandler("testL1_1.txt", outputFrame));
+          propagator1.setMasterMode(outputStep, new TutorialStepHandler("L1-trajectory-in-EME2000-frame.txt", outputFrame));
 
           SpacecraftState finalState1 = propagator1.propagate(initialDate.shiftedBy(integrationTime));
           final PVCoordinates pv1 = finalState1.getPVCoordinates(outputFrame);
@@ -167,7 +146,7 @@ public class testCaseL1 {
           propagator2.addForceModel(new ThirdBodyAttraction(moon));
           propagator2.addForceModel(new SingleBodyAbsoluteAttraction(earth));
           propagator2.setInitialState(initialState2);
-          propagator2.setMasterMode(outputStep, new TutorialStepHandler("testL1_2.txt", outputFrame));
+          propagator2.setMasterMode(outputStep, new TutorialStepHandler("L1-trajectory-in-GCRF-frame.txt", outputFrame));
 
           SpacecraftState finalState2 = propagator2.propagate(initialDate.shiftedBy(integrationTime));
           final PVCoordinates pv2 = finalState2.getPVCoordinates(outputFrame);
@@ -176,7 +155,7 @@ public class testCaseL1 {
 
           final Frame integrationFrame3 = l1Frame;
 
-          System.out.println("3- Propagation in L2 reference frame (pseudo_inertial: " +
+          System.out.println("3- Propagation in L1 reference frame (pseudo_inertial: " +
                              integrationFrame3.isPseudoInertial() + ")");
 
           final PVCoordinates initialConditions3 = l1Frame.getTransformTo(integrationFrame3,  initialDate).
@@ -200,7 +179,7 @@ public class testCaseL1 {
           propagator3.addForceModel(new SingleBodyAbsoluteAttraction(earth));
           propagator3.addForceModel(new InertialForces(earthMoonBaryFrame));
           propagator3.setInitialState(initialState3);
-          propagator3.setMasterMode(outputStep, new TutorialStepHandler("testL2_3.txt", outputFrame));
+          propagator3.setMasterMode(outputStep, new TutorialStepHandler("L1-trajectory-in-L1-frame.txt", outputFrame));
 
           SpacecraftState finalState3 = propagator3.propagate(initialDate.shiftedBy(integrationTime));
           final PVCoordinates pv3 = finalState3.getPVCoordinates(outputFrame);
