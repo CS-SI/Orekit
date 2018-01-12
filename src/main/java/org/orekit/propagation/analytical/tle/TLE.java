@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
@@ -678,6 +679,64 @@ public class TLE implements TimeStamped, Serializable {
             }
         }
         return sum % 10;
+    }
+
+    /** Check if this tle equals the provided tle.
+     * @param o other tle
+     * @return true if this tle equals the provided tle
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof TLE)) {
+            return false;
+        }
+        TLE tle = (TLE) o;
+        return satelliteNumber == tle.satelliteNumber &&
+                classification == tle.classification &&
+                launchYear == tle.launchYear &&
+                launchNumber == tle.launchNumber &&
+                Objects.equals(launchPiece, tle.launchPiece) &&
+                ephemerisType == tle.ephemerisType &&
+                elementNumber == tle.elementNumber &&
+                Objects.equals(epoch, tle.epoch) &&
+                meanMotion == tle.meanMotion &&
+                meanMotionFirstDerivative == tle.meanMotionFirstDerivative &&
+                meanMotionSecondDerivative == tle.meanMotionSecondDerivative &&
+                eccentricity == tle.eccentricity &&
+                inclination == tle.inclination &&
+                pa == tle.pa &&
+                raan == tle.raan &&
+                meanAnomaly == tle.meanAnomaly &&
+                revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
+                bStar == tle.bStar;
+    }
+
+    /** Get a hashcode for this tle.
+     * @return hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(satelliteNumber,
+                classification,
+                launchYear,
+                launchNumber,
+                launchPiece,
+                ephemerisType,
+                elementNumber,
+                epoch,
+                meanMotion,
+                meanMotionFirstDerivative,
+                meanMotionSecondDerivative,
+                eccentricity,
+                inclination,
+                pa,
+                raan,
+                meanAnomaly,
+                revolutionNumberAtEpoch,
+                bStar);
     }
 
 }
