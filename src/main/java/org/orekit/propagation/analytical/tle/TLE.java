@@ -682,6 +682,10 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Check if this tle equals the provided tle.
+     * <p>Due to the difference in precision between object and string
+     * representations of TLE, it is possible for this method to return false
+     * even if string representations returned by {@link #toString()}
+     * are equal.</p>
      * @param o other tle
      * @return true if this tle equals the provided tle
      */
