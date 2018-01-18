@@ -697,7 +697,7 @@ public class TLE implements TimeStamped, Serializable {
         if (!(o instanceof TLE)) {
             return false;
         }
-        TLE tle = (TLE) o;
+        final TLE tle = (TLE) o;
         return satelliteNumber == tle.satelliteNumber &&
                 classification == tle.classification &&
                 launchYear == tle.launchYear &&
