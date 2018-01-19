@@ -785,6 +785,15 @@ public class OneAxisEllipsoidTest {
         doTestTransformVsOldIterative(model, points, 2.0e-15, 1.0e-15, 1.0e-14 * model.getEquatorialRadius());
     }
 
+    @Test
+    public void testIssue373() throws OrekitException {
+        final Frame            ecef   = FramesFactory.getITRF(IERSConventions.IERS_2010,true);
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1./298.257223563, ecef);
+        final Vector3D         sunPos = new Vector3D(-149757851422.23358, 8410610314.781021, 14717269835.161688 );
+        final GeodeticPoint    sunGP  = earth.transform(sunPos, ecef, null);
+        Assert.assertEquals(5.603878, FastMath.toDegrees(sunGP.getLatitude()), 1.0e-6);
+    }
+
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
                                                Stream<Vector3D> points,
                                                double latitudeTolerance, double longitudeTolerance,
