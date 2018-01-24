@@ -24,6 +24,10 @@
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
      </action>
+      <action dev="luc" type="fix">
+        Fixed issue when converting very far points (such as Sun center) to geodetic coordinates.
+        Fixes issue #373.
+      </action>
       <action dev="luc" type="add" >
         Added more conversions between PV coordinates and DerivativeStructure.
         This simplifies for example getting the time derivative of the momentum.

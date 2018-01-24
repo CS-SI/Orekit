@@ -56,13 +56,13 @@ NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} nu este nici un director, nici un fișier
 UNABLE_TO_FIND_RESOURCE = imposibil de găsit resursa {0} în classpath
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nici un Parametru de Orientare al Pământului nu a fost încărcat
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = niciun Parametru de Orientare al Pământului nu a fost încărcat
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pamântului lipsesc între {0} și {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pământului lipsesc între {0} și {1}
 
 # missing Earth Orientation Parameters
-NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pamântului lipsesc
+NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pământului lipsesc
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = fișierul {0} nu este un fișier IERS de date suportat
@@ -107,7 +107,7 @@ POSITIVE_FLOW_RATE = rata fluxului pozitivă (q: {0})
 NO_GRAVITY_FIELD_DATA_LOADED = nu sunt încărcate date referitoare la câmpul gravitațional
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = depășire inferioara la normalizarea campului gravitațional pentru gradul {0} și ordinul {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = depășire inferioară la normalizarea campului gravitațional pentru gradul {0} și ordinul {1}
 
 # no ocean tide data loaded
 NO_OCEAN_TIDE_DATA_LOADED = nu sunt încărcate date referitoare la mareele oceanice
@@ -158,7 +158,7 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același ob
 TLE_INVALID_PARAMETER = parametru TLE invalid pentru obiectul {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
-TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptata {1} ({3})
+TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptată {1} ({3})
 
 # no TLE data available
 NO_TLE_DATA_AVAILABLE = nu sunt date TLE disponibile
@@ -260,7 +260,7 @@ UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {
 TOO_SMALL_SCALE_FOR_PARAMETER = factorul de scalare pentru parametrul {0} este prea mic: {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
+UNKNOWN_ADDITIONAL_STATE = starea adițională "{0}" necunoscută
 
 # unknown month "{0}"
 UNKNOWN_MONTH = lună necunoscută "{0}"
@@ -272,7 +272,7 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matricea Jacobiană asociată tipului {0} est
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobianul de stare nu a fost inițializat încă
 
 # state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
-STATE_JACOBIAN_NOT_6X6 = Jacobianul de stare este o matrice {0}x{1}, ar trebui sa fie o matrice 6x6
+STATE_JACOBIAN_NOT_6X6 = Jacobianul de stare este o matrice {0}x{1}, ar trebui să fie o matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii dar Jacobianul parametrilor are {1} linii
@@ -281,10 +281,10 @@ STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = matricea Jacobiană inițială are {0} coloane, dar {1} parametrii au fost selectați
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
-ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbita trebuie sa fie ori eliptică cu a > 0 și e < 1 ori hiperbolică cu a < 0 și e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbita trebuie să fie ori eliptică cu a > 0 și e < 1 ori hiperbolică cu a < 0 și e > 1, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia realaă {0} în afara domeniului pentru orbitele hiperbolice (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia reală {0} în afara domeniului pentru orbitele hiperbolice (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
 HYPERBOLIC_ORBIT_NOT_HANDLED_AS = orbitele hiperbolice nu pot fi tratate ca instanțe de {0}
@@ -434,7 +434,7 @@ NULL_ARGUMENT = argumentul {0} nu poate fi nul
 VALUE_NOT_FOUND = valoarea {0} nu a fost găsită în {1}
 
 # Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spașiale multiple
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spațiale multiple
 
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Coeficienții Klobuchar α sau β nu pot fi încărcați din {0}

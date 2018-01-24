@@ -460,9 +460,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
                 final T                v2              = velocity.getNormSq();
                 final T                pa              = FieldVector3D.dotProduct(position, acceleration);
                 final T                aj              = FieldVector3D.dotProduct(acceleration, keplerianJerk);
-                final FieldVector3D<T> keplerianJounce = new FieldVector3D<>(v2.add(pa).multiply(-3).divide(r2).add(pvOr2.multiply(pvOr2).multiply(6)).subtract(aOr), acceleration,
-                                                                             a.multiply(pvOr2).subtract(aj.divide(a)).divide(r), velocity,
-                                                                             pvOr2.multiply(-3), keplerianJerk);
+                final FieldVector3D<T> keplerianJounce = new FieldVector3D<>(v2.add(pa).multiply(-3).divide(r2).add(pvOr2.multiply(pvOr2).multiply(15)).subtract(aOr), acceleration,
+                                                                             aOr.multiply(4).multiply(pvOr2).subtract(aj.divide(a.multiply(r))), velocity);
                 x0 = factory.build(position.getX(),     velocity.getX(),      acceleration.getX());
                 y0 = factory.build(position.getY(),     velocity.getY(),      acceleration.getY());
                 z0 = factory.build(position.getZ(),     velocity.getZ(),      acceleration.getZ());
