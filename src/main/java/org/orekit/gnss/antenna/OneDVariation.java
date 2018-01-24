@@ -37,7 +37,7 @@ class OneDVariation implements PhaseCenterVariationFunction {
 
     /** Simple constructor.
      * @param polarStart start polar angle
-     * @param polarStepstep between grid points
+     * @param polarStep between grid points
      * @param variations sampled phase center variations
      */
     OneDVariation(final double polarStart, final double polarStep, final double[] variations) {

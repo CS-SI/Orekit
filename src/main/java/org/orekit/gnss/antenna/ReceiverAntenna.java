@@ -46,7 +46,7 @@ public class ReceiverAntenna extends Antenna {
         this.serialNumber = serialNumber;
     }
 
-    /** Get the serial number
+    /** Get the serial number.
      * @return serial number
      */
     public String getSerialNumber() {

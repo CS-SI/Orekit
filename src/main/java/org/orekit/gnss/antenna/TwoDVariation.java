@@ -41,7 +41,7 @@ class TwoDVariation implements PhaseCenterVariationFunction {
 
     /** Simple constructor.
      * @param polarStart start polar angle
-     * @param polarStepstep between grid points
+     * @param polarStep between grid points
      * @param azimuthStep step between grid points
      * @param variations sampled phase center variations
      */

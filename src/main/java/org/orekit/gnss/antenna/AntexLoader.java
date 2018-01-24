@@ -80,10 +80,10 @@ public class AntexLoader {
                         satellitesAntennas.
                         stream().
                         filter(m -> {
-                            final SatelliteAntenna first = m.getTransitions().first().getBefore();
-                            return first.getSatelliteSystem() == antenna.getSatelliteSystem() &&
-                                   first.getPrnNumber() == antenna.getPrnNumber();
-                        }).findFirst();
+                                final SatelliteAntenna first = m.getTransitions().first().getBefore();
+                                return first.getSatelliteSystem() == antenna.getSatelliteSystem() &&
+                                       first.getPrnNumber() == antenna.getPrnNumber();
+                            }).findFirst();
         if (existing.isPresent()) {
             // this is an update for a satellite antenna, with new time span
             existing.get().addValidAfter(antenna, antenna.getValidFrom());
@@ -360,7 +360,7 @@ public class AntexLoader {
                                     for (int i = 0; i < grid1D.length; ++i) {
                                         grid1D[i] = Double.parseDouble(fields[i + 1]) * MM_TO_M;
                                     }
-                                    
+
                                 } else {
                                     // azimuth-dependent phase
                                     final int k = (int) FastMath.round(FastMath.toRadians(Double.parseDouble(fields[0])) / azimuthStep);

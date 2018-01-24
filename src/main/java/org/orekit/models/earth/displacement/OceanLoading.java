@@ -197,7 +197,7 @@ public class OceanLoading implements StationDisplacement {
     };
     // CHECKSTYLE: resume Indentation check
 
-    // CHECKSTYLE: stop NoWhitespaceAfter
+    // CHECKSTYLE: stop NoWhitespaceAfter check
     /** Doodson arguments for all tides used. */
     private static final int[][] DOODSON_ARGUMENTS = {
         { 2,  0,  0,  0,  0,  0 }, { 2,  2, -2,  0,  0,  0 }, { 2, -1,  0,  1,  0,  0 },
@@ -315,7 +315,7 @@ public class OceanLoading implements StationDisplacement {
         { 0,  4, -4,  2,  0,  0 }, { 0,  2,  1,  0,  1, -1 }, { 0,  3, -2, -1,  1,  0 },
         { 0,  4, -3,  0,  1,  1 }, { 0,  2,  0,  0,  3,  0 }, { 0,  6, -4,  0,  0,  0 }
     };
-    // CHECKSTYLE: resume NoWhitespaceAfter
+    // CHECKSTYLE: resume NoWhitespaceAfter check
 
     /** Cartwright-Edden amplitudes for all tides. */
     private static final Map<Tide, Double> CARTWRIGHT_EDDEN_AMPLITUDE_MAP;

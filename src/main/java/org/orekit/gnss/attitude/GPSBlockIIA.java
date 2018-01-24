@@ -47,7 +47,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
     private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
 
     /** Bias. */
-    private final double YAW_BIAS = FastMath.toRadians(0.5);
+    private static final double YAW_BIAS = FastMath.toRadians(0.5);
 
     /** Yaw rates for all spacecrafts. */
     private static final double[] YAW_RATES = new double[] {

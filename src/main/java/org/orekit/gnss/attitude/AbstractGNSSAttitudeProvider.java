@@ -73,7 +73,6 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
-     * @param earthFrame Earth frame to use
      */
     protected AbstractGNSSAttitudeProvider(final AbsoluteDate validityStart,
                                            final AbsoluteDate validityEnd,
@@ -148,7 +147,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @param svbCos cosine of the angle between spacecraft and Sun direction
      * @param nominal nominal yaw
      * @return corrected yaw
-     * @exception OrekitException if yaw cannot be corrected 
+     * @exception OrekitException if yaw cannot be corrected
      */
     protected abstract TimeStampedAngularCoordinates correctYaw(TimeStampedPVCoordinates pv,
                                                                 FieldPVCoordinates<DerivativeStructure> pvDS,
@@ -174,7 +173,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
         // combine the correction with the nominal yaw
         return nominalYaw.addOffset(correction);
-        
+
     }
 
     /** Compute Orbit Normal (ON) yaw.
@@ -203,6 +202,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @param pv spacecraft position-velocity in inertial frame
      * @param beta angle between Sun and orbital plane
      * @param nominal nominal yaw
+     * @return nominal yaw angle
      * @exception OrekitException if the user specified order is too large
      * (never really thrown)
      */

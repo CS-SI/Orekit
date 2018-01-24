@@ -35,10 +35,14 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface GNSSAttitudeProvider extends AttitudeProvider {
 
-    /** Start of validity for this provider. */
+    /** Get start of validity for this provider.
+     * @return start of validity for this provider
+     */
     AbsoluteDate validityStart();
 
-    /** End of validity for this provider. */
+    /** Get end of validity for this provider.
+     * @return end of validity for this provider
+     */
     AbsoluteDate validityEnd();
 
 }

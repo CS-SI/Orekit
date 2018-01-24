@@ -24,6 +24,7 @@ package org.orekit.gnss;
  */
 public enum Frequency {
 
+    // CHECKSTYLE: stop MultipleStringLiterals check
     /** GPS L1. */
     G01(SatelliteSystem.GPS,     "L1"),
 
@@ -89,6 +90,7 @@ public enum Frequency {
 
     /** SBAS L5. */
     S05(SatelliteSystem.SBAS,    "L5");
+    // CHECKSTYLE: resume MultipleStringLiterals check
 
     /** Satellite system. */
     private final SatelliteSystem satelliteSystem;
