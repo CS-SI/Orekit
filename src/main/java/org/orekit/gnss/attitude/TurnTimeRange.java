@@ -17,35 +17,49 @@
 package org.orekit.gnss.attitude;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 
-/**
- * Attitude providers for navigation satellites for which no specialized model is known.
- *
+/** Holder for turn time range.
+ * @see GNSSAttitudeContext#turnTimeRange()
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class GenericGNSS extends AbstractGNSSAttitudeProvider {
+class TurnTimeRange {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20171114L;
+    /** Turn start date. */
+    private final AbsoluteDate start;
+
+    /** Turn end date. */
+    private final AbsoluteDate end;
 
     /** Simple constructor.
-     * @param validityStart start of validity for this provider
-     * @param validityEnd end of validity for this provider
-     * @param sun provider for Sun position
+     * @param start turn start date
+     * @param end turn end date
      */
-    public GenericGNSS(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                       final PVCoordinatesProvider sun) {
-        super(validityStart, validityEnd, sun);
+    TurnTimeRange(final AbsoluteDate start, final AbsoluteDate end) {
+        this.start = start;
+        this.end   = end;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
-        // no eclipse/noon turn mode for generic spacecraft
-        return context.getNominalYaw();
+    /** Get the turn start date.
+     * @return turn start date
+     */
+    public AbsoluteDate getStart() {
+        return start;
+    }
+
+    /** Get the turn end date.
+     * @return turn end date
+     */
+    public AbsoluteDate getEnd() {
+        return end;
+    }
+
+    /** Check if a date is within range.
+     * @param date date to check
+     * @return true if date is within range
+     */
+    public boolean inRange(final AbsoluteDate date) {
+        return date.compareTo(start) > 0 && date.compareTo(end) < 0;
     }
 
 }

@@ -16,14 +16,10 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for GPS block IIR navigation satellites.
@@ -74,41 +70,29 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv,
-                                                       final FieldPVCoordinates<DerivativeStructure> pvDS,
-                                                       final DerivativeStructure beta,
-                                                       final DerivativeStructure svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
-        final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
-        final double aNoon  = FastMath.atan(muRate / yawRate);
-
+        final double aNoon  = FastMath.atan(context.getMuRate() / yawRate);
+        final double aNight = NIGHT_TURN_LIMIT;
         final double cNoon  = FastMath.cos(aNoon);
-        final double cNight = FastMath.cos(NIGHT_TURN_LIMIT);
+        final double cNight = FastMath.cos(aNight);
 
-        if (svbCos.getValue() < cNight) {
-            // in eclipse turn mode
-            final DerivativeStructure a   = svbCos.acos().negate().add(FastMath.PI);
-            final DerivativeStructure det = a.multiply(a).subtract(beta.multiply(beta)).sqrt().
-                                            copySign(-Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
-                                                                          pv.getVelocity()));
-            final DerivativeStructure phi = beta.tan().negate().atan2(det.sin().negate());
-            // TODO
-            return null;
-        } else if (svbCos.getValue() > cNoon) {
-            // in noon turn mode
-            final DerivativeStructure a   = svbCos.acos();
-            final DerivativeStructure det = a.multiply(a).subtract(beta.multiply(beta)).sqrt().
-                                            copySign(Vector3D.dotProduct(nominalYaw.getRotation().applyInverseTo(Vector3D.PLUS_I),
-                                                                         pv.getVelocity()));
-            final DerivativeStructure phi = beta.tan().negate().atan2(det.sin());
-            // TODO
-            return null;
-        } else {
-            // in nominal yaw mode
-            return nominalYaw;
+        if (context.inTurnRegion(cNight, cNoon)) {
+
+            final double        absBeta       = FastMath.abs(context.getBeta().getReal());
+            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
+                                                                      absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
+                                                                      context.inOrbitPlaneAngle(aNight - FastMath.PI));
+            if (turnTimeRange.inRange(context.getDate())) {
+                // TODO
+                return null;
+            }
+
         }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
 
     }
 

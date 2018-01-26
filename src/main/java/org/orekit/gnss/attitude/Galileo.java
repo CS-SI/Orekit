@@ -19,10 +19,8 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Galileo navigation satellites.
@@ -69,26 +67,24 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv,
-                                                       final FieldPVCoordinates<DerivativeStructure> pvDS,
-                                                       final DerivativeStructure beta,
-                                                       final DerivativeStructure svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
 
-        if (FastMath.abs(beta.getValue()) <= BETA_Y) {
-            if (svbCos.getValue() < COS_NIGHT) {
-                // in eclipse turn mode
-                // TODO
-                return null;
-            } else if (svbCos.getValue() > COS_NOON) {
-                // in noon turn mode
+        final DerivativeStructure beta = context.getBeta();
+
+        if (FastMath.abs(beta.getValue()) < BETA_Y && context.inTurnRegion(COS_NIGHT, COS_NOON)) {
+
+            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
+                                                                      BETA_X :
+                                                                      context.inOrbitPlaneAngle(BETA_X));
+            if (turnTimeRange.inRange(context.getDate())) {
                 // TODO
                 return null;
             }
+
         }
 
         // in nominal yaw mode
-        return nominalYaw;
+        return context.getNominalYaw();
 
     }
 

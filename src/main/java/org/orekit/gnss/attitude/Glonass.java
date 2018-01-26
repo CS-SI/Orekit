@@ -19,10 +19,8 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Attitude providers for Glonass navigation satellites.
@@ -63,15 +61,13 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final TimeStampedPVCoordinates pv,
-                                                       final FieldPVCoordinates<DerivativeStructure> pvDS,
-                                                       final DerivativeStructure beta,
-                                                       final DerivativeStructure svbCos,
-                                                       final TimeStampedAngularCoordinates nominalYaw) {
+    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
-        final double muRate = pv.getVelocity().getNorm() / pv.getPosition().getNorm();
-        double       aNoon  = FastMath.atan(muRate / YAW_RATE);
+        final DerivativeStructure beta   = context.getBeta();
+        final double              muRate = context.getMuRate();
+        final double              aNight = NIGHT_TURN_LIMIT;
+        double aNoon  = FastMath.atan(muRate / YAW_RATE);
         if (FastMath.abs(beta.getValue()) < aNoon) {
             double       yawEnd = YAW_END_ZERO;
             final double tan    = FastMath.tan(beta.getValue());
@@ -83,28 +79,22 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         }
 
         final double cNoon  = FastMath.cos(aNoon);
-        final double cNight = FastMath.cos(NIGHT_TURN_LIMIT);
+        final double cNight = FastMath.cos(aNight);
 
-        if (svbCos.getValue() < cNight) {
-            // in eclipse turn mode
-            final DerivativeStructure piMB = svbCos.acos().negate().add(FastMath.PI);
-            final DerivativeStructure det  = piMB.multiply(piMB).subtract(beta.multiply(beta)).
-                                             copySign(-nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
-            final DerivativeStructure phi  = beta.tan().negate().atan2(det.negate().sin());
-            // TODO
-            return null;
-        } else if (svbCos.getValue() > cNoon) {
-            // in noon turn mode
-            final DerivativeStructure b    = svbCos.acos();
-            final DerivativeStructure det  = b.multiply(b).subtract(beta.multiply(beta)).
-                                             copySign(nominalYaw.getRotation().applyTo(pv.getVelocity()).getX());
-            final DerivativeStructure phi  = beta.tan().negate().atan2(det.sin());
-            // TODO
-            return null;
-        } else {
-            // in nominal yaw mode
-            return nominalYaw;
+        if (context.inTurnRegion(cNight, cNoon)) {
+
+            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
+                                                                      aNoon :
+                                                                      context.inOrbitPlaneAngle(aNight - FastMath.PI));
+            if (turnTimeRange.inRange(context.getDate())) {
+                // TODO
+                return null;
+            }
+
         }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
 
     }
 
