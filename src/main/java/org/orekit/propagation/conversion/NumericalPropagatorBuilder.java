@@ -19,16 +19,19 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
@@ -75,6 +78,24 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
         this.attProvider = Propagator.DEFAULT_LAW;
+    }
+
+    /** Create a copy of a NumericalPropagatorBuilder object.
+     * @return Copied version of the NumericalPropagatorBuilder
+     * @throws OrekitException if parameters drivers cannot be scaled
+     */
+    public NumericalPropagatorBuilder copy() throws OrekitException {
+        final NumericalPropagatorBuilder copyBuilder =
+                        new NumericalPropagatorBuilder(createInitialOrbit(),
+                                                       builder,
+                                                       getPositionAngle(),
+                                                       getPositionScale());
+        copyBuilder.setAttitudeProvider(attProvider);
+        copyBuilder.setMass(mass);
+        for (ForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
     }
 
     /** Set the attitude provider.
@@ -125,5 +146,4 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         return propagator;
     }
-
 }

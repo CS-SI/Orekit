@@ -27,12 +27,13 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-//import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -41,6 +42,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
@@ -273,6 +275,22 @@ public class EstimationTestUtils {
 
     }
 
+    /**
+     * Checker for batch LS estimator validation
+     * @param context Context used for the test
+     * @param estimator Batch LS estimator
+     * @param iterations Number of iterations expected
+     * @param evaluations Number of evaluations expected
+     * @param expectedRMS Expected RMS value
+     * @param rmsEps Tolerance on expected RMS
+     * @param expectedMax Expected weighted residual maximum
+     * @param maxEps Tolerance on weighted residual maximum
+     * @param expectedDeltaPos Expected position difference between estimated orbit and initial orbit
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
+     * @param velEps Tolerance on expected velocity difference
+     * @throws OrekitException
+     */
     public static void checkFit(final Context context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
@@ -323,6 +341,87 @@ public class EstimationTestUtils {
                             Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
+    }
+    
+    /**
+     * Checker for Kalman estimator validation
+     * @param context context used for the test
+     * @param kalman Kalman filter
+     * @param measurements List of observed measurements to be processed by the Kalman
+     * @param refOrbit Reference orbit at last measurement date
+     * @param expectedDeltaPos Expected position difference between estimated orbit and reference orbit
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
+     * @param velEps Tolerance on expected velocity difference
+     * @param expectedSigmasPos Expected values for covariance matrix on position
+     * @param sigmaPosEps Tolerance on expected covariance matrix on position
+     * @param expectedSigmasVel Expected values for covariance matrix on velocity
+     * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
+     * @throws OrekitException
+     */
+    public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
+                                      final List<ObservedMeasurement<?>> measurements,
+                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final double expectedDeltaPos, final double posEps,
+                                      final double expectedDeltaVel, final double velEps,
+                                      final double[] expectedSigmasPos,final double sigmaPosEps,
+                                      final double[] expectedSigmasVel,final double sigmaVelEps)
+        throws OrekitException {
+        
+        // Add the measurements to the Kalman filter
+        kalman.processMeasurements(measurements);
+        
+        // Check the number of measurements processed by the filter
+        Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        
+        // Get the last estimation
+        final Orbit    estimatedOrbit    = kalman.getProcessModel().getEstimatedPropagator().getInitialState().getOrbit();
+        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
+
+        // Get the last covariance matrix estimation
+        final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
+        
+        // Convert the orbital part to Cartesian formalism
+        // Assuming all 6 orbital parameters are estimated by the filter
+        final double[][] dCdY = new double[6][6];
+        estimatedOrbit.getJacobianWrtParameters(positionAngle, dCdY);
+        final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
+        final RealMatrix estimatedCartesianP = 
+                        Jacobian.
+                        multiply(estimatedP.getSubMatrix(0, 5, 0, 5)).
+                        multiply(Jacobian.transpose());
+        
+        // Get the final sigmas (ie.sqrt of the diagonal of the Cartesian orbital covariance matrix)
+        final double[] sigmas = new double[6];
+        for (int i = 0; i < 6; i++) {
+            sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
+        }
+//        // FIXME: debug
+//        final double dPos = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+//        final double dVel = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
+//        System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
+//        System.out.println("dPos    = " + dPos + " m");
+//        System.out.println("dVel    = " + dVel + " m/s");
+//        System.out.println("sigmas  = " + sigmas[0] + " "
+//                        + sigmas[1] + " "
+//                        + sigmas[2] + " "
+//                        + sigmas[3] + " "
+//                        + sigmas[4] + " "
+//                        + sigmas[5]);
+//        //debug
+        
+        // Check the final orbit estimation & PV sigmas
+        Assert.assertEquals(expectedDeltaPos,
+                            Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            posEps);
+        Assert.assertEquals(expectedDeltaVel,
+                            Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
+                            velEps);
+        for (int i = 0; i < 3; i++) {
+            Assert.assertEquals(expectedSigmasPos[i], sigmas[i],   sigmaPosEps);
+            Assert.assertEquals(expectedSigmasVel[i], sigmas[i+3], sigmaVelEps);
+        }
     }
 
 }

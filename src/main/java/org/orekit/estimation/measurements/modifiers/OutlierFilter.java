@@ -33,10 +33,10 @@ import org.orekit.utils.ParameterDriver;
 public class OutlierFilter<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Warmup iterations. */
-    private final int warmup;
+    protected final int warmup;
 
     /** Outlier detection limit. */
-    private final double maxSigma;
+    protected final double maxSigma;
 
     /** Simple constructor.
      * @param warmup number of iterations before with filter is not applied

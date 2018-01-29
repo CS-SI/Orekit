@@ -16,10 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -46,7 +49,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
     /** Date of the initial orbit. */
-    private final AbsoluteDate initialOrbitDate;
+    private AbsoluteDate initialOrbitDate;
 
     /** Frame in which the orbit is propagated. */
     private final Frame frame;
@@ -65,6 +68,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Position angle type to use. */
     private final PositionAngle positionAngle;
+
+    /** Position scale to use for the orbital drivers. */
+    private final double positionScale;
 
     /** Build a new instance.
      * <p>
@@ -102,6 +108,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.propagationDrivers  = new ParameterDriversList();
         this.orbitType           = templateOrbit.getType();
         this.positionAngle       = positionAngle;
+        this.positionScale       = positionScale;
         this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
@@ -150,6 +157,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** {@inheritDoc} */
     public ParameterDriversList getPropagationParametersDrivers() {
         return propagationDrivers;
+    }
+
+    /** Get the position scale.
+     * @return the position scale used to scale the orbital drivers
+     */
+    public double getPositionScale() {
+        return positionScale;
     }
 
     /** Get the number of selected parameters.
@@ -260,4 +274,32 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         propagationDrivers.sort();
     }
 
+    /** Reset the orbit in the propagator builder.
+     * Note: The orbit has to be the same type as the original orbit
+     * @param newOrbit New orbit to set in the propagator builder
+     * @throws OrekitException If the new orbit does not have the same type as the former
+     */
+    public void resetOrbit(final Orbit newOrbit)
+                    throws OrekitException {
+
+        // Ensure the orbit type is the same
+        if (!newOrbit.getType().equals(getOrbitType())) {
+            // FIXME: Throw a proper Orekit Exception
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      "Orbit do not have the same type" );
+        }
+
+        // Map the new orbit in an array of double
+        final double[] orbitArray = new double[6];
+        getOrbitType().mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
+
+        // Update all the orbital drivers, selected or unselected
+        final List<DelegatingDriver> orbitalDriversList = getOrbitalParametersDrivers().getDrivers();
+        for (int i = 0; i < 6; i++) {
+            orbitalDriversList.get(i).setValue(orbitArray[i]);
+        }
+
+        // Change the initial orbit date in the builder
+        this.initialOrbitDate = newOrbit.getDate();
+    }
 }
