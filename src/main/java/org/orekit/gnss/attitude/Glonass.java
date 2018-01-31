@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -64,16 +63,16 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
     protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
-        final DerivativeStructure beta   = context.getBeta();
-        final double              muRate = context.getMuRate();
-        final double              aNight = NIGHT_TURN_LIMIT;
-        double aNoon  = FastMath.atan(muRate / YAW_RATE);
-        if (FastMath.abs(beta.getValue()) < aNoon) {
+        final double realBeta = context.getBeta();
+        final double muRate   = context.getMuRate();
+        final double aNight   = NIGHT_TURN_LIMIT;
+        double       aNoon    = FastMath.atan(muRate / YAW_RATE);
+        if (FastMath.abs(realBeta) < aNoon) {
             double       yawEnd = YAW_END_ZERO;
-            final double tan    = FastMath.tan(beta.getValue());
             for (int i = 0; i < 3; ++i) {
-                final double sin = FastMath.sin(muRate * yawEnd / YAW_RATE);
-                yawEnd = 0.5 * FastMath.abs(FastMath.atan2(-tan,  sin) - FastMath.atan2(-tan, -sin));
+                final double delta = muRate * yawEnd / YAW_RATE;
+                yawEnd = 0.5 * FastMath.abs(context.computePhi(realBeta,  delta) -
+                                            context.computePhi(realBeta, -delta));
             }
             aNoon = muRate * yawEnd / YAW_RATE;
         }
@@ -81,14 +80,36 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = FastMath.cos(aNight);
 
-        if (context.inTurnRegion(cNight, cNoon)) {
+        if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
-                                                                      aNoon :
-                                                                      context.inOrbitPlaneAngle(aNight - FastMath.PI));
-            if (turnTimeRange.inRange(context.getDate())) {
+            context.setHalfSpan(context.inSunSide() ?
+                                aNoon :
+                                context.inOrbitPlaneAngle(aNight - FastMath.PI));
+            if (context.inTurnTimeRange(context.getDate(), 0)) {
+
+                // we need to ensure beta sign does not change during the turn
+                final double beta     = context.getSecuredBeta();
+                final double phiStart = context.getYawStart(beta);
+                final double dtStart  = context.timeSinceTurnStart(context.getDate());
+                final double phi;
+
+                if (context.inSunSide()) {
+                    // noon turn
+                    final double linearPhi = phiStart - FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    // TODO: there is no protection against overshooting phiEnd
+                    // there should probably be some protection
+                    phi = linearPhi;
+                } else {
+                    // midnight turn
+                    final double linearPhi = phiStart + FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    final double phiEnd    = context.getYawEnd(beta);
+                    // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
+                    phi = (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) ? phiEnd : linearPhi;
+                }
+
                 // TODO
                 return null;
+
             }
 
         }

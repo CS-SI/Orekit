@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -52,8 +52,8 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     /** Limit for the night turn. */
     private static final double COS_NIGHT = -COS_NOON;
 
-    /** Yaw rates for all spacecrafts. */
-    private static final double YAW_RATE = FastMath.toRadians(0.203);
+    /** No margin on turn end for Galileo. */
+    private final double END_MARGIN = 0.0;
 
     /** Simple constructor.
      * @param validityStart start of validity for this provider
@@ -69,14 +69,25 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
     @Override
     protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
 
-        final DerivativeStructure beta = context.getBeta();
+        if (FastMath.abs(context.getBeta()) < BETA_Y &&
+            context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
-        if (FastMath.abs(beta.getValue()) < BETA_Y && context.inTurnRegion(COS_NIGHT, COS_NOON)) {
+            context.setHalfSpan(context.inSunSide() ?
+                                BETA_X :
+                                context.inOrbitPlaneAngle(BETA_X));
+            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
 
-            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
-                                                                      BETA_X :
-                                                                      context.inOrbitPlaneAngle(BETA_X));
-            if (turnTimeRange.inRange(context.getDate())) {
+                // handling both noon and midnight turns at once
+                final double beta   = context.getBeta();
+                final SinCos scBeta = FastMath.sinCos(beta);
+                final double sinY   = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
+                final double sd     = FastMath.copySign(FastMath.sin(context.getDelta()), context.getSVBcos());
+                final double c      = sd * scBeta.cos();
+                final double shy    = 0.5 * ((-sinY - scBeta.sin()) +
+                                             (-sinY + scBeta.sin()) *
+                                             FastMath.cos(FastMath.PI * FastMath.abs(c) / FastMath.sin(BETA_X)));
+                final double phi    = FastMath.atan2(shy, c);
+
                 // TODO
                 return null;
             }

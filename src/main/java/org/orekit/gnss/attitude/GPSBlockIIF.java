@@ -48,6 +48,9 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
     /** Yaw rates for all spacecrafts. */
     private static final double YAW_RATE = FastMath.toRadians(0.11);
 
+    /** Margin on turn end. */
+    private final double END_MARGIN = 1800.0;
+
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -68,15 +71,42 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
         final double cNoon  = FastMath.cos(aNoon);
         final double cNight = FastMath.cos(aNight);
 
-        if (context.inTurnRegion(cNight, cNoon)) {
+        if (context.setUpTurnRegion(cNight, cNoon)) {
 
-            final double        absBeta       = FastMath.abs(context.getBeta().getReal());
-            final TurnTimeRange turnTimeRange = context.turnTimeRange(context.inSunSide() ?
-                                                                      absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
-                                                                      context.inOrbitPlaneAngle(aNight - FastMath.PI));
-            if (turnTimeRange.inRange(context.getDate())) {
+            final double absBeta = FastMath.abs(context.getBeta());
+            context.setHalfSpan(context.inSunSide() ?
+                                absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
+                                context.inOrbitPlaneAngle(aNight - FastMath.PI));
+            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+
+                // we need to ensure beta sign does not change during the turn
+                final double beta     = context.getSecuredBeta();
+                final double phiStart = context.getYawStart(beta);
+                final double dtStart  = context.timeSinceTurnStart(context.getDate());
+                final double phi;
+                if (context.inSunSide()) {
+                    // noon turn
+                    final double linearPhi;
+                    if (beta > YAW_BIAS && beta < 0) {
+                        // noon turn problem for small negative beta in block IIF
+                        // rotation is in the wrong direction for these spacecrafts
+                        linearPhi = phiStart + FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    } else {
+                        // regular noon turn
+                        linearPhi = phiStart - FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    }
+                    // TODO: there is no protection against overshooting phiEnd as in night turn
+                    // there should probably be some protection
+                    phi = linearPhi;
+                } else {
+                    // midnight turn
+                    final double yawEnd = context.yawRate(beta);
+                    phi = phiStart - yawEnd * dtStart;
+                }
+
                 // TODO
                 return null;
+
             }
 
         }

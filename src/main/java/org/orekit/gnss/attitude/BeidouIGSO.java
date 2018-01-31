@@ -50,7 +50,7 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
     protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context)
         throws OrekitException {
 
-        if (FastMath.abs(context.getBeta().getValue()) < 2 * BETA_0) {
+        if (FastMath.abs(context.getBeta()) < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
             return context.orbitNormalYaw();
         }
