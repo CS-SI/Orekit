@@ -34,7 +34,7 @@
   <property name="hamcrest.maven.path"     value="org/hamcrest"                                  />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2"                 />
 
-  <property name="copyright"               value="2002-2017 CS Syst&#232;mes d&#039;Information" />
+  <property name="copyright"               value="2002-2018 CS Syst&#232;mes d&#039;Information" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
