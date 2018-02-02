@@ -22,6 +22,10 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="maxime" type="add">
+        Allow backward propagation in batch LS orbit determination.
+        Fixes issue #375.
+      </action>
+      <action dev="maxime" type="add">
         Added covariance matrix to PV measurements.
         Fixes issue #374.
       </action>
