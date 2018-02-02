@@ -45,6 +45,8 @@ public class KalmanEstimatorBuilder {
      * Second moment of the process noise. Often named Q.
      */
     private RealMatrix processNoiseMatrix;
+    
+    // FIXME: Add some check when building the filter...
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
@@ -64,7 +66,7 @@ public class KalmanEstimatorBuilder {
      */
     public KalmanEstimatorReal buildReal()
                     throws OrekitException {
-        // FIXME: Check the sizes of matrix. Or do it inside the filter
+        // FIXME: Temporary
         return new KalmanEstimatorReal(propagatorBuilder,
                                          estimatedMeasurementsParameters,
                                          initialCovarianceMatrix,
@@ -78,7 +80,7 @@ public class KalmanEstimatorBuilder {
      */
     public KalmanEstimatorNormalized buildNormalized()
                     throws OrekitException {
-        // FIXME: Check the sizes of matrix. Or do it inside the filter
+        // FIXME: Temporary
         return new KalmanEstimatorNormalized(propagatorBuilder,
                                              estimatedMeasurementsParameters,
                                              initialCovarianceMatrix,
@@ -94,7 +96,6 @@ public class KalmanEstimatorBuilder {
      */
     public KalmanEstimator build()
                     throws OrekitException {
-        // FIXME: Check the sizes of matrix. Or do it inside the filter
         return new KalmanEstimator(propagatorBuilder,
                                    estimatedMeasurementsParameters,
                                    initialCovarianceMatrix,

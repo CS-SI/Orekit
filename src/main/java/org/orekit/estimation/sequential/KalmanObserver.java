@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
  */
 public interface KalmanObserver {
 
-    /** Notification callback for the end of each evaluation.
+    /** Notification callback after each one of a Kalman filter estimation.
      * @param predictedOrbits current orbits predicted by the filter
      * @param estimatedOrbits current orbits estimated by the filter
      * @param estimatedOrbitalParameters estimated orbital parameters
