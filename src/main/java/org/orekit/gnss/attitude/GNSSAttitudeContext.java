@@ -335,22 +335,37 @@ class GNSSAttitudeContext implements TimeStamped {
         return date.durationFrom(turnStart);
     }
 
-    /** Combine nominal yaw and correction.
-     * @param yawCorrection yaw correction angle
-     * @param yawCorrectionDot yaw correction angle derivative
-     * @return corrected yaw
+    /** Generate an attitude with turn-corrected yaw.
+     * @param yaw yaw value to apply
+     * @param yawDot yaw first time derivative
+     * @return attitude with specified yaw
+     * @exception OrekitException if zero yaw derivatives cannot be computed
      */
-    public TimeStampedAngularCoordinates applyCorrection(final double yawCorrection,
-                                                         final double yawCorrectionDot) {
+    public TimeStampedAngularCoordinates turnCorrectedAttitude(final double yaw, final double yawDot)
+        throws OrekitException {
 
-        // compute a linear correction model
+        // zero yaw attitude
+        final Vector3D p  = svPV.getPosition();
+        final Vector3D v  = svPV.getVelocity();
+        final Vector3D a  = svPV.getAcceleration();
+        final double   r2 = p.getNormSq();
+        final double   r  = FastMath.sqrt(r2);
+        final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
+        final PVCoordinates momentum = PVCoordinates.crossProduct(svPV, new PVCoordinates(v, a, keplerianJerk));
+        final TimeStampedAngularCoordinates zeroYaw =
+                        new TimeStampedAngularCoordinates(svPV.getDate(),
+                                                          svPV.normalize(), momentum.normalize(),
+                                                          MINUS_Z, PLUS_Y,
+                                                          1.0e-9);
+
+        // compute a linear yaw model
         final AngularCoordinates correction =
-                        new AngularCoordinates(new Rotation(Vector3D.PLUS_K, yawCorrection,
+                        new AngularCoordinates(new Rotation(Vector3D.PLUS_K, yaw,
                                                             RotationConvention.FRAME_TRANSFORM),
-                                               new Vector3D(yawCorrectionDot, Vector3D.PLUS_K));
+                                               new Vector3D(yawDot, Vector3D.PLUS_K));
 
-        // combine the correction with the nominal yaw
-        return nominalYaw.addOffset(correction);
+        // combine the two parts of the attitude
+        return zeroYaw.addOffset(correction);
 
     }
 

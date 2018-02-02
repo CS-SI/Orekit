@@ -67,7 +67,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         if (FastMath.abs(context.getBeta()) < BETA_Y &&
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {

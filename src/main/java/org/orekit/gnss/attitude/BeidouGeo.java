@@ -43,7 +43,7 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context)
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
         throws OrekitException {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw

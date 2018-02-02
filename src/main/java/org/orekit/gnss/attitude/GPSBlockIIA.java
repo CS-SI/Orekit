@@ -73,7 +73,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
         final double aNoon  = FastMath.atan(context.getMuRate() / yawRate);

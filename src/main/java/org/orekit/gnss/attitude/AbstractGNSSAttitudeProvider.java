@@ -86,7 +86,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         final TimeStampedPVCoordinates svPV  = pvProv.getPVCoordinates(date, frame);
 
         // compute yaw correction
-        final TimeStampedAngularCoordinates corrected = correctYaw(new GNSSAttitudeContext(sunPV, svPV));
+        final TimeStampedAngularCoordinates corrected = correctedYaw(new GNSSAttitudeContext(sunPV, svPV));
 
         return new Attitude(frame, corrected);
 
@@ -102,12 +102,12 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         return null;
     }
 
-    /** Compute yaw angle correction.
-     * @param context TODO
+    /** Compute GNSS attitude with midnight/noon yaw turn correction.
+     * @param context context data for attitude computation
      * @return corrected yaw
-     * @exception OrekitException if yaw cannot be corrected
+     * @exception OrekitException if yaw corrected attitude cannot be computed
      */
-    protected abstract TimeStampedAngularCoordinates correctYaw(GNSSAttitudeContext context)
+    protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context)
         throws OrekitException;
 
 }

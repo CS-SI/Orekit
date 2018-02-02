@@ -43,7 +43,7 @@ public class GenericGNSS extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context) {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
         // no eclipse/noon turn mode for generic spacecraft
         return context.getNominalYaw();
     }

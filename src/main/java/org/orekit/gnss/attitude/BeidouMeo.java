@@ -47,7 +47,7 @@ public class BeidouMeo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctYaw(final GNSSAttitudeContext context)
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
         throws OrekitException {
 
         if (FastMath.abs(context.getBeta()) < 2 * BETA_0) {
