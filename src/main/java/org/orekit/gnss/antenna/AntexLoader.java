@@ -76,18 +76,12 @@ public class AntexLoader {
      * @param antenna satellite antenna to add
      */
     private void addSatelliteAntenna(final SatelliteAntenna antenna) {
-        final Optional<TimeSpanMap<SatelliteAntenna>> existing =
-                        satellitesAntennas.
-                        stream().
-                        filter(m -> {
-                                final SatelliteAntenna first = m.getTransitions().first().getBefore();
-                                return first.getSatelliteSystem() == antenna.getSatelliteSystem() &&
-                                       first.getPrnNumber() == antenna.getPrnNumber();
-                            }).findFirst();
-        if (existing.isPresent()) {
+        try {
+            final TimeSpanMap<SatelliteAntenna> existing =
+                            findSatelliteAntenna(antenna.getSatelliteSystem(), antenna.getPrnNumber());
             // this is an update for a satellite antenna, with new time span
-            existing.get().addValidAfter(antenna, antenna.getValidFrom());
-        } else {
+            existing.addValidAfter(antenna, antenna.getValidFrom());
+        } catch (OrekitException oe) {
             // this is a new satellite antenna
             satellitesAntennas.add(new TimeSpanMap<>(antenna));
         }
@@ -98,6 +92,31 @@ public class AntexLoader {
      */
     public List<TimeSpanMap<SatelliteAntenna>> getSatellitesAntennas() {
         return Collections.unmodifiableList(satellitesAntennas);
+    }
+
+    /** Find the time map for a specific satellite antenna.
+     * @param satelliteSystem satellite system
+     * @param prnNumber number within the satellite system
+     * @return time map for the antenna
+     * @exception OrekitException if satellite cannot be found
+     */
+    public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
+                                                              final int prnNumber)
+        throws OrekitException {
+        final Optional<TimeSpanMap<SatelliteAntenna>> existing =
+                        satellitesAntennas.
+                        stream().
+                        filter(m -> {
+                                final SatelliteAntenna first = m.getTransitions().first().getBefore();
+                                return first.getSatelliteSystem() == satelliteSystem &&
+                                       first.getPrnNumber() == prnNumber;
+                            }).findFirst();
+        if (existing.isPresent()) {
+            return existing.get();
+        } else {
+            throw new OrekitException(OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM,
+                                      prnNumber, satelliteSystem);
+        }
     }
 
     /** Add a receiver antenna.
