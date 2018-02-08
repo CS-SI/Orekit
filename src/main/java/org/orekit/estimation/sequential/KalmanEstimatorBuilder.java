@@ -45,8 +45,6 @@ public class KalmanEstimatorBuilder {
      * Second moment of the process noise. Often named Q.
      */
     private RealMatrix processNoiseMatrix;
-    
-    // FIXME: Add some check when building the filter...
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
@@ -59,43 +57,41 @@ public class KalmanEstimatorBuilder {
         this.processNoiseMatrix              = null;
     }
 
-    // Deprecated
+    // FIXME: Deprecated (used for validation purpose)
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
      * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException
+     * @throws OrekitException ...
      */
     public KalmanEstimatorReal buildReal()
                     throws OrekitException {
-        // FIXME: Temporary
         return new KalmanEstimatorReal(propagatorBuilder,
                                          estimatedMeasurementsParameters,
                                          initialCovarianceMatrix,
                                          processNoiseMatrix,
                                          filterType);
     }
-    
+
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
      * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException
+     * @throws OrekitException ...
      */
     public KalmanEstimatorNormalized buildNormalized()
                     throws OrekitException {
-        // FIXME: Temporary
         return new KalmanEstimatorNormalized(propagatorBuilder,
                                              estimatedMeasurementsParameters,
                                              initialCovarianceMatrix,
                                              processNoiseMatrix,
                                              filterType);
     }
-    //Deprecated
-    
+    // End Deprecated
 
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
      * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException
+     * @throws OrekitException if building the filter failed
      */
     public KalmanEstimator build()
                     throws OrekitException {
+        // FIXME: Add checks on the existence of the different arguments
         return new KalmanEstimator(propagatorBuilder,
                                    estimatedMeasurementsParameters,
                                    initialCovarianceMatrix,
@@ -113,7 +109,7 @@ public class KalmanEstimatorBuilder {
     }
 
     /** Configure the propagator builder.
-     * @param propagatorBuilder The propagator builder to use in the Kalman filter.
+     * @param propBuilder The propagator builder to use in the Kalman filter.
      * @return this object.
      */
     public KalmanEstimatorBuilder builder(final NumericalPropagatorBuilder propBuilder) {

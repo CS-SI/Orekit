@@ -146,7 +146,7 @@ public class KalmanProcessModel {
                                                    physicalInitialCovariance.getRowDimension(),
                                                    M);
         }
-        
+
         // Initialize normalized estimated covariance matrix and process noise matrix
         this.initialCovarianceMatrix = normalizeCovarianceMatrix(physicalInitialCovariance);
         this.processNoiseMatrix      = normalizeCovarianceMatrix(physicalProcessNoiseMatrix);
@@ -161,14 +161,14 @@ public class KalmanProcessModel {
     public ParameterDriversList getEstimatedOrbitalParameters() {
         return estimatedOrbitalParameters;
     }
-    
+
     /** Get the number of estimated orbital parameters.
      * @return the number of estimated orbital parameters
      */
     public int getNbOrbitalParameters() {
         return nbOrbitalParameters;
     }
-    
+
     /** Get the list of estimated propagation parameters.
      * @return the list of estimated propagation parameters
      */
@@ -189,21 +189,21 @@ public class KalmanProcessModel {
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return estimatedMeasurementsParameters;
     }
-    
+
     /** Get the number of estimated measurements parameters.
      * @return the number of estimated measurements parameters
      */
     public int getNbMeasurementsParameters() {
         return nbMeasurementsParameters;
     }
-    
+
     /** Get the partial derivatives equations of the reference trajectory.
      * @return the PDE associated with the reference trajectory propagator
      */
     public PartialDerivativesEquations getReferenceTrajectoryPartialDerivatives() {
         return referenceTrajectoryPartialDerivatives;
     }
-    
+
     /** Get the first initial normalized estimated state.
      * @return the first normalized estimated state
      */
@@ -238,8 +238,8 @@ public class KalmanProcessModel {
     public RealMatrix getProcessNoiseMatrix() {
         return processNoiseMatrix;
     }
-    
-    /** Get the propagator estimated with the values set in the propagator builder. 
+
+    /** Get the propagator estimated with the values set in the propagator builder.
      * @return a numerical propagator based on the current values in the builder
      * @throws OrekitException if propagator cannot be build
      */
@@ -266,6 +266,7 @@ public class KalmanProcessModel {
     /** Propagate the reference trajectory to a given date.
      * @param targetDate date when to propagate to
      * @throws OrekitException if the propagation failed
+     * @return the spacecraft state at target date
      */
     SpacecraftState propagateReferenceTrajectory(final AbsoluteDate targetDate)
                     throws OrekitException {
@@ -442,9 +443,6 @@ public class KalmanProcessModel {
                             measurementMatrix.setEntry(i, driverColumn,
                                                        aMPm[i] / sigma[i] * driver.getScale());
                         }
-                    } else {
-                        // The current measurement exposes a selected driver that is not managed by the filter
-                        // FIXME: Do nothing or throw an exception ??
                     }
                 }
             }
@@ -456,6 +454,10 @@ public class KalmanProcessModel {
     }
 
 
+    /** Update the reference trajectory using the propagator as input.
+     * @param propagator The new propagator to use
+     * @throws OrekitException if setting up the partial derivatives failed
+     */
     public void updateReferenceTrajectory(final NumericalPropagator propagator) throws OrekitException {
 
         // Update the reference trajectory propagator
@@ -466,7 +468,7 @@ public class KalmanProcessModel {
         this.referenceTrajectoryPartialDerivatives = new PartialDerivativesEquations(equationName, referenceTrajectory);
 
     }
-    
+
     /** Gather the different scaling factors of the estimated parameters in an array.
      * @return the array of scales (ie. scaling factors)
      */

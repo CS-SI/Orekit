@@ -33,10 +33,10 @@ import org.orekit.utils.ParameterDriver;
 public class OutlierFilter<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Warmup iterations. */
-    protected final int warmup;
+    private final int warmup;
 
     /** Outlier detection limit. */
-    protected final double maxSigma;
+    private final double maxSigma;
 
     /** Simple constructor.
      * @param warmup number of iterations before with filter is not applied
@@ -47,6 +47,19 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
         this.maxSigma = maxSigma;
     }
 
+    /** Get the value of warmup iterations.
+     * @return the value of warmup iterations
+     */
+    protected int getWarmup() {
+        return warmup;
+    }
+
+    /** Get the value of the outlier detection limit.
+     *  @return the value of the outlier detection limit
+     */
+    protected double getMaxSigma() {
+        return maxSigma;
+    }
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {

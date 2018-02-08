@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 
-/** Basic model handling measurement related functions to use with a {@link KalmanEstimator}
+/** Basic model handling measurement related functions to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
  * @author Maxime Journot
  * @since 9.2
@@ -35,20 +35,21 @@ import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 public class KalmanMeasurementModel {
 
 
-    /** Default constructor. */
-    public KalmanMeasurementModel() {}
+    /** Default constructor. Does nothing.*/
+    public KalmanMeasurementModel() { }
 
     /** Get the status of a measurement.<p>
      *   - true : the measurement will be processed by the Kalman filter <p>
      *   - false: the measurement will be rejected by the Kalman filter
      * @param estimatedMeasurement measurement to test for its status
+     * @param <T> the type of measurement
      * @return the status of the measurement
      */
     <T extends ObservedMeasurement<T>> boolean getMeasurementStatus(final EstimatedMeasurement<T> estimatedMeasurement) {
 
         // Init status to false
         boolean measurementStatus = false;
-        
+
         // Get measurement weights. They were set to 0 if the measurement was rejected
         // by an outlier filter
         final double[] weights = estimatedMeasurement.getCurrentWeight();
@@ -62,6 +63,7 @@ public class KalmanMeasurementModel {
 
     /** Return the normalized residuals of an estimated measurement.
      * @param estimatedMeasurement the measurement
+     * @param <T> the type of measurement
      * @return the residuals
      */
     <T extends ObservedMeasurement<T>> RealVector getResiduals(final EstimatedMeasurement<T> estimatedMeasurement) {
@@ -77,13 +79,13 @@ public class KalmanMeasurementModel {
         return MatrixUtils.createRealVector(residuals);
     }
 
- 
     /** Return the normalized measurement noise matrix of a measurement. <p>
      * The "physical" measurement noise matrix is the covariance matrix of the measurement.<p>
      * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]<p>
-     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients 
+     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
      * between the different components of the measurement.
      * @param observedMeasurement the measurement
+     * @param <T> the type of measurement
      * @return the normalized measurement noise matrix
      */
     <T extends ObservedMeasurement<T>> RealMatrix getMeasurementNoiseMatrix(final ObservedMeasurement<T> observedMeasurement) {
@@ -98,7 +100,7 @@ public class KalmanMeasurementModel {
         // Set up an identity matrix of proper size
         return MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
     }
-    
+
     /** Set and apply a dynamic outlier filter on a measurement.<p>
      * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
      * Compute the sigma array using the matrix in input and set the filter.<p>
@@ -111,10 +113,11 @@ public class KalmanMeasurementModel {
      *         - H is the normalized measurement matrix (Ht its transpose)<p>
      *         - Ppred is the normalized predicted covariance matrix<p>
      *         - R is the normalized measurement noise matrix
+     * @param <T> the type of measurement
      * @throws OrekitException if modifier cannot be applied
      */
     <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> estimatedMeasurement,
-                                                                      final RealMatrix innovationCovarianceMatrix) 
+                                                                      final RealMatrix innovationCovarianceMatrix)
         throws OrekitException {
 
         // Observed measurement associated to the predicted measurement
