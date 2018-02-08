@@ -19,19 +19,16 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud

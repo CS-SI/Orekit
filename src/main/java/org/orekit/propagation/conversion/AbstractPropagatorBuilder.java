@@ -22,7 +22,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
