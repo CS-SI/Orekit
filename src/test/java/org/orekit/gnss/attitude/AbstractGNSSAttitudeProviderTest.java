@@ -35,8 +35,12 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -81,19 +85,21 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     }
 
     private void doTest(final String fileName) throws OrekitException {
-        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
-        final List<List<ParsedLine>> dataBlocks = parseFile(fileName);
+
+        // the transforms between EME2000 and ITRF will not really be correct here
+        // because the corresponding EOP are not present in the resources used
+        // however, this is not a problem because we rely only on data generated
+        // in ITRF and fully consistent (both EOP and Sun ephemeris were used at
+        // data generation phase). The test performed here will convert back
+        // to EME2000 (which will be slightly offset due to missing EOP), but
+        // Sun/Earth/spacecraft relative geometry will remain consistent
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final List<List<ParsedLine>> dataBlocks = parseFile(fileName, eme2000, itrf);
         for (final List<ParsedLine> dataBlock : dataBlocks) {
             final AbsoluteDate validityStart = dataBlock.get(0).date;
             final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
             final int          prnNumber     = dataBlock.get(0).prnNumber;
-            final PVCoordinatesProvider fakedOrbit = (date, frame) ->
-            TimeStampedPVCoordinates.interpolate(date,
-                                                 CartesianDerivativesFilter.USE_PV,
-                                                 dataBlock.stream().
-                                                 filter(parsedLine ->
-                                                        FastMath.abs(parsedLine.date.durationFrom(date)) < 300).
-                                                 map(parsedLine -> parsedLine.satPV));
             final PVCoordinatesProvider fakedSun = (date, frame) ->
                     TimeStampedPVCoordinates.interpolate(date,
                                                          CartesianDerivativesFilter.USE_P,
@@ -111,7 +117,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
 
             for (final ParsedLine parsedLine : dataBlock) {
-                final Attitude attitude = attitudeProvider.getAttitude(fakedOrbit, parsedLine.date, itrf);
+                final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, itrf);
                 final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
                 Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 1.0e-15);
             }
@@ -121,7 +127,8 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         Assert.fail("TODO");
     }
 
-    private List<List<ParsedLine>> parseFile(final String fileName) {
+    private List<List<ParsedLine>> parseFile(final String fileName, final Frame eme2000, final Frame itrf)
+        throws OrekitException {
         final List<List<ParsedLine>> dataBlocks = new ArrayList<>();
         try (InputStream is = getClass().getResourceAsStream("/gnss/" + fileName);
              Reader reader = new InputStreamReader(is, Charset.forName("UTF-8"));
@@ -136,7 +143,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                     continue;
                 }
                 final ParsedLine previous = parsedLine;
-                parsedLine = new ParsedLine(line);
+                parsedLine = new ParsedLine(line, eme2000, itrf);
                 if (previous != null &&
                     (parsedLine.prnNumber != previous.prnNumber ||
                      parsedLine.date.durationFrom(previous.date) > 3600)) {
@@ -155,41 +162,43 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class ParsedLine {
 
-        final AbsoluteDate             date;
-        final int                      prnNumber;
-        final TimeStampedPVCoordinates satPV;
-        final Vector3D                 sunP;
-        final double                   beta;
-        final double                   delta;
-        final Vector3D                 nominalX;
-        final double                   nominalPsi;
-        final Vector3D                 eclipsX;
-        final double                   eclipsPsi;
+        final AbsoluteDate date;
+        final int          prnNumber;
+        final Orbit        orbit;
+        final Vector3D     sunP;
+        final double       beta;
+        final double       delta;
+        final Vector3D     nominalX;
+        final double       nominalPsi;
+        final Vector3D     eclipsX;
+        final double       eclipsPsi;
 
-        ParsedLine(final String line) {
-            String[] fields = line.split("\\s+");
+        ParsedLine(final String line, final Frame eme2000, final Frame itrf) throws OrekitException {
+            final String[] fields = line.split("\\s+");
             date       = AbsoluteDate.createGPSDate(Integer.parseInt(fields[1]),
                                                     Double.parseDouble(fields[2]));
+            final Transform t = itrf.getTransformTo(eme2000, date);
             prnNumber  = Integer.parseInt(fields[3].substring(1));
-            satPV      = new TimeStampedPVCoordinates(date,
-                                                      new Vector3D(Double.parseDouble(fields[ 6]),
-                                                                   Double.parseDouble(fields[ 7]),
-                                                                   Double.parseDouble(fields[ 8])),
-                                                      new Vector3D(Double.parseDouble(fields[ 9]),
-                                                                   Double.parseDouble(fields[10]),
-                                                                   Double.parseDouble(fields[11])));
-            sunP       = new Vector3D(Double.parseDouble(fields[12]),
-                                      Double.parseDouble(fields[13]),
-                                      Double.parseDouble(fields[14]));
+            orbit      = new CartesianOrbit(new TimeStampedPVCoordinates(date,
+                                                                         t.transformPosition(new Vector3D(Double.parseDouble(fields[ 6]),
+                                                                                                          Double.parseDouble(fields[ 7]),
+                                                                                                          Double.parseDouble(fields[ 8]))),
+                                                                         t.transformVector(new Vector3D(Double.parseDouble(fields[ 9]),
+                                                                                                        Double.parseDouble(fields[10]),
+                                                                                                        Double.parseDouble(fields[11])))),
+                                            eme2000, Constants.EIGEN5C_EARTH_MU);
+            sunP       = t.transformPosition(new Vector3D(Double.parseDouble(fields[12]),
+                                                          Double.parseDouble(fields[13]),
+                                                          Double.parseDouble(fields[14])));
             beta       = FastMath.toRadians(Double.parseDouble(fields[15]));
             delta      = FastMath.toRadians(Double.parseDouble(fields[16]));
-            nominalX   = new Vector3D(Double.parseDouble(fields[17]),
-                                      Double.parseDouble(fields[18]),
-                                      Double.parseDouble(fields[19]));
+            nominalX   = t.transformVector(new Vector3D(Double.parseDouble(fields[17]),
+                                                        Double.parseDouble(fields[18]),
+                                                        Double.parseDouble(fields[19])));
             nominalPsi = FastMath.toRadians(Double.parseDouble(fields[20]));
-            eclipsX    = new Vector3D(Double.parseDouble(fields[21]),
-                                      Double.parseDouble(fields[22]),
-                                      Double.parseDouble(fields[23]));
+            eclipsX    = t.transformVector(new Vector3D(Double.parseDouble(fields[21]),
+                                                        Double.parseDouble(fields[22]),
+                                                        Double.parseDouble(fields[23])));
             eclipsPsi  = FastMath.toRadians(Double.parseDouble(fields[24]));
         }
 
