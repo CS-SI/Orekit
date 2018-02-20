@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="maxime" type="add">
+        Added covariance matrix to PV measurements.
+        Fixes issue #374.
+      </action>
       <action dev="luc" type="fix">
         Fixed issue when converting very far points (such as Sun center) to geodetic coordinates.
         Fixes issue #373.

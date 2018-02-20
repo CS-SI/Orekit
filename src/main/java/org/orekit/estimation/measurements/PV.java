@@ -197,7 +197,7 @@ public class PV extends AbstractMeasurement<PV> {
                  }, {
                      0., 0., 0., 0., 0., FastMath.pow(sigmaPV[5],  2.)
                  }
-             }, baseWeight, 0);
+             }, baseWeight, propagatorIndex);
     }
 
     /**
@@ -253,7 +253,7 @@ public class PV extends AbstractMeasurement<PV> {
                  }, {
                      0., 0., 0., velocityCovarianceMatrix[2][0], velocityCovarianceMatrix[2][1], velocityCovarianceMatrix[2][2]
                  }
-             }, baseWeight, 0);
+             }, baseWeight, propagatorIndex);
 
         // Check the sizes of the matrices
         if (positionCovarianceMatrix[0].length != 3 || positionCovarianceMatrix[1].length != 3) {
@@ -363,12 +363,12 @@ public class PV extends AbstractMeasurement<PV> {
         final double[] sigmas = getTheoreticalStandardDeviation();
 
         // Initialize the correlation coefficients matric to the covariance matrix
-        final double[][] corrCoefMatrix = covarianceMatrix.clone();
+        final double[][] corrCoefMatrix = new double[sigmas.length][sigmas.length];
 
         // Divide by the standard deviations
         for (int i = 0; i < sigmas.length; i++) {
             for (int j = 0; j < sigmas.length; j++) {
-                corrCoefMatrix[i][j] /= sigmas[i] * sigmas[j];
+                corrCoefMatrix[i][j] = covarianceMatrix[i][j] / (sigmas[i] * sigmas[j]);
             }
         }
         return corrCoefMatrix;
