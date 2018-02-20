@@ -71,11 +71,18 @@ class MeasurementHandler implements MultiSatStepHandler {
 
         while (number < precompensated.size()) {
 
-            // consider the next measurement to handle
+            // Consider the next measurement to handle
             final PreCompensation next = precompensated.get(number);
 
-            if (next.getDate().compareTo(interpolators.get(0).getCurrentState().getDate()) > 0) {
-                // the next date is past the end of the interpolator,
+            // FIXME: Test
+            final boolean test = interpolators.get(0).isForward();
+
+            // Current state date for interpolator 0
+            final AbsoluteDate currentDate = interpolators.get(0).getCurrentState().getDate();
+            if ((model.isForwardPropagation()  && (next.getDate().compareTo(currentDate) > 0)) ||
+                (!model.isForwardPropagation() && (next.getDate().compareTo(currentDate) < 0))) {
+
+                // The next date is past the end of the interpolator,
                 // it will be picked-up in a future step
                 if (isLast) {
                     // this should never happen
