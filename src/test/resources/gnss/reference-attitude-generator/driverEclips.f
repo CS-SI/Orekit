@@ -54,27 +54,27 @@ C        data line
            iblk(iprn) = 21
            anoon      = nan
            anight     = 180.0 + 2.0
-        else if (type .eq. 'BLOCK IIA  ') then
+        else if (type .eq. 'BLOCK-IIA  ') then
            iprn       = isat
            iblk(iprn) = 3
            anoon      = nan
            anight     = 180.0 + 13.25
-        else if (type .eq. 'BLOCK IIF  ') then
+        else if (type .eq. 'BLOCK-IIF  ') then
            iprn       = isat
            iblk(iprn) = 6
            anoon      = nan
            anight     = 180.0 + 13.25
-        else if (type .eq. 'BLOCK IIR-A') then
+        else if (type .eq. 'BLOCK-IIR-A') then
            iprn       = isat
            iblk(iprn) = 4
            anoon      = nan
            anight     = 180.0 + 13.25
-        else if (type .eq. 'BLOCK IIR-B') then
+        else if (type .eq. 'BLOCK-IIR-B') then
            iprn       = isat
            iblk(iprn) = 4
            anoon      = nan
            anight     = 180.0 + 13.25
-        else if (type .eq. 'BLOCK IIR-M') then
+        else if (type .eq. 'BLOCK-IIR-M') then
            iprn       = isat
            iblk(iprn) = 5
            anoon      = nan

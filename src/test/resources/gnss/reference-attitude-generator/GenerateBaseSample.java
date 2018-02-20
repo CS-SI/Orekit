@@ -229,7 +229,7 @@ public class GenerateBaseSample {
                        "  %15.1f  %15.1f  %15.1f" +
                        " %10.6f %10.6f%n",
                        s.getDate().getComponents(gps).getDate(), week, milli,
-                       sat, antenna.getType(), sat.substring(0, 1) + antenna.getSatelliteCode(),
+                       sat, antenna.getType().replaceAll(" ", "-"), sat.substring(0, 1) + antenna.getSatelliteCode(),
                        pSat.getX(), pSat.getY(), pSat.getZ(), vSat.getX(), vSat.getY(), vSat.getZ(),
                        pSun.getX(), pSun.getY(), pSun.getZ(),
                        beta(s), delta(s));            

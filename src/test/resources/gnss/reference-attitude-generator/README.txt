@@ -28,8 +28,8 @@ The data files for attitude reference were created as follows:
    for f in beta-crossing.txt \
             beta-small-negative.txt beta-small-positive.txt \
             beta-large-negative.txt beta-large-positive.txt ; do
-     for s in "BEIDOU-2I" "BEIDOU-2M" "BLOCK IIA" "BLOCK IIF" "BLOCK IIR" "GALILEO" "GLONASS" ; do
-       g=`echo $f | sed -e "s,.txt,-$s.txt," -e "s, ,-,g"`
+     for s in "BEIDOU-2I" "BEIDOU-2M" "BLOCK-IIA" "BLOCK-IIF" "BLOCK-IIR" "GALILEO" "GLONASS" ; do
+       g=`echo $f | sed "s,.txt,-$s.txt,"`
        head -1 < $f > $g
        grep "$s" $f >> $g
      done
