@@ -57,33 +57,33 @@ public class KalmanEstimatorBuilder {
         this.processNoiseMatrix              = null;
     }
 
-    // FIXME: Deprecated (used for validation purpose)
-    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
-     * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException ...
-     */
-    public KalmanEstimatorReal buildReal()
-                    throws OrekitException {
-        return new KalmanEstimatorReal(propagatorBuilder,
-                                         estimatedMeasurementsParameters,
-                                         initialCovarianceMatrix,
-                                         processNoiseMatrix,
-                                         filterType);
-    }
-
-    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
-     * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException ...
-     */
-    public KalmanEstimatorNormalized buildNormalized()
-                    throws OrekitException {
-        return new KalmanEstimatorNormalized(propagatorBuilder,
-                                             estimatedMeasurementsParameters,
-                                             initialCovarianceMatrix,
-                                             processNoiseMatrix,
-                                             filterType);
-    }
-    // End Deprecated
+//    // FIXME: Deprecated (used for validation purpose)
+//    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
+//     * @return a new {@link KalmanEstimatorReal}.
+//     * @throws OrekitException ...
+//     */
+//    public KalmanEstimatorReal buildReal()
+//                    throws OrekitException {
+//        return new KalmanEstimatorReal(propagatorBuilder,
+//                                         estimatedMeasurementsParameters,
+//                                         initialCovarianceMatrix,
+//                                         processNoiseMatrix,
+//                                         filterType);
+//    }
+//
+//    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
+//     * @return a new {@link KalmanEstimatorReal}.
+//     * @throws OrekitException ...
+//     */
+//    public KalmanEstimatorNormalized buildNormalized()
+//                    throws OrekitException {
+//        return new KalmanEstimatorNormalized(propagatorBuilder,
+//                                             estimatedMeasurementsParameters,
+//                                             initialCovarianceMatrix,
+//                                             processNoiseMatrix,
+//                                             filterType);
+//    }
+//    // End Deprecated
 
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
      * @return a new {@link KalmanEstimatorReal}.

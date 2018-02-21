@@ -464,7 +464,7 @@ public class KalmanProcessModel {
         referenceTrajectory = propagator;
 
         // Link the partial derivatives to this new propagator
-        final String equationName = KalmanEstimatorReal.class.getName() + "-derivatives";
+        final String equationName = KalmanEstimator.class.getName() + "-derivatives";
         this.referenceTrajectoryPartialDerivatives = new PartialDerivativesEquations(equationName, referenceTrajectory);
 
     }
