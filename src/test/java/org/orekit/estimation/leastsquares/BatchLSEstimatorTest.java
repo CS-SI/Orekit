@@ -100,6 +100,50 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
+    
+    /** Test PV measurements generation and backward propagation in least-square orbit determination. */
+    @Test
+    public void testKeplerPVBackward() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 1.0);
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, -1.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            estimator.addMeasurement(measurement);
+        }
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 8.3e-9,
+                                     0.0, 5.3e-8,
+                                     0.0, 5.6e-9,
+                                     0.0, 1.6e-12);
+
+        RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
+        RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
+        Assert.assertEquals(6,       normalizedCovariances.getRowDimension());
+        Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
+        Assert.assertEquals(6,       physicalCovariances.getRowDimension());
+        Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
+        Assert.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+
+    }
 
     @Test
     public void testKeplerRange() throws OrekitException {
