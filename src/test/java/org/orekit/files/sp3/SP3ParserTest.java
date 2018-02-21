@@ -28,12 +28,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3Ephemeris;
 import org.orekit.files.sp3.SP3File.SP3OrbitType;
 import org.orekit.files.sp3.SP3File.TimeSystem;
+import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -55,6 +58,8 @@ public class SP3ParserTest {
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP,
+                          ((FactoryManagedFrame) file.getSatellites().get("1").getFrame()).getFactoryKey());
 
         Assert.assertEquals(25, file.getSatelliteCount());
 
@@ -118,7 +123,7 @@ public class SP3ParserTest {
 
     @Test
     public void testParseSP3c1() throws OrekitException, IOException {
-        // simple test for version sp3-c, contains p/v entries
+        // simple test for version sp3-c, contains p entries
         final String ex = "/sp3/sp3_c_example1.txt";
 
         final SP3Parser parser = new SP3Parser();
@@ -141,6 +146,65 @@ public class SP3ParserTest {
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
+                                       Vector3D.ZERO),
+                     coord);
+    }
+
+    @Test
+    public void testParseSP3c2() throws OrekitException, IOException {
+        // simple test for version sp3-c, contains p/v entries and correlations
+        final String ex = "/sp3/sp3_c_example2.txt";
+
+        final SP3Parser parser = new SP3Parser();
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final SP3File file = parser.parse(inEntry);
+
+        Assert.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
+        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+
+        Assert.assertEquals(26, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("G01").getCoordinates();
+        Assert.assertEquals(2, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        // 2001  8  8  0  0  0.00000000
+        Assert.assertEquals(new AbsoluteDate(2001, 8, 8, 0, 0, 0,
+                TimeScalesFactory.getGPS()), coord.getDate());
+
+        // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
+        // VG01  20298.880364 -18462.044804   1381.387685     -4.534317 14 14 14 191
+        checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
+                                       new Vector3D(2029.8880364, -1846.2044804, 138.1387685)),
+                     coord);
+    }
+
+    @Test
+    public void testSP3GFZ() throws OrekitException, IOException {
+        // simple test for version sp3-c, contains more than 85 satellites
+        final String ex = "/sp3/gbm19500_truncated.sp3";
+
+        final SP3Parser parser = new SP3Parser();
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final SP3File file = parser.parse(inEntry);
+
+        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+
+        Assert.assertEquals(87, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("R23").getCoordinates();
+        Assert.assertEquals(2, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        Assert.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 0, 0,
+                TimeScalesFactory.getGPS()), coord.getDate());
+
+        // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825                    
+        checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998),
                                        Vector3D.ZERO),
                      coord);
     }
@@ -208,6 +272,57 @@ public class SP3ParserTest {
         Assert.assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
 
         Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+    }
+
+    @Test
+    public void testMissingEOF() throws IOException {
+        try {
+            final String ex = "/sp3/missing-eof.sp3";
+            final Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE,
+                                oe.getSpecifier());
+            Assert.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+        }
+
+    }
+
+    @Test
+    public void testWrongLineIdentifier() throws IOException {
+        try {
+            final String ex = "/sp3/wrong-line-identifier.sp3";
+            final Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                oe.getSpecifier());
+            Assert.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
+        }
+
+    }
+
+    @Test
+    public void testUnsupportedVersion() throws IOException {
+        try {
+            final String ex = "/sp3/unsupported-version.sp3";
+            final Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.SP3_UNSUPPORTED_VERSION,
+                                oe.getSpecifier());
+            Assert.assertEquals('z', ((Character) oe.getParts()[0]).charValue());
+        }
+
     }
 
     @Before
