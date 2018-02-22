@@ -106,11 +106,12 @@ public class SP3Parser implements EphemerisFileParser {
      * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
      *
      * @param name of the frame.
-     * @return ITRF based on 2010 conventions.
+     * @return ITRF based on 2010 conventions,
+     * with tidal effects considered during EOP interpolation.
      */
     private static Frame guessFrame(final String name) {
         try {
-            return FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            return FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         } catch (OrekitException e) {
             throw new OrekitExceptionWrapper(e);
         }
@@ -277,8 +278,8 @@ public class SP3Parser implements EphemerisFileParser {
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
                     pi.file.setFilter(pi.hasVelocityEntries ?
-                                                             CartesianDerivativesFilter.USE_PV :
-                                                                 CartesianDerivativesFilter.USE_P);
+                                      CartesianDerivativesFilter.USE_PV :
+                                      CartesianDerivativesFilter.USE_P);
 
                     final int    year   = Integer.parseInt(v.substring(2));
                     final int    month  = scanner.nextInt();
@@ -520,6 +521,7 @@ public class SP3Parser implements EphemerisFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
+                // ignore comments
             }
 
             /** {@inheritDoc} */
@@ -536,11 +538,11 @@ public class SP3Parser implements EphemerisFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                final int year = Integer.parseInt(line.substring(3, 7).trim());
-                final int month = Integer.parseInt(line.substring(8, 10).trim());
-                final int day = Integer.parseInt(line.substring(11, 13).trim());
-                final int hour = Integer.parseInt(line.substring(14, 16).trim());
-                final int minute = Integer.parseInt(line.substring(17, 19).trim());
+                final int    year   = Integer.parseInt(line.substring(3, 7).trim());
+                final int    month  = Integer.parseInt(line.substring(8, 10).trim());
+                final int    day    = Integer.parseInt(line.substring(11, 13).trim());
+                final int    hour   = Integer.parseInt(line.substring(14, 16).trim());
+                final int    minute = Integer.parseInt(line.substring(17, 19).trim());
                 final double second = Double.parseDouble(line.substring(20, 31).trim());
 
                 pi.latestEpoch = new AbsoluteDate(year, month, day,

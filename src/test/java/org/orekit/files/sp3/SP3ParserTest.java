@@ -58,7 +58,7 @@ public class SP3ParserTest {
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
-        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP,
+        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
                           ((FactoryManagedFrame) file.getSatellites().get("1").getFrame()).getFactoryKey());
 
         Assert.assertEquals(25, file.getSatelliteCount());
