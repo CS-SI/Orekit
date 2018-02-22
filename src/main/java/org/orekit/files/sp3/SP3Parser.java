@@ -57,6 +57,7 @@ import org.orekit.utils.IERSConventions;
  * @see <a href="ftp://igs.org/pub/data/format/sp3_docu.txt">SP3-a file format</a>
  * @see <a href="ftp://igs.org/pub/data/format/sp3c.txt">SP3-c file format</a>
  * @author Thomas Neidhart
+ * @author Luc Maisonobe
  */
 public class SP3Parser implements EphemerisFileParser {
 
@@ -166,6 +167,10 @@ public class SP3Parser implements EphemerisFileParser {
                                           lineNumber, fileName, line);
             }
             if (pi.done) {
+                if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
+                    throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                              pi.nbEpochs, fileName, pi.file.getNumberOfEpochs());
+                }
                 return pi.file;
             }
         }
@@ -230,6 +235,9 @@ public class SP3Parser implements EphemerisFileParser {
         /** The number of satellites accuracies already seen. */
         private int nbAccuracies;
 
+        /** The number of epochs already seen. */
+        private int nbEpochs;
+
         /** End Of File reached indicator. */
         private boolean done;
 
@@ -249,6 +257,7 @@ public class SP3Parser implements EphemerisFileParser {
             timeScale          = TimeScalesFactory.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
+            nbEpochs           = 0;
             done               = false;
             //posVelBase = 2d;
             //clockBase = 2d;
@@ -548,6 +557,7 @@ public class SP3Parser implements EphemerisFileParser {
                 pi.latestEpoch = new AbsoluteDate(year, month, day,
                                                   hour, minute, second,
                                                   pi.timeScale);
+                pi.nbEpochs++;
             }
 
             /** {@inheritDoc} */
