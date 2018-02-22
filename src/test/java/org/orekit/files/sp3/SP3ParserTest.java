@@ -58,7 +58,7 @@ public class SP3ParserTest {
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
-        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP,
+        Assert.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
                           ((FactoryManagedFrame) file.getSatellites().get("1").getFrame()).getFactoryKey());
 
         Assert.assertEquals(25, file.getSatelliteCount());
@@ -82,7 +82,7 @@ public class SP3ParserTest {
         Assert.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
         Assert.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
         Assert.assertEquals(49703, file.getJulianDay());
-        Assert.assertEquals(96, file.getNumberOfEpochs());
+        Assert.assertEquals(3, file.getNumberOfEpochs());
         Assert.assertEquals(900.0, file.getEpochInterval(), 1.0e-15);
         Assert.assertEquals(779, file.getGpsWeek());
         Assert.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
@@ -321,6 +321,24 @@ public class SP3ParserTest {
             Assert.assertEquals(OrekitMessages.SP3_UNSUPPORTED_VERSION,
                                 oe.getSpecifier());
             Assert.assertEquals('z', ((Character) oe.getParts()[0]).charValue());
+        }
+
+    }
+
+    @Test
+    public void testWrongNumberOfEpochs() throws IOException {
+        try {
+            final String ex = "/sp3/wrong-number-of-epochs.sp3";
+            final Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                oe.getSpecifier());
+            Assert.assertEquals(  2, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals(192, ((Integer) oe.getParts()[2]).intValue());
         }
 
     }
