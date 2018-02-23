@@ -160,7 +160,13 @@ public class SP3Parser implements EphemerisFileParser {
             final String l = line;
             final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
             if (selected.isPresent()) {
-                selected.get().parse(line, pi);
+                try {
+                    selected.get().parse(line, pi);
+                } catch (StringIndexOutOfBoundsException sioobe) {
+                    throw new OrekitException(sioobe,
+                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, fileName, line);
+                }
                 candidateParsers = selected.get().allowedNext();
             } else {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

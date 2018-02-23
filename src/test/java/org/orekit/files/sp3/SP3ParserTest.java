@@ -275,6 +275,23 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testTruncatedLine() throws IOException {
+        try {
+            final String ex = "/sp3/truncated-line.sp3";
+            final Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+            final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                oe.getSpecifier());
+            Assert.assertEquals(27, ((Integer) oe.getParts()[0]).intValue());
+        }
+
+    }
+
+    @Test
     public void testMissingEOF() throws IOException {
         try {
             final String ex = "/sp3/missing-eof.sp3";
