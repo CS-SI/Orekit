@@ -23,13 +23,16 @@
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
         Added handling of IGS ANTEX GNSS antenna models file.
-     </action>
+      </action>
+      <action dev="luc" type="add">
+        Added support for SP3-d files.
+      </action>
       <action dev="luc" type="fix">
         Improved SP3 files parsing.
         Some files already operationally produced by IGS Multi-GNSS Experiment (MGEX)
         exceed the maximum number of satellites supported by the regular SP3-c file
-        format (which is 85) and extended the header. The parser now supports this
-        extension.
+        format (which is 85 satellites) and extended the header, without updating the
+        format version to SP3-d, which specifically raises the 85 satellites limitation.
         Fixes issue #376.
       </action>
       <action dev="maxime" type="add">
