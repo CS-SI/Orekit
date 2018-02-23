@@ -48,14 +48,15 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-/** A parser for the SP3 orbit file format. It supports the original format as
- * well as the latest SP3-c version.
+/** A parser for the SP3 orbit file format. It supports all formats from sp3-a
+ * to sp3-d.
  * <p>
  * <b>Note:</b> this parser is thread-safe, so calling {@link #parse} from
  * different threads is allowed.
  * </p>
  * @see <a href="ftp://igs.org/pub/data/format/sp3_docu.txt">SP3-a file format</a>
  * @see <a href="ftp://igs.org/pub/data/format/sp3c.txt">SP3-c file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/sp3d.pdf">SP3-d file format</a>
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
@@ -160,7 +161,13 @@ public class SP3Parser implements EphemerisFileParser {
             final String l = line;
             final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
             if (selected.isPresent()) {
-                selected.get().parse(line, pi);
+                try {
+                    selected.get().parse(line, pi);
+                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                    throw new OrekitException(e,
+                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, fileName, line);
+                }
                 candidateParsers = selected.get().allowedNext();
             } else {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -281,7 +288,7 @@ public class SP3Parser implements EphemerisFileParser {
                     final String v = scanner.next();
 
                     final char version = v.substring(0, 1).toLowerCase().charAt(0);
-                    if (version != 'a' && version != 'b' && version != 'c') {
+                    if (version != 'a' && version != 'b' && version != 'c' && version != 'd') {
                         throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
                     }
 
@@ -365,7 +372,7 @@ public class SP3Parser implements EphemerisFileParser {
 
                 if (pi.maxSatellites == 0) {
                     // this is the first ids line, it also contains the number of satellites
-                    pi.maxSatellites = Integer.parseInt(line.substring(4, 6).trim());
+                    pi.maxSatellites = Integer.parseInt(line.substring(3, 6).trim());
                 }
 
                 final int lineLength = line.length();

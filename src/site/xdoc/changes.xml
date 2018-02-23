@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added support for version d of SP3 files.
+      </action>
       <action dev="luc" type="fix">
         Improved SP3 files parsing.
         Some files already operationally produced by IGS Multi-GNSS Experiment (MGEX)
