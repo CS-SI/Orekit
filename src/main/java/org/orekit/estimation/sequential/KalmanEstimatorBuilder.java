@@ -90,7 +90,7 @@ public class KalmanEstimatorBuilder {
      * @throws OrekitException if building the filter failed
      */
     public KalmanEstimator build()
-                    throws OrekitException {
+        throws OrekitException {
         // FIXME: Add checks on the existence of the different arguments
         return new KalmanEstimator(propagatorBuilder,
                                    estimatedMeasurementsParameters,

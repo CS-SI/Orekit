@@ -20,13 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -92,8 +90,8 @@ public class KalmanProcessModel {
      * @param estimatedOrbitalParameters orbital parameters to estimate
      * @param estimatedPropagationParameters propagation parameters to estimate
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param physicalInitialCovariance "Physical" initial covariance matrix (ie. not normalized)
-     * @param physicalProcessNoiseMatrix "Physical" process noise matrix (ie.not normalized)
+     * @param physicalInitialCovariance "Physical" initial covariance matrix (i.e. not normalized)
+     * @param physicalProcessNoiseMatrix "Physical" process noise matrix (i.e.not normalized)
      * @throws OrekitException propagation exception.
      */
     KalmanProcessModel(final NumericalPropagatorBuilder propagatorBuilder,
@@ -102,7 +100,7 @@ public class KalmanProcessModel {
                        final ParameterDriversList estimatedMeasurementParameters,
                        final RealMatrix physicalInitialCovariance,
                        final RealMatrix physicalProcessNoiseMatrix)
-                                          throws OrekitException {
+        throws OrekitException {
 
         this.builder                         = propagatorBuilder;
         this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
@@ -126,25 +124,25 @@ public class KalmanProcessModel {
         final int M = nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters;
         // Covariance
         if (physicalInitialCovariance.getColumnDimension() != M) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                   physicalInitialCovariance.getColumnDimension(),
-                                                   M);
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      physicalInitialCovariance.getColumnDimension(),
+                                      M);
         }
         if (physicalInitialCovariance.getRowDimension() != M) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                   physicalInitialCovariance.getRowDimension(),
-                                                   M);
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      physicalInitialCovariance.getRowDimension(),
+                                      M);
         }
         // Process noise
         if (physicalProcessNoiseMatrix.getColumnDimension() != M) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                   physicalInitialCovariance.getColumnDimension(),
-                                                   M);
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      physicalInitialCovariance.getColumnDimension(),
+                                      M);
         }
         if (physicalProcessNoiseMatrix.getRowDimension() != M) {
-            throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                   physicalInitialCovariance.getRowDimension(),
-                                                   M);
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                      physicalInitialCovariance.getRowDimension(),
+                                      M);
         }
 
         // Initialize normalized estimated covariance matrix and process noise matrix
@@ -207,8 +205,7 @@ public class KalmanProcessModel {
     /** Get the first initial normalized estimated state.
      * @return the first normalized estimated state
      */
-    public RealVector getInitialEstimatedState()
-    {
+    public RealVector getInitialEstimatedState() {
         // Initialize the estimated normalized state and fill its values
         final RealVector firstState = new ArrayRealVector(nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters);
 
@@ -244,7 +241,7 @@ public class KalmanProcessModel {
      * @throws OrekitException if propagator cannot be build
      */
     public NumericalPropagator getEstimatedPropagator()
-                    throws OrekitException {
+        throws OrekitException {
 
         // Return a propagator built with current instantiation of the propagator builder
         return builder.buildPropagator(builder.getSelectedNormalizedParameters());
@@ -269,7 +266,7 @@ public class KalmanProcessModel {
      * @return the spacecraft state at target date
      */
     SpacecraftState propagateReferenceTrajectory(final AbsoluteDate targetDate)
-                    throws OrekitException {
+        throws OrekitException {
         return referenceTrajectory.propagate(targetDate);
     }
 
@@ -308,7 +305,7 @@ public class KalmanProcessModel {
          */
 
         // Initialize to the proper size identity matrix
-        final RealMatrix STM = MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters +
+        final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters +
                                                                     nbPropagationParameters +
                                                                     nbMeasurementsParameters);
         // Mappers for the Jacobians
@@ -320,7 +317,7 @@ public class KalmanProcessModel {
             referenceTrajectoryJacobiansMapper.getStateJacobian(predictedSpacecraftState, dYdY0 );
 
             // Fill upper left corner (dY/dY0)
-            STM.setSubMatrix(dYdY0, 0, 0);
+            stm.setSubMatrix(dYdY0, 0, 0);
         }
 
         // Derivatives of the state vector with respect to propagation parameters
@@ -329,7 +326,7 @@ public class KalmanProcessModel {
             referenceTrajectoryJacobiansMapper.getParametersJacobian(predictedSpacecraftState, dYdPp);
 
             // Fill 1st row, 2nd column (dY/dPp)
-            STM.setSubMatrix(dYdPp, 0, nbOrbitalParameters);
+            stm.setSubMatrix(dYdPp, 0, nbOrbitalParameters);
         }
 
         // Normalization of the STM
@@ -337,12 +334,12 @@ public class KalmanProcessModel {
         final double[] scales = getParametersScale();
         for (int i = 0; i < scales.length; i++) {
             for (int j = 0; j < scales.length; j++ ) {
-                STM.setEntry(i, j, STM.getEntry(i, j) * scales[j] / scales[i]);
+                stm.setEntry(i, j, stm.getEntry(i, j) * scales[j] / scales[i]);
             }
         }
 
         // Return the error state transition matrix
-        return STM;
+        return stm;
     }
 
     /** Get the normalized measurement matrix H.
@@ -391,7 +388,7 @@ public class KalmanProcessModel {
         final RealMatrix dMdY = dMdC.multiply(dCdY);
 
         // Fill the normalized measurement matrix's columns related to estimated orbital parameters
-        if ( nbOrb > 0 ) {
+        if (nbOrb > 0) {
             for (int i = 0; i < dMdY.getRowDimension(); ++i) {
                 int jOrb = 0;
                 for (int j = 0; j < dMdY.getColumnDimension(); ++j) {
@@ -408,7 +405,7 @@ public class KalmanProcessModel {
         // --------------------------------------------------------------
 
         // Jacobian of the measurement with respect to propagation parameters
-        if ( nbPropag > 0 ) {
+        if (nbPropag > 0) {
             final double[][] aYPp  = new double[6][nbPropag];
             referenceTrajectoryPartialDerivatives.getMapper().getParametersJacobian(predictedSpacecraftState, aYPp);
             final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
@@ -426,7 +423,7 @@ public class KalmanProcessModel {
         // --------------------------------------------------------------
 
         // Jacobian of the measurement with respect to measurement parameters
-        if ( nbMeas > 0 ) {
+        if (nbMeas > 0) {
             // Gather the measurement parameters linked to current measurement
             for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
                 if (driver.isSelected()) {
@@ -458,7 +455,8 @@ public class KalmanProcessModel {
      * @param propagator The new propagator to use
      * @throws OrekitException if setting up the partial derivatives failed
      */
-    public void updateReferenceTrajectory(final NumericalPropagator propagator) throws OrekitException {
+    public void updateReferenceTrajectory(final NumericalPropagator propagator)
+        throws OrekitException {
 
         // Update the reference trajectory propagator
         referenceTrajectory = propagator;
@@ -470,7 +468,7 @@ public class KalmanProcessModel {
     }
 
     /** Gather the different scaling factors of the estimated parameters in an array.
-     * @return the array of scales (ie. scaling factors)
+     * @return the array of scales (i.e. scaling factors)
      */
     private double[] getParametersScale() {
 
@@ -557,8 +555,8 @@ public class KalmanProcessModel {
         for (int i = 0; i < nbParams; ++i) {
             for (int j = 0; j < nbParams; ++j) {
                 normalizedCovarianceMatrix.setEntry(i, j,
-                                               physicalCovarianceMatrix.getEntry(i, j) /
-                                               (scale[i] * scale[j]));
+                                                    physicalCovarianceMatrix.getEntry(i, j) /
+                                                    (scale[i] * scale[j]));
             }
         }
         return normalizedCovarianceMatrix;
@@ -584,8 +582,8 @@ public class KalmanProcessModel {
         for (int i = 0; i < nbParams; ++i) {
             for (int j = 0; j < nbParams; ++j) {
                 physicalCovarianceMatrix.setEntry(i, j,
-                                               normalizedCovarianceMatrix.getEntry(i, j) *
-                                               (scale[i] * scale[j]));
+                                                  normalizedCovarianceMatrix.getEntry(i, j) *
+                                                  (scale[i] * scale[j]));
             }
         }
         return physicalCovarianceMatrix;

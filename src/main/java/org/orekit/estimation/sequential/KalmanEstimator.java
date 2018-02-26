@@ -51,80 +51,77 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * trajectory at every step with the estimated state. While the "simple" filter always keeps the same reference trajectory.<p>
  *
  * Throughout the class, the following notations are used:<ul>
- *  <li>M is the size of the state vector,
- *  <li>N is the size of the measurement being processed by the filter,<p>
- *  <li>The <i>est</i> suffix is for an estimated variable,<p>
- *  <li>The <i>pred</i> suffix is for a predicted variable.<p>
+ *  <li>M is the size of the state vector,</li>
+ *  <li>N is the size of the measurement being processed by the filter,</li>
+ *  <li>The <i>est</i> suffix is for an estimated variable,</li>
+ *  <li>The <i>pred</i> suffix is for a predicted variable.</li>
  * </ul>
+ * <p>
  * All the variables here (states, covariances, measurement matrices...) are normalized
- * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.<p>
- *
- * The filter uses a {@link NumericalPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}.<p>
+ * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
+ * </p>
+ * <p>
+ * The filter uses a {@link NumericalPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}.
+ * </p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
- *   <li><b>Orbital parameters</b>: The position and velocity of the spacecraft, or, more generally, its orbit. These parameters are retrieved
- *          from the reference trajectory propagator builder when the filter is initialized.
- *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients etc...). They are also retrieved
- *          from the propagator builder during the initialization phase.
- *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...). They are passed down to
- *          the filter in its constructor.
+ *   <li><b>Orbital parameters</b>:The position and velocity of the spacecraft, or, more generally, its orbit.<br>
+ *       These parameters are retrieved from the reference trajectory propagator builder when the filter is initialized.</li>
+ *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients etc...).<br>
+ *       They are also retrieved from the propagator builder during the initialization phase.</li>
+ *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
+ *       They are passed down to the filter in its constructor.</li>
  * </ol>
  * The total number of estimated parameters is M, the size of the state vector.<p>
  *
- * A {@link KalmanEstimator} object is built using the function <i>build()</i> of a {@link KalmanEstimatorBuilder}.<p>
- * Its constructor takes as argument:<ul>
- * <li> A {@link NumericalPropagatorBuilder} that describes the set of forces used to model the reference trajectory
- *      and also holds the orbital and propagation parameters,
- * <li> A {@link ParameterDriversList} containing the estimated measurements parameters,
- * <li> A {@link KalmanProcessModel} that handles the operation linked with the underlying physical process model,
- * <li> A {@link KalmanMeasurementModel} for the operations related to the measurements.
- * </ul>
+ * A {@link KalmanEstimator} object is built using the {@link KalmanEstimatorBuilder#build() build}
+ * method of a {@link KalmanEstimatorBuilder}.<p>
  * The algorithm is as follows. Given:<ul>
- *   <li>A set of M estimated parameters driven by {@link ParameterDriver} objects,<p>
- *   <li>The estimated state vector Xest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size M,<p>
- *   <li>The estimated state error vector &delta;Xest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size M,<p>
- *   <li>The estimated covariance matrix Pest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size MxM,<p>
- *   <li>A physical propagation model called the reference trajectory,
- *   <li>An estimation of the error of this model with the process noise covariance matrix <b>Q</b>, of size MxM,
- *   <li>A measurement z at epoch t<sub>k</sub>, of size N, and its noise matrix <b>R</b>, of size NxN.<p>
+ *   <li>A set of M estimated parameters driven by {@link ParameterDriver} objects,</li>
+ *   <li>The estimated state vector Xest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size M,</li>
+ *   <li>The estimated state error vector &delta;Xest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size M,</li>
+ *   <li>The estimated covariance matrix Pest<sub>k-1</sub> at epoch t<sub>k-1</sub>, of size MxM,</li>
+ *   <li>A physical propagation model called the reference trajectory,</li>
+ *   <li>An estimation of the error of this model with the process noise covariance matrix <b>Q</b>, of size MxM,</li>
+ *   <li>A measurement z at epoch t<sub>k</sub>, of size N, and its noise matrix <b>R</b>, of size NxN.</li>
  * </ul>
  * The first phase of the filtering process is the <b>prediction phase</b>:<ol>
- *   <li>The reference trajectory model is called to propagate the spacecraft state and its derivativesto t<sub>k</sub>,<p>
- *   <li><b>Predicted State:</b> The predicted state Xpred<sub>k</sub> is computed from this spacecraft state,<p>
+ *   <li>The reference trajectory model is called to propagate the spacecraft state and its derivatives to t<sub>k</sub>,</li>
+ *   <li><b>Predicted State:</b> The predicted state Xpred<sub>k</sub> is computed from this spacecraft state,</li>
  *   <li>The derivatives are used to compute the error state transition matrix <b>&Phi;</b>.
- *         It is an MxM matrix that contains the derivatives of the state at t<sub>k</sub> with respect to the state at t<sub>k-1</sub>,<p>
+ *         It is an MxM matrix that contains the derivatives of the state at t<sub>k</sub> with respect to the state at t<sub>k-1</sub>,</li>
  *   <li><b>Predicted State Error</b>: The error state prediction is given by:<ul>
- *      <li>&delta;Xpred<sub>k</sub> = <b>&Phi;</b>.&delta;Xest<sub>k-1</sub> for the simple filter,
- *      <li>&delta;Xpred<sub>k</sub> = <b>0</b><sub>M</sub> for the extended filter.
- *      </ul>
- *   <li><b>Predicted Covariance</b>: The predicted covariance matrix is then given by the relationship:<p>
- *   <b>Ppred</b><sub>k</sub> = <b>&Phi;</b>.<b>Pest</b><sub>k-1</sub><b>&Phi;</b><sup>T</sup> + <b>Q</b>
+ *      <li>&delta;Xpred<sub>k</sub> = <b>&Phi;</b>.&delta;Xest<sub>k-1</sub> for the simple filter,</li>
+ *      <li>&delta;Xpred<sub>k</sub> = <b>0</b><sub>M</sub> for the extended filter.</li>
+ *      </ul></li>
+ *   <li><b>Predicted Covariance</b>: The predicted covariance matrix is then given by the relationship:
+ *   <b>Ppred</b><sub>k</sub> = <b>&Phi;</b>.<b>Pest</b><sub>k-1</sub><b>&Phi;</b><sup>T</sup> + <b>Q</b></li>
  * </ol>
  *
  * The second phase of the filtering process is the <b>correction phase</b>:<ol>
  *   <li>The measurement matrix <b>H</b><sub>k</sub> is computed. It holds the derivatives of the measurement
- *       with respect to the state,
+ *       with respect to the state,</li>
  *   <li>The innovation vector Inno<sub>k</sub> is computed. It is the difference between the observed measurement and
- *       the predicted measurement. Note that, in classical Kalman filtering, the value of the innovations is given by:<p>
- *       Inno<sub>k</sub> = z - <b>H</b><sub>k</sub>.Xpred<sub>k</sub><p>
- *       In Orekit we use the function <i>estimate</i> of class {@link EstimatedMeasurement} to directly compute the predicted measurement.<p>
- *       Thus the measurement matrix is not needed for this step.
- *   <li>Kalman gain: The optimal gain from Kalman theory is:<p>
+ *       the predicted measurement. Note that, in classical Kalman filtering, the value of the innovations is given by:<br>
+ *       Inno<sub>k</sub> = z - <b>H</b><sub>k</sub>.Xpred<sub>k</sub><br>
+ *       In Orekit we use the function <i>estimate</i> of class {@link EstimatedMeasurement} to directly compute the predicted measurement.
+ *       Thus the measurement matrix is not needed for this step.</li>
+ *   <li>Kalman gain: The optimal gain from Kalman theory is:<br>
  *   <b>K</b><sub>k</sub> = <b>Ppred</b><sub>k</sub>.<b>H</b><sub>k</sub><sup>T</sup>.
- *   (<b>H</b><sub>k</sub>.<b>Ppred</b><sub>k</sub>.<b>H</b><sub>k</sub><sup>T</sup> + <b>R</b>)<sup>-1</sup>
+ *   (<b>H</b><sub>k</sub>.<b>Ppred</b><sub>k</sub>.<b>H</b><sub>k</sub><sup>T</sup> + <b>R</b>)<sup>-1</sup></li>
  *   <li><b>Estimated State Error:</b> The error state vector estimation is given by:<ul>
  *          <li>&delta;Xest<sub>k</sub> = &delta;Xpred<sub>k</sub> + <b>K</b><sub>k</sub>.
- *          (Inno<sub>k</sub> - <b>H</b><sub>k</sub>.&delta;Xpred<sub>k</sub>) for the simple type filter,
+ *          (Inno<sub>k</sub> - <b>H</b><sub>k</sub>.&delta;Xpred<sub>k</sub>) for the simple type filter,</li>
  *          <li>&delta;Xest<sub>k</sub> = <b>K</b><sub>k</sub>.Inno<sub>k</sub> for the extended Kalman filter,
- *          since &delta;Xpred<sub>k</sub> = <b>0</b><sub>M</sub>.
- *   </ul>
- *   <li><b>Estimated Covariance</b>: The classical equation is:<p>
- *   <b>Pest</b><sub>k</sub> = (I<sub>M</sub> - <b>K</b><sub>k</sub>.<b>H</b><sub>k</sub>).<b>Ppred</b><sub>k</sub>
+ *          since &delta;Xpred<sub>k</sub> = <b>0</b><sub>M</sub>.</li>
+ *   </ul></li>
+ *   <li><b>Estimated Covariance</b>: The classical equation is:<br>
+ *   <b>Pest</b><sub>k</sub> = (I<sub>M</sub> - <b>K</b><sub>k</sub>.<b>H</b><sub>k</sub>).<b>Ppred</b><sub>k</sub><br>
  *   But here we prefer to use the so called <i>Joseph algorithm</i> (see <i>[1]§10.6 eq. 10.34</i>) which is the same but has the
- *   advantage of numerically keeping the covariance matrix symmetric:<p>
+ *   advantage of numerically keeping the covariance matrix symmetric:<br>
  *   <b>Pest</b><sub>k</sub> = (I<sub>M</sub> - <b>K</b><sub>k</sub>.<b>H</b><sub>k</sub>).<b>Ppred</b><sub>k</sub>.(I<sub>M</sub> - <b>K</b><sub>k</sub>.<b>H</b><sub>k</sub>)<sup>T</sup>
- *    + <b>K</b><sub>k</sub>.<b>R</b>.<b>K</b><sub>k</sub><sup>T</sup>
- *   <li><b>Estimated State</b>: The estimated state vector is updated using:<p>
- *   Xest<sub>k</sub> = Xpred<sub>k</sub> + &delta;Xest<sub>k</sub>
+ *    + <b>K</b><sub>k</sub>.<b>R</b>.<b>K</b><sub>k</sub><sup>T</sup></li>
+ *   <li><b>Estimated State</b>: The estimated state vector is updated using:<br>
+ *   Xest<sub>k</sub> = Xpred<sub>k</sub> + &delta;Xest<sub>k</sub></li>
  * </ol>
  *
  * Finally, if the filter is extended, the reference trajectory is updated using the estimated parameters of the filter.
@@ -187,15 +184,15 @@ public class KalmanEstimator {
                     final RealMatrix physicalInitialCovariance,
                     final RealMatrix physicalInitialProcessNoiseMatrix,
                     final FilterType filterType)
-                                          throws OrekitException {
+        throws OrekitException {
 
-        this.propagatorBuilder                  = propagatorBuilder;
-        this.filterType                         = filterType;
-        this.estimatedMeasurement               = null;
-        this.observer                           = null;
-        this.currentDate                        = propagatorBuilder.getInitialOrbitDate();
-        this.currentMeasurementNumber           = 0;
-        this.currentMeasurementStatus           = false;
+        this.propagatorBuilder        = propagatorBuilder;
+        this.filterType               = filterType;
+        this.estimatedMeasurement     = null;
+        this.observer                 = null;
+        this.currentDate              = propagatorBuilder.getInitialOrbitDate();
+        this.currentMeasurementNumber = 0;
+        this.currentMeasurementStatus = false;
 
         // Build the process model and measurement model
         this.processModel = new KalmanProcessModel(propagatorBuilder,
@@ -217,7 +214,7 @@ public class KalmanEstimator {
     }
 
     /** Set the observer.
-     * @param observer the observer...
+     * @param observer the observer
      */
     public void setObserver(final KalmanObserver observer) {
         this.observer = observer;
@@ -258,14 +255,14 @@ public class KalmanEstimator {
         return currentMeasurementStatus;
     }
 
-    /** Get the "physical" estimated state (ie. not normalized)
+    /** Get the "physical" estimated state (i.e. not normalized)
      * @return the "physical" estimated state
      */
     public RealVector getPhysicalEstimatedState() {
         return processModel.unNormalizeStateVector(estimatedState);
     }
 
-    /** Get the "physical" estimated covariance matrix (ie. not normalized)
+    /** Get the "physical" estimated covariance matrix (i.e. not normalized)
      * @return the "physical" estimated covariance matrix
      */
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
@@ -278,7 +275,7 @@ public class KalmanEstimator {
      * @exception OrekitException if different parameters have the same name
      */
     ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
-                    throws OrekitException {
+        throws OrekitException {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (final DelegatingDriver delegating : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
@@ -297,7 +294,7 @@ public class KalmanEstimator {
      * @exception OrekitException if different parameters have the same name
      */
     ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly)
-                    throws OrekitException {
+        throws OrekitException {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
@@ -311,12 +308,14 @@ public class KalmanEstimator {
     }
 
     /** Process a single measurement.
+     * <p>
      * Update the filter with the new measurement by calling the estimate method.
+     * </p>
      * @param observedMeasurement the measurement to process
      * @throws OrekitException if an error occurred during the estimation
      */
     public void processMeasurement(final ObservedMeasurement<?> observedMeasurement)
-                    throws OrekitException {
+        throws OrekitException {
 
         // Measurement date
         final AbsoluteDate measurementDate = observedMeasurement.getDate();
@@ -347,20 +346,22 @@ public class KalmanEstimator {
      * @throws OrekitException if an error occurred during the estimation
      */
     public void processMeasurements(final List<ObservedMeasurement<?>> observedMeasurements)
-                    throws OrekitException {
+        throws OrekitException {
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             processMeasurement(observedMeasurement);
         }
     }
 
     /** Estimate the state at an observed measurement date.
+     * <p>
      * This function is the core of the filter.
      * It realizes the prediction and correction of the state using the measurement.
+     * </p>
      * @param observedMeasurement the observed measurement
      * @throws OrekitException if the estimation failed
      */
     private void estimate(final ObservedMeasurement<?> observedMeasurement)
-                    throws OrekitException {
+        throws OrekitException {
 
         // Note:
         // - N = size of the current measurement
@@ -376,8 +377,8 @@ public class KalmanEstimator {
         processModel.initializeDerivatives();
 
         // Propagate the reference trajectory to measurement date
-        final SpacecraftState predictedSpacecraftState = processModel.
-                        propagateReferenceTrajectory(observedMeasurement.getDate());
+        final SpacecraftState predictedSpacecraftState =
+                        processModel.propagateReferenceTrajectory(observedMeasurement.getDate());
 
         // Predict the state vector (Mx1)
         final RealVector predictedState = predictState(predictedSpacecraftState.getOrbit());
@@ -397,7 +398,7 @@ public class KalmanEstimator {
 
 
         // Predict the measurement based on predicted spacecraft state
-        // Compute the innovations (ie. residuals of the predicted measurement)
+        // Compute the innovations (i.e. residuals of the predicted measurement)
         // ------------------------------------------------------------
 
         // Predicted measurement
@@ -408,7 +409,9 @@ public class KalmanEstimator {
         final EstimatedMeasurement<?> predictedMeasurement =
                         observedMeasurement.estimate(currentMeasurementNumber,
                                                      currentMeasurementNumber,
-                                                     new SpacecraftState[] {predictedSpacecraftState});
+                                                     new SpacecraftState[] {
+                                                         predictedSpacecraftState
+                                                     });
 
         // Normalized innovations of the measurement (Nx1)
         final RealVector innovations = measurementModel.getResiduals(predictedMeasurement);
@@ -443,9 +446,9 @@ public class KalmanEstimator {
             // The predicted measurement is not rejected, compute Kalman gain and
             // correct the predictions
             // --------------------------------------------------------------------
-            // FIXME: How to handle several measurements with very close measurement dates ?
-            //        Slip the prediction phase or replace it by shiftedBy ?
-            //        How to set the time threshold to determine whether measurement are too close or not
+            // FIXME: How to handle several measurements with very close measurement dates?
+            //        Slip the prediction phase or replace it by shiftedBy?
+            //        How to set the time threshold to determine whether measurement are too close or not?
 
             // Kalman gain (MxN)
             final RealMatrix kalmanGain = getKalmanGain(predictedCovariance,
@@ -526,7 +529,7 @@ public class KalmanEstimator {
      * @throws OrekitException if the propagator builder could not be reset
      */
     private RealVector predictState(final Orbit predictedOrbit)
-                    throws OrekitException {
+        throws OrekitException {
 
         // First, update the builder with the predicted orbit
         // This updates the orbital drivers with the values of the predicted orbit
@@ -536,8 +539,8 @@ public class KalmanEstimator {
         final RealVector predictedState = MatrixUtils.createRealVector(estimatedState.toArray());
 
         // The orbital parameters in the state vector are replaced with their predicted values
-        // The propagation & measurement parameters are not changed by the prediction (ie. the propagation)
-        if ( processModel.getNbOrbitalParameters() > 0 ) {
+        // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
+        if (processModel.getNbOrbitalParameters() > 0) {
             // As the propagator builder was previously updated with the predicted orbit,
             // the selected orbital drivers are already up to date with the prediction
 
@@ -592,9 +595,9 @@ public class KalmanEstimator {
     public RealMatrix predictCovariance(final RealMatrix stateTransitionMatrix,
                                         final RealMatrix processNoiseMatrix) {
 
-        return stateTransitionMatrix.multiply(estimatedCovariance)
-                                    .multiply(stateTransitionMatrix.transpose())
-                                    .add(processNoiseMatrix);
+        return stateTransitionMatrix.multiply(estimatedCovariance).
+                                     multiply(stateTransitionMatrix.transpose()).
+                                     add(processNoiseMatrix);
     }
 
     /** Get the normalized estimated state vector error (Mx1).<p>
@@ -623,9 +626,10 @@ public class KalmanEstimator {
         if (filterType.equals(FilterType.EXTENDED)) {
             return kalmanGain.operate(innovations);
         } else {
-            return predictedStateError
-                            .add(kalmanGain.operate(innovations.subtract(measurementMatrix
-                                                                        .operate(predictedStateError))));
+            return predictedStateError.add(kalmanGain.
+                                           operate(innovations.
+                                                   subtract(measurementMatrix.
+                                                            operate(predictedStateError))));
         }
     }
 
@@ -653,16 +657,22 @@ public class KalmanEstimator {
                                           final RealMatrix measurementNoiseMatrix) {
 
         // Pre-compute M = (I - K x H)
-        final RealMatrix M = MatrixUtils.createRealIdentityMatrix(predictedCovariance.getColumnDimension())
-                        .subtract(kalmanGain.multiply(measurementMatrix));
+        final RealMatrix M =
+                        MatrixUtils.
+                        createRealIdentityMatrix(predictedCovariance.getColumnDimension()).
+                        subtract(kalmanGain.multiply(measurementMatrix));
 
         // Estimate covariance
         // Joseph algorithm: Pest = (I - K x H) x Ppred x (I - K x H)t + K x R x Kt
         // This algorithm guarantees the positive definiteness of the covariance
         // matrix throughout the filtering process.
         // It is equivalent to the classical computation: Pest = (I - K x H) x Ppred
-        return M.multiply(predictedCovariance).multiply(M.transpose())
-                        .add(kalmanGain.multiply(measurementNoiseMatrix).multiply(kalmanGain.transpose()));
+        return M.
+              multiply(predictedCovariance).
+              multiply(M.transpose()).
+              add(kalmanGain.
+                  multiply(measurementNoiseMatrix).
+                  multiply(kalmanGain.transpose()));
     }
 
     /** Get the normalized estimated state vector (Mx1).
@@ -675,7 +685,6 @@ public class KalmanEstimator {
      * @return the normalized estimated state vector
      */
     private RealVector estimateState(final RealVector predictedState) {
-
         return predictedState.add(estimatedStateError);
     }
 
@@ -694,9 +703,10 @@ public class KalmanEstimator {
     private RealMatrix getInnovationCovarianceMatrix(final RealMatrix predictedCovariance,
                                                      final RealMatrix measurementMatrix,
                                                      final RealMatrix measurementNoiseMatrix) {
-        return measurementMatrix.multiply(predictedCovariance)
-                                .multiply(measurementMatrix.transpose())
-                                .add(measurementNoiseMatrix);
+        return measurementMatrix.
+                        multiply(predictedCovariance).
+                        multiply(measurementMatrix.transpose()).
+                        add(measurementNoiseMatrix);
     }
 
     /** Get the normalized Kalman filter gain K (MxN).<p>
@@ -725,10 +735,10 @@ public class KalmanEstimator {
         // Indeed:
         // Multiplying (1) on the right by S gives: K x S = Ppred x Ht
         // Taking the transpose gives: St x Kt = H x Ppredt
-        final RealMatrix K = new QRDecomposition(innovationCovarianceMatrix.transpose()).getSolver()
-                        .solve(measurementMatrix.multiply(predictedCovariance.transpose()))
-                        .transpose();
-        return K;
+        return new QRDecomposition(innovationCovarianceMatrix.transpose()).
+                        getSolver().
+                        solve(measurementMatrix.multiply(predictedCovariance.transpose())).
+                        transpose();
     }
 
     // FIXME: Which matrix decomposition is best to use for the gain ? QR or Cholesky.
@@ -770,7 +780,7 @@ public class KalmanEstimator {
      * This is used for nearly symmetric matrix like the innovation covariance matrix.
      * This is supposed to be a symmetric matrix but small computation errors makes it
      * not perfectly symmetric.
-     * For each element Mij of the matrix (i != j), the new value of Mij is the mean
+     * For each element Mij of the matrix (i != j), the new value of Mij is set to the mean
      * value of Mij and Mji.
      * @param M the nearly symmetric matrix
      * @return the matrix made perfectly symmetric
@@ -858,12 +868,12 @@ public class KalmanEstimator {
                          final RealVector estimatedStateError,
                          final RealMatrix estimatedCovariance) {
 
-            this.predictedState                  = predictedState;
-            this.predictedStateError             = predictedStateError;
-            this.predictedCovariance             = predictedCovariance;
-            this.estimatedState                  = estimatedState;
-            this.estimatedStateError             = estimatedStateError;
-            this.estimatedCovariance             = estimatedCovariance;
+            this.predictedState      = predictedState;
+            this.predictedStateError = predictedStateError;
+            this.predictedCovariance = predictedCovariance;
+            this.estimatedState      = estimatedState;
+            this.estimatedStateError = estimatedStateError;
+            this.estimatedCovariance = estimatedCovariance;
         }
 
         /** Getter for the predictedState.

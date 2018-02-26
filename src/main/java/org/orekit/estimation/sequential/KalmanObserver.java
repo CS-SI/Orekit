@@ -22,7 +22,7 @@ import org.orekit.estimation.sequential.KalmanEstimator.KalmanEvaluation;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriversList;
 
-/** Observer for {@link KalmanEstimatorReal batch least squares estimator} iterations.
+/** Observer for {@link KalmanEstimatorReal Kalma filter} estimations.
  * <p>
  * This interface is intended to be implemented by users to monitor
  * the progress of the Kalman filter estimator during estimation.

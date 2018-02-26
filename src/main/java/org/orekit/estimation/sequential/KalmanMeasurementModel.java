@@ -34,9 +34,9 @@ import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
  */
 public class KalmanMeasurementModel {
 
-
     /** Default constructor. Does nothing.*/
-    public KalmanMeasurementModel() { }
+    public KalmanMeasurementModel() {
+    }
 
     /** Get the status of a measurement.<p>
      *   - true : the measurement will be processed by the Kalman filter <p>
@@ -131,8 +131,7 @@ public class KalmanMeasurementModel {
 
                 // Initialize the values of the sigma array used in the dynamic filter
                 final double[] sigmaDynamic     = new double[innovationCovarianceMatrix.getColumnDimension()];
-                final double[] sigmaMeasurement = observedMeasurement.
-                                getTheoreticalStandardDeviation();
+                final double[] sigmaMeasurement = observedMeasurement.getTheoreticalStandardDeviation();
 
                 // Set the sigma value for each element of the measurement
                 // Here we do use the value suggested by David A. Vallado (see [1]§10.6):
@@ -146,8 +145,7 @@ public class KalmanMeasurementModel {
                 //  - sigma[i] is the theoretical standard deviation of the ith component of the measurement.
                 //    It is used here to un-normalize the value before it is filtered
                 for (int i = 0; i < sigmaDynamic.length; i++) {
-                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i)) *
-                                    sigmaMeasurement[i];
+                    sigmaDynamic[i] = FastMath.sqrt(innovationCovarianceMatrix.getEntry(i, i)) * sigmaMeasurement[i];
                 }
                 dynamicOutlierFilter.setSigma(sigmaDynamic);
 
