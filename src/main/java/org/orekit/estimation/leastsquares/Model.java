@@ -382,12 +382,17 @@ class Model implements MultivariateJacobianFunction {
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();
         final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
 
-        // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
+
+        if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+            return;
+        }
+
+        // compute weighted residuals
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
-        final double[] weight    = evaluation.getCurrentWeight();
+        final double[] weight    = evaluation.getObservedMeasurement().getBaseWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }

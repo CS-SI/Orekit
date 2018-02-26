@@ -78,9 +78,8 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
             final double[] sigma       = estimated.getObservedMeasurement().getTheoreticalStandardDeviation();
             for (int i = 0; i < observed.length; ++i) {
                 if (FastMath.abs(observed[i] - theoretical[i]) > maxSigma * sigma[i]) {
-                    // observed value is too far
-                    // set current weight to 0.0
-                    estimated.setCurrentWeight(new double[observed.length]);
+                    // observed value is too far, reject measurement
+                    estimated.setStatus(EstimatedMeasurement.Status.REJECTED);
                 }
             }
         }

@@ -38,29 +38,6 @@ public class KalmanMeasurementModel {
     public KalmanMeasurementModel() {
     }
 
-    /** Get the status of a measurement.<p>
-     *   - true : the measurement will be processed by the Kalman filter <p>
-     *   - false: the measurement will be rejected by the Kalman filter
-     * @param estimatedMeasurement measurement to test for its status
-     * @param <T> the type of measurement
-     * @return the status of the measurement
-     */
-    <T extends ObservedMeasurement<T>> boolean getMeasurementStatus(final EstimatedMeasurement<T> estimatedMeasurement) {
-
-        // Init status to false
-        boolean measurementStatus = false;
-
-        // Get measurement weights. They were set to 0 if the measurement was rejected
-        // by an outlier filter
-        final double[] weights = estimatedMeasurement.getCurrentWeight();
-
-        // Loop on the weights, if they're all nil the measurement is rejected
-        for (int i = 0; i < weights.length; i++) {
-            measurementStatus = measurementStatus || (weights[i] > 0.);
-        }
-        return measurementStatus;
-    }
-
     /** Return the normalized residuals of an estimated measurement.
      * @param estimatedMeasurement the measurement
      * @param <T> the type of measurement

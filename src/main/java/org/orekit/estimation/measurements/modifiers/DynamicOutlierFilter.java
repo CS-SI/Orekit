@@ -82,9 +82,8 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
             // Check if observed value is not too far from estimation
             for (int i = 0; i < observed.length; ++i) {
                 if (FastMath.abs(observed[i] - theoretical[i]) > getMaxSigma() * sigma[i]) {
-                    // observed value is too far
-                    // set current weight to 0.0
-                    estimated.setCurrentWeight(new double[observed.length]);
+                    // observed value is too far, reject measurement
+                    estimated.setStatus(EstimatedMeasurement.Status.REJECTED);
                 }
             }
         }

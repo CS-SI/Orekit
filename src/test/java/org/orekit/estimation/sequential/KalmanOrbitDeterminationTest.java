@@ -314,7 +314,6 @@ public class KalmanOrbitDeterminationTest {
         
         // Definition of the accuracy for the test
         final double distanceAccuracy = 0.1;
-        final double velocityAccuracy = 1e-4;
         final double angleAccuracy    = 1e-5; // degrees
         
         // Number of measurements processed
@@ -718,7 +717,7 @@ public class KalmanOrbitDeterminationTest {
                 // Current measurement number, date and status
                 final int currentNumber        = kalman.getCurrentMeasurementNumber();
                 final AbsoluteDate currentDate = kalman.getCurrentDate();
-                final boolean currentStatus    = kalman.getCurrentMeasurementStatus();
+                final EstimatedMeasurement.Status currentStatus = kalman.getCurrentMeasurementStatus();
 
                 // Current estimated measurement
                 final ObservedMeasurement<?>  observedMeasurement  = estimatedMeasurement.getObservedMeasurement();
@@ -807,14 +806,6 @@ public class KalmanOrbitDeterminationTest {
                     // Line format
                     final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
 
-                    // Current status
-                    String strStatus;
-                    if (currentStatus) {
-                        strStatus = "PROCESSED";
-                    } else {
-                        strStatus = "REJECTED";
-                    }
-
                     // Orbital correction = DP & DV between predicted orbit and estimated orbit
                     final Vector3D predictedP = predictedOrbits[0].getPVCoordinates().getPosition();
                     final Vector3D predictedV = predictedOrbits[0].getPVCoordinates().getVelocity();
@@ -825,7 +816,8 @@ public class KalmanOrbitDeterminationTest {
 
                     line = String.format(Locale.US, lineFormat,
                                          currentNumber, currentDate.toString(), 
-                                         currentDate.durationFrom(t0), strStatus, measType, stationName,
+                                         currentDate.durationFrom(t0), currentStatus.toString(),
+                                         measType, stationName,
                                          DPcorr,DVcorr);
 
                     // Handle parameters printing (value and error) 

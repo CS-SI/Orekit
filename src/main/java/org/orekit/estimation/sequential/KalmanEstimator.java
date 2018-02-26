@@ -153,12 +153,6 @@ public class KalmanEstimator {
     /** Current number of the measurement being processed by the filter since it was created. */
     private int currentMeasurementNumber;
 
-    /** Status of the current measurement being processed by the filter.
-     *  True if the measurement was kept.
-     *  False if it is rejected
-     */
-    private boolean currentMeasurementStatus;
-
     /** Current estimated state. */
     private RealVector estimatedState;
 
@@ -192,7 +186,6 @@ public class KalmanEstimator {
         this.observer                 = null;
         this.currentDate              = propagatorBuilder.getInitialOrbitDate();
         this.currentMeasurementNumber = 0;
-        this.currentMeasurementStatus = false;
 
         // Build the process model and measurement model
         this.processModel = new KalmanProcessModel(propagatorBuilder,
@@ -249,10 +242,10 @@ public class KalmanEstimator {
     }
 
     /** Get current measurement status.
-     * @return measurement status (true if the measurement was processed, false if it was rejected)
+     * @return measurement status
      */
-    public boolean getCurrentMeasurementStatus() {
-        return currentMeasurementStatus;
+    public EstimatedMeasurement.Status getCurrentMeasurementStatus() {
+        return estimatedMeasurement.getStatus();
     }
 
     /** Get the "physical" estimated state (i.e. not normalized)
@@ -320,10 +313,9 @@ public class KalmanEstimator {
         // Measurement date
         final AbsoluteDate measurementDate = observedMeasurement.getDate();
 
-        // Update current date, measurement number and initialize status to false
+        // Update current date, measurement number
         currentDate = measurementDate;
         currentMeasurementNumber++;
-        currentMeasurementStatus = false;
 
         // Set a reference date for all measurements parameters that lack one (including the not estimated ones)
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
@@ -432,12 +424,9 @@ public class KalmanEstimator {
         measurementModel.applyDynamicOutlierFilter(predictedMeasurement,
                                                    innovationCovarianceMatrix);
 
-        // Update the status of the predicted measurement
-        currentMeasurementStatus = measurementModel.getMeasurementStatus(predictedMeasurement);
-
         // If the predicted measurement is rejected, the gain is not computed.
         // And the estimates are equal to the predictions
-        if (!currentMeasurementStatus)  {
+        if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
             estimatedStateError = predictedStateError;
             estimatedCovariance = predictedCovariance;
             estimatedState      = predictedState;

@@ -1986,7 +1986,7 @@ public class OrbitDetermination {
 
     }
 
-    /** Local class for evaluation conting.
+    /** Local class for evaluation counting.
      * @param T type of mesurement
      */
     private static class EvaluationCounter<T extends ObservedMeasurement<T>> {
@@ -2002,11 +2002,7 @@ public class OrbitDetermination {
          */
         public void add(EstimatedMeasurement<T> evaluation) {
             ++total;
-            double max = 0;
-            for (final double w : evaluation.getCurrentWeight()) {
-                max = FastMath.max(max, w);
-            }
-            if (max > 0) {
+            if (evaluation.getStatus() == EstimatedMeasurement.Status.PROCESSED) {
                 ++active;
             }
         }
