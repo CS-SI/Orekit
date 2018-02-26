@@ -376,7 +376,10 @@ class GNSSAttitudeContext implements TimeStamped {
     public TimeStampedAngularCoordinates orbitNormalYaw()
         throws OrekitException {
         final PVCoordinates normal = new PVCoordinates(svPVDS.getMomentum()).normalize();
-        return new TimeStampedAngularCoordinates(svPV.getDate(), MINUS_Z, svPV, PLUS_Y, normal, 1.0e-9);
+        return new TimeStampedAngularCoordinates(svPV.getDate(),
+                                                 MINUS_Z, svPV.normalize(),
+                                                 PLUS_Y, normal.normalize(),
+                                                 1.0e-9);
     }
 
 }

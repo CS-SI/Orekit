@@ -86,45 +86,49 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private void doTest(final String fileName) throws OrekitException {
 
-        // the transforms between EME2000 and ITRF will not really be correct here
-        // because the corresponding EOP are not present in the resources used
-        // however, this is not a problem because we rely only on data generated
-        // in ITRF and fully consistent (both EOP and Sun ephemeris were used at
-        // data generation phase). The test performed here will convert back
-        // to EME2000 (which will be slightly offset due to missing EOP), but
-        // Sun/Earth/spacecraft relative geometry will remain consistent
-        final Frame eme2000 = FramesFactory.getEME2000();
-        final Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
-        final List<List<ParsedLine>> dataBlocks = parseFile(fileName, eme2000, itrf);
-        for (final List<ParsedLine> dataBlock : dataBlocks) {
-            final AbsoluteDate validityStart = dataBlock.get(0).date;
-            final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
-            final int          prnNumber     = dataBlock.get(0).prnNumber;
-            final PVCoordinatesProvider fakedSun = (date, frame) ->
-                    TimeStampedPVCoordinates.interpolate(date,
-                                                         CartesianDerivativesFilter.USE_P,
-                                                         dataBlock.stream().
-                                                         filter(parsedLine ->
-                                                                FastMath.abs(parsedLine.date.durationFrom(date)) < 300).
-                                                         map(parsedLine ->
-                                                         new TimeStampedPVCoordinates(parsedLine.date,
-                                                                                      parsedLine.sunP,
-                                                                                      Vector3D.ZERO,
-                                                                                      Vector3D.ZERO)));
-            final GNSSAttitudeProvider attitudeProvider =
-                            createProvider(validityStart, validityEnd, fakedSun, prnNumber);
-            Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
-            Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
+        if (getClass().getResource("/gnss/" + fileName) != null) {
 
-            for (final ParsedLine parsedLine : dataBlock) {
-                final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, itrf);
-                final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-                Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 1.0e-15);
+            // the transforms between EME2000 and ITRF will not really be correct here
+            // because the corresponding EOP are not present in the resources used
+            // however, this is not a problem because we rely only on data generated
+            // in ITRF and fully consistent (both EOP and Sun ephemeris were used at
+            // data generation phase). The test performed here will convert back
+            // to EME2000 (which will be slightly offset due to missing EOP), but
+            // Sun/Earth/spacecraft relative geometry will remain consistent
+            final Frame eme2000 = FramesFactory.getEME2000();
+            final Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+            final List<List<ParsedLine>> dataBlocks = parseFile(fileName, eme2000, itrf);
+            for (final List<ParsedLine> dataBlock : dataBlocks) {
+                final AbsoluteDate validityStart = dataBlock.get(0).date;
+                final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
+                final int          prnNumber     = dataBlock.get(0).prnNumber;
+                final PVCoordinatesProvider fakedSun = (date, frame) ->
+                TimeStampedPVCoordinates.interpolate(date,
+                                                     CartesianDerivativesFilter.USE_P,
+                                                     dataBlock.stream().
+                                                     filter(parsedLine ->
+                                                     FastMath.abs(parsedLine.date.durationFrom(date)) < 300).
+                                                     map(parsedLine ->
+                                                     new TimeStampedPVCoordinates(parsedLine.date,
+                                                                                  parsedLine.sunP,
+                                                                                  Vector3D.ZERO,
+                                                                                  Vector3D.ZERO)));
+                final GNSSAttitudeProvider attitudeProvider =
+                                createProvider(validityStart, validityEnd, fakedSun, prnNumber);
+                Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
+                Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
+
+                for (final ParsedLine parsedLine : dataBlock) {
+                    final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, itrf);
+                    final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
+                    Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 1.0e-15);
+                }
+
             }
-
         }
 
         Assert.fail("TODO");
+
     }
 
     private List<List<ParsedLine>> parseFile(final String fileName, final Frame eme2000, final Frame itrf)

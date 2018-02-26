@@ -2,8 +2,9 @@ The data files for attitude reference were created as follows:
 
 1) retrieved SP3 files for several different constellations from IGS MGEX
    data analysis at <ftp://cddis.gsfc.nasa.gov/pub/gps/products/mgex/>.
-   The files selected came from CODE (Center for Orbit Determination in Europe)
-   and correspond to data from week 1800 to week 1933 included
+   The files selected came from GFZ (GeoForschungsZentrum Potsdam)
+   and correspond to data from week 1800 to week 1988, except for about
+   30 files missing in the archive
    
 2) ran the GeneratedBaseSample java program to pick up 5 subsets of
    alignment events:
@@ -28,7 +29,9 @@ The data files for attitude reference were created as follows:
    for f in beta-crossing.txt \
             beta-small-negative.txt beta-small-positive.txt \
             beta-large-negative.txt beta-large-positive.txt ; do
-     for s in "BEIDOU-2I" "BEIDOU-2M" "BLOCK-IIA" "BLOCK-IIF" "BLOCK-IIR" "GALILEO" "GLONASS" ; do
+     for s in "BEIDOU-2G" "BEIDOU-2I" "BEIDOU-2M" \
+              "BLOCK-IIA" "BLOCK-IIF" "BLOCK-IIR" \
+              "GALILEO" "GLONASS" ; do
        g=`echo $f | sed "s,.txt,-$s.txt,"`
        head -1 < $f > $g
        grep "$s" $f >> $g
