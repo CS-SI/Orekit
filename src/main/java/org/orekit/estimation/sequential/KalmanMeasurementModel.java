@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 
 /** Basic model handling measurement related functions to use with a {@link KalmanEstimator}.
@@ -69,13 +70,17 @@ public class KalmanMeasurementModel {
 
         // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
         // of the measurement on its non-diagonal elements.
-        // TODO: Introduce the correlation coefficients for PV in Orekit
-        // Here we have 0 for all correlation coefficients
-        // The "physical" measurement noise matrix is the covariance matrix of the measurement
+        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
         // Normalizing it leaves us with the matrix of the correlation coefficients
-
-        // Set up an identity matrix of proper size
-        return MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+        if (observedMeasurement instanceof PV) {
+            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final PV pv = (PV) observedMeasurement;
+            return MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
+        } else {
+            // For other measurements we do not have a covariance matrix.
+            // Thus the correlation coefficients matrix is an identity matrix.
+            return MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+        }
     }
 
     /** Set and apply a dynamic outlier filter on a measurement.<p>
