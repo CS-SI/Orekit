@@ -18,11 +18,12 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 public class PVMeasurementCreator extends MeasurementCreator {
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) throws OrekitException {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Vector3D v = currentState.getPVCoordinates().getVelocity();
         final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0);

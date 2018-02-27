@@ -399,7 +399,52 @@ public class PVTest {
         }
         
     }
-
+    
+    /** Test exceptions raised if the covariance matrix does not have the proper size. */
+    @Test
+    public void testExceptions() throws OrekitException {
+        // Context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        
+        // Dummy P, V, T
+        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final AbsoluteDate date     = context.initialOrbit.getDate();
+        final double       weight   = 1.;
+        
+        // Build with two 3-sized vectors
+        try {
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, new double[] {1.}, weight);
+            Assert.fail("An OrekitException should have been thrown");
+        } catch (OrekitException e) {
+            // An exception should indeed be raised here
+        }
+        
+        // Build with one 6-sized vector
+        try {
+            new PV(date, position, velocity, new double[] {0., 0., 0.}, weight);
+            Assert.fail("An OrekitException should have been thrown");
+        } catch (OrekitException e) {
+            // An exception should indeed be raised here
+        }
+        
+        // Build with two 3x3 matrices
+        try {
+            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}},
+                   new double[][] {{0., 0.}, {0., 0.}}, weight);
+            Assert.fail("An OrekitException should have been thrown");
+        } catch (OrekitException e) {
+            // An exception should indeed be raised here
+        }
+        
+        // Build with one 6x6 matrix
+        try {
+            new PV(date, position, velocity, new double[][] {{0., 0.}, {0., 0.}}, weight);
+            Assert.fail("An OrekitException should have been thrown");
+        } catch (OrekitException e) {
+            // An exception should indeed be raised here
+        }
+    }
 }
 
 
