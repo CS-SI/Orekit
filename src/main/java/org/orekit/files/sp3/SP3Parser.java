@@ -24,12 +24,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
@@ -45,17 +48,25 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-/** A parser for the SP3 orbit file format. It supports the original format as
- * well as the latest SP3-c version.
+/** A parser for the SP3 orbit file format. It supports all formats from sp3-a
+ * to sp3-d.
  * <p>
  * <b>Note:</b> this parser is thread-safe, so calling {@link #parse} from
  * different threads is allowed.
  * </p>
- * @see <a href="http://igscb.jpl.nasa.gov/igscb/data/format/sp3_docu.txt">SP3-a file format</a>
- * @see <a href="http://igscb.jpl.nasa.gov/igscb/data/format/sp3c.txt">SP3-c file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/sp3_docu.txt">SP3-a file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/sp3c.txt">SP3-c file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/sp3d.pdf">SP3-d file format</a>
  * @author Thomas Neidhart
+ * @author Luc Maisonobe
  */
 public class SP3Parser implements EphemerisFileParser {
+
+    /** Spaces delimiters. */
+    private static final String SPACES = "\\s+";
+
+    /** One millimeter, in meters. */
+    private static final double MILLIMETER = 1.0e-3;
 
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
@@ -97,13 +108,14 @@ public class SP3Parser implements EphemerisFileParser {
      * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
      *
      * @param name of the frame.
-     * @return ITRF based on 2010 conventions.
+     * @return ITRF based on 2010 conventions,
+     * with tidal effects considered during EOP interpolation.
      */
     private static Frame guessFrame(final String name) {
         try {
-            return FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            return FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         } catch (OrekitException e) {
-            throw new RuntimeException(e);
+            throw new OrekitExceptionWrapper(e);
         }
     }
 
@@ -142,381 +154,44 @@ public class SP3Parser implements EphemerisFileParser {
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
 
-        String line = null;
-        int lineNumber = 1;
-        try {
-            while (lineNumber < 23) {
-                line = reader.readLine();
-                if (line == null) {
-                    throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber - 1);
-                } else {
-                    parseHeaderLine(lineNumber++, line, pi);
+        int lineNumber = 0;
+        Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            ++lineNumber;
+            final String l = line;
+            final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
+            if (selected.isPresent()) {
+                try {
+                    selected.get().parse(line, pi);
+                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                    throw new OrekitException(e,
+                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, fileName, line);
                 }
+                candidateParsers = selected.get().allowedNext();
+            } else {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, fileName, line);
             }
-
-            // now handle the epoch/position/velocity entries
-
-            boolean done = false;
-            do {
-                line = reader.readLine();
-                if (line == null || "EOF".equalsIgnoreCase(line.trim())) {
-                    done = true;
-                } else if (line.length() > 0) {
-                    parseContentLine(line, pi);
+            if (pi.done) {
+                if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
+                    throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                              pi.nbEpochs, fileName, pi.file.getNumberOfEpochs());
                 }
-            } while (!done);
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e1) {
-                // ignore
+                return pi.file;
             }
         }
 
-        return pi.file;
-    }
+        // we never reached the EOF marker
+        throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
 
-    /** Parses a header line from the SP3 file (line number 1 - 22).
-     * @param lineNumber the current line number
-     * @param line the line as read from the SP3 file
-     * @param pi the current {@link ParseInfo} object
-     * @throws OrekitException if a non-supported construct is found
-     */
-    private void parseHeaderLine(final int lineNumber, final String line, final ParseInfo pi)
-        throws OrekitException {
-
-        final SP3File file = pi.file;
-
-        try (Scanner s1      = new Scanner(line);
-             Scanner s2      = s1.useDelimiter("\\s+");
-             Scanner scanner = s2.useLocale(Locale.US)) {
-
-            // CHECKSTYLE: stop FallThrough check
-
-            switch (lineNumber) {
-
-                // version, epoch, data used and agency information
-                case 1: {
-                    scanner.skip("#");
-                    final String v = scanner.next();
-
-                    final char version = v.substring(0, 1).toLowerCase().charAt(0);
-                    if (version != 'a' && version != 'b' && version != 'c') {
-                        throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
-                    }
-
-                    pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
-                    file.setFilter(pi.hasVelocityEntries ?
-                            CartesianDerivativesFilter.USE_PV :
-                            CartesianDerivativesFilter.USE_P);
-
-                    final int year = Integer.parseInt(v.substring(2));
-                    final int month = scanner.nextInt();
-                    final int day = scanner.nextInt();
-                    final int hour = scanner.nextInt();
-                    final int minute = scanner.nextInt();
-                    final double second = scanner.nextDouble();
-
-                    final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
-                                                                hour, minute, second,
-                                                                TimeScalesFactory.getGPS());
-
-                    file.setEpoch(epoch);
-
-                    final int numEpochs = scanner.nextInt();
-                    file.setNumberOfEpochs(numEpochs);
-
-                    // data used indicator
-                    file.setDataUsed(scanner.next());
-
-                    file.setCoordinateSystem(scanner.next());
-                    file.setOrbitType(SP3OrbitType.parseType(scanner.next()));
-                    file.setAgency(scanner.next());
-                    break;
-                }
-
-                // additional date/time references in gps/julian day notation
-                case 2: {
-                    scanner.skip("##");
-
-                    // gps week
-                    file.setGpsWeek(scanner.nextInt());
-                    // seconds of week
-                    file.setSecondsOfWeek(scanner.nextDouble());
-                    // epoch interval
-                    file.setEpochInterval(scanner.nextDouble());
-                    // julian day
-                    file.setJulianDay(scanner.nextInt());
-                    // day fraction
-                    file.setDayFraction(scanner.nextDouble());
-                    break;
-                }
-
-                // line 3 contains the number of satellites
-                case 3:
-                    pi.maxSatellites = Integer.parseInt(line.substring(4, 6).trim());
-                    // fall-through intended - the line contains already the first entries
-
-                    // the following 4 lines contain additional satellite ids
-                case 4:
-                case 5:
-                case 6:
-                case 7: {
-                    final int lineLength = line.length();
-                    int count = file.getSatelliteCount();
-                    int startIdx = 9;
-                    while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                        final String satId = line.substring(startIdx, startIdx + 3).trim();
-                        file.addSatellite(satId);
-                        startIdx += 3;
-                    }
-                    break;
-                }
-
-                // the following 5 lines contain general accuracy information for each satellite
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12: {
-                    final int lineLength = line.length();
-                    int satIdx = (lineNumber - 8) * 17;
-                    int startIdx = 9;
-                    while (satIdx < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                        final int exponent = Integer.parseInt(line.substring(startIdx, startIdx + 3).trim());
-                        // the accuracy is calculated as 2**exp (in m) -> can be safely
-                        // converted to an integer as there will be no fraction
-                        file.setAccuracy(satIdx++, FastMath.pow(2d, exponent));
-                        startIdx += 3;
-                    }
-                    break;
-                }
-
-                case 13: {
-                    file.setType(getFileType(line.substring(3, 5).trim()));
-
-                    // now identify the time system in use
-                    final String tsStr = line.substring(9, 12).trim();
-                    file.setTimeScaleString(tsStr);
-                    final TimeSystem ts;
-                    if (tsStr.equalsIgnoreCase("ccc")) {
-                        ts = TimeSystem.GPS;
-                    } else {
-                        ts = TimeSystem.valueOf(tsStr);
-                    }
-                    file.setTimeSystem(ts);
-
-                    switch (ts) {
-                        case GPS:
-                            pi.timeScale = TimeScalesFactory.getGPS();
-                            break;
-
-                        case GAL:
-                            pi.timeScale = TimeScalesFactory.getGST();
-                            break;
-
-                        case GLO:
-                            pi.timeScale = TimeScalesFactory.getGLONASS();
-                            break;
-
-                        case QZS:
-                            pi.timeScale = TimeScalesFactory.getQZSS();
-
-                        case TAI:
-                            pi.timeScale = TimeScalesFactory.getTAI();
-                            break;
-
-                        case UTC:
-                            pi.timeScale = TimeScalesFactory.getUTC();
-                            break;
-
-                        default:
-                            pi.timeScale = TimeScalesFactory.getGPS();
-                            break;
-                    }
-                    file.setTimeScale(pi.timeScale);
-
-                    break;
-                }
-
-                case 14:
-                    // ignore additional custom fields
-                    break;
-
-                    // load base numbers for the standard deviations of
-                    // position/velocity/clock components
-                case 15: {
-                    // String base = line.substring(3, 13).trim();
-                    // if (!base.equals("0.0000000")) {
-                    //    // (mm or 10**-4 mm/sec)
-                    //    pi.posVelBase = Double.valueOf(base);
-                    // }
-
-                    // base = line.substring(14, 26).trim();
-                    // if (!base.equals("0.000000000")) {
-                    //    // (psec or 10**-4 psec/sec)
-                    //    pi.clockBase = Double.valueOf(base);
-                    // }
-                    break;
-                }
-
-                case 16:
-                case 17:
-                case 18:
-                    // ignore additional custom parameters
-                    break;
-
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                    // ignore comment lines
-                    break;
-                default:
-                    // ignore -> method should only be called up to line 22
-                    break;
-            }
-
-            // CHECKSTYLE: resume FallThrough check
-
-        }
-
-    }
-
-    /** Parses a single content line as read from the SP3 file.
-     * @param line a string containing the line
-     * @param pi the current {@link ParseInfo} object
-     */
-    private void parseContentLine(final String line, final ParseInfo pi) {
-        // EP and EV lines are ignored so far
-
-        final SP3File file = pi.file;
-
-        switch (line.charAt(0)) {
-            case '*': {
-                final int year = Integer.parseInt(line.substring(3, 7).trim());
-                final int month = Integer.parseInt(line.substring(8, 10).trim());
-                final int day = Integer.parseInt(line.substring(11, 13).trim());
-                final int hour = Integer.parseInt(line.substring(14, 16).trim());
-                final int minute = Integer.parseInt(line.substring(17, 19).trim());
-                final double second = Double.parseDouble(line.substring(20, 31).trim());
-
-                pi.latestEpoch = new AbsoluteDate(year, month, day,
-                                                  hour, minute, second,
-                                                  pi.timeScale);
-                break;
-            }
-
-            case 'P': {
-                final String satelliteId = line.substring(1, 4).trim();
-
-                if (!file.containsSatellite(satelliteId)) {
-                    pi.latestPosition = null;
-                } else {
-                    final double x = Double.parseDouble(line.substring(4, 18).trim());
-                    final double y = Double.parseDouble(line.substring(18, 32).trim());
-                    final double z = Double.parseDouble(line.substring(32, 46).trim());
-
-                    // the position values are in km and have to be converted to m
-                    pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
-
-                    // clock (microsec)
-                    pi.latestClock =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e6;
-
-                    // the additional items are optional and not read yet
-
-                    // if (line.length() >= 73) {
-                    // // x-sdev (b**n mm)
-                    // int xStdDevExp = Integer.valueOf(line.substring(61,
-                    // 63).trim());
-                    // // y-sdev (b**n mm)
-                    // int yStdDevExp = Integer.valueOf(line.substring(64,
-                    // 66).trim());
-                    // // z-sdev (b**n mm)
-                    // int zStdDevExp = Integer.valueOf(line.substring(67,
-                    // 69).trim());
-                    // // c-sdev (b**n psec)
-                    // int cStdDevExp = Integer.valueOf(line.substring(70,
-                    // 73).trim());
-                    //
-                    // pi.posStdDevRecord =
-                    // new PositionStdDevRecord(FastMath.pow(pi.posVelBase, xStdDevExp),
-                    // FastMath.pow(pi.posVelBase,
-                    // yStdDevExp), FastMath.pow(pi.posVelBase, zStdDevExp),
-                    // FastMath.pow(pi.clockBase, cStdDevExp));
-                    //
-                    // String clockEventFlag = line.substring(74, 75);
-                    // String clockPredFlag = line.substring(75, 76);
-                    // String maneuverFlag = line.substring(78, 79);
-                    // String orbitPredFlag = line.substring(79, 80);
-                    // }
-
-                    if (!pi.hasVelocityEntries) {
-                        final SP3Coordinate coord =
-                                new SP3Coordinate(pi.latestEpoch,
-                                                  pi.latestPosition,
-                                                  pi.latestClock);
-                        file.addSatelliteCoordinate(satelliteId, coord);
-                    }
-                }
-                break;
-            }
-
-            case 'V': {
-                final String satelliteId = line.substring(1, 4).trim();
-
-                if (file.containsSatellite(satelliteId)) {
-                    final double xv = Double.parseDouble(line.substring(4, 18).trim());
-                    final double yv = Double.parseDouble(line.substring(18, 32).trim());
-                    final double zv = Double.parseDouble(line.substring(32, 46).trim());
-
-                    // the velocity values are in dm/s and have to be converted to m/s
-                    final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
-
-                    // clock rate in file is 1e-4 us / s
-                    final double clockRateChange =
-                            Double.parseDouble(line.substring(46, 60).trim()) * 1e10;
-
-                    // the additional items are optional and not read yet
-
-                    // if (line.length() >= 73) {
-                    // // xvel-sdev (b**n 10**-4 mm/sec)
-                    // int xVstdDevExp = Integer.valueOf(line.substring(61,
-                    // 63).trim());
-                    // // yvel-sdev (b**n 10**-4 mm/sec)
-                    // int yVstdDevExp = Integer.valueOf(line.substring(64,
-                    // 66).trim());
-                    // // zvel-sdev (b**n 10**-4 mm/sec)
-                    // int zVstdDevExp = Integer.valueOf(line.substring(67,
-                    // 69).trim());
-                    // // clkrate-sdev (b**n 10**-4 psec/sec)
-                    // int clkStdDevExp = Integer.valueOf(line.substring(70,
-                    // 73).trim());
-                    // }
-
-                    final SP3Coordinate coord =
-                            new SP3Coordinate(pi.latestEpoch,
-                                              pi.latestPosition,
-                                              velocity,
-                                              pi.latestClock,
-                                              clockRateChange);
-                    file.addSatelliteCoordinate(satelliteId, coord);
-                }
-                break;
-            }
-
-            default:
-                // ignore everything else
-                break;
-        }
     }
 
     /** Returns the {@link SP3FileType} that corresponds to a given string in a SP3 file.
      * @param fileType file type as string
      * @return file type as enum
      */
-    private SP3FileType getFileType(final String fileType) {
+    private static SP3FileType getFileType(final String fileType) {
         SP3FileType type = SP3FileType.UNDEFINED;
         if ("G".equalsIgnoreCase(fileType)) {
             type = SP3FileType.GPS;
@@ -564,6 +239,15 @@ public class SP3Parser implements EphemerisFileParser {
         /** The number of satellites as contained in the SP3 file. */
         private int maxSatellites;
 
+        /** The number of satellites accuracies already seen. */
+        private int nbAccuracies;
+
+        /** The number of epochs already seen. */
+        private int nbEpochs;
+
+        /** End Of File reached indicator. */
+        private boolean done;
+
         /** The base for pos/vel. */
         //private double posVelBase;
 
@@ -572,15 +256,529 @@ public class SP3Parser implements EphemerisFileParser {
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
-            file = new SP3File(mu, interpolationSamples, frameBuilder);
-            latestEpoch = null;
-            latestPosition = null;
-            latestClock = 0.0d;
+            file               = new SP3File(mu, interpolationSamples, frameBuilder);
+            latestEpoch        = null;
+            latestPosition     = null;
+            latestClock        = 0.0;
             hasVelocityEntries = false;
-            timeScale = TimeScalesFactory.getGPS();
-            maxSatellites = 0;
+            timeScale          = TimeScalesFactory.getGPS();
+            maxSatellites      = 0;
+            nbAccuracies       = 0;
+            nbEpochs           = 0;
+            done               = false;
             //posVelBase = 2d;
             //clockBase = 2d;
         }
     }
+
+    /** Parsers for specific lines. */
+    private enum LineParser {
+
+        /** Parser for version, epoch, data used and agency information. */
+        HEADER_VERSION("^#[a-z].*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi)
+                throws OrekitException {
+                try (Scanner s1      = new Scanner(line);
+                     Scanner s2      = s1.useDelimiter(SPACES);
+                     Scanner scanner = s2.useLocale(Locale.US)) {
+                    scanner.skip("#");
+                    final String v = scanner.next();
+
+                    final char version = v.substring(0, 1).toLowerCase().charAt(0);
+                    if (version != 'a' && version != 'b' && version != 'c' && version != 'd') {
+                        throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
+                    }
+
+                    pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
+                    pi.file.setFilter(pi.hasVelocityEntries ?
+                                      CartesianDerivativesFilter.USE_PV :
+                                      CartesianDerivativesFilter.USE_P);
+
+                    final int    year   = Integer.parseInt(v.substring(2));
+                    final int    month  = scanner.nextInt();
+                    final int    day    = scanner.nextInt();
+                    final int    hour   = scanner.nextInt();
+                    final int    minute = scanner.nextInt();
+                    final double second = scanner.nextDouble();
+
+                    final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
+                                                                hour, minute, second,
+                                                                TimeScalesFactory.getGPS());
+
+                    pi.file.setEpoch(epoch);
+
+                    final int numEpochs = scanner.nextInt();
+                    pi.file.setNumberOfEpochs(numEpochs);
+
+                    // data used indicator
+                    pi.file.setDataUsed(scanner.next());
+
+                    pi.file.setCoordinateSystem(scanner.next());
+                    pi.file.setOrbitType(SP3OrbitType.parseType(scanner.next()));
+                    pi.file.setAgency(scanner.next());
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_DATE_TIME_REFERENCE);
+            }
+
+        },
+
+        /** Parser for additional date/time references in gps/julian day notation. */
+        HEADER_DATE_TIME_REFERENCE("^##.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi)
+                throws OrekitException {
+                try (Scanner s1      = new Scanner(line);
+                     Scanner s2      = s1.useDelimiter(SPACES);
+                     Scanner scanner = s2.useLocale(Locale.US)) {
+                    scanner.skip("##");
+
+                    // gps week
+                    pi.file.setGpsWeek(scanner.nextInt());
+                    // seconds of week
+                    pi.file.setSecondsOfWeek(scanner.nextDouble());
+                    // epoch interval
+                    pi.file.setEpochInterval(scanner.nextDouble());
+                    // julian day
+                    pi.file.setJulianDay(scanner.nextInt());
+                    // day fraction
+                    pi.file.setDayFraction(scanner.nextDouble());
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_SAT_IDS);
+            }
+
+        },
+
+        /** Parser for satellites identifiers. */
+        HEADER_SAT_IDS("^\\+ .*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+
+                if (pi.maxSatellites == 0) {
+                    // this is the first ids line, it also contains the number of satellites
+                    pi.maxSatellites = Integer.parseInt(line.substring(3, 6).trim());
+                }
+
+                final int lineLength = line.length();
+                int count = pi.file.getSatelliteCount();
+                int startIdx = 9;
+                while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
+                    final String satId = line.substring(startIdx, startIdx + 3).trim();
+                    if (satId.length() > 0) {
+                        pi.file.addSatellite(satId);
+                    }
+                    startIdx += 3;
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_SAT_IDS, HEADER_ACCURACY);
+            }
+
+        },
+
+        /** Parser for general accuracy information for each satellite. */
+        HEADER_ACCURACY("^\\+\\+.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                final int lineLength = line.length();
+                int startIdx = 9;
+                while (pi.nbAccuracies < pi.maxSatellites && (startIdx + 3) <= lineLength) {
+                    final String sub = line.substring(startIdx, startIdx + 3).trim();
+                    if (sub.length() > 0) {
+                        final int exponent = Integer.parseInt(sub);
+                        // the accuracy is calculated as 2**exp (in mm)
+                        pi.file.setAccuracy(pi.nbAccuracies++, (2 << exponent) * MILLIMETER);
+                    }
+                    startIdx += 3;
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_ACCURACY, HEADER_TIME_SYSTEM);
+            }
+
+        },
+
+        /** Parser for time system. */
+        HEADER_TIME_SYSTEM("^%c.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi)
+                throws OrekitException {
+
+                if (pi.file.getType() == null) {
+                    // this the first custom fields line, the only one really used
+                    pi.file.setType(getFileType(line.substring(3, 5).trim()));
+
+                    // now identify the time system in use
+                    final String tsStr = line.substring(9, 12).trim();
+                    pi.file.setTimeScaleString(tsStr);
+                    final TimeSystem ts;
+                    if (tsStr.equalsIgnoreCase("ccc")) {
+                        ts = TimeSystem.GPS;
+                    } else {
+                        ts = TimeSystem.valueOf(tsStr);
+                    }
+                    pi.file.setTimeSystem(ts);
+
+                    switch (ts) {
+                        case GPS:
+                            pi.timeScale = TimeScalesFactory.getGPS();
+                            break;
+
+                        case GAL:
+                            pi.timeScale = TimeScalesFactory.getGST();
+                            break;
+
+                        case GLO:
+                            pi.timeScale = TimeScalesFactory.getGLONASS();
+                            break;
+
+                        case QZS:
+                            pi.timeScale = TimeScalesFactory.getQZSS();
+                            break;
+
+                        case TAI:
+                            pi.timeScale = TimeScalesFactory.getTAI();
+                            break;
+
+                        case UTC:
+                            pi.timeScale = TimeScalesFactory.getUTC();
+                            break;
+
+                        default:
+                            pi.timeScale = TimeScalesFactory.getGPS();
+                            break;
+                    }
+                    pi.file.setTimeScale(pi.timeScale);
+                }
+
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_TIME_SYSTEM, HEADER_STANDARD_DEVIATIONS);
+            }
+
+        },
+
+        /** Parser for standard deviations of position/velocity/clock components. */
+        HEADER_STANDARD_DEVIATIONS("^%f.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // String base = line.substring(3, 13).trim();
+                // if (!base.equals("0.0000000")) {
+                //    // (mm or 10**-4 mm/sec)
+                //    pi.posVelBase = Double.valueOf(base);
+                // }
+
+                // base = line.substring(14, 26).trim();
+                // if (!base.equals("0.000000000")) {
+                //    // (psec or 10**-4 psec/sec)
+                //    pi.clockBase = Double.valueOf(base);
+                // }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_STANDARD_DEVIATIONS, HEADER_CUSTOM_PARAMETERS);
+            }
+
+        },
+
+        /** Parser for custom parameters. */
+        HEADER_CUSTOM_PARAMETERS("^%i.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // ignore additional custom parameters
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_CUSTOM_PARAMETERS, HEADER_COMMENTS);
+            }
+
+        },
+
+        /** Parser for comments. */
+        HEADER_COMMENTS("^/\\*.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // ignore comments
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(HEADER_COMMENTS, DATA_EPOCH);
+            }
+
+        },
+
+        /** Parser for epoch. */
+        DATA_EPOCH("^\\* .*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                final int    year   = Integer.parseInt(line.substring(3, 7).trim());
+                final int    month  = Integer.parseInt(line.substring(8, 10).trim());
+                final int    day    = Integer.parseInt(line.substring(11, 13).trim());
+                final int    hour   = Integer.parseInt(line.substring(14, 16).trim());
+                final int    minute = Integer.parseInt(line.substring(17, 19).trim());
+                final double second = Double.parseDouble(line.substring(20, 31).trim());
+
+                pi.latestEpoch = new AbsoluteDate(year, month, day,
+                                                  hour, minute, second,
+                                                  pi.timeScale);
+                pi.nbEpochs++;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(DATA_POSITION);
+            }
+
+        },
+
+        /** Parser for position. */
+        DATA_POSITION("^P.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                final String satelliteId = line.substring(1, 4).trim();
+
+                if (!pi.file.containsSatellite(satelliteId)) {
+                    pi.latestPosition = null;
+                } else {
+                    final double x = Double.parseDouble(line.substring(4, 18).trim());
+                    final double y = Double.parseDouble(line.substring(18, 32).trim());
+                    final double z = Double.parseDouble(line.substring(32, 46).trim());
+
+                    // the position values are in km and have to be converted to m
+                    pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
+
+                    // clock (microsec)
+                    pi.latestClock =
+                            Double.parseDouble(line.substring(46, 60).trim()) * 1e6;
+
+                    // the additional items are optional and not read yet
+
+                    // if (line.length() >= 73) {
+                    // // x-sdev (b**n mm)
+                    // int xStdDevExp = Integer.valueOf(line.substring(61,
+                    // 63).trim());
+                    // // y-sdev (b**n mm)
+                    // int yStdDevExp = Integer.valueOf(line.substring(64,
+                    // 66).trim());
+                    // // z-sdev (b**n mm)
+                    // int zStdDevExp = Integer.valueOf(line.substring(67,
+                    // 69).trim());
+                    // // c-sdev (b**n psec)
+                    // int cStdDevExp = Integer.valueOf(line.substring(70,
+                    // 73).trim());
+                    //
+                    // pi.posStdDevRecord =
+                    // new PositionStdDevRecord(FastMath.pow(pi.posVelBase, xStdDevExp),
+                    // FastMath.pow(pi.posVelBase,
+                    // yStdDevExp), FastMath.pow(pi.posVelBase, zStdDevExp),
+                    // FastMath.pow(pi.clockBase, cStdDevExp));
+                    //
+                    // String clockEventFlag = line.substring(74, 75);
+                    // String clockPredFlag = line.substring(75, 76);
+                    // String maneuverFlag = line.substring(78, 79);
+                    // String orbitPredFlag = line.substring(79, 80);
+                    // }
+
+                    if (!pi.hasVelocityEntries) {
+                        final SP3Coordinate coord =
+                                new SP3Coordinate(pi.latestEpoch,
+                                                  pi.latestPosition,
+                                                  pi.latestClock);
+                        pi.file.addSatelliteCoordinate(satelliteId, coord);
+                    }
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_POSITION_CORRELATION, DATA_VELOCITY, EOF);
+            }
+
+        },
+
+        /** Parser for position correlation. */
+        DATA_POSITION_CORRELATION("^EP.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // ignored for now
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY, EOF);
+            }
+
+        },
+
+        /** Parser for velocity. */
+        DATA_VELOCITY("^V.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                final String satelliteId = line.substring(1, 4).trim();
+
+                if (pi.file.containsSatellite(satelliteId)) {
+                    final double xv = Double.parseDouble(line.substring(4, 18).trim());
+                    final double yv = Double.parseDouble(line.substring(18, 32).trim());
+                    final double zv = Double.parseDouble(line.substring(32, 46).trim());
+
+                    // the velocity values are in dm/s and have to be converted to m/s
+                    final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
+
+                    // clock rate in file is 1e-4 us / s
+                    final double clockRateChange =
+                            Double.parseDouble(line.substring(46, 60).trim()) * 1e10;
+
+                    // the additional items are optional and not read yet
+
+                    // if (line.length() >= 73) {
+                    // // xvel-sdev (b**n 10**-4 mm/sec)
+                    // int xVstdDevExp = Integer.valueOf(line.substring(61,
+                    // 63).trim());
+                    // // yvel-sdev (b**n 10**-4 mm/sec)
+                    // int yVstdDevExp = Integer.valueOf(line.substring(64,
+                    // 66).trim());
+                    // // zvel-sdev (b**n 10**-4 mm/sec)
+                    // int zVstdDevExp = Integer.valueOf(line.substring(67,
+                    // 69).trim());
+                    // // clkrate-sdev (b**n 10**-4 psec/sec)
+                    // int clkStdDevExp = Integer.valueOf(line.substring(70,
+                    // 73).trim());
+                    // }
+
+                    final SP3Coordinate coord =
+                            new SP3Coordinate(pi.latestEpoch,
+                                              pi.latestPosition,
+                                              velocity,
+                                              pi.latestClock,
+                                              clockRateChange);
+                    pi.file.addSatelliteCoordinate(satelliteId, coord);
+                }
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY_CORRELATION, EOF);
+            }
+
+        },
+
+        /** Parser for velocity correlation. */
+        DATA_VELOCITY_CORRELATION("^EV.*") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // ignored for now
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(DATA_EPOCH, DATA_POSITION, EOF);
+            }
+
+        },
+
+        /** Parser for End Of File marker. */
+        EOF("^[eE][oO][fF]\\s*$") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                pi.done = true;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Stream<LineParser> allowedNext() {
+                return Stream.of(EOF);
+            }
+
+        };
+
+        /** Pattern for identifying line. */
+        private final Pattern pattern;
+
+        /** Simple constructor.
+         * @param lineRegexp regular expression for identifying line
+         */
+        LineParser(final String lineRegexp) {
+            pattern = Pattern.compile(lineRegexp);
+        }
+
+        /** Parse a line.
+         * @param line line to parse
+         * @param pi holder for transient data
+         * @exception OrekitException if line cannot be parsed
+         */
+        public abstract void parse(String line, ParseInfo pi) throws OrekitException;
+
+        /** Get the allowed parsers for next line.
+         * @return allowed parsers for next line
+         */
+        public abstract Stream<LineParser> allowedNext();
+
+        /** Check if parser can handle line.
+         * @param line line to parse
+         * @return true if parser can handle the specified line
+         */
+        public boolean canHandle(final String line) {
+            return pattern.matcher(line).matches();
+        }
+
+    }
+
 }

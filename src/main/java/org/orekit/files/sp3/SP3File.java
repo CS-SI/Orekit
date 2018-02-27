@@ -430,6 +430,23 @@ public class SP3File implements EphemerisFile {
         }
     }
 
+    /**
+     * Get the formal accuracy for a satellite.
+     *
+     * @param index    is the index of the satellite.
+     * @return accuracy of the satellite, in m.
+     */
+    double getAccuracy(final int index) {
+        int n = index;
+        for (final SP3Ephemeris ephemeris : satellites.values()) {
+            if (n == 0) {
+                return ephemeris.getAccuracy();
+            }
+            n--;
+        }
+        return Double.NaN;
+    }
+
     /** Tests whether a satellite with the given id is contained in this orbit
      * file.
      * @param satId the satellite id
@@ -553,7 +570,8 @@ public class SP3File implements EphemerisFile {
         /**
          * Get the formal accuracy for this satellite.
          *
-         * <p> The accuracy is limited by the SP3 standard to be a power of 2.
+         * <p>The accuracy is limited by the SP3 standard to be a power of 2 in mm.
+         * The value returned here is in meters.</p>
          *
          * @return magnitude of one standard deviation, in m.
          */

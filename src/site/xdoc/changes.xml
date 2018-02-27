@@ -21,6 +21,25 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added support for version d of SP3 files.
+      </action>
+      <action dev="luc" type="fix">
+        Improved SP3 files parsing.
+        Some files already operationally produced by IGS Multi-GNSS Experiment (MGEX)
+        exceed the maximum number of satellites supported by the regular SP3-c file
+        format (which is 85) and extended the header. The parser now supports this
+        extension.
+        Fixes issue #376.
+      </action>
+      <action dev="maxime" type="add">
+        Allow backward propagation in batch LS orbit determination.
+        Fixes issue #375.
+      </action>
+      <action dev="maxime" type="add">
+        Added covariance matrix to PV measurements.
+        Fixes issue #374.
+      </action>
       <action dev="luc" type="fix">
         Fixed issue when converting very far points (such as Sun center) to geodetic coordinates.
         Fixes issue #373.
