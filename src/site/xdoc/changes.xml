@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Add FunctionalDetector.
+      </action>
       <action dev="luc" type="add">
         Added support for version d of SP3 files.
       </action>
