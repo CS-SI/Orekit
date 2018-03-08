@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed TLE creation with B* coefficients having single digits like 1.0e-4.
+        Fixes issue #388.
+      </action>
       <action dev="evan" type="add">
         Add FunctionalDetector.
       </action>

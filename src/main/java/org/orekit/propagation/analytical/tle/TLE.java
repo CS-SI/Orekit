@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -358,9 +359,15 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
         final double dAbs = FastMath.abs(d);
         int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
-        final long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
+        long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         if (mantissa == 0) {
             exponent = 0;
+        } else if (mantissa > (ArithmeticUtils.pow(10, mantissaSize) - 1)) {
+            // rare case: if d has a single digit like d = 1.0e-4 with mantissaSize = 5
+            // the above computation finds exponent = -4 and mantissa = 100000 which
+            // doesn't fit in a 5 digits string
+            exponent++;
+            mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         }
         final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
