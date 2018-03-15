@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -23,6 +24,7 @@ import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.utils.Constants;
@@ -126,4 +128,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
+    
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
+    	return null;
+    }
+    
 }

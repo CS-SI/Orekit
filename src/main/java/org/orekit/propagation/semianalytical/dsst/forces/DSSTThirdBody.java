@@ -26,14 +26,17 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -53,7 +56,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody implements DSSTForceModel {
+public class DSSTThirdBody<T> implements DSSTForceModel {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -433,6 +436,48 @@ public class DSSTThirdBody implements DSSTForceModel {
         return new double[] {da, dk, dh, dq, dp, dM};
 
     }
+    
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
+
+        // Qns coefficients
+        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
+        // a / R3 up to power maxAR3Pow
+        final double aoR3 = a / R3;
+        aoR3Pow[0] = 1.;
+        for (int i = 1; i <= maxAR3Pow; i++) {
+            aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
+        }
+
+        // Compute potential U derivatives
+        final <T extends RealFieldElement<T>> T[] dU  = computeUDerivatives();
+        final T dUda  = dU[0];
+        final T dUdk  = dU[1];
+        final T dUdh  = dU[2];
+        final T dUdAl = dU[3];
+        final T dUdBe = dU[4];
+        final T dUdGa = dU[5];
+
+        // Compute cross derivatives [Eq. 2.2-(8)]
+        // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
+        final T UAlphaGamma   = alpha.multiply(dUdGa).subtract(gamma.multiply(dUdAl));        
+        // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
+        final T UBetaGamma    =  beta.multiply(dUdGa).subtract(gamma.multiply(dUdBe));        
+        // Common factor
+        final T pUAGmIqUBGoAB = (p.multiply(UAlphaGamma).subtract(I.multiply(q.multiply(UBetaGamma)))).multiply(ooAB);        
+
+        // Compute mean elements rates [Eq. 3.1-(1)]
+        final T da =  0.;
+        final T dh =  (BoA.multiply(dUdk)).add(k.multiply(pUAGmIqUBGoAB));
+        final T dk =  ((BoA.multiply(dUdh)).reciprocal()).subtract(h.multiply(pUAGmIqUBGoAB));
+        final T dp =  mCo2AB.multiply(UBetaGamma);
+        final T dq =  mCo2AB.multiply(UAlphaGamma.multiply(I));
+        final T dM =  ((m2aoA.multiply(dUda)).add(BoABpo.multiply(h.multiply(dUdh).add(k.multiply(dUdk))))).add(pUAGmIqUBGoAB);
+
+        return new T[] {da, dk, dh, dq, dp, dM};
+
+    }
+    
 
     /** {@inheritDoc} */
     @Override
@@ -625,7 +670,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         };
 
     }
-
+   
     /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {

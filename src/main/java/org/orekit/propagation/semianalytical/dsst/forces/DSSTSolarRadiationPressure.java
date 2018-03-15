@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -24,6 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -465,4 +467,10 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             return 2;
         }
     }
+    
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
+    	return null;
+    }
+    
 }

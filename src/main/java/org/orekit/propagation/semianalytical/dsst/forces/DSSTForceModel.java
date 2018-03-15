@@ -18,8 +18,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -85,6 +87,15 @@ public interface DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
+    
+    /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
+    *  @param <T> the type of the field elements
+    *  @param state current state information: date, kinematics, attitude
+    *  @return the mean element rates dai/dt
+    *  @throws OrekitException if some specific error occurs
+    */
+    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state) throws OrekitException;
+
 
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not

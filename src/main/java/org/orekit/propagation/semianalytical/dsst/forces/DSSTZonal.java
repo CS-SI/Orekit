@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
@@ -33,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -446,6 +448,11 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
         return computeMeanElementRates(spacecraftState.getDate());
+    }
+    
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> spacecraftState) throws OrekitException {
+    	return null;
     }
 
     /** {@inheritDoc} */
