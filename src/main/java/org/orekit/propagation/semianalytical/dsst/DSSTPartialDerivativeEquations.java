@@ -3,10 +3,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
