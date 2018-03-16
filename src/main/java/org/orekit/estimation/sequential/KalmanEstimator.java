@@ -130,9 +130,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class KalmanEstimator {
 
-    /** Filter type. */
-    private final FilterType filterType;
-
     /** Builder for a numerical propagator. */
     private NumericalPropagatorBuilder propagatorBuilder;
 
@@ -165,18 +162,15 @@ public class KalmanEstimator {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param physicalInitialCovariance physical initial covariance matrix
      * @param physicalInitialProcessNoiseMatrix physical process noise matrix
-     * @param filterType Type of the Kalman filter (SIMPLE or EXTENDED)
      * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final NumericalPropagatorBuilder propagatorBuilder,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final RealMatrix physicalInitialCovariance,
-                    final RealMatrix physicalInitialProcessNoiseMatrix,
-                    final FilterType filterType)
+                    final RealMatrix physicalInitialProcessNoiseMatrix)
         throws OrekitException {
 
         this.propagatorBuilder        = propagatorBuilder;
-        this.filterType               = filterType;
         this.estimatedMeasurement     = null;
         this.observer                 = null;
         this.currentDate              = propagatorBuilder.getInitialOrbitDate();
@@ -383,10 +377,6 @@ public class KalmanEstimator {
                         processModel.getErrorStateTransitionMatrix(predictedSpacecraftState,
                                                                    processModel.getReferenceTrajectoryPartialDerivatives());
 
-        // Predict the state error (Mx1)
-        final RealVector predictedStateError = predictStateError(stateTransitionMatrix);
-
-
         // Predict the error covariance matrix (MxM), using the linearized method
         final RealMatrix predictedCovariance = predictCovariance(stateTransitionMatrix,
                                                                  processModel.getProcessNoiseMatrix());
@@ -430,7 +420,9 @@ public class KalmanEstimator {
         // If the predicted measurement is rejected, the gain is not computed.
         // And the estimates are equal to the predictions
         if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
-            estimatedStateError = predictedStateError;
+            estimatedStateError = new ArrayRealVector(processModel.getNbOrbitalParameters() +
+                                                      processModel.getNbPropagationParameters() +
+                                                      processModel.getNbMeasurementsParameters());
             estimatedCovariance = predictedCovariance;
             estimatedState      = predictedState;
 
@@ -452,10 +444,8 @@ public class KalmanEstimator {
             // ---------------------------------------------------------
 
             // Estimated state error (Mx1)
-            estimatedStateError = estimateStateError(predictedStateError,
-                                                     innovations,
-                                                     kalmanGain,
-                                                     measurementMatrix);
+            estimatedStateError = kalmanGain.operate(innovations);
+
             // Estimate covariance matrix (MxM)
             estimatedCovariance = estimateCovariance(predictedCovariance,
                                                      kalmanGain,
@@ -479,12 +469,8 @@ public class KalmanEstimator {
                                                             currentMeasurementNumber,
                                                             new SpacecraftState[] {estimatedSpacecraftState});
         // Update the trajectory
-        // (in the case of the EXTENDED filter type only)
         // ---------------------
-
-        if (filterType.equals(FilterType.EXTENDED)) {
-            processModel.updateReferenceTrajectory(estimatedPropagator);
-        }
+        processModel.updateReferenceTrajectory(estimatedPropagator);
 
         // Call the observer
         // -----------------
@@ -494,10 +480,8 @@ public class KalmanEstimator {
                 // Build current evaluation
                 final KalmanEvaluation kalmanEvaluation =
                                 new KalmanEvaluation(processModel.unNormalizeStateVector(predictedState),
-                                                     processModel.unNormalizeStateVector(predictedStateError),
                                                      processModel.unNormalizeCovarianceMatrix(predictedCovariance),
                                                      processModel.unNormalizeStateVector(estimatedState),
-                                                     processModel.unNormalizeStateVector(estimatedStateError),
                                                      processModel.unNormalizeCovarianceMatrix(estimatedCovariance));
 
                 observer.evaluationPerformed(new Orbit[] {predictedSpacecraftState.getOrbit()},
@@ -548,31 +532,6 @@ public class KalmanEstimator {
         return predictedState;
     }
 
-    /** Get the predicted normalized error state vector.<p>
-     * dXpred[k] = PHI[k/k-1].Xest[k-1]<p>
-     * Where:<p>
-     *   - dXPred[k] is the current normalized error state vector prediction
-     *   - Xest[k-1] is the previous estimated state vector
-     *   - PHI[k/k-1] is the error state transition matrix between current and previous state
-     * Note: The extended filter does not need this step. Indeed the reference trajectory
-     * is updated with the previous estimate. So the predicted state error is always 0.
-     * @param stateTransitionMatrix the state transition matrix
-     * @return The predicted normalized error state vector
-     */
-    private RealVector predictStateError(final RealMatrix stateTransitionMatrix) {
-
-        // Initialized state error to a nil vector
-        RealVector predictedStateError = new ArrayRealVector(processModel.getNbOrbitalParameters() +
-                                                             processModel.getNbPropagationParameters() +
-                                                             processModel.getNbMeasurementsParameters());
-
-        // Apply the formula only if the filter is not extended
-        if (!filterType.equals(FilterType.EXTENDED)) {
-            predictedStateError = stateTransitionMatrix.operate(estimatedStateError);
-        }
-        return predictedStateError;
-    }
-
     /** Get the normalized predicted covariance matrix (MxM).<p>
      * The predicted covariance Ppred is obtained with the equation:<p>
      * Ppred = PHI x Ppred x PHIt + Q<p>
@@ -590,39 +549,6 @@ public class KalmanEstimator {
         return stateTransitionMatrix.multiply(estimatedCovariance).
                                      multiply(stateTransitionMatrix.transpose()).
                                      add(processNoiseMatrix);
-    }
-
-    /** Get the normalized estimated state vector error (Mx1).<p>
-     *  The estimated state vector error dXest is given by the equation:<p>
-     *  dXest = dXpred + K x (Inno - H.dXpred)<p>
-     *  With:<p>
-     *    - dXpred: the predicted state vector error (Mx1),<p>
-     *    - K     : the Kalman gain (MxN),<p>
-     *    - Inno  : the innovations vector (Nx1),<p>
-     *    - H     : the measurement matrix (NXM).<p>
-     * If the Kalman filter is extended the predicted state vector error is nil.
-     * Thus the former equation is reduced to: <p>
-     * dXest = K x Inno
-     * @param predictedStateError the normalized predicted state vector error
-     * @param innovations the innovations vector
-     * @param kalmanGain the Kalman gain
-     * @param measurementMatrix the measurement matrix
-     * @return the normalized estimated state vector error
-     */
-    private RealVector estimateStateError(final RealVector predictedStateError,
-                                          final RealVector innovations,
-                                          final RealMatrix kalmanGain,
-                                          final RealMatrix measurementMatrix) {
-
-        // If the filter type is extended, the predicted state vector error is nil
-        if (filterType.equals(FilterType.EXTENDED)) {
-            return kalmanGain.operate(innovations);
-        } else {
-            return predictedStateError.add(kalmanGain.
-                                           operate(innovations.
-                                                   subtract(measurementMatrix.
-                                                            operate(predictedStateError))));
-        }
     }
 
     /** Get the normalized estimated covariance matrix (MxM).<p>
@@ -756,16 +682,6 @@ public class KalmanEstimator {
         }
     }
 
-    /** Enumerate describing the different Kalman filter types. */
-    public enum FilterType {
-        /** In a SIMPLE Kalman filter, the reference trajectory is never updated.*/
-        SIMPLE,
-        /** In an EXTENDED Kalman filter, the reference trajectory propagator is updated every
-         * time a new measurement is processed.
-         */
-        EXTENDED;
-    }
-
     /** Class containing data from Kalman filter current evaluation.
      *  The matrices here are "physical" matrices (in opposition to the
      *  normalized matrices handled by the filter).
@@ -775,41 +691,29 @@ public class KalmanEstimator {
         /** Current predicted state. */
         private final RealVector predictedState;
 
-        /** Current predicted state error. */
-        private final RealVector predictedStateError;
-
         /** Current predicted covariance matrix. */
         private final RealMatrix predictedCovariance;
 
         /** Current estimated state. */
         private final RealVector estimatedState;
 
-        /** Current estimated state error. */
-        private final RealVector estimatedStateError;
-
         /** Current estimated covariance matrix. */
         private final RealMatrix estimatedCovariance;
 
         /** Simple constructor.
          * @param predictedState State vector after the prediction phase of the filter
-         * @param predictedStateError State vector error after the prediction phase of the filter
          * @param predictedCovariance Covariance matrix after the prediction phase of the filter
          * @param estimatedState State vector after the correction phase of the filter
-         * @param estimatedStateError State vector error after the correction phase of the filter
          * @param estimatedCovariance Covariance matrix after the correction phase of the filter
          */
         KalmanEvaluation(final RealVector predictedState,
-                         final RealVector predictedStateError,
                          final RealMatrix predictedCovariance,
                          final RealVector estimatedState,
-                         final RealVector estimatedStateError,
                          final RealMatrix estimatedCovariance) {
 
             this.predictedState      = predictedState;
-            this.predictedStateError = predictedStateError;
             this.predictedCovariance = predictedCovariance;
             this.estimatedState      = estimatedState;
-            this.estimatedStateError = estimatedStateError;
             this.estimatedCovariance = estimatedCovariance;
         }
 
@@ -818,13 +722,6 @@ public class KalmanEstimator {
          */
         public RealVector getPredictedState() {
             return predictedState;
-        }
-
-        /** Getter for the predictedStateError.
-         * @return the predictedStateError
-         */
-        public RealVector getPredictedStateError() {
-            return predictedStateError;
         }
 
         /** Getter for the predictedCovariance.
@@ -839,13 +736,6 @@ public class KalmanEstimator {
          */
         public RealVector getEstimatedState() {
             return estimatedState;
-        }
-
-        /** Getter for the estimatedStateError.
-         * @return the estimatedStateError
-         */
-        public RealVector getEstimatedStateError() {
-            return estimatedStateError;
         }
 
         /** Getter for the estimatedCovariance.

@@ -28,9 +28,6 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class KalmanEstimatorBuilder {
 
-    /** Filter type. */
-    private KalmanEstimator.FilterType filterType;
-
     /** Builder for propagator. */
     private NumericalPropagatorBuilder propagatorBuilder;
 
@@ -49,7 +46,6 @@ public class KalmanEstimatorBuilder {
      *  Set an extended Kalman filter, with linearized covariance prediction.
      */
     public KalmanEstimatorBuilder() {
-        this.filterType                      = KalmanEstimator.FilterType.EXTENDED;
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = null;
         this.initialCovarianceMatrix         = null;
@@ -66,17 +62,7 @@ public class KalmanEstimatorBuilder {
         return new KalmanEstimator(propagatorBuilder,
                                    estimatedMeasurementsParameters,
                                    initialCovarianceMatrix,
-                                   processNoiseMatrix,
-                                   filterType);
-    }
-
-    /** Configure whether Kalman filter type will be EXTENDED or SIMPLE.
-     * @param newFilterType Whether to build an EXTENDED or SIMPLE Kalman filter.
-     * @return this object.
-     */
-    public KalmanEstimatorBuilder filterType(final KalmanEstimator.FilterType newFilterType) {
-        filterType = newFilterType;
-        return this;
+                                   processNoiseMatrix);
     }
 
     /** Configure the propagator builder.
