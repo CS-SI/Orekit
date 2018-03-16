@@ -375,7 +375,7 @@ public class EstimationTestUtils {
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         
         // Get the last estimation
-        final Orbit    estimatedOrbit    = kalman.getProcessModel().getEstimatedPropagator().getInitialState().getOrbit();
+        final Orbit    estimatedOrbit    = kalman.getEstimatedPropagator().getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
 

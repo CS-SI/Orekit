@@ -852,14 +852,14 @@ public class KalmanOrbitDeterminationTest {
         kalman.processMeasurements(measurements);
         
         // Get the last estimated orbit
-        final Orbit estimated = kalman.getProcessModel().getEstimatedPropagator().getInitialState().getOrbit();
+        final Orbit estimated = kalman.getEstimatedPropagator().getInitialState().getOrbit();
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
 
         // Parameters and measurements.
         final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
-        final ParameterDriversList measurementsParameters = kalman.getProcessModel().getEstimatedMeasurementsParameters();
+        final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
 
         // Eventually, print parameter changes, statistics and covariances
         if (print) {
@@ -1082,7 +1082,7 @@ public class KalmanOrbitDeterminationTest {
             paramNames[index++] = driver.getName();
             paramSize = FastMath.max(paramSize, driver.getName().length());
         }
-        for (final ParameterDriver driver : kalman.getProcessModel().getEstimatedMeasurementsParameters().getDrivers()) {
+        for (final ParameterDriver driver : kalman.getEstimatedMeasurementsParameters().getDrivers()) {
             paramNames[index++] = driver.getName();
             paramSize = FastMath.max(paramSize, driver.getName().length());
         }

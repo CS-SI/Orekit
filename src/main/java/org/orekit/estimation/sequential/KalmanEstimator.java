@@ -20,12 +20,10 @@ import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.ArrayRealVector;
-import org.hipparchus.linear.CholeskyDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -141,9 +139,6 @@ public class KalmanEstimator {
     /** Kalman filter process model. */
     private final KalmanProcessModel processModel;
 
-    /** Kalman filter measurement model. */
-    private final KalmanMeasurementModel measurementModel;
-
     /** Current date of the filter. */
     private AbsoluteDate currentDate;
 
@@ -194,7 +189,6 @@ public class KalmanEstimator {
                                                    estimatedMeasurementParameters,
                                                    physicalInitialCovariance,
                                                    physicalInitialProcessNoiseMatrix);
-        this.measurementModel = new KalmanMeasurementModel();
 
         // Initialize normalized estimated covariance matrix and process noise matrix
         this.estimatedCovariance = processModel.getInitialCovarianceMatrix();
@@ -218,13 +212,6 @@ public class KalmanEstimator {
      */
     public KalmanProcessModel getProcessModel() {
         return processModel;
-    }
-
-    /** Get the measurement model.
-     * @return the measurement model
-     */
-    public KalmanMeasurementModel getMeasurementModel() {
-        return measurementModel;
     }
 
     /** Get current Kalman filter date.
@@ -298,6 +285,22 @@ public class KalmanEstimator {
             }
         }
         return estimated;
+    }
+
+    /** Get the propagator estimated with the values set in the propagator builder.
+     * @return a numerical propagator based on the current values in the builder
+     * @throws OrekitException if propagator cannot be build
+     */
+    public NumericalPropagator getEstimatedPropagator()
+        throws OrekitException {
+        return processModel.getEstimatedPropagator();
+    }
+
+    /** Get the list of estimated measurements parameters.
+     * @return the list of estimated measurements parameters
+     */
+    public ParameterDriversList getEstimatedMeasurementsParameters() {
+        return processModel.getEstimatedMeasurementsParameters();
     }
 
     /** Process a single measurement.
@@ -406,14 +409,14 @@ public class KalmanEstimator {
                                                      });
 
         // Normalized innovations of the measurement (Nx1)
-        final RealVector innovations = measurementModel.getResiduals(predictedMeasurement);
+        final RealVector innovations = processModel.getResiduals(predictedMeasurement);
 
         // Normalized measurement matrix (NxM)
         final RealMatrix measurementMatrix = processModel.getMeasurementMatrix(predictedSpacecraftState,
                                                                                predictedMeasurement);
 
         // Measurement noise matrix (NxN)
-        final RealMatrix measurementNoiseMatrix = measurementModel.getMeasurementNoiseMatrix(observedMeasurement);
+        final RealMatrix measurementNoiseMatrix = processModel.getMeasurementNoiseMatrix(observedMeasurement);
 
         // Innovation covariance matrix (NxN)
         final RealMatrix innovationCovarianceMatrix = getInnovationCovarianceMatrix(predictedCovariance,
@@ -421,7 +424,7 @@ public class KalmanEstimator {
                                                                                     measurementNoiseMatrix);
 
         // Apply the dynamic outlier filter, if it exists
-        measurementModel.applyDynamicOutlierFilter(predictedMeasurement,
+        processModel.applyDynamicOutlierFilter(predictedMeasurement,
                                                    innovationCovarianceMatrix);
 
         // If the predicted measurement is rejected, the gain is not computed.
@@ -728,61 +731,6 @@ public class KalmanEstimator {
                         getSolver().
                         solve(measurementMatrix.multiply(predictedCovariance.transpose())).
                         transpose();
-    }
-
-    // FIXME: Which matrix decomposition is best to use for the gain ? QR or Cholesky.
-    // Knowing that for Cholesky, the matrix has to be symmetrized before (due to numerical discrepancies)
-    /** Get the normalized Kalman filter gain K (MxN) using the Cholesky decomposition.<p>
-     * The optimal Kalman gain K is given by the equation<p>
-     * K =  Ppred x Ht x (H x Ppred x Ht + R)^(-1)
-     * or K = Ppred x Ht x S^(-1)
-     * With:<p>
-     *   - H    : the measurement matrix (Ht its transpose) (NxM)<p>
-     *   - Ppred: the predicted covariance matrix (MxM)<p>
-     *   - R    : the measurement covariance matrix (or noise matrix) (NxN)
-     *   - S    : the innovation covariance matrix (NxN)
-     * @param predictedCovariance the normalized predicted covariance matrix
-     * @param measurementMatrix the normalized measurement matrix
-     * @param innovationCovarianceMatrix the normalized innovation covariance matrix
-     * @return the normalized gain matrix
-     */
-    private RealMatrix getKalmanGainCholesky(final RealMatrix predictedCovariance,
-                                     final RealMatrix measurementMatrix,
-                                     final RealMatrix innovationCovarianceMatrix) {
-        // Compute gain matrix:
-        // K = Ppred x Ht x (H x Ppred x Ht + R)^-1 (1)
-        // K: M x N
-        // Let S = Ht x Ppred x H + R be the innovation covariance matrix
-        // Instead of calculating the inverse of S we can rearrange the formula,
-        // and then solve the linear equation A x X = B with A = St, X = Kt and B = H x Ppredt
-        // Indeed:
-        // Multiplying (1) on the right by S gives: K x S = Ppred x Ht
-        // Taking the transpose gives: St x Kt = H x Ppredt
-        // The S matrix is first made symmetric to avoid any issue in the Cholesky decompostion
-        final RealMatrix K = new CholeskyDecomposition(symmetrizeMatrix(innovationCovarianceMatrix).transpose()).getSolver()
-                        .solve(measurementMatrix.multiply(predictedCovariance.transpose()))
-                        .transpose();
-        return K;
-    }
-
-    /** Make a square matrix symmetric.
-     * This is used for nearly symmetric matrix like the innovation covariance matrix.
-     * This is supposed to be a symmetric matrix but small computation errors makes it
-     * not perfectly symmetric.
-     * For each element Mij of the matrix (i != j), the new value of Mij is set to the mean
-     * value of Mij and Mji.
-     * @param M the nearly symmetric matrix
-     * @return the matrix made perfectly symmetric
-     */
-    private RealMatrix symmetrizeMatrix(final RealMatrix M) {
-        for (int i = 0; i < M.getRowDimension(); i++) {
-            for (int j = 0; j < i; j++) {
-                final double Mij = 0.5 * (M.getEntry(i, j) + M.getEntry(j, i));
-                M.setEntry(i, j, Mij);
-                M.setEntry(j, i, Mij);
-            }
-        }
-        return M;
     }
 
     /** Update the estimated parameters after the correction phase of the filter.

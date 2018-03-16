@@ -18,7 +18,6 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.sequential.KalmanEstimator.FilterType;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
@@ -30,7 +29,7 @@ import org.orekit.utils.ParameterDriversList;
 public class KalmanEstimatorBuilder {
 
     /** Filter type. */
-    private FilterType filterType;
+    private KalmanEstimator.FilterType filterType;
 
     /** Builder for propagator. */
     private NumericalPropagatorBuilder propagatorBuilder;
@@ -50,40 +49,12 @@ public class KalmanEstimatorBuilder {
      *  Set an extended Kalman filter, with linearized covariance prediction.
      */
     public KalmanEstimatorBuilder() {
-        this.filterType                      = FilterType.EXTENDED;
+        this.filterType                      = KalmanEstimator.FilterType.EXTENDED;
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = null;
         this.initialCovarianceMatrix         = null;
         this.processNoiseMatrix              = null;
     }
-
-//    // FIXME: Deprecated (used for validation purpose)
-//    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
-//     * @return a new {@link KalmanEstimatorReal}.
-//     * @throws OrekitException ...
-//     */
-//    public KalmanEstimatorReal buildReal()
-//                    throws OrekitException {
-//        return new KalmanEstimatorReal(propagatorBuilder,
-//                                         estimatedMeasurementsParameters,
-//                                         initialCovarianceMatrix,
-//                                         processNoiseMatrix,
-//                                         filterType);
-//    }
-//
-//    /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
-//     * @return a new {@link KalmanEstimatorReal}.
-//     * @throws OrekitException ...
-//     */
-//    public KalmanEstimatorNormalized buildNormalized()
-//                    throws OrekitException {
-//        return new KalmanEstimatorNormalized(propagatorBuilder,
-//                                             estimatedMeasurementsParameters,
-//                                             initialCovarianceMatrix,
-//                                             processNoiseMatrix,
-//                                             filterType);
-//    }
-//    // End Deprecated
 
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
      * @return a new {@link KalmanEstimatorReal}.
@@ -103,7 +74,7 @@ public class KalmanEstimatorBuilder {
      * @param newFilterType Whether to build an EXTENDED or SIMPLE Kalman filter.
      * @return this object.
      */
-    public KalmanEstimatorBuilder filterType(final FilterType newFilterType) {
+    public KalmanEstimatorBuilder filterType(final KalmanEstimator.FilterType newFilterType) {
         filterType = newFilterType;
         return this;
     }
@@ -144,4 +115,5 @@ public class KalmanEstimatorBuilder {
         processNoiseMatrix = Q;
         return this;
     }
+
 }
