@@ -95,7 +95,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-
 public class NumericalPropagatorTest {
 
     private double               mu;
@@ -129,6 +128,37 @@ public class NumericalPropagatorTest {
                 CoreMatchers.is(0.0));
         Assert.assertThat(actualState[0].getPVCoordinates(),
                 OrekitMatchers.pvIs(initialState.getPVCoordinates()));
+    }
+    
+    /** Test for issue #401 */
+    @Test
+    public void testInitAdd() throws OrekitException {
+        // setup
+        // mutable holders
+        SpacecraftState[] actualState = new SpacecraftState[1];
+        AbsoluteDate[] actualDate = new AbsoluteDate[1];
+        
+        InitCheckerEquations checker = new InitCheckerEquations() {
+            @Override
+            public void init(SpacecraftState initialState, AbsoluteDate target) {
+                actualState[0] = initialState;
+                actualDate[0] = target;
+            }
+        };
+        
+        checker.initCheckerEquations();
+        Assert.assertFalse(checker.wasCalled());
+        
+        // action
+        AbsoluteDate target = initDate.shiftedBy(60);
+        SpacecraftState finalState = propagator.propagate(target);
+        
+        // verify
+        if(finalState.getOrbit() != initialState.getOrbit())
+            checker.init();
+        
+        Assert.assertTrue(checker.wasCalled());
+
     }
 
     @Test
@@ -1528,6 +1558,35 @@ public class NumericalPropagatorTest {
         }
 
     }
+    
+    private static class InitCheckerEquations implements AdditionalEquations {
+        
+        private boolean called;
+
+        @Override
+        public String getName() {
+            return null;
+        }
+        
+        @Override
+        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
+            throws OrekitException {
+            return null;
+        }
+        
+        public void initCheckerEquations() {
+            called = false;
+        }
+        
+        public void init() {
+            called = true;
+        }
+        
+        public boolean wasCalled() {
+            return called;
+        }
+               
+    } 
 
 }
 
