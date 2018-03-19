@@ -276,17 +276,10 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Reset the orbit in the propagator builder.
      * Note: The orbit has to be the same type as the original orbit
      * @param newOrbit New orbit to set in the propagator builder
-     * @throws OrekitException If the new orbit does not have the same type as the former
+     * @exception OrekitException if a parameter observer throws an exception during reset
      */
     public void resetOrbit(final Orbit newOrbit)
-                    throws OrekitException {
-
-        // Ensure the orbit type is the same
-        if (!newOrbit.getType().equals(getOrbitType())) {
-            // FIXME: Throw a proper Orekit Exception
-            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                      "Orbit do not have the same type" );
-        }
+        throws OrekitException {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];

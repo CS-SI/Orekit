@@ -30,17 +30,12 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
-import org.orekit.estimation.sequential.KalmanEstimator;
-import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
-import org.orekit.estimation.sequential.KalmanObserver;
-import org.orekit.estimation.sequential.KalmanEstimator.KalmanEvaluation;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -797,20 +792,9 @@ public class KalmanEstimatorTest {
         kalmanBuilder.initialCovarianceMatrix(MatrixUtils.createRealMatrix(6, 6));
         kalmanBuilder.processNoiseMatrix(MatrixUtils.createRealMatrix(6, 6));
         final KalmanEstimator kalman = kalmanBuilder.build();
-        kalman.setObserver(new KalmanObserver() {
-            /** {@inheritDoc} */
-            @Override
-            public void evaluationPerformed(Orbit[] predictedOrbits,
-                                            Orbit[] estimatedOrbits,
-                                            ParameterDriversList estimatedOrbitalParameters,
-                                            ParameterDriversList estimatedPropagationParameters,
-                                            ParameterDriversList estimatedMeasurementsParameters,
-                                            EstimatedMeasurement<?>  predictedMeasurement,
-                                            EstimatedMeasurement<?>  estimatedMeasurement,
-                                            KalmanEvaluation kalmanEvaluation) throws DummyException {
+        kalman.setObserver(estimation -> {
                 throw new DummyException();
-            }
-        });
+            });
         
         
         try {

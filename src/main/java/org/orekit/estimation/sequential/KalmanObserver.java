@@ -17,12 +17,8 @@
 package org.orekit.estimation.sequential;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.sequential.KalmanEstimator.KalmanEvaluation;
-import org.orekit.orbits.Orbit;
-import org.orekit.utils.ParameterDriversList;
 
-/** Observer for {@link KalmanEstimatorReal Kalma filter} estimations.
+/** Observer for {@link KalmanEstimator Kalman filter} estimations.
  * <p>
  * This interface is intended to be implemented by users to monitor
  * the progress of the Kalman filter estimator during estimation.
@@ -34,25 +30,10 @@ import org.orekit.utils.ParameterDriversList;
 public interface KalmanObserver {
 
     /** Notification callback after each one of a Kalman filter estimation.
-     * @param predictedOrbits current orbits predicted by the filter
-     * @param estimatedOrbits current orbits estimated by the filter
-     * @param estimatedOrbitalParameters estimated orbital parameters
-     * @param estimatedPropagationParameters estimated propagation parameters
-     * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @param predictedMeasurement current predicted measurement in the filter
-     * @param estimatedMeasurement current estimated measurement in the filter
-     * @param kalmanEvaluation current evaluation of the filter
-     * @exception OrekitException if some problem occurs (for example evaluationProviders not
-     * being able to provide an evaluation)
+     * @param estimation estimation performed by Kalman estimator
+     * @exception OrekitException if some problem occurs
      */
-    void evaluationPerformed(Orbit[] predictedOrbits,
-                             Orbit[] estimatedOrbits,
-                             ParameterDriversList estimatedOrbitalParameters,
-                             ParameterDriversList estimatedPropagationParameters,
-                             ParameterDriversList estimatedMeasurementsParameters,
-                             EstimatedMeasurement<?>  predictedMeasurement,
-                             EstimatedMeasurement<?>  estimatedMeasurement,
-                             KalmanEvaluation kalmanEvaluation)
+    void evaluationPerformed(KalmanEstimation estimation)
         throws OrekitException;
 
 }

@@ -63,6 +63,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -367,15 +368,15 @@ public class EstimationTestUtils {
                                       final double[] expectedSigmasPos,final double sigmaPosEps,
                                       final double[] expectedSigmasVel,final double sigmaVelEps)
         throws OrekitException {
-        
+
         // Add the measurements to the Kalman filter
-        kalman.processMeasurements(measurements);
+        NumericalPropagator estimated = kalman.processMeasurements(measurements);
         
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
         
         // Get the last estimation
-        final Orbit    estimatedOrbit    = kalman.getEstimatedPropagator().getInitialState().getOrbit();
+        final Orbit    estimatedOrbit    = estimated.getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();        
 

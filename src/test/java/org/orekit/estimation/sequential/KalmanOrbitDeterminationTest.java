@@ -42,7 +42,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Pair;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,7 +66,6 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
-import org.orekit.estimation.sequential.KalmanEstimator.KalmanEvaluation;
 import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -114,7 +112,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class KalmanOrbitDeterminationTest {
@@ -577,7 +574,7 @@ public class KalmanOrbitDeterminationTest {
                              final RealMatrix cartesianOrbitalP, final RealMatrix cartesianOrbitalQ,
                              final RealMatrix propagationP, final RealMatrix propagationQ,
                              final RealMatrix measurementP, final RealMatrix measurementQ)
-                    throws IOException, IllegalArgumentException, OrekitException, ParseException {
+        throws IOException, IllegalArgumentException, OrekitException, ParseException {
 
         // Read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
@@ -705,19 +702,13 @@ public class KalmanOrbitDeterminationTest {
              * @throws OrekitException */
             @Override
             @SuppressWarnings("unchecked")
-            public void evaluationPerformed(final Orbit[] predictedOrbits,
-                                            final Orbit[] estimatedOrbits,
-                                            final ParameterDriversList estimatedOrbitalParameters,
-                                            final ParameterDriversList estimatedPropagationParameters,
-                                            final ParameterDriversList estimatedMeasurementsParameters,
-                                            final EstimatedMeasurement<?> predictedMeasurement,
-                                            final EstimatedMeasurement<?> estimatedMeasurement,
-                                            final KalmanEvaluation kalmanEvaluation) throws OrekitException {
+            public void evaluationPerformed(final KalmanEstimation estimation) throws OrekitException {
 
                 // Current measurement number, date and status
-                final int currentNumber        = kalman.getCurrentMeasurementNumber();
-                final AbsoluteDate currentDate = kalman.getCurrentDate();
-                final EstimatedMeasurement.Status currentStatus = kalman.getCurrentMeasurementStatus();
+                final EstimatedMeasurement<?> estimatedMeasurement = estimation.getCorrectedMeasurement();
+                final int currentNumber        = estimation.getCurrentMeasurementNumber();
+                final AbsoluteDate currentDate = estimatedMeasurement.getDate();
+                final EstimatedMeasurement.Status currentStatus = estimatedMeasurement.getStatus();
 
                 // Current estimated measurement
                 final ObservedMeasurement<?>  observedMeasurement  = estimatedMeasurement.getObservedMeasurement();
@@ -731,37 +722,31 @@ public class KalmanOrbitDeterminationTest {
 
                     // Add the tuple (estimation, prediction) to the log
                     rangeLog.add(currentNumber,
-                                 (EstimatedMeasurement<Range>) estimatedMeasurement,
-                                 (EstimatedMeasurement<Range>) predictedMeasurement);
+                                 (EstimatedMeasurement<Range>) estimatedMeasurement);
 
                     // Measurement type & Station name
                     measType    = "RANGE";
-                    stationName =  ((EstimatedMeasurement<Range>) predictedMeasurement).getObservedMeasurement().
+                    stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof RangeRate) {
                     rangeRateLog.add(currentNumber,
-                                     (EstimatedMeasurement<RangeRate>) estimatedMeasurement,
-                                     (EstimatedMeasurement<RangeRate>) predictedMeasurement);
+                                     (EstimatedMeasurement<RangeRate>) estimatedMeasurement);
                     measType    = "RANGE_RATE";
-                    stationName =  ((EstimatedMeasurement<RangeRate>) predictedMeasurement).getObservedMeasurement().
+                    stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof AngularAzEl) {
                     azimuthLog.add(currentNumber,
-                                   (EstimatedMeasurement<AngularAzEl>) estimatedMeasurement,
-                                   (EstimatedMeasurement<AngularAzEl>) predictedMeasurement);
+                                   (EstimatedMeasurement<AngularAzEl>) estimatedMeasurement);
                     elevationLog.add(currentNumber,
-                                     (EstimatedMeasurement<AngularAzEl>) estimatedMeasurement,
-                                     (EstimatedMeasurement<AngularAzEl>) predictedMeasurement);
+                                     (EstimatedMeasurement<AngularAzEl>) estimatedMeasurement);
                     measType    = "AZ_EL";
-                    stationName =  ((EstimatedMeasurement<AngularAzEl>) predictedMeasurement).getObservedMeasurement().
+                    stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
                                     getStation().getBaseFrame().getName();
                 } else if (observedMeasurement instanceof PV) {
                     positionLog.add(currentNumber,
-                                    (EstimatedMeasurement<PV>) estimatedMeasurement,
-                                    (EstimatedMeasurement<PV>) predictedMeasurement);
+                                    (EstimatedMeasurement<PV>) estimatedMeasurement);
                     velocityLog.add(currentNumber,
-                                    (EstimatedMeasurement<PV>) estimatedMeasurement,
-                                    (EstimatedMeasurement<PV>) predictedMeasurement);
+                                    (EstimatedMeasurement<PV>) estimatedMeasurement);
                     measType    = "PV";
                 }
 
@@ -780,19 +765,19 @@ public class KalmanOrbitDeterminationTest {
                                                       "Nb", "Epoch", "Dt[s]","Status", "Type", "Station",
                                                       "DP Corr", "DV Corr");
                         // Orbital drivers
-                        for (DelegatingDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                        for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
                             header += String.format(Locale.US, "\t%20s", driver.getName());
                             header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
                         }
 
                         // Propagation drivers
-                        for (DelegatingDriver driver : estimatedPropagationParameters.getDrivers()) {
+                        for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
                             header += String.format(Locale.US, "\t%20s", driver.getName());
                             header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
                         }
 
                         // Measurements drivers
-                        for (DelegatingDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                        for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
                             header += String.format(Locale.US, "\t%20s", driver.getName());
                             header += String.format(Locale.US, "\t%20s", "D" + driver.getName());
                         }
@@ -807,10 +792,10 @@ public class KalmanOrbitDeterminationTest {
                     final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
 
                     // Orbital correction = DP & DV between predicted orbit and estimated orbit
-                    final Vector3D predictedP = predictedOrbits[0].getPVCoordinates().getPosition();
-                    final Vector3D predictedV = predictedOrbits[0].getPVCoordinates().getVelocity();
-                    final Vector3D estimatedP = estimatedOrbits[0].getPVCoordinates().getPosition();
-                    final Vector3D estimatedV = estimatedOrbits[0].getPVCoordinates().getVelocity();
+                    final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                    final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
+                    final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                    final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
                     final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
                     final double DVcorr       = Vector3D.distance(predictedV, estimatedV);
 
@@ -822,15 +807,15 @@ public class KalmanOrbitDeterminationTest {
 
                     // Handle parameters printing (value and error) 
                     int jPar = 0;
-                    final RealMatrix Pest = kalmanEvaluation.getEstimatedCovariance();
+                    final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
                     // Orbital drivers
-                    for (DelegatingDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                    for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
                         line += String.format(Locale.US, "\t%20.9f", driver.getValue());
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
                     }
                     // Propagation drivers
-                    for (DelegatingDriver driver : estimatedPropagationParameters.getDrivers()) {
+                    for (DelegatingDriver driver : estimation.getEstimatedPropagationParameters().getDrivers()) {
                         line += String.format(Locale.US, "\t%20.9f", driver.getValue());
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
@@ -849,10 +834,7 @@ public class KalmanOrbitDeterminationTest {
         });
 
         // Process the list measurements 
-        kalman.processMeasurements(measurements);
-        
-        // Get the last estimated orbit
-        final Orbit estimated = kalman.getEstimatedPropagator().getInitialState().getOrbit();
+        final Orbit estimated = kalman.processMeasurements(measurements).getInitialState().getOrbit();
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -1044,9 +1026,8 @@ public class KalmanOrbitDeterminationTest {
     
     /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
      * @throws OrekitException */
-    private void displayFinalCovariances(final PrintStream logStream,
-                                    final KalmanEstimator kalman) 
-                    throws OrekitException {
+    private void displayFinalCovariances(final PrintStream logStream, final KalmanEstimator kalman) 
+        throws OrekitException {
         
 //        // Get kalman estimated propagator
 //        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
@@ -2234,7 +2215,7 @@ public class KalmanOrbitDeterminationTest {
     private static abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
 
         /** Map of estimated and predicted measurements. */
-        private final SortedMap<Integer, Pair<EstimatedMeasurement<T>, EstimatedMeasurement<T>>> evaluations;
+        private final SortedMap<Integer, EstimatedMeasurement<T>> evaluations;
 
         /** Measurements name. */
         private final String name;
@@ -2258,13 +2239,9 @@ public class KalmanOrbitDeterminationTest {
         /** Add an evaluation.
          * @param measurementNb measurement number
          * @param estimation estimation to add
-         * @param prediction prediction to add
          */
-        void add(final int measurementNb,
-                 final EstimatedMeasurement<T> estimation,
-                 final EstimatedMeasurement<T> prediction) {
-            Pair<EstimatedMeasurement<T>, EstimatedMeasurement<T>> evaluation = new Pair<>(estimation, prediction);
-            evaluations.put(measurementNb, evaluation);
+        void add(final int measurementNb, final EstimatedMeasurement<T> estimation) {
+            evaluations.put(measurementNb, estimation);
         }
 
         /** Create a  statistics summary
@@ -2273,8 +2250,8 @@ public class KalmanOrbitDeterminationTest {
             if (!evaluations.isEmpty()) {
                 // compute statistics
                 final StreamingStatistics stats = new StreamingStatistics(true);
-                for (final Pair<EstimatedMeasurement<T>, EstimatedMeasurement<T>> evaluation : evaluations.values()) {
-                    final EstimatedMeasurement<T> estimated = evaluation.getFirst();
+                for (final Map.Entry<Integer, EstimatedMeasurement<T>> entries : evaluations.entrySet()) {
+                    final EstimatedMeasurement<T> estimated = entries.getValue();
                     if (estimated.getObservedMeasurement().isEnabled()) {
                         stats.addValue(residual(estimated));
                     }

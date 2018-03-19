@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.filtering.kalman.ProcessEstimate;
+import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
+import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
@@ -27,10 +30,10 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -49,16 +52,10 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 9.2
  */
-class KalmanProcessModel {
+class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builder for propagator. */
-    private NumericalPropagatorBuilder builder;
-
-    /** Propagator for the reference trajectory, up to current date. */
-    private NumericalPropagator referenceTrajectory;
-
-    /** Partial derivative equations for the reference trajectory propagator. */
-    private PartialDerivativesEquations referenceTrajectoryPartialDerivatives;
+    private final NumericalPropagatorBuilder builder;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList estimatedOrbitalParameters;
@@ -81,13 +78,46 @@ class KalmanProcessModel {
     /** Total number of estimated measurement parameters. */
     private final int nbMeasurementsParameters;
 
+    /** Propagator for the reference trajectory, up to current date. */
+    private NumericalPropagator referenceTrajectory;
+
+    /** Mapper for extracting Jacobians from integrated state. */
+    private JacobiansMapper jacobiansMapper;
+
     /** Process noise matrix.
      * Second moment of the process noise. Often named Q.
      */
     private RealMatrix processNoiseMatrix;
 
-    /** Initial covariance matrix. */
-    private RealMatrix initialCovarianceMatrix;
+    /** Initial estimate. */
+    private final ProcessEstimate initialEstimate;
+
+    /** Current number of measurement. */
+    private int currentMeasurementNumber;
+
+    /** Current date. */
+    private AbsoluteDate currentDate;
+
+    /** Predicted state. */
+    private RealVector predictedState;
+
+    /** Corrected state. */
+    private RealVector correctedState;
+
+    /** Predicted spacecraft states. */
+    private SpacecraftState[] predictedSpacecraftStates;
+
+    /** Corrected spacecraft states. */
+    private SpacecraftState[] correctedSpacecraftStates;
+
+    /** Corrected covariance. */
+    private RealMatrix correctedCovariance;
+
+    /** Predicted measurement. */
+    private EstimatedMeasurement<?> predictedMeasurement;
+
+    /** Corrected measurement. */
+    private EstimatedMeasurement<?> correctedMeasurement;
 
     /** Kalman process model constructor (package private).
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
@@ -98,12 +128,12 @@ class KalmanProcessModel {
      * @param physicalProcessNoiseMatrix "Physical" process noise matrix (i.e.not normalized)
      * @throws OrekitException propagation exception.
      */
-    KalmanProcessModel(final NumericalPropagatorBuilder propagatorBuilder,
-                       final ParameterDriversList estimatedOrbitalParameters,
-                       final ParameterDriversList estimatedPropagationParameters,
-                       final ParameterDriversList estimatedMeasurementParameters,
-                       final RealMatrix physicalInitialCovariance,
-                       final RealMatrix physicalProcessNoiseMatrix)
+    Model(final NumericalPropagatorBuilder propagatorBuilder,
+          final ParameterDriversList estimatedOrbitalParameters,
+          final ParameterDriversList estimatedPropagationParameters,
+          final ParameterDriversList estimatedMeasurementParameters,
+          final RealMatrix physicalInitialCovariance,
+          final RealMatrix physicalProcessNoiseMatrix)
         throws OrekitException {
 
         this.builder                         = propagatorBuilder;
@@ -125,119 +155,131 @@ class KalmanProcessModel {
         this.nbMeasurementsParameters = estimatedMeasurementsParameters.getNbParams();
 
         // Check the size consistency of the covariance and process noise matrices
-        final int M = nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters;
+        final int m = nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters;
         // Covariance
-        if (physicalInitialCovariance.getColumnDimension() != M) {
+        if (physicalInitialCovariance.getColumnDimension() != m) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                       physicalInitialCovariance.getColumnDimension(),
-                                      M);
+                                      m);
         }
-        if (physicalInitialCovariance.getRowDimension() != M) {
+        if (physicalInitialCovariance.getRowDimension() != m) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                       physicalInitialCovariance.getRowDimension(),
-                                      M);
+                                      m);
         }
         // Process noise
-        if (physicalProcessNoiseMatrix.getColumnDimension() != M) {
+        if (physicalProcessNoiseMatrix.getColumnDimension() != m) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                       physicalInitialCovariance.getColumnDimension(),
-                                      M);
+                                      m);
         }
-        if (physicalProcessNoiseMatrix.getRowDimension() != M) {
+        if (physicalProcessNoiseMatrix.getRowDimension() != m) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                       physicalInitialCovariance.getRowDimension(),
-                                      M);
+                                      m);
         }
 
         // Initialize normalized estimated covariance matrix and process noise matrix
-        this.initialCovarianceMatrix = normalizeCovarianceMatrix(physicalInitialCovariance);
         this.processNoiseMatrix      = normalizeCovarianceMatrix(physicalProcessNoiseMatrix);
 
         // Build the reference propagator and add its partial derivatives equations implementation
         updateReferenceTrajectory(getEstimatedPropagator());
+
+        // Initialize the estimated normalized state and fill its values
+        correctedState      = new ArrayRealVector(nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters);
+        correctedCovariance = normalizeCovarianceMatrix(physicalInitialCovariance);
+
+        int i = 0;
+        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+            correctedState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final ParameterDriver driver : estimatedPropagationParameters.getDrivers()) {
+            correctedState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+            correctedState.setEntry(i++, driver.getNormalizedValue());
+        }
+        initialEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
+
+        this.currentMeasurementNumber = 0;
+        this.currentDate              = propagatorBuilder.getInitialOrbitDate();
+
+        this.predictedSpacecraftStates = new SpacecraftState[1];
+        this.correctedSpacecraftStates = new SpacecraftState[1];
+
     }
 
-    /** Get the list of estimated orbital parameters.
-     * @return the list of estimated orbital parameters
-     */
+    /** {@inheritDoc} */
+    @Override
+    public SpacecraftState[] getPredictedSpacecraftStates() {
+        return predictedSpacecraftStates.clone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SpacecraftState[] getCorrectedSpacecraftStates() {
+        return correctedSpacecraftStates.clone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getCurrentMeasurementNumber() {
+        return currentMeasurementNumber;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getCurrentDate() {
+        return currentDate;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EstimatedMeasurement<?> getPredictedMeasurement() {
+        return predictedMeasurement;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EstimatedMeasurement<?> getCorrectedMeasurement() {
+        return correctedMeasurement;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector getPhysicalEstimatedState() {
+        return unNormalizeStateVector(correctedState);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
+        return unNormalizeCovarianceMatrix(correctedCovariance);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriversList getEstimatedOrbitalParameters() {
         return estimatedOrbitalParameters;
     }
 
-    /** Get the number of estimated orbital parameters.
-     * @return the number of estimated orbital parameters
-     */
-    public int getNbOrbitalParameters() {
-        return nbOrbitalParameters;
-    }
-
-    /** Get the list of estimated propagation parameters.
-     * @return the list of estimated propagation parameters
-     */
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriversList getEstimatedPropagationParameters() {
         return estimatedPropagationParameters;
     }
 
-    /** Get the number of estimated propagation parameters.
-     * @return the number of estimated propagation parameters
-     */
-    public int getNbPropagationParameters() {
-        return nbPropagationParameters;
-    }
-
-    /** Get the list of estimated measurements parameters.
-     * @return the list of estimated measurements parameters
-     */
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return estimatedMeasurementsParameters;
     }
 
-    /** Get the number of estimated measurements parameters.
-     * @return the number of estimated measurements parameters
+    /** Get the normalized initial estimate.
+     * @return normalized initial estimate
      */
-    public int getNbMeasurementsParameters() {
-        return nbMeasurementsParameters;
-    }
-
-    /** Get the partial derivatives equations of the reference trajectory.
-     * @return the PDE associated with the reference trajectory propagator
-     */
-    public PartialDerivativesEquations getReferenceTrajectoryPartialDerivatives() {
-        return referenceTrajectoryPartialDerivatives;
-    }
-
-    /** Get the first initial normalized estimated state.
-     * @return the first normalized estimated state
-     */
-    public RealVector getInitialEstimatedState() {
-        // Initialize the estimated normalized state and fill its values
-        final RealVector firstState = new ArrayRealVector(nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters);
-
-        int i = 0;
-        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-            firstState.setEntry(i++, driver.getNormalizedValue());
-        }
-        for (final ParameterDriver driver : estimatedPropagationParameters.getDrivers()) {
-            firstState.setEntry(i++, driver.getNormalizedValue());
-        }
-        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            firstState.setEntry(i++, driver.getNormalizedValue());
-        }
-        return firstState;
-    }
-
-    /** Get the initial normalized error covariance matrix.
-     * @return the initial normalized covariance matrix
-     */
-    public RealMatrix getInitialCovarianceMatrix() {
-        return initialCovarianceMatrix;
-    }
-
-    /** Get the normalized process noise matrix.
-     * @return the normalized process noise matrix
-     */
-    public RealMatrix getProcessNoiseMatrix() {
-        return processNoiseMatrix;
+    public ProcessEstimate getNormalizedInitialEstimate() {
+        return initialEstimate;
     }
 
     /** Get the propagator estimated with the values set in the propagator builder.
@@ -251,41 +293,16 @@ class KalmanProcessModel {
         return builder.buildPropagator(builder.getSelectedNormalizedParameters());
     }
 
-    /** Initialize the partial derivatives equations.
-     * @exception OrekitException if orbit cannot be created with the current point
-     */
-    void initializeDerivatives()
-        throws OrekitException {
-
-        // Reset the Jacobians
-        final SpacecraftState rawState = referenceTrajectory.getInitialState();
-        final SpacecraftState stateWithDerivatives =
-                        referenceTrajectoryPartialDerivatives.setInitialJacobians(rawState);
-        referenceTrajectory.resetInitialState(stateWithDerivatives);
-    }
-
-    /** Propagate the reference trajectory to a given date.
-     * @param targetDate date when to propagate to
-     * @throws OrekitException if the propagation failed
-     * @return the spacecraft state at target date
-     */
-    SpacecraftState propagateReferenceTrajectory(final AbsoluteDate targetDate)
-        throws OrekitException {
-        return referenceTrajectory.propagate(targetDate);
-    }
-
     /** Get the normalized error state transition matrix (STM) from previous point to current point.
      * The STM contains the partial derivatives of current state with respect to previous state.
      * The  STM is an MxM matrix where M is the size of the state vector.
      * M = nbOrb + nbPropag + nbMeas
      * @param predictedSpacecraftState current spacecraft state
-     * @param derivatives partial derivatives equations of current state with respect to previous state
      * @return the normalized error state transition matrix
      * @throws OrekitException if Jacobians cannot be computed
      */
-    public RealMatrix getErrorStateTransitionMatrix(final SpacecraftState predictedSpacecraftState,
-                                                    final PartialDerivativesEquations derivatives)
-                    throws OrekitException {
+    private RealMatrix getErrorStateTransitionMatrix(final SpacecraftState predictedSpacecraftState)
+        throws OrekitException {
 
         /* The state transition matrix is obtained as follows, with:
          *  - Y  : Current state vector
@@ -312,13 +329,10 @@ class KalmanProcessModel {
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(nbOrbitalParameters +
                                                                     nbPropagationParameters +
                                                                     nbMeasurementsParameters);
-        // Mappers for the Jacobians
-        final JacobiansMapper referenceTrajectoryJacobiansMapper = derivatives.getMapper();
-
         // Derivatives of the state vector with respect to initial state vector
         if (nbOrbitalParameters > 0) {
             final double[][] dYdY0 = new double[nbOrbitalParameters][nbOrbitalParameters];
-            referenceTrajectoryJacobiansMapper.getStateJacobian(predictedSpacecraftState, dYdY0 );
+            jacobiansMapper.getStateJacobian(predictedSpacecraftState, dYdY0 );
 
             // Fill upper left corner (dY/dY0)
             stm.setSubMatrix(dYdY0, 0, 0);
@@ -327,7 +341,7 @@ class KalmanProcessModel {
         // Derivatives of the state vector with respect to propagation parameters
         if (nbPropagationParameters > 0) {
             final double[][] dYdPp  = new double[nbOrbitalParameters][nbPropagationParameters];
-            referenceTrajectoryJacobiansMapper.getParametersJacobian(predictedSpacecraftState, dYdPp);
+            jacobiansMapper.getParametersJacobian(predictedSpacecraftState, dYdPp);
 
             // Fill 1st row, 2nd column (dY/dPp)
             stm.setSubMatrix(dYdPp, 0, nbOrbitalParameters);
@@ -350,12 +364,10 @@ class KalmanProcessModel {
      * H contains the partial derivatives of the measurement with respect to the state.
      * H is an NxM matrix where N is the size of the measurement vector and M the size of the state vector.
      * @param predictedSpacecraftState the spacecraft state associated with the measurement
-     * @param predictedMeasurement the measurement used to compute the measurement matrix
      * @return the normalized measurement matrix H
      * @throws OrekitException if Jacobians cannot be computed
      */
-    RealMatrix getMeasurementMatrix(final SpacecraftState predictedSpacecraftState,
-                                    final EstimatedMeasurement<?> predictedMeasurement)
+    private RealMatrix getMeasurementMatrix(final SpacecraftState predictedSpacecraftState)
         throws OrekitException {
 
         // Number of parameters
@@ -411,7 +423,7 @@ class KalmanProcessModel {
         // Jacobian of the measurement with respect to propagation parameters
         if (nbPropag > 0) {
             final double[][] aYPp  = new double[6][nbPropag];
-            referenceTrajectoryPartialDerivatives.getMapper().getParametersJacobian(predictedSpacecraftState, aYPp);
+            jacobiansMapper.getParametersJacobian(predictedSpacecraftState, aYPp);
             final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
             final RealMatrix dMdPp = dMdY.multiply(dYdPp);
             for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
@@ -459,7 +471,7 @@ class KalmanProcessModel {
      * @param propagator The new propagator to use
      * @throws OrekitException if setting up the partial derivatives failed
      */
-    public void updateReferenceTrajectory(final NumericalPropagator propagator)
+    private void updateReferenceTrajectory(final NumericalPropagator propagator)
         throws OrekitException {
 
         // Update the reference trajectory propagator
@@ -467,7 +479,13 @@ class KalmanProcessModel {
 
         // Link the partial derivatives to this new propagator
         final String equationName = KalmanEstimator.class.getName() + "-derivatives";
-        this.referenceTrajectoryPartialDerivatives = new PartialDerivativesEquations(equationName, referenceTrajectory);
+        final PartialDerivativesEquations pde = new PartialDerivativesEquations(equationName, referenceTrajectory);
+
+        // Reset the Jacobians
+        final SpacecraftState rawState = referenceTrajectory.getInitialState();
+        final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
+        referenceTrajectory.resetInitialState(stateWithDerivatives);
+        jacobiansMapper = pde.getMapper();
 
     }
 
@@ -500,7 +518,7 @@ class KalmanProcessModel {
      * @param normalizedStateVector The normalized state vector in input
      * @return the "physical" state vector
      */
-    public RealVector unNormalizeStateVector(final RealVector normalizedStateVector) {
+    private RealVector unNormalizeStateVector(final RealVector normalizedStateVector) {
 
         // Initialize output matrix
         final int nbParams = normalizedStateVector.getDimension();
@@ -523,7 +541,7 @@ class KalmanProcessModel {
      * @param physicalCovarianceMatrix The "physical" covariance matrix in input
      * @return the normalized covariance matrix
      */
-    public RealMatrix normalizeCovarianceMatrix(final RealMatrix physicalCovarianceMatrix) {
+    private RealMatrix normalizeCovarianceMatrix(final RealMatrix physicalCovarianceMatrix) {
 
         // Initialize output matrix
         final int nbParams = physicalCovarianceMatrix.getRowDimension();
@@ -550,7 +568,7 @@ class KalmanProcessModel {
      * @param normalizedCovarianceMatrix The normalized covariance matrix in input
      * @return the "physical" covariance matrix
      */
-    public RealMatrix unNormalizeCovarianceMatrix(final RealMatrix normalizedCovarianceMatrix) {
+    private RealMatrix unNormalizeCovarianceMatrix(final RealMatrix normalizedCovarianceMatrix) {
 
         // Initialize output matrix
         final int nbParams = normalizedCovarianceMatrix.getRowDimension();
@@ -570,56 +588,12 @@ class KalmanProcessModel {
         return physicalCovarianceMatrix;
     }
 
-    /** Return the normalized residuals of an estimated measurement.
-     * @param estimatedMeasurement the measurement
-     * @param <T> the type of measurement
-     * @return the residuals
-     */
-    <T extends ObservedMeasurement<T>> RealVector getResiduals(final EstimatedMeasurement<T> estimatedMeasurement) {
-
-        final double[] observed  = estimatedMeasurement.getObservedMeasurement().getObservedValue();
-        final double[] estimated = estimatedMeasurement.getEstimatedValue();
-        final double[] sigma     = estimatedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
-        final double[] residuals = new double[observed.length];
-
-        for (int i = 0; i < observed.length; i++) {
-            residuals[i] = (observed[i] - estimated[i]) / sigma[i];
-        }
-        return MatrixUtils.createRealVector(residuals);
-    }
-
-    /** Return the normalized measurement noise matrix of a measurement. <p>
-     * The "physical" measurement noise matrix is the covariance matrix of the measurement.<p>
-     * Normalizing it consists in applying the following equation: Rn[i,j] =  R[i,j]/σ[i]/σ[j]<p>
-     * Thus the normalized measurement noise matrix is the matrix of the correlation coefficients
-     * between the different components of the measurement.
-     * @param observedMeasurement the measurement
-     * @param <T> the type of measurement
-     * @return the normalized measurement noise matrix
-     */
-    <T extends ObservedMeasurement<T>> RealMatrix getMeasurementNoiseMatrix(final ObservedMeasurement<T> observedMeasurement) {
-
-        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
-        // of the measurement on its non-diagonal elements.
-        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
-        // Normalizing it leaves us with the matrix of the correlation coefficients
-        if (observedMeasurement instanceof PV) {
-            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
-            final PV pv = (PV) observedMeasurement;
-            return MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
-        } else {
-            // For other measurements we do not have a covariance matrix.
-            // Thus the correlation coefficients matrix is an identity matrix.
-            return MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
-        }
-    }
-
     /** Set and apply a dynamic outlier filter on a measurement.<p>
      * Loop on the modifiers to see if a dynamic outlier filter needs to be applied.<p>
      * Compute the sigma array using the matrix in input and set the filter.<p>
      * Apply the filter by calling the modify method on the estimated measurement.<p>
      * Reset the filter.
-     * @param estimatedMeasurement measurement to filter
+     * @param measurement measurement to filter
      * @param innovationCovarianceMatrix So called innovation covariance matrix S, with:<p>
      *        S = H.Ppred.Ht + R<p>
      *        Where:<p>
@@ -629,12 +603,12 @@ class KalmanProcessModel {
      * @param <T> the type of measurement
      * @throws OrekitException if modifier cannot be applied
      */
-    <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> estimatedMeasurement,
-                                                                      final RealMatrix innovationCovarianceMatrix)
+    private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
+                                                                              final RealMatrix innovationCovarianceMatrix)
         throws OrekitException {
 
         // Observed measurement associated to the predicted measurement
-        final ObservedMeasurement<T> observedMeasurement = estimatedMeasurement.getObservedMeasurement();
+        final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
 
         // Check if a dynamic filter was added to the measurement
         // If so, update its sigma value and apply it
@@ -663,11 +637,182 @@ class KalmanProcessModel {
                 dynamicOutlierFilter.setSigma(sigmaDynamic);
 
                 // Apply the modifier on the estimated measurement
-                modifier.modify(estimatedMeasurement);
+                modifier.modify(measurement);
 
                 // Re-initialize the value of the filter for the next measurement of the same type
                 dynamicOutlierFilter.setSigma(null);
             }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public NonLinearEvolution getEvolution(final double previousTime, final RealVector previousState,
+                                           final MeasurementDecorator measurement)
+        throws OrekitExceptionWrapper {
+        try {
+
+            // Set a reference date for all measurements parameters that lack one (including the not estimated ones)
+            final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
+            for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
+                if (driver.getReferenceDate() == null) {
+                    driver.setReferenceDate(builder.getInitialOrbitDate());
+                }
+            }
+
+            ++currentMeasurementNumber;
+            currentDate = measurement.getObservedMeasurement().getDate();
+
+            // Note:
+            // - N = size of the current measurement
+            //  Example:
+            //   * 1 for Range, RangeRate and TurnAroundRange
+            //   * 2 for Angular (Azimuth/Elevation or Right-ascension/Declination)
+            //   * 6 for Position/Velocity
+            // - M = size of the state vector. N = nbOrb + nbPropag + nbMeas
+
+            // Propagate the reference trajectory to measurement date
+            predictedSpacecraftStates[0] = referenceTrajectory.propagate(observedMeasurement.getDate());
+
+            // Predict the state vector (Mx1)
+            predictState(predictedSpacecraftStates[0].getOrbit());
+
+            // Get the error state transition matrix (MxM)
+            final RealMatrix stateTransitionMatrix = getErrorStateTransitionMatrix(predictedSpacecraftStates[0]);
+
+            // Predict the measurement based on predicted spacecraft state
+            // Compute the innovations (i.e. residuals of the predicted measurement)
+            // ------------------------------------------------------------
+
+            // Predicted measurement
+            // Note: here the "iteration/evaluation" formalism from the batch LS method
+            // is twisted to fit the need of the Kalman filter.
+            // The number of "iterations" is actually the number of measurements processed by the filter
+            // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
+            predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
+                                                                currentMeasurementNumber,
+                                                                predictedSpacecraftStates);
+
+            // Normalized measurement matrix (NxM)
+            final RealMatrix measurementMatrix = getMeasurementMatrix(predictedSpacecraftStates[0]);
+
+            return new NonLinearEvolution(measurement.getTime(),
+                                          predictedState, stateTransitionMatrix, processNoiseMatrix,
+                                          measurementMatrix);
+
+
+        } catch (OrekitException oe) {
+            throw new OrekitExceptionWrapper(oe);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector getInnovation(final MeasurementDecorator measurement, final NonLinearEvolution evolution,
+                                    final RealMatrix innovationCovarianceMatrix)
+        throws OrekitExceptionWrapper {
+
+        try {
+            // Apply the dynamic outlier filter, if it exists
+            applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
+            if (predictedMeasurement.getStatus() == EstimatedMeasurement.Status.REJECTED)  {
+                // set innovation to null to notify filter measurement is rejected
+                return null;
+            } else {
+                // Normalized innovation of the measurement (Nx1)
+                final double[] observed  = predictedMeasurement.getObservedMeasurement().getObservedValue();
+                final double[] estimated = predictedMeasurement.getEstimatedValue();
+                final double[] sigma     = predictedMeasurement.getObservedMeasurement().getTheoreticalStandardDeviation();
+                final double[] residuals = new double[observed.length];
+
+                for (int i = 0; i < observed.length; i++) {
+                    residuals[i] = (observed[i] - estimated[i]) / sigma[i];
+                }
+                return MatrixUtils.createRealVector(residuals);
+            }
+        } catch (OrekitException oe) {
+            throw new OrekitExceptionWrapper(oe);
+        }
+
+    }
+
+    /** Finalize estimation.
+     * @param observedMeasurement measurement that has just been processed
+     * @exception OrekitException if measurement cannot be re-estimated from corrected state
+     */
+    public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement)
+        throws OrekitException {
+        // Update the parameters with the estimated state
+        // The min/max values of the parameters are handled by the ParameterDriver implementation
+        updateParameters();
+
+        // Get the estimated propagator (mirroring parameter update in the builder)
+        // and the estimated spacecraft state
+        final NumericalPropagator estimatedPropagator = getEstimatedPropagator();
+        correctedSpacecraftStates[0] = estimatedPropagator.getInitialState();
+
+        // Compute the estimated measurement using estimated spacecraft state
+        correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
+                                                            currentMeasurementNumber,
+                                                            correctedSpacecraftStates);
+        // Update the trajectory
+        // ---------------------
+        updateReferenceTrajectory(estimatedPropagator);
+
+    }
+
+    /** Set the predicted normalized state vector.
+     * The predicted/propagated orbit is used to update the state vector
+     * @param predictedOrbit the predicted orbit at measurement date
+     * @throws OrekitException if the propagator builder could not be reset
+     */
+    private void predictState(final Orbit predictedOrbit)
+        throws OrekitException {
+
+        // First, update the builder with the predicted orbit
+        // This updates the orbital drivers with the values of the predicted orbit
+        builder.resetOrbit(predictedOrbit);
+
+        // Predicted state is initialized to previous estimated state
+        predictedState = correctedState.copy();
+
+        // The orbital parameters in the state vector are replaced with their predicted values
+        // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
+        if (nbOrbitalParameters > 0) {
+            // As the propagator builder was previously updated with the predicted orbit,
+            // the selected orbital drivers are already up to date with the prediction
+
+            // Orbital parameters counter
+            int jOrb = 0;
+            for (DelegatingDriver orbitalDriver : builder.getOrbitalParametersDrivers().getDrivers()) {
+                if (orbitalDriver.isSelected()) {
+                    predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue());
+                }
+            }
+        }
+
+    }
+
+    /** Update the estimated parameters after the correction phase of the filter.
+     * The min/max allowed values are handled by the parameter themselves.
+     * @throws OrekitException if setting the normalized values failed
+     */
+    private void updateParameters() throws OrekitException {
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getNormalizedValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            // let the parameter handle min/max clipping
+            driver.setNormalizedValue(correctedState.getEntry(i));
+            correctedState.setEntry(i++, driver.getNormalizedValue());
         }
     }
 

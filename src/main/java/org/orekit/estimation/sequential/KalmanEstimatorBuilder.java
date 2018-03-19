@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import org.hipparchus.linear.MatrixDecomposer;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -27,6 +29,9 @@ import org.orekit.utils.ParameterDriversList;
  * @since 9.2
  */
 public class KalmanEstimatorBuilder {
+
+    /** Decomposer to use for the correction phase. */
+    private MatrixDecomposer decomposer;
 
     /** Builder for propagator. */
     private NumericalPropagatorBuilder propagatorBuilder;
@@ -46,6 +51,7 @@ public class KalmanEstimatorBuilder {
      *  Set an extended Kalman filter, with linearized covariance prediction.
      */
     public KalmanEstimatorBuilder() {
+        this.decomposer                      = new QRDecomposer(1.0e-15);
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = null;
         this.initialCovarianceMatrix         = null;
@@ -59,10 +65,20 @@ public class KalmanEstimatorBuilder {
     public KalmanEstimator build()
         throws OrekitException {
         // FIXME: Add checks on the existence of the different arguments
-        return new KalmanEstimator(propagatorBuilder,
+        return new KalmanEstimator(decomposer,
+                                   propagatorBuilder,
                                    estimatedMeasurementsParameters,
                                    initialCovarianceMatrix,
                                    processNoiseMatrix);
+    }
+
+    /** Configure the matrix decomposer.
+     * @param matrixDecomposer decomposer to use for the correction phase
+     * @return this object.
+     */
+    public KalmanEstimatorBuilder decomposer(final MatrixDecomposer matrixDecomposer) {
+        decomposer = matrixDecomposer;
+        return this;
     }
 
     /** Configure the propagator builder.
