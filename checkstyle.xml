@@ -97,4 +97,7 @@
     </module>
     <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>
+    <module name="Header">
+		<property name="headerFile" value="${checkstyle.header.file}"/>
+	</module>
 </module>

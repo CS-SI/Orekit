@@ -732,21 +732,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public int getDimension() {
             return dimension;
         }
-        
+
         @Override
         public void init(final double t0, final double[] primary0,
-                         final double[] secondary0, final double finalTime) {            
+                         final double[] secondary0, final double finalTime) {
             try {
                 // update space dynamics view
                 // use only ODE elements
                 SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-                equations.init(initialState, target);                
+                equations.init(initialState, target);
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
-            
+
         }
 
         /** {@inheritDoc} */

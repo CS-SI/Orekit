@@ -65,7 +65,7 @@ public interface AdditionalEquations {
      * @return name of the additional state
      */
     String getName();
-    
+
     /**
      * Initialize the equations at the start of propagation. This method will be
      * called before any calls to {@link #computeDerivatives(SpacecraftState)}.
