@@ -577,23 +577,6 @@
         <version>${orekit.maven-site-plugin.version}</version>
       </plugin>
       <plugin>
-      	<groupId>org.apache.maven.plugins</groupId>
-      	<artifactId>maven-checkstyle-plugins</artifactId>
-      	<version>2.9.1</version>
-      	<configuration>
-      		<configLocation>${basedir}/checkstyle.xml</configLocation>
-      		<enableRulesSummary>false</enableRulesSummary>
-      		<headerLocation>${basedir}/license-header.txt</headerLocation>
-      	</configuration>
-      	<reportSets>
-      		<reportSet>
-      			<reports>
-      				<report>checkstyle</report>
-      			</reports>
-      		</reportSet>
-      	</reportSets>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>${orekit.maven-project-info-reports-plugin.version}</version>
@@ -683,6 +666,23 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${orekit.jacoco-maven-plugin.version}</version>
+      </plugin>
+      <plugin>
+      	<groupId>org.apache.maven.plugins</groupId>
+      	<artifactId>maven-checkstyle-plugin</artifactId>
+      	<version>2.9.1</version>
+      	<configuration>
+      		<configLocation>${basedir}/checkstyle.xml</configLocation>
+      		<enableRulesSummary>false</enableRulesSummary>
+      		<headerLocation>${basedir}/license-header.txt</headerLocation>
+      	</configuration>
+      	<reportSets>
+      		<reportSet>
+      			<reports>
+      				<report>checkstyle</report>
+      			</reports>
+      		</reportSet>
+      	</reportSets>
       </plugin>
     </plugins>
   </reporting>
