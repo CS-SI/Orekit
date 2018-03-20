@@ -536,10 +536,10 @@ public class DSSTTesseral implements DSSTForceModel {
 
         return new double[] {da, dk, dh, dq, dp, dM};
     }
-    
+
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> spacecraftState) throws OrekitException {
-    	return null;
+        return null;
     }
 
     /** {@inheritDoc} */

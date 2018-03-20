@@ -467,10 +467,10 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             return 2;
         }
     }
-    
+
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
-    	return null;
+        return null;
     }
-    
+
 }

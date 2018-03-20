@@ -87,7 +87,7 @@ public interface DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
-    
+
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *  @param <T> the type of the field elements
     *  @param state current state information: date, kinematics, attitude

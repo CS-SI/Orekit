@@ -128,10 +128,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
-    
+
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
-    	return null;
+        return null;
     }
-    
+
 }

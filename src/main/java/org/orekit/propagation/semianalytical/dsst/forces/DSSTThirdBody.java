@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
-
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -50,7 +47,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterp
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
 /** Third body attraction perturbation to the
@@ -442,6 +438,7 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @SuppressWarnings("hiding")
+    @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
 
         // Qns coefficients
@@ -471,14 +468,16 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p)).subtract(UBetaGamma.multiply(q).multiply(I)).multiply(ooAB);
 
         // Compute mean elements rates [Eq. 3.1-(1)]
-        final T da =  null;
+        final T da =  UAlphaGamma.subtract(UAlphaGamma);
         final T dh =  (dUdk.multiply(BoA)).add(pUAGmIqUBGoAB.multiply(k));
         final T dk =  ((dUdh.multiply(BoA)).reciprocal()).subtract(pUAGmIqUBGoAB.multiply(h));
         final T dp =  UBetaGamma.multiply(mCo2AB);
         final T dq =  UAlphaGamma.multiply(I).multiply(mCo2AB);
         final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo)));
 
-        return new T[] {da, dk, dh, dq, dp, dM};
+        //final Field<T> field = ;
+        final T[] parameters = MathArrays.buildArray(da.getField(), computeUDerivatives().length);
+        return parameters;
 
     }
 
@@ -673,98 +672,7 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         };
 
     }
-    
-    /**
-    private <T extends RealFieldElement<T>> T[] computeUDerivativesDSST() {
 
-        // Gs and Hs coefficients
-        final <T extends RealFieldElement<T>> T[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
-
-        // Initialise U.
-        U = 0.;
-
-        // Potential derivatives
-        T dUda  = 0.;
-        T dUdk  = 0.;
-        T dUdh  = 0.;
-        T dUdAl = 0.;
-        T dUdBe = 0.;
-        T dUdGa = 0.;
-
-        for (int s = 0; s <= maxEccPow; s++) {
-            // initialise the Hansen roots
-            this.hansenObjects[s].computeInitValues(B, BB, BBB);
-
-            // Get the current Gs coefficient
-            final T gs = GsHs[0][s];
-
-            // Compute Gs partial derivatives from 3.1-(9)
-            T dGsdh  = 0.;
-            T dGsdk  = 0.;
-            T dGsdAl = 0.;
-            T dGsdBe = 0.;
-            if (s > 0) {
-                // First get the G(s-1) and the H(s-1) coefficients
-                final T sxGsm1 = s * GsHs[0][s - 1];
-                final T sxHsm1 = s * GsHs[1][s - 1];
-                // Then compute derivatives
-                dGsdh  = beta.multiply(sxGsm1).subtract(alpha.multiply(sxHsm1));
-                dGsdk  = alpha.multiply(sxGsm1).add(beta.multiply(sxHsm1));
-                dGsdAl = k.multiply(sxGsm1).subtract(h.multiply(sxHsm1));
-                dGsdBe = h.multiply(sxGsm1).add(k.multiply(sxHsm1));
-            }
-
-            // Kronecker symbol (2 - delta(0,s))
-            final T delta0s = (s == 0) ? 1. : 2.;
-
-            for (int n = FastMath.max(2, s); n <= maxAR3Pow; n++) {
-                // (n - s) must be even
-                if ((n - s) % 2 == 0) {
-                    // Extract data from previous computation :
-                    final T kns   = this.hansenObjects[s].getValue(n, B);
-                    final T dkns  = this.hansenObjects[s].getDerivative(n, B);
-
-                    final T vns   = Vns.get(new NSKey(n, s));
-                    final T coef0 = delta0s.multiply(aoR3Pow[n]).multiply(vns);
-                    final T coef1 = coef0.multiply(Qns[n][s]);
-                    final T coef2 = coef1.multiply(kns);
-                    // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
-                    // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
-                    final T dqns = (n == s) ? 0. : Qns[n][s + 1];
-
-                    //Compute U:
-                    U = U.add(coef2.multiply(gs));
-
-                    // Compute dU / da :
-                    dUda = dUda.add(coef2.multiply(n).multiply(gs));
-                    // Compute dU / dh
-                    dUdh = dUdh.add(coef1.multiply(kns.multiply(dGsdh).add(hXXX.multiply(gs.multiply(dkns)))));
-                    // Compute dU / dk
-                    dUdk = dUdk.add(coef1.multiply(kns.multiply(dGsdk).add(kXXX.multiply(gs.multiply(dkns)))));
-                    // Compute dU / dAlpha
-                    dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
-                    // Compute dU / dBeta
-                    dUdBe = dUdBe.add(coef2.multiply(dGsdBe));
-                    // Compute dU / dGamma
-                    dUdGa = dUdGa.add(coef0.multiply(kns.multiply(dqns.multiply(gs))));
-                }
-            }
-        }
-
-        // multiply by mu3 / R3
-        U = U.multiply(muoR3);
-
-        return new T[] {
-            dUda.multiply(muoR3.divide(a)),
-            dUdk.multiply(muoR3),
-            dUdh.multiply(muoR3),
-            dUdAl.multiply(muoR3),
-            dUdBe.multiply(muoR3),
-            dUdGa.multiply(muoR3)
-        };
-
-    } */
-   
     /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {
