@@ -39,22 +39,23 @@ import org.orekit.utils.PVCoordinates;
 
 public class AdditionalEquationsTest {
     
-    private double               mu;
-    private AbsoluteDate         initDate;
-    private SpacecraftState      initialState;
-    private NumericalPropagator  propagatorNumerical;
-    private DSSTPropagator       propagatorDSST;
+    private double                       mu;
+    private AbsoluteDate                 initDate;
+    private SpacecraftState              initialState;
+    private AdaptiveStepsizeIntegrator   integrator;
 
     /** Test for issue #401 
      *  with a numerical propagator */
     @Test
-    public void testInitAdd1() throws OrekitException {
+    public void testInitNumerical() throws OrekitException {
         
         // setup
         InitCheckerEquations checker = new InitCheckerEquations();
         Assert.assertFalse(checker.wasCalled());
         
         // action
+        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
+        propagatorNumerical.setInitialState(initialState);
         propagatorNumerical.addAdditionalEquations(checker);
         propagatorNumerical.setInitialState(propagatorNumerical.getInitialState().addAdditionalState("linear", 1.5));
         propagatorNumerical.propagate(initDate.shiftedBy(600));
@@ -67,13 +68,15 @@ public class AdditionalEquationsTest {
     /** Test for issue #401 
      *  with a DSST propagator */
     @Test
-    public void testInitAdd2() throws OrekitException {
+    public void testInitDSST() throws OrekitException {
         
         // setup
         InitCheckerEquations checker = new InitCheckerEquations();
         Assert.assertFalse(checker.wasCalled());
         
         // action
+        DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
+        propagatorDSST.setInitialState(initialState);
         propagatorDSST.addAdditionalEquations(checker);
         propagatorDSST.setInitialState(propagatorDSST.getInitialState().addAdditionalState("linear", 1.5));
         propagatorDSST.propagate(initDate.shiftedBy(600));
@@ -95,20 +98,15 @@ public class AdditionalEquationsTest {
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
         double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
-        AdaptiveStepsizeIntegrator integrator =
-                new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
-        propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState);
-        propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState);
     }
 
     @After
     public void tearDown() {
         initDate = null;
         initialState = null;
-        propagatorNumerical = null;
+        integrator = null;
     }
     
     public static class InitCheckerEquations implements AdditionalEquations {
