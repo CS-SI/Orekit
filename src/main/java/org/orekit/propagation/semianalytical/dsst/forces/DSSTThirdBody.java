@@ -50,6 +50,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterp
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
 /** Third body attraction perturbation to the
@@ -438,10 +439,10 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         return new double[] {da, dk, dh, dq, dp, dM};
 
     }
-    
+
     /** {@inheritDoc} */
     @SuppressWarnings("hiding")
-	public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
 
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
@@ -453,7 +454,7 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         }
 
         // Compute potential U derivatives
-        final T[] dU  = MathArrays.buildArray(computeUDerivatives(), computeUDerivatives().length);
+        final T[] dU  = MathArrays.buildArray(currentState.getDate().getField(), computeUDerivatives().length);
         final T dUda  = dU[0];
         final T dUdk  = dU[1];
         final T dUdh  = dU[2];
@@ -463,23 +464,23 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final T UAlphaGamma   = alpha.multiply(dUdGa).subtract(gamma.multiply(dUdAl));        
+        final T UAlphaGamma   = dUdGa.multiply(alpha).subtract(dUdAl.multiply(gamma));
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final T UBetaGamma    =  beta.multiply(dUdGa).subtract(gamma.multiply(dUdBe));        
+        final T UBetaGamma    =  dUdGa.multiply(beta).subtract(dUdBe.multiply(gamma));
         // Common factor
-        final T pUAGmIqUBGoAB = (p.multiply(UAlphaGamma).subtract(I.multiply(q.multiply(UBetaGamma)))).multiply(ooAB);        
+        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p)).subtract(UBetaGamma.multiply(q).multiply(I)).multiply(ooAB);
 
         // Compute mean elements rates [Eq. 3.1-(1)]
-        final T da =  0.;
-        final T dh =  (BoA.multiply(dUdk)).add(k.multiply(pUAGmIqUBGoAB));
-        final T dk =  ((BoA.multiply(dUdh)).reciprocal()).subtract(h.multiply(pUAGmIqUBGoAB));
-        final T dp =  mCo2AB.multiply(UBetaGamma);
-        final T dq =  mCo2AB.multiply(UAlphaGamma.multiply(I));
-        final T dM =  ((m2aoA.multiply(dUda)).add(BoABpo.multiply(h.multiply(dUdh).add(k.multiply(dUdk))))).add(pUAGmIqUBGoAB);
+        final T da =  null;
+        final T dh =  (dUdk.multiply(BoA)).add(pUAGmIqUBGoAB.multiply(k));
+        final T dk =  ((dUdh.multiply(BoA)).reciprocal()).subtract(pUAGmIqUBGoAB.multiply(h));
+        final T dp =  UBetaGamma.multiply(mCo2AB);
+        final T dq =  UAlphaGamma.multiply(I).multiply(mCo2AB);
+        final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo)));
 
         return new T[] {da, dk, dh, dq, dp, dM};
 
-    }    
+    }
 
     /** {@inheritDoc} */
     @Override
