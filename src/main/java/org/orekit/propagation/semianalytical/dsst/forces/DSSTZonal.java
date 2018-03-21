@@ -451,7 +451,8 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> spacecraftState) throws OrekitException {
+    @Override
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState) throws OrekitException {
         return null;
     }
 

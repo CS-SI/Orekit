@@ -465,18 +465,24 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
         final T UBetaGamma    =  dUdGa.multiply(beta).subtract(dUdBe.multiply(gamma));
         // Common factor
-        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p)).subtract(UBetaGamma.multiply(q).multiply(I)).multiply(ooAB);
+        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p).subtract(UBetaGamma.multiply(q).multiply(I))).multiply(ooAB);
 
         // Compute mean elements rates [Eq. 3.1-(1)]
         final T da =  UAlphaGamma.subtract(UAlphaGamma);
-        final T dh =  (dUdk.multiply(BoA)).add(pUAGmIqUBGoAB.multiply(k));
+        final T dh =  dUdk.multiply(BoA).add(pUAGmIqUBGoAB.multiply(k));
         final T dk =  ((dUdh.multiply(BoA)).reciprocal()).subtract(pUAGmIqUBGoAB.multiply(h));
         final T dp =  UBetaGamma.multiply(mCo2AB);
         final T dq =  UAlphaGamma.multiply(I).multiply(mCo2AB);
-        final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo)));
+        final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA)).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo));
 
-        //final Field<T> field = ;
-        final T[] parameters = MathArrays.buildArray(da.getField(), computeUDerivatives().length);
+        final T[] parameters = MathArrays.buildArray(currentState.getDate().getField(), computeUDerivatives().length);
+        parameters[0] = da;
+        parameters[1] = dh;
+        parameters[2] = dk;
+        parameters[3] = dp;
+        parameters[4] = dq;
+        parameters[5] = dM;
+
         return parameters;
 
     }

@@ -34,6 +34,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -538,8 +539,43 @@ public class DSSTTesseral implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> spacecraftState) throws OrekitException {
-        return null;
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState) throws OrekitException {
+
+        // Compute potential derivatives
+        final T[] dU  = MathArrays.buildArray(spacecraftState.getDate().getField(), computeUDerivatives(spacecraftState.getDate()).length);
+        final T dUda  = dU[0];
+        final T dUdh  = dU[1];
+        final T dUdk  = dU[2];
+        final T dUdl  = dU[3];
+        final T dUdAl = dU[4];
+        final T dUdBe = dU[5];
+        final T dUdGa = dU[6];
+
+        // Compute the cross derivative operator :
+        final T UAlphaGamma   = dUdGa.multiply(alpha).subtract(dUdAl.multiply(gamma));
+        final T UAlphaBeta    = dUdBe.multiply(alpha).subtract(dUdAl.multiply(beta));
+        final T UBetaGamma    = dUdGa.multiply(beta).subtract(dUdBe.multiply(gamma));
+        final T Uhk           = dUdk.multiply(h).subtract(dUdh.multiply(k));
+        final T pUagmIqUbgoAB = (UAlphaGamma.multiply(p).subtract(UBetaGamma.multiply(q).multiply(I))).multiply(ooAB);
+        final T UhkmUabmdUdl  = Uhk.subtract(UAlphaBeta).subtract(dUdl);
+
+        final T da = dUdl.multiply(ax2oA);
+        final T dh = dUdk.multiply(BoA).add(pUagmIqUbgoAB.multiply(k)).subtract(dUdl.multiply(h).multiply(BoABpo));
+        final T dk = (dUdh.multiply(BoA).add(pUagmIqUbgoAB.multiply(h)).add(dUdl.multiply(BoABpo).multiply(k))).reciprocal();
+        final T dp = (UBetaGamma.subtract(UhkmUabmdUdl.multiply(q))).multiply(Co2AB);
+        final T dq = (UhkmUabmdUdl.multiply(q).subtract(UAlphaGamma.multiply(I))).multiply(Co2AB);
+        final T dM = pUagmIqUbgoAB.add(dUda.multiply(ax2oA).reciprocal()).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo));
+
+        final T[] parameters = MathArrays.buildArray(spacecraftState.getDate().getField(), computeUDerivatives().length);
+        parameters[0] = da;
+        parameters[1] = dh;
+        parameters[2] = dk;
+        parameters[3] = dp;
+        parameters[4] = dq;
+        parameters[5] = dM;
+
+        return parameters;
+
     }
 
     /** {@inheritDoc} */
