@@ -689,7 +689,7 @@ public class KalmanOrbitDeterminationTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
 
         // Add an observer

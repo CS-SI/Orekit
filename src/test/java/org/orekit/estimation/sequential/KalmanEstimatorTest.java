@@ -103,7 +103,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -189,7 +189,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -285,7 +285,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -369,7 +369,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -452,7 +452,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -535,7 +535,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -644,7 +644,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -737,7 +737,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrix(Q);
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
         final KalmanEstimator kalman = kalmanBuilder.build();
         
         // Filter the measurements and check the results
@@ -790,7 +790,7 @@ public class KalmanEstimatorTest {
         kalmanBuilder.builder(propagatorBuilder);
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(MatrixUtils.createRealMatrix(6, 6));
-        kalmanBuilder.processNoiseMatrix(MatrixUtils.createRealMatrix(6, 6));
+        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();

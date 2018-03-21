@@ -88,14 +88,14 @@ public class KalmanEstimator {
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param physicalInitialCovariance physical initial covariance matrix
-     * @param physicalInitialProcessNoiseMatrix physical process noise matrix
+     * @param processNoiseMatrixProvider provider for process noise matrix
      * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final NumericalPropagatorBuilder propagatorBuilder,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final RealMatrix physicalInitialCovariance,
-                    final RealMatrix physicalInitialProcessNoiseMatrix)
+                    final ProcessNoiseMatrixProvider processNoiseMatrixProvider)
         throws OrekitException {
 
         this.propagatorBuilder = propagatorBuilder;
@@ -108,7 +108,7 @@ public class KalmanEstimator {
                                       getPropagationParametersDrivers(true),
                                       estimatedMeasurementParameters,
                                       physicalInitialCovariance,
-                                      physicalInitialProcessNoiseMatrix);
+                                      processNoiseMatrixProvider);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getNormalizedInitialEstimate());
 

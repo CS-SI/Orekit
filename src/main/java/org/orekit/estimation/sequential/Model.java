@@ -78,19 +78,17 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Total number of estimated measurement parameters. */
     private final int nbMeasurementsParameters;
 
+    /** Provider for process noise matrix. */
+    private final ProcessNoiseMatrixProvider processNoiseMatrixProvider;
+
+    /** Initial estimate. */
+    private final ProcessEstimate initialEstimate;
+
     /** Propagator for the reference trajectory, up to current date. */
     private NumericalPropagator referenceTrajectory;
 
     /** Mapper for extracting Jacobians from integrated state. */
     private JacobiansMapper jacobiansMapper;
-
-    /** Process noise matrix.
-     * Second moment of the process noise. Often named Q.
-     */
-    private RealMatrix processNoiseMatrix;
-
-    /** Initial estimate. */
-    private final ProcessEstimate initialEstimate;
 
     /** Current number of measurement. */
     private int currentMeasurementNumber;
@@ -125,7 +123,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param estimatedPropagationParameters propagation parameters to estimate
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param physicalInitialCovariance "Physical" initial covariance matrix (i.e. not normalized)
-     * @param physicalProcessNoiseMatrix "Physical" process noise matrix (i.e.not normalized)
+     * @param processNoiseMatrixProvider provider for process noise matrix
      * @throws OrekitException propagation exception.
      */
     Model(final NumericalPropagatorBuilder propagatorBuilder,
@@ -133,7 +131,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
           final ParameterDriversList estimatedPropagationParameters,
           final ParameterDriversList estimatedMeasurementParameters,
           final RealMatrix physicalInitialCovariance,
-          final RealMatrix physicalProcessNoiseMatrix)
+          final ProcessNoiseMatrixProvider processNoiseMatrixProvider)
         throws OrekitException {
 
         this.builder                         = propagatorBuilder;
@@ -167,23 +165,16 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
                                       physicalInitialCovariance.getRowDimension(),
                                       m);
         }
-        // Process noise
-        if (physicalProcessNoiseMatrix.getColumnDimension() != m) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      physicalInitialCovariance.getColumnDimension(),
-                                      m);
-        }
-        if (physicalProcessNoiseMatrix.getRowDimension() != m) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      physicalInitialCovariance.getRowDimension(),
-                                      m);
-        }
 
-        // Initialize normalized estimated covariance matrix and process noise matrix
-        this.processNoiseMatrix      = normalizeCovarianceMatrix(physicalProcessNoiseMatrix);
+        // Store provider for process noise matrix
+        this.processNoiseMatrixProvider = processNoiseMatrixProvider;
 
         // Build the reference propagator and add its partial derivatives equations implementation
         updateReferenceTrajectory(getEstimatedPropagator());
+        this.predictedSpacecraftStates = new SpacecraftState[] {
+            referenceTrajectory.getInitialState()
+        };
+        this.correctedSpacecraftStates = predictedSpacecraftStates.clone();
 
         // Initialize the estimated normalized state and fill its values
         correctedState      = new ArrayRealVector(nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters);
@@ -204,8 +195,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         this.currentMeasurementNumber = 0;
         this.currentDate              = propagatorBuilder.getInitialOrbitDate();
 
-        this.predictedSpacecraftStates = new SpacecraftState[1];
-        this.correctedSpacecraftStates = new SpacecraftState[1];
 
     }
 
@@ -696,9 +685,13 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             // Normalized measurement matrix (NxM)
             final RealMatrix measurementMatrix = getMeasurementMatrix(predictedSpacecraftStates[0]);
 
-            return new NonLinearEvolution(measurement.getTime(),
-                                          predictedState, stateTransitionMatrix, processNoiseMatrix,
-                                          measurementMatrix);
+            // compute process noise matrix
+            final SpacecraftState previous = correctedSpacecraftStates[0];
+            final RealMatrix physicalProcessNoise = processNoiseMatrixProvider.getProcessNoiseMatrix(previous,
+                                                                                                     predictedSpacecraftStates[0]);
+            final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(physicalProcessNoise);
+            return new NonLinearEvolution(measurement.getTime(), predictedState,
+                                          stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
 
 
         } catch (OrekitException oe) {

@@ -42,10 +42,8 @@ public class KalmanEstimatorBuilder {
     /** Initial covariance matrix. */
     private RealMatrix initialCovarianceMatrix;
 
-    /** Process noise matrix.
-     * Second moment of the process noise. Often named Q.
-     */
-    private RealMatrix processNoiseMatrix;
+    /** Process noise matrix provider. */
+    private ProcessNoiseMatrixProvider processNoiseMatrixProvider;
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
@@ -55,7 +53,7 @@ public class KalmanEstimatorBuilder {
         this.propagatorBuilder               = null;
         this.estimatedMeasurementsParameters = null;
         this.initialCovarianceMatrix         = null;
-        this.processNoiseMatrix              = null;
+        this.processNoiseMatrixProvider      = null;
     }
 
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
@@ -69,7 +67,7 @@ public class KalmanEstimatorBuilder {
                                    propagatorBuilder,
                                    estimatedMeasurementsParameters,
                                    initialCovarianceMatrix,
-                                   processNoiseMatrix);
+                                   processNoiseMatrixProvider);
     }
 
     /** Configure the matrix decomposer.
@@ -109,12 +107,12 @@ public class KalmanEstimatorBuilder {
         return this;
     }
 
-    /** Configure the process noise matrix.
-     * @param Q The process noise matrix to use.
+    /** Configure the process noise matrix provider.
+     * @param provider The process noise matrix provider to use.
      * @return this object.
      */
-    public KalmanEstimatorBuilder processNoiseMatrix(final RealMatrix Q) {
-        processNoiseMatrix = Q;
+    public KalmanEstimatorBuilder processNoiseMatrixProvider(final ProcessNoiseMatrixProvider provider) {
+        processNoiseMatrixProvider = provider;
         return this;
     }
 
