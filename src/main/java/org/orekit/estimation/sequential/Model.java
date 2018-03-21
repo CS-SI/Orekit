@@ -81,8 +81,8 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Provider for process noise matrix. */
     private final ProcessNoiseMatrixProvider processNoiseMatrixProvider;
 
-    /** Initial estimate. */
-    private final ProcessEstimate initialEstimate;
+    /** Current corrected estimate. */
+    private ProcessEstimate correctedEstimate;
 
     /** Propagator for the reference trajectory, up to current date. */
     private NumericalPropagator referenceTrajectory;
@@ -96,20 +96,11 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Current date. */
     private AbsoluteDate currentDate;
 
-    /** Predicted state. */
-    private RealVector predictedState;
-
-    /** Corrected state. */
-    private RealVector correctedState;
-
     /** Predicted spacecraft states. */
     private SpacecraftState[] predictedSpacecraftStates;
 
     /** Corrected spacecraft states. */
     private SpacecraftState[] correctedSpacecraftStates;
-
-    /** Corrected covariance. */
-    private RealMatrix correctedCovariance;
 
     /** Predicted measurement. */
     private EstimatedMeasurement<?> predictedMeasurement;
@@ -177,8 +168,10 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         this.correctedSpacecraftStates = predictedSpacecraftStates.clone();
 
         // Initialize the estimated normalized state and fill its values
-        correctedState      = new ArrayRealVector(nbOrbitalParameters + nbPropagationParameters + nbMeasurementsParameters);
-        correctedCovariance = normalizeCovarianceMatrix(physicalInitialCovariance);
+        final RealVector correctedState = MatrixUtils.createRealVector(new double[nbOrbitalParameters +
+                                                                                  nbPropagationParameters +
+                                                                                  nbMeasurementsParameters]);
+        final RealMatrix correctedCovariance = normalizeCovarianceMatrix(physicalInitialCovariance);
 
         int i = 0;
         for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
@@ -190,7 +183,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             correctedState.setEntry(i++, driver.getNormalizedValue());
         }
-        initialEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
+        correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
 
         this.currentMeasurementNumber = 0;
         this.currentDate              = propagatorBuilder.getInitialOrbitDate();
@@ -237,13 +230,13 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** {@inheritDoc} */
     @Override
     public RealVector getPhysicalEstimatedState() {
-        return unNormalizeStateVector(correctedState);
+        return unNormalizeStateVector(correctedEstimate.getState());
     }
 
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        return unNormalizeCovarianceMatrix(correctedCovariance);
+        return unNormalizeCovarianceMatrix(correctedEstimate.getCovariance());
     }
 
     /** {@inheritDoc} */
@@ -264,11 +257,11 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         return estimatedMeasurementsParameters;
     }
 
-    /** Get the normalized initial estimate.
-     * @return normalized initial estimate
+    /** Get the current corrected estimate.
+     * @return current corrected estimate
      */
-    public ProcessEstimate getNormalizedInitialEstimate() {
-        return initialEstimate;
+    public ProcessEstimate getEstimate() {
+        return correctedEstimate;
     }
 
     /** Get the propagator estimated with the values set in the propagator builder.
@@ -664,7 +657,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             predictedSpacecraftStates[0] = referenceTrajectory.propagate(observedMeasurement.getDate());
 
             // Predict the state vector (Mx1)
-            predictState(predictedSpacecraftStates[0].getOrbit());
+            final RealVector predictedState = predictState(predictedSpacecraftStates[0].getOrbit());
 
             // Get the error state transition matrix (MxM)
             final RealMatrix stateTransitionMatrix = getErrorStateTransitionMatrix(predictedSpacecraftStates[0]);
@@ -731,12 +724,15 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Finalize estimation.
      * @param observedMeasurement measurement that has just been processed
+     * @param estimate corrected estimate
      * @exception OrekitException if measurement cannot be re-estimated from corrected state
      */
-    public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement)
+    public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
+                                   final ProcessEstimate estimate)
         throws OrekitException {
         // Update the parameters with the estimated state
         // The min/max values of the parameters are handled by the ParameterDriver implementation
+        correctedEstimate = estimate;
         updateParameters();
 
         // Get the estimated propagator (mirroring parameter update in the builder)
@@ -757,9 +753,10 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Set the predicted normalized state vector.
      * The predicted/propagated orbit is used to update the state vector
      * @param predictedOrbit the predicted orbit at measurement date
+     * @return predicted state
      * @throws OrekitException if the propagator builder could not be reset
      */
-    private void predictState(final Orbit predictedOrbit)
+    private RealVector predictState(final Orbit predictedOrbit)
         throws OrekitException {
 
         // First, update the builder with the predicted orbit
@@ -767,7 +764,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         builder.resetOrbit(predictedOrbit);
 
         // Predicted state is initialized to previous estimated state
-        predictedState = correctedState.copy();
+        final RealVector predictedState = correctedEstimate.getState().copy();
 
         // The orbital parameters in the state vector are replaced with their predicted values
         // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
@@ -784,6 +781,8 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             }
         }
 
+        return predictedState;
+
     }
 
     /** Update the estimated parameters after the correction phase of the filter.
@@ -791,6 +790,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if setting the normalized values failed
      */
     private void updateParameters() throws OrekitException {
+        final RealVector correctedState = correctedEstimate.getState();
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
             // let the parameter handle min/max clipping

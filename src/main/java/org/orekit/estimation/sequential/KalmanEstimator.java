@@ -17,6 +17,7 @@
 package org.orekit.estimation.sequential;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.MatrixUtils;
@@ -110,7 +111,7 @@ public class KalmanEstimator {
                                       physicalInitialCovariance,
                                       processNoiseMatrixProvider);
 
-        this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getNormalizedInitialEstimate());
+        this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
     }
 
@@ -205,8 +206,8 @@ public class KalmanEstimator {
     public NumericalPropagator estimationStep(final ObservedMeasurement<?> observedMeasurement)
         throws OrekitException {
         try {
-            filter.estimationStep(decorate(observedMeasurement));
-            processModel.finalizeEstimation(observedMeasurement);
+            final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
+            processModel.finalizeEstimation(observedMeasurement, estimate);
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
             }
