@@ -201,7 +201,7 @@ public class KalmanOrbitDeterminationTest {
             System.out.println("Test performances:");
             System.out.format("\t%-30s\n",
                             "ΔEstimated / Reference");
-            System.out.format(Locale.US,"\t%-10s %20.6f\n",
+            System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔP [m]", dP);
             System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔV [m/s]", dV);
@@ -498,7 +498,7 @@ public class KalmanOrbitDeterminationTest {
             System.out.println("Test performances:");
             System.out.format("\t%-30s\n",
                             "ΔEstimated / Reference");
-            System.out.format(Locale.US,"\t%-10s %20.6f\n",
+            System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔP [m]", dP);
             System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔV [m/s]", dV);
@@ -762,7 +762,7 @@ public class KalmanOrbitDeterminationTest {
                         // Print header
                         final String formatHeader = "%-4s\t%-25s\t%15s\t%-10s\t%-10s\t%-20s\t%20s\t%20s";
                         String header = String.format(Locale.US, formatHeader,
-                                                      "Nb", "Epoch", "Dt[s]","Status", "Type", "Station",
+                                                      "Nb", "Epoch", "Dt[s]", "Status", "Type", "Station",
                                                       "DP Corr", "DV Corr");
                         // Orbital drivers
                         for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
@@ -803,13 +803,13 @@ public class KalmanOrbitDeterminationTest {
                                          currentNumber, currentDate.toString(), 
                                          currentDate.durationFrom(t0), currentStatus.toString(),
                                          measType, stationName,
-                                         DPcorr,DVcorr);
+                                         DPcorr, DVcorr);
 
                     // Handle parameters printing (value and error) 
                     int jPar = 0;
                     final RealMatrix Pest = estimation.getPhysicalEstimatedCovarianceMatrix();
                     // Orbital drivers
-                    for (DelegatingDriver driver : estimation.getEstimatedMeasurementsParameters().getDrivers()) {
+                    for (DelegatingDriver driver : estimation.getEstimatedOrbitalParameters().getDrivers()) {
                         line += String.format(Locale.US, "\t%20.9f", driver.getValue());
                         line += String.format(Locale.US, "\t%20.9e", FastMath.sqrt(Pest.getEntry(jPar, jPar)));
                         jPar++;
@@ -1087,7 +1087,7 @@ public class KalmanOrbitDeterminationTest {
         logStream.println("");
         String numFormat = String.format("%%%2d.6f  ", paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
-            logStream.format(Locale.US,strFormat,paramNames[i]);
+            logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j));
             }
@@ -1106,7 +1106,7 @@ public class KalmanOrbitDeterminationTest {
         }
         logStream.println("");
         for (int i = 0; i < P.getRowDimension(); i++) {
-            logStream.format(Locale.US,strFormat,paramNames[i]);
+            logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j)/(sigmas[i]*sigmas[j]));
             }
@@ -1114,7 +1114,7 @@ public class KalmanOrbitDeterminationTest {
         }
         
         // Sigmas
-        logStream.format("\n" + strFormat + "\n","Sigmas: ");
+        logStream.format("\n" + strFormat + "\n", "Sigmas: ");
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
         }
