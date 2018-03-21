@@ -77,6 +77,24 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         this.attProvider = Propagator.DEFAULT_LAW;
     }
 
+    /** Create a copy of a NumericalPropagatorBuilder object.
+     * @return Copied version of the NumericalPropagatorBuilder
+     * @throws OrekitException if parameters drivers cannot be scaled
+     */
+    public NumericalPropagatorBuilder copy() throws OrekitException {
+        final NumericalPropagatorBuilder copyBuilder =
+                        new NumericalPropagatorBuilder(createInitialOrbit(),
+                                                       builder,
+                                                       getPositionAngle(),
+                                                       getPositionScale());
+        copyBuilder.setAttitudeProvider(attProvider);
+        copyBuilder.setMass(mass);
+        for (ForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
+    }
+
     /** Set the attitude provider.
      * @param attitudeProvider attitude provider
      */
@@ -125,5 +143,4 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         return propagator;
     }
-
 }

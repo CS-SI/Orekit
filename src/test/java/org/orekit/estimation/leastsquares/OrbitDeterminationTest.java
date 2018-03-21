@@ -1895,11 +1895,7 @@ public class OrbitDeterminationTest {
          */
         public void add(EstimatedMeasurement<T> evaluation) {
             ++total;
-            double max = 0;
-            for (final double w : evaluation.getCurrentWeight()) {
-                max = FastMath.max(max, w);
-            }
-            if (max > 0) {
+            if (evaluation.getStatus() == EstimatedMeasurement.Status.PROCESSED) {
                 ++active;
             }
         }
