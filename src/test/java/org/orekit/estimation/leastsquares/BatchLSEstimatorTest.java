@@ -58,6 +58,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BatchLSEstimatorTest {
 
+    /**
+     * Perfect PV measurements with a perfect start
+     * @throws OrekitException
+     */
     @Test
     public void testKeplerPV() throws OrekitException {
 
@@ -145,6 +149,10 @@ public class BatchLSEstimatorTest {
 
     }
 
+    /**
+     * Perfect range measurements with a biased start
+     * @throws OrekitException
+     */
     @Test
     public void testKeplerRange() throws OrekitException {
 
@@ -237,6 +245,10 @@ public class BatchLSEstimatorTest {
 
     }
 
+    /**
+     * Perfect range measurements with a biased start and an on-board antenna range offset 
+     * @throws OrekitException
+     */
     @Test
     public void testKeplerRangeWithOnBoardAntennaOffset() throws OrekitException {
 
@@ -751,6 +763,10 @@ public class BatchLSEstimatorTest {
         }
     }
 
+    /**
+     * Perfect range rate measurements with a perfect start
+     * @throws OrekitException
+     */
     @Test
     public void testKeplerRangeRate() throws OrekitException {
 
@@ -788,6 +804,10 @@ public class BatchLSEstimatorTest {
                                      0.0, 6.5e-2);
     }
 
+    /**
+     * Perfect range and range rate measurements with a perfect start
+     * @throws OrekitException
+     */
     @Test
     public void testKeplerRangeAndRangeRate() throws OrekitException {
 

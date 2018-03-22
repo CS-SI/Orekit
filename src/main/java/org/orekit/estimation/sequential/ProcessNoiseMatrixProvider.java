@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.sequential;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
-public class PVMeasurementCreator extends MeasurementCreator {
+/** Provider for process noise matrices.
+ * @author Luc Maisonobe
+ * @since 9.2
+ */
+public interface ProcessNoiseMatrixProvider {
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) throws OrekitException {
-        final Vector3D p = currentState.getPVCoordinates().getPosition();
-        final Vector3D v = currentState.getPVCoordinates().getVelocity();
-        final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0);
-        Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.distance(v, measurement.getVelocity()), 1.0e-10);
-        addMeasurement(measurement);
-    }
+    /** Get the process noise matrix between previous and current states.
+     * @param previous previous state
+     * @param current current state
+     * @return physical (i.e. non normalized) process noise matrix between
+     * previous and current states
+     * @exception OrekitException if matrix cannot be computed
+     */
+    RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current)
+        throws OrekitException;
 
 }

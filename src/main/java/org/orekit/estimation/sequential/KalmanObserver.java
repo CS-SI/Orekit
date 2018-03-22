@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.sequential;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.SpacecraftState;
 
-public class PVMeasurementCreator extends MeasurementCreator {
+/** Observer for {@link KalmanEstimator Kalman filter} estimations.
+ * <p>
+ * This interface is intended to be implemented by users to monitor
+ * the progress of the Kalman filter estimator during estimation.
+ * </p>
+ * @author Luc Maisonobe
+ * @author Maxime Journot
+ * @since 9.2
+ */
+public interface KalmanObserver {
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) throws OrekitException {
-        final Vector3D p = currentState.getPVCoordinates().getPosition();
-        final Vector3D v = currentState.getPVCoordinates().getVelocity();
-        final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0);
-        Assert.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
-        Assert.assertEquals(0.0, Vector3D.distance(v, measurement.getVelocity()), 1.0e-10);
-        addMeasurement(measurement);
-    }
+    /** Notification callback after each one of a Kalman filter estimation.
+     * @param estimation estimation performed by Kalman estimator
+     * @exception OrekitException if some problem occurs
+     */
+    void evaluationPerformed(KalmanEstimation estimation)
+        throws OrekitException;
 
 }
