@@ -16,9 +16,13 @@
  */
 package org.orekit.propagation.integration;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.MathArrays;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,59 +35,43 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-public class AdditionalEquationsTest {
+public class FieldAdditionalEquationsTest {
 
-    private double          mu;
-    private AbsoluteDate    initDate;
-    private SpacecraftState initialState;
-    private double[][]      tolerance;
+    private double                       mu;
+    private AbsoluteDate                 initDate;
+    private SpacecraftState              initialState;
+    private double[][]                   tolerance;
 
     /** Test for issue #401
      *  with a numerical propagator */
     @Test
     public void testInitNumerical() throws OrekitException {
-
-        // setup
-        final double reference = 1.25;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
-        Assert.assertFalse(checker.wasCalled());
-
-        // action
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(60);
-        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorNumerical.addAdditionalEquations(checker);
-        propagatorNumerical.propagate(initDate.shiftedBy(600));
-
-        // verify
-        Assert.assertTrue(checker.wasCalled());
-
+        doTestInitNumerical(Decimal64Field.getInstance());
     }
 
-    /** Test for issue #401
-     *  with a DSST propagator */
-    @Test
-    public void testInitDSST() throws OrekitException {
-
+    private <T extends RealFieldElement<T>> void doTestInitNumerical(Field<T> field) throws OrekitException {
         // setup
-        final double reference = 3.5;
-        InitCheckerEquations checker = new InitCheckerEquations(reference);
+        final double reference = 1.25;
+        InitCheckerEquations<T> checker = new InitCheckerEquations<>(reference);
         Assert.assertFalse(checker.wasCalled());
 
         // action
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(60);
-        DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
-        propagatorDSST.addAdditionalEquations(checker);
-        propagatorDSST.propagate(initDate.shiftedBy(600));
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
+                                                                                              tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(field.getZero().add(60));
+        FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
+        propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
+                                            addAdditionalState(checker.getName(), field.getZero().add(reference)));
+        propagatorNumerical.addAdditionalEquations(checker);
+        propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(600));
 
         // verify
         Assert.assertTrue(checker.wasCalled());
@@ -111,7 +99,7 @@ public class AdditionalEquationsTest {
         tolerance    = null;
     }
 
-    public static class InitCheckerEquations implements AdditionalEquations {
+    public static class InitCheckerEquations<T extends RealFieldElement<T>> implements FieldAdditionalEquations<T> {
 
         private double expected;
         private boolean called;
@@ -122,17 +110,17 @@ public class AdditionalEquationsTest {
         }
 
         @Override
-        public void init(SpacecraftState initiaState, AbsoluteDate target)
+        public void init(FieldSpacecraftState<T> initiaState, FieldAbsoluteDate<T> target)
             throws OrekitException {
-            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
+            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
             called = true;
         }
 
         @Override
-        public double[] computeDerivatives(SpacecraftState s, double[] pDot)
+        public T[] computeDerivatives(FieldSpacecraftState<T> s, T[] pDot)
             throws OrekitException {
-            pDot[0] = 1.5;
-            return new double[7];
+            pDot[0] = s.getDate().getField().getZero().add(1.5);
+            return MathArrays.buildArray(s.getDate().getField(), 7);
         }
 
         @Override

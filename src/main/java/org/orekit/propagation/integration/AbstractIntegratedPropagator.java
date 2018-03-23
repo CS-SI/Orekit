@@ -727,10 +727,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public int getDimension() {
             return dimension;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void init(final double t0, final double[] primary0,
                          final double[] secondary0, final double finalTime) {
@@ -748,6 +750,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final double t, final double[] primary,
                                            final double[] primaryDot, final double[] secondary)
             throws OrekitExceptionWrapper {

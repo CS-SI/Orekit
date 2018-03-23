@@ -19,6 +19,8 @@ package org.orekit.propagation.integration;
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
  *
@@ -65,6 +67,29 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      * @return name of the additional state
      */
     String getName();
+
+    /**
+     * Initialize the equations at the start of propagation.
+     *
+     * <p>
+     * This method will be called once at propagation start,
+     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * </p>
+     *
+     * <p>
+     * The default implementation of this method does nothing.
+     * </p>
+     *
+     * @param initialState initial state information at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code
+     *                     initialState.getDate()}.
+     * @throws OrekitException if there is an Orekit related error during
+     *                         initialization.
+     */
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
+        throws OrekitException {
+        // nothing by default
+    }
 
     /** Compute the derivatives related to the additional state parameters.
      * <p>

@@ -540,9 +540,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
             final T[] addState = getInitialState().getAdditionalState(additional.getName());
             secondary[i] = MathArrays.buildArray(initialState.getA().getField(), addState.length);
-            for (int j = 0; j < addState.length; j++)
+            for (int j = 0; j < addState.length; j++) {
                 secondary[i][j] = addState[j];
-           //TODO secondary[i] = ;
+            }
         }
 
         return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary);
@@ -744,11 +744,30 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public int getDimension() {
             return dimension;
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void init(final T t0, final T[] primary0,
+                         final T[] secondary0, final T finalTime) {
+            try {
+                // update space dynamics view
+                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+                initialState = updateAdditionalStates(initialState);
+                initialState = initialState.addAdditionalState(equations.getName(), secondary0);
+                final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
+                equations.init(initialState, target);
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public T[] computeDerivatives(final T t, final T[] primary,
                                       final T[] primaryDot, final T[] secondary)
             throws OrekitExceptionWrapper {
