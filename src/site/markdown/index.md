@@ -26,7 +26,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
 
   * Geometry
@@ -204,10 +204,11 @@
 
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
+    * loading of RINEX observation files (version 2 and version 3)
 
   * Orbit file handling
   
-    * loading of SP3-a and SP3-c orbit files
+    * loading of SP3 orbit files (from version a to d)
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format

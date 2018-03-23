@@ -82,6 +82,13 @@ public class TimeScalesFactory implements Serializable {
     /** UTCTAI offsets loaders. */
     private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<UTCTAIOffsetsLoader>();
 
+    /** IRNSS System Time scale. */
+    private static IRNSSScale irnss = null;
+
+    /** BDS System Time scale. */
+    private static BDSScale bds = null;
+
+
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
@@ -378,6 +385,35 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return gmst;
+
+        }
+    }
+    /** Get the Indian Regional Navigation Satellite System time scale.
+     * @return  Indian Regional Navigation Satellite System time scale
+     */
+    public static IRNSSScale getIRNSST() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (irnss == null) {
+                irnss = new IRNSSScale();
+            }
+
+            return irnss;
+
+        }
+    }
+
+    /** Get the BeiDou Navigation Satellite System time scale.
+     * @return  BeiDou Navigation Satellite System time scale
+     */
+    public static BDSScale getBDT() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (bds == null) {
+                bds = new BDSScale();
+            }
+
+            return bds;
 
         }
     }
