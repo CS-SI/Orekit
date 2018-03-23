@@ -95,7 +95,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-
 public class NumericalPropagatorTest {
 
     private double               mu;
