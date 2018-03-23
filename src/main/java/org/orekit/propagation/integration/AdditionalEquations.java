@@ -67,10 +67,16 @@ public interface AdditionalEquations {
     String getName();
 
     /**
-     * Initialize the equations at the start of propagation. This method will be
-     * called before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * Initialize the equations at the start of propagation.
      *
-     * <p> The default implementation of this method does nothing.
+     * <p>
+     * This method will be called once at propagation start,
+     * before any calls to {@link #computeDerivatives(SpacecraftState)}.
+     * </p>
+     *
+     * <p>
+     * The default implementation of this method does nothing.
+     * </p>
      *
      * @param initialState initial state information at the start of propagation.
      * @param target       date of propagation. Not equal to {@code
@@ -78,9 +84,9 @@ public interface AdditionalEquations {
      * @throws OrekitException if there is an Orekit related error during
      *                         initialization.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target)
-            throws OrekitException {
-            // nothing by default
+    default void init(final SpacecraftState initialState, final AbsoluteDate target)
+        throws OrekitException {
+        // nothing by default
     }
 
     /** Compute the derivatives related to the additional state parameters.

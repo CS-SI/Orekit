@@ -38,54 +38,54 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 public class AdditionalEquationsTest {
-    
+
     private double                       mu;
     private AbsoluteDate                 initDate;
     private SpacecraftState              initialState;
     private AdaptiveStepsizeIntegrator   integrator;
 
-    /** Test for issue #401 
+    /** Test for issue #401
      *  with a numerical propagator */
     @Test
     public void testInitNumerical() throws OrekitException {
-        
+
         // setup
-        InitCheckerEquations checker = new InitCheckerEquations();
+        final double reference = 1.25;
+        InitCheckerEquations checker = new InitCheckerEquations(reference);
         Assert.assertFalse(checker.wasCalled());
-        
+
         // action
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState);
+        propagatorNumerical.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
         propagatorNumerical.addAdditionalEquations(checker);
-        propagatorNumerical.setInitialState(propagatorNumerical.getInitialState().addAdditionalState("linear", 1.5));
         propagatorNumerical.propagate(initDate.shiftedBy(600));
-        
+
         // verify
         Assert.assertTrue(checker.wasCalled());
 
     }
-    
-    /** Test for issue #401 
+
+    /** Test for issue #401
      *  with a DSST propagator */
     @Test
     public void testInitDSST() throws OrekitException {
-        
+
         // setup
-        InitCheckerEquations checker = new InitCheckerEquations();
+        final double reference = 3.5;
+        InitCheckerEquations checker = new InitCheckerEquations(reference);
         Assert.assertFalse(checker.wasCalled());
-        
+
         // action
         DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState);
+        propagatorDSST.setInitialState(initialState.addAdditionalState(checker.getName(), reference));
         propagatorDSST.addAdditionalEquations(checker);
-        propagatorDSST.setInitialState(propagatorDSST.getInitialState().addAdditionalState("linear", 1.5));
         propagatorDSST.propagate(initDate.shiftedBy(600));
-        
+
         // verify
         Assert.assertTrue(checker.wasCalled());
 
     }
-    
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
@@ -108,19 +108,21 @@ public class AdditionalEquationsTest {
         initialState = null;
         integrator = null;
     }
-    
+
     public static class InitCheckerEquations implements AdditionalEquations {
-        
+
+        private double expected;
         private boolean called;
-        
-        /** Simple Constructor */
-        public InitCheckerEquations() {
-            this.called = false;
+
+        public InitCheckerEquations(final double expected) {
+            this.expected = expected;
+            this.called   = false;
         }
-        
+
         @Override
         public void init(SpacecraftState initiaState, AbsoluteDate target)
             throws OrekitException {
+            Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
             called = true;
         }
 
@@ -130,7 +132,7 @@ public class AdditionalEquationsTest {
             pDot[0] = 1.5;
             return new double[7];
         }
-        
+
         @Override
         public String getName() {
             return "linear";
@@ -141,5 +143,5 @@ public class AdditionalEquationsTest {
         }
 
     }
-    
+
 }

@@ -640,8 +640,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        default void init(SpacecraftState initialState, AbsoluteDate target)
-                throws OrekitException {
+        default void init(final SpacecraftState initialState, final AbsoluteDate target)
+            throws OrekitException {
         }
 
         /** Compute differential equations for main state.
@@ -741,6 +741,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 // use only ODE elements
                 SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
                 initialState = updateAdditionalStates(initialState);
+                initialState = initialState.addAdditionalState(equations.getName(), secondary0);
                 final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
                 equations.init(initialState, target);
             } catch (OrekitException oe) {
