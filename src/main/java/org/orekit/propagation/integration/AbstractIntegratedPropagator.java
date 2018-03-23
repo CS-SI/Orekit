@@ -676,7 +676,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] y0, final double finalTime) {
             try {
                 // update space dynamics view
-                // use only ODE elements
                 SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
@@ -695,7 +694,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 ++calls;
 
                 // update space dynamics view
-                // use only ODE elements
                 SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
                 currentState = updateAdditionalStates(currentState);
 
@@ -738,7 +736,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                          final double[] secondary0, final double finalTime) {
             try {
                 // update space dynamics view
-                // use only ODE elements
                 SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 initialState = initialState.addAdditionalState(equations.getName(), secondary0);
@@ -758,7 +755,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                // the state contains only the ODE elements
                 SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);

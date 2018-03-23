@@ -694,7 +694,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public void init(final T t0, final T[] y0, final T finalTime) {
             try {
                 // update space dynamics view
-                // use only ODE elements
                 FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
@@ -712,7 +711,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 ++calls;
 
                 // update space dynamics view
-                // use only ODE elements
                 FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, true);
                 currentState = updateAdditionalStates(currentState);
 
@@ -758,7 +756,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             try {
 
                 // update space dynamics view
-                // the state contains only the ODE elements
                 FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
