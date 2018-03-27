@@ -16,8 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
@@ -121,17 +123,41 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return new double[] {wW - fb, wW + fb};
     }
 
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state) throws OrekitException {
+
+        final Field<T> field = state.getDate().getField();
+        final T zero = field.getZero();
+
+        final T[] tab = MathArrays.buildArray(field, 2);
+
+        final T perigee = zero.add(a * (1. - ecc));
+        // Trajectory entirely out of the atmosphere
+        if (perigee.getReal() > rbar) {
+            return tab;
+        }
+        final T apogee  = zero.add(a * (1. + ecc));
+        // Trajectory entirely within of the atmosphere
+        if (apogee.getReal() < rbar) {
+            tab[0] = (zero.subtract(FastMath.PI)).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
+            tab[1] = zero.add(FastMath.PI).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
+            return tab;
+        }
+        // Else, trajectory partialy within of the atmosphere
+        final T fb = zero.add(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc).acos();
+        final T wW = (zero.add(h)).divide(k).atan();
+
+        tab[0] = wW.subtract(fb);
+        tab[1] = wW.add(fb);
+        return tab;
+    }
+
     /** Get spacecraft shape.
      *
      * @return spacecraft shape
      */
     public DragSensitive getSpacecraft() {
         return spacecraft;
-    }
-
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
-        return null;
     }
 
 }

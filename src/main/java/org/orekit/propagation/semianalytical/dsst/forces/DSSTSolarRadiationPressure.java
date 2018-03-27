@@ -16,9 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -264,6 +267,99 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         return ll;
     }
 
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state) throws OrekitException {
+
+        final Field<T> field = state.getDate().getField();
+        final T zero =  field.getZero();
+
+        // Default bounds without shadow [-PI, PI]
+        final T[] ll = MathArrays.buildArray(field, 2);
+        ll[0] = zero.subtract(FastMath.PI).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
+        ll[1] = zero.add(FastMath.PI).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
+
+        // Direction cosines of the Sun in the equinoctial frame
+        final FieldVector3D<T> sunDir = new FieldVector3D<>(state.getDate().getField(), sun.getPVCoordinates(state.toSpacecraftState().getDate(), state.getFrame()).getPosition().normalize());
+        final T alpha = sunDir.dotProduct(f);
+        final T beta  = sunDir.dotProduct(g);
+        final T gamma = sunDir.dotProduct(w);
+
+        // Compute limits only if the perigee is close enough from the central body to be in the shadow
+        if (gamma.multiply(a).multiply(1. - ecc).abs().getReal() < ae) {
+
+            // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)
+            final T bet2 = beta.multiply(beta);
+            final T h2 = zero.add(h * h);
+            final T k2 = zero.add(k * k);
+            final T m  = zero.add(ae / (a * B));
+            final T m2 = m.multiply(m);
+            final T m4 = m2.multiply(m2);
+            final T bb = alpha.multiply(beta).add(m2.multiply(h * k));
+            final T b2 = bb.multiply(bb);
+            final T cc = alpha.multiply(alpha).subtract(bet2).add(m2.multiply(k2.subtract(h2)));
+            final T dd = (bet2.reciprocal().add(1.)).subtract(m2.multiply(h2.add(1.)));
+            final T[] a = MathArrays.buildArray(field, 5);
+            a[0] = b2.multiply(4.).add(cc.multiply(cc));
+            a[1] = bb.multiply(8.).multiply(m2).multiply(h).add(cc.multiply(4.).multiply(m2).multiply(k));
+            a[2] = b2.multiply(-4).add(m4.multiply(4.).multiply(h2)).subtract(cc.multiply(2.).multiply(dd)).add(m4.multiply(4.).multiply(k2));
+            a[3] = bb.multiply(-8).multiply(m2).multiply(h).subtract(dd.multiply(4.).multiply(m2).multiply(k));
+            a[4] = m4.multiply(h2).multiply(-4).add(dd.multiply(dd));
+            // Compute the real roots of the quartic equation 3.5-2
+            final T[] roots = MathArrays.buildArray(field, 4);
+            final T nbRoots = zero.add(realQuarticRoots(a, roots));
+            if (nbRoots.getReal() > 0) {
+                // Check for consistency
+                boolean entryFound = false;
+                boolean exitFound  = false;
+                // Eliminate spurious roots
+                for (int i = 0; i < nbRoots.getReal(); i++) {
+                    final T cosL = roots[i];
+                    final T sL = ((cosL.negate().add(1.)).multiply(cosL.add(1.))).sqrt();
+                    // Check both angles: L and -L
+                    for (int j = -1; j <= 1; j += 2) {
+                        final T sinL = sL.multiply(j);
+                        final T cPhi = cosL.multiply(alpha).add(sinL.multiply(beta));
+                        // Is the angle on the shadow side of the central body (eq. 3.5-3) ?
+                        if (cPhi.getReal() < 0.) {
+                            final T range = cosL.multiply(k).add(sinL.multiply(h)).add(1.);
+                            final T S  = ((m2.multiply(range).multiply(range)).negate()).add(1.).subtract(cPhi.multiply(cPhi));
+                            // Is the shadow equation 3.5-1 satisfied ?
+                            if (S.abs().getReal() < S_ZERO) {
+                                // Is this the entry or exit angle ?
+                                final T dSdL = m2.multiply(range).multiply(sinL.multiply(k).subtract(cosL.multiply(h))).add(cPhi.multiply(alpha.multiply(sinL).subtract(beta.multiply(cosL))));
+                                if (dSdL.getReal() > 0.) {
+                                    // Exit from shadow: 3.5-4
+                                    exitFound = true;
+                                    ll[0] = sinL.divide(cosL).atan();
+                                } else {
+                                    // Entry into shadow: 3.5-5
+                                    entryFound = true;
+                                    ll[1] = sinL.divide(cosL).atan();
+                                }
+                            }
+                        }
+                    }
+                }
+                // Must be one entry and one exit or none
+                if (!(entryFound == exitFound)) {
+                    // entry or exit found but not both ! In this case, consider there is no eclipse...
+                    ll[0] = zero.subtract(FastMath.PI);
+                    ll[1] = zero.add(FastMath.PI);
+                }
+                // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
+                if (ll[0].getReal() > ll[1].getReal()) {
+                    // Keep the angles between [-2PI, 2PI]
+                    if (ll[1].getReal() < 0.) {
+                        ll[1] = ll[1].add(2. * FastMath.PI);
+                    } else {
+                        ll[0] = ll[0].subtract(2. * FastMath.PI);
+                    }
+                }
+            }
+        }
+        return ll;
+    }
+
     /** Get the central body equatorial radius.
      *  @return central body equatorial radius (m)
      */
@@ -320,6 +416,97 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final int n1 = realQuadraticRoots(new double[] {1.0, bh - pp, zh - qq}, y1);
         final double[] y2 = new double[2];
         final int n2 = realQuadraticRoots(new double[] {1.0, bh + pp, zh + qq}, y2);
+
+        if (n1 == 2) {
+            if (n2 == 2) {
+                y[0] = y1[0];
+                y[1] = y1[1];
+                y[2] = y2[0];
+                y[3] = y2[1];
+                return 4;
+            } else {
+                y[0] = y1[0];
+                y[1] = y1[1];
+                return 2;
+            }
+        } else {
+            if (n2 == 2) {
+                y[0] = y2[0];
+                y[1] = y2[1];
+                return 2;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    /**
+     * Compute the real roots of a quartic equation.
+     *
+     * <pre>
+     * a[0] * x⁴ + a[1] * x³ + a[2] * x² + a[3] * x + a[4] = 0.
+     * </pre>
+     * @param <T> the type of the field elements
+     *
+     * @param a the 5 coefficients
+     * @param y the real roots
+     * @return the number of real roots
+     */
+    private <T extends RealFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y) {
+
+        final Field<T> field = a[0].getField();
+        final T zero = field.getZero();
+
+        /* Treat the degenerate quartic as cubic */
+        if (Precision.equals(a[0].getReal(), 0.)) {
+            final T[] aa = MathArrays.buildArray(field, a.length - 1);
+            System.arraycopy(a, 1, aa, 0, aa.length);
+            return realCubicRoots(aa, y);
+        }
+
+        // Transform coefficients
+        final T b  = a[1].divide(a[0]);
+        final T c  = a[2].divide(a[0]);
+        final T d  = a[3].divide(a[0]);
+        final T e  = a[4].divide(a[0]);
+        final T bh = b.multiply(0.5);
+
+        // Solve resolvant cubic
+        final T[] z3 = MathArrays.buildArray(field, 3);
+        final T[] i = MathArrays.buildArray(field, 4);
+        i[0] = zero.add(1.0);
+        i[1] = c.negate();
+        i[2] = b.multiply(d).subtract(e.multiply(4.0));
+        i[3] = e.multiply(c.multiply(4.).subtract(b.multiply(b))).subtract(b.multiply(b));
+        final int i3 = realCubicRoots(i, z3);
+        if (i3 == 0) {
+            return 0;
+        }
+
+        // Largest real root of resolvant cubic
+        final T z = z3[0];
+
+        // Compute auxiliary quantities
+        final T zh = z.multiply(0.5);
+        final T p  = zero.add(FastMath.max((z.add(bh.multiply(bh)).subtract(c)).getReal(), 0.));
+        final T q  = zero.add(FastMath.max((zh.multiply(zh).subtract(e)).getReal(), 0.));
+        final T r  = bh.multiply(z).subtract(d);
+        final T pp = p.sqrt();
+        final T qq = (q.sqrt()).copySign(r);
+
+        // Solve quadratic factors of quartic equation
+        final T[] y1 = MathArrays.buildArray(field, 2);
+        final T[] n = MathArrays.buildArray(field, 3);
+        n[0] = zero.multiply(1.0);
+        n[1] = bh.subtract(pp);
+        n[2] = zh.subtract(qq);
+        final int n1 = realQuadraticRoots(n, y1);
+        final T[] nn = MathArrays.buildArray(field, 3);
+        nn[0] = zero.multiply(1.0);
+        nn[1] = bh.add(pp);
+        nn[2] = zh.add(qq);
+        final T[] y2 = MathArrays.buildArray(field, 2);
+        final int n2 = realQuadraticRoots(nn, y2);
 
         if (n1 == 2) {
             if (n2 == 2) {
@@ -421,6 +608,86 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /**
+     * Compute the real roots of a cubic equation.
+     *
+     * <pre>
+     * a[0] * x³ + a[1] * x² + a[2] * x + a[3] = 0.
+     * </pre>
+     *
+     * @param a the 4 coefficients
+     * @param y the real roots sorted in descending order
+     * @param <T> the type of the field elements
+     * @return the number of real roots
+     */
+    private <T extends RealFieldElement<T>> int realCubicRoots(final T[] a, final T[] y) {
+
+        final Field<T> field = a[0].getField();
+
+        if (Precision.equals(a[0].getReal(), 0.)) {
+            // Treat the degenerate cubic as quadratic
+            final T[] aa = MathArrays.buildArray(field, a.length - 1);
+            System.arraycopy(a, 1, aa, 0, aa.length);
+            return realQuadraticRoots(aa, y);
+        }
+
+        // Transform coefficients
+        final T b  =  (a[1].divide(a[0].multiply(3.))).negate();
+        final T c  =  a[2].divide(a[0]);
+        final T d  =  a[3].divide(a[0]);
+        final T b2 =  b.multiply(b);
+        final T p  =  b2.subtract(c.divide(3.));
+        final T q  =  b.multiply(b2.subtract(c.multiply(0.5))).subtract(d.multiply(0.5));
+
+        // Compute discriminant
+        final T disc = p.pow(3).subtract(q.multiply(q));
+
+        if (disc.getReal() < 0.) {
+            // One real root
+            final T alpha  = q.add((disc.negate().sqrt()).copySign(q));
+            final T cbrtAl = alpha.cbrt();
+            final T cbrtBe = p.divide(cbrtAl);
+
+            if (p.getReal() < 0.) {
+                y[0] = b.add(q.divide(cbrtAl.multiply(cbrtAl).add(cbrtBe.multiply(cbrtBe)).subtract(p)).multiply(2.));
+            } else if (p.getReal() > 0.) {
+                y[0] = b.add(cbrtAl).add(cbrtBe);
+            } else {
+                y[0] = b.add(cbrtAl);
+            }
+
+            return 1;
+
+        } else if (disc.getReal() > 0.) {
+            // Three distinct real roots
+            final T phi = (((disc.sqrt()).divide(q)).atan()).divide(3.);
+            final T sqP = (p.sqrt()).multiply(2.0);
+
+            y[0] = b.add(sqP.multiply(phi.cos()));
+            y[1] = b.subtract(sqP.multiply((phi.add(FastMath.PI / 3.)).cos()));
+            y[2] = b.subtract(sqP.multiply((phi.negate().add(FastMath.PI / 3.)).cos()));
+
+            return 3;
+
+        } else {
+            // One distinct and two equals real roots
+            final T cbrtQ = q.cbrt();
+            final T root1 = b.add(cbrtQ.multiply(2.0));
+            final T root2 = b.subtract(cbrtQ);
+            if (q.getReal() < 0.) {
+                y[0] = root2;
+                y[1] = root2;
+                y[2] = root1;
+            } else {
+                y[0] = root1;
+                y[1] = root2;
+                y[2] = root2;
+            }
+
+            return 3;
+        }
+    }
+
+    /**
      * Compute the real roots of a quadratic equation.
      *
      * <pre>
@@ -468,9 +735,57 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         }
     }
 
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState <T> currentState) {
-        return null;
+    /**
+     * Compute the real roots of a quadratic equation.
+     *
+     * <pre>
+     * a[0] * x² + a[1] * x + a[2] = 0.
+     * </pre>
+     *
+     * @param a the 3 coefficients
+     * @param y the real roots sorted in descending order
+     * @param <T> the type of the field elements
+     * @return the number of real roots
+     */
+    private <T extends RealFieldElement<T>> int realQuadraticRoots(final T[] a, final T[] y) {
+
+        final Field<T> field = a[0].getField();
+        final T zero = field.getZero();
+
+        if (Precision.equals(a[0].getReal(), 0.)) {
+            // Degenerate quadratic
+            if (Precision.equals(a[1].getReal(), 0.)) {
+                // Degenerate linear equation: no real roots
+                return 0;
+            }
+            // Linear equation: one real root
+            y[0] = a[2].divide(a[1]).negate();
+            return 1;
+        }
+
+        // Transform coefficients
+        final T b = a[1].divide(a[0]).multiply(-0.5);
+        final T c =  a[2].divide(a[0]);
+
+        // Compute discriminant
+        final T d =  b.multiply(b).subtract(c);
+
+        if (d.getReal() < 0.) {
+            // No real roots
+            return 0;
+        } else if (d.getReal() > 0.) {
+            // Two distinct real roots
+            final T y0 = b.add((d.sqrt()).copySign(b));
+            final T y1 = c.divide(y0);
+            y[0] = zero.add(FastMath.max(y0.getReal(), y1.getReal()));
+            y[1] = zero.add(FastMath.min(y0.getReal(), y1.getReal()));
+            return 2;
+        } else {
+            // Discriminant is zero: two equal real roots
+            y[0] = b;
+            y[1] = b;
+            return 2;
+        }
     }
 
 }

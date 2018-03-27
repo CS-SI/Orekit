@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -55,7 +57,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody<T> implements DSSTForceModel {
+public class DSSTThirdBody implements DSSTForceModel {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -437,21 +439,26 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("hiding")
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
+
+        // Parameters for array building
+        final Field<T> field = currentState.getDate().getField();
+        final int dimension = computeUDerivatives(field).length;
+        final T zero = field.getZero();
 
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
         // a / R3 up to power maxAR3Pow
-        final double aoR3 = a / R3;
+        final T aoR3 = zero.add(a / R3);
         aoR3Pow[0] = 1.;
         for (int i = 1; i <= maxAR3Pow; i++) {
-            aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
+            aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]).getReal();
         }
 
         // Compute potential U derivatives
-        final T[] dU  = MathArrays.buildArray(currentState.getDate().getField(), computeUDerivatives().length);
+        T[] dU  = MathArrays.buildArray(field, dimension);
+        dU = computeUDerivatives(field);
         final T dUda  = dU[0];
         final T dUdk  = dU[1];
         final T dUdh  = dU[2];
@@ -468,22 +475,22 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
         final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p).subtract(UBetaGamma.multiply(q).multiply(I))).multiply(ooAB);
 
         // Compute mean elements rates [Eq. 3.1-(1)]
-        final T da =  UAlphaGamma.subtract(UAlphaGamma);
+        final T da =  zero;
         final T dh =  dUdk.multiply(BoA).add(pUAGmIqUBGoAB.multiply(k));
-        final T dk =  ((dUdh.multiply(BoA)).reciprocal()).subtract(pUAGmIqUBGoAB.multiply(h));
+        final T dk =  ((dUdh.multiply(BoA)).negate()).subtract(pUAGmIqUBGoAB.multiply(h));
         final T dp =  UBetaGamma.multiply(mCo2AB);
         final T dq =  UAlphaGamma.multiply(I).multiply(mCo2AB);
         final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA)).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo));
 
-        final T[] parameters = MathArrays.buildArray(currentState.getDate().getField(), computeUDerivatives().length);
-        parameters[0] = da;
-        parameters[1] = dh;
-        parameters[2] = dk;
-        parameters[3] = dp;
-        parameters[4] = dq;
-        parameters[5] = dM;
+        final T[] elements = MathArrays.buildArray(field, dimension);
+        elements[0] = da;
+        elements[1] = dh;
+        elements[2] = dk;
+        elements[3] = dp;
+        elements[4] = dq;
+        elements[5] = dM;
 
-        return parameters;
+        return elements;
 
     }
 
@@ -676,6 +683,104 @@ public class DSSTThirdBody<T> implements DSSTForceModel {
             dUdBe * muoR3,
             dUdGa * muoR3
         };
+
+    }
+
+    /** Compute potential derivatives.
+     *  @param <T> the type of the field elements
+     *  @param field field used by default
+     *  @return derivatives of the potential with respect to orbital parameters
+     */
+    private <T extends RealFieldElement<T>> T[] computeUDerivatives(final Field<T> field) {
+
+        final T zero = field.getZero();
+
+        // Gs and Hs coefficients
+        final T[][] GsHs = CoefficientsFactory.computeGsHs(zero.add(k), zero.add(h), zero.add(alpha), zero.add(beta), maxEccPow);
+
+        // Initialise U.
+        U = 0.;
+
+        // Potential derivatives
+        T dUda  = zero;
+        T dUdk  = zero;
+        T dUdh  = zero;
+        T dUdAl = zero;
+        T dUdBe = zero;
+        T dUdGa = zero;
+
+        for (int s = 0; s <= maxEccPow; s++) {
+            // initialise the Hansen roots
+            this.hansenObjects[s].computeInitValues(B, BB, BBB);
+
+            // Get the current Gs coefficient
+            final T gs = GsHs[0][s];
+
+            // Compute Gs partial derivatives from 3.1-(9)
+            T dGsdh  = zero;
+            T dGsdk  = zero;
+            T dGsdAl = zero;
+            T dGsdBe = zero;
+            if (s > 0) {
+                // First get the G(s-1) and the H(s-1) coefficients
+                final T sxGsm1 = GsHs[0][s - 1].multiply(s);
+                final T sxHsm1 = GsHs[1][s - 1].multiply(s);
+                // Then compute derivatives
+                dGsdh  = sxGsm1.multiply(beta).subtract(sxHsm1.multiply(alpha));
+                dGsdk  = sxGsm1.multiply(alpha).add(sxHsm1.multiply(beta));
+                dGsdAl = sxGsm1.multiply(k).subtract(sxHsm1.multiply(h));
+                dGsdBe = sxGsm1.multiply(h).add(sxHsm1.multiply(k));
+            }
+
+            // Kronecker symbol (2 - delta(0,s))
+            final T delta0s = zero.add((s == 0) ? 1. : 2.);
+
+            for (int n = FastMath.max(2, s); n <= maxAR3Pow; n++) {
+                // (n - s) must be even
+                if ((n - s) % 2 == 0) {
+                    // Extract data from previous computation :
+                    final T kns   = zero.add(this.hansenObjects[s].getValue(n, B));
+                    final T dkns  = zero.add(this.hansenObjects[s].getDerivative(n, B));
+
+                    final T vns   = zero.add(Vns.get(new NSKey(n, s)));
+                    final T coef0 = vns.multiply(delta0s).multiply(aoR3Pow[n]);
+                    final T coef1 = coef0.multiply(Qns[n][s]);
+                    final T coef2 = coef1.multiply(kns);
+                    // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                    // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                    final double dqns = (n == s) ? 0. : Qns[n][s + 1];
+
+                    //Compute U:
+                    U += coef2.multiply(gs).getReal();
+
+                    // Compute dU / da :
+                    dUda = dUda.add(coef2.multiply(n).multiply(gs));
+                    // Compute dU / dh
+                    dUdh = dUdh.add(coef1.multiply(kns.multiply(dGsdh).add(dkns.multiply(gs).multiply(hXXX))));
+                    // Compute dU / dk
+                    dUdk = dUdk.add(coef1.multiply(kns.multiply(dGsdk).add(dkns.multiply(gs).multiply(kXXX))));
+                    // Compute dU / dAlpha
+                    dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
+                    // Compute dU / dBeta
+                    dUdBe = dUdBe.add(coef2.multiply(dGsdBe));
+                    // Compute dU / dGamma
+                    dUdGa = dUdGa.add(coef0.multiply(kns).multiply(dqns).multiply(gs));
+                }
+            }
+        }
+
+        // multiply by mu3 / R3
+        U *= muoR3;
+
+        final T[] derivatives = MathArrays.buildArray(field, 6);
+        derivatives[0] = dUda.multiply(muoR3 / a);
+        derivatives[1] = dUdk.multiply(muoR3);
+        derivatives[2] = dUdh.multiply(muoR3);
+        derivatives[3] = dUdAl.multiply(muoR3);
+        derivatives[4] = dUdBe.multiply(muoR3);
+        derivatives[5] = dUdGa.multiply(muoR3);
+
+        return derivatives;
 
     }
 
