@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Allow attitude overriding during constant-thrust maneuvers.
+        Fixes issue #410.
+      </action>
       <action dev="luc" type="fix">
         Fixed out-of-sync attitude computation near switch events in AttitudeSequence.
         Fixes issue #404.
