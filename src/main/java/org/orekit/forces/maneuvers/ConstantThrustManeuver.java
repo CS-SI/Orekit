@@ -23,6 +23,9 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
@@ -91,6 +94,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** End of the maneuver. */
     private final AbsoluteDate endDate;
 
+    /** The attitude to override during the maneuver, if set. */
+    private final AttitudeProvider attitudeOverride;
+
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
 
@@ -116,6 +122,29 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
+     * Calling this constructor is equivalent to call {@link
+     * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
+     * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
+     * hence not using any prefix for the parameters drivers names.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param direction the acceleration direction in satellite frame.
+     * @since 9.2
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final AttitudeProvider attitudeOverride, final Vector3D direction) {
+        this(date, duration, thrust, isp, attitudeOverride, direction, "");
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
      * If the {@code driversNamePrefix} is empty, the names will
      * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
      * the prefix is prepended to these fixed strings. A typical use case is to
@@ -137,6 +166,34 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                                   final double thrust, final double isp,
                                   final Vector3D direction,
                                   final String driversNamePrefix) {
+        this(date, duration, thrust, isp, null, direction, driversNamePrefix);
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * If the {@code driversNamePrefix} is empty, the names will
+     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
+     * the prefix is prepended to these fixed strings. A typical use case is to
+     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * name of the thruster to use, so separate parameters can be adjusted
+     * for the different thrusters involved during an orbit determination
+     * where maneuvers parameters are estimated.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param direction the acceleration direction in satellite frame
+     * @param driversNamePrefix prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @since 9.2
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final AttitudeProvider attitudeOverride, final Vector3D direction,
+                                  final String driversNamePrefix) {
 
         if (duration >= 0) {
             this.startDate = date;
@@ -147,6 +204,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         }
 
         final double flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        this.attitudeOverride = attitudeOverride;
         this.direction = direction.normalize();
         firing = false;
 
@@ -250,11 +308,18 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
+        throws OrekitException {
         if (firing) {
             final double thrust = parameters[0];
+            final Attitude attitude =
+                            attitudeOverride == null ?
+                            state.getAttitude() :
+                            attitudeOverride.getAttitude(state.getOrbit(),
+                                                         state.getDate(),
+                                                         state.getFrame());
             return new Vector3D(thrust / state.getMass(),
-                                state.getAttitude().getRotation().applyInverseTo(direction));
+                                attitude.getRotation().applyInverseTo(direction));
         } else {
             return Vector3D.ZERO;
         }
@@ -263,12 +328,19 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
+                                                                         final T[] parameters)
+        throws OrekitException {
         if (firing) {
             // compute thrust acceleration in inertial frame
             final T thrust = parameters[0];
+            final FieldAttitude<T> attitude =
+                            attitudeOverride == null ?
+                            s.getAttitude() :
+                            attitudeOverride.getAttitude(s.getOrbit(),
+                                                         s.getDate(),
+                                                         s.getFrame());
             return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
-                                       s.getAttitude().getRotation().applyInverseTo(direction));
+                                       attitude.getRotation().applyInverseTo(direction));
         } else {
             // constant (and null) acceleration when not firing
             return FieldVector3D.getZero(s.getMass().getField());
