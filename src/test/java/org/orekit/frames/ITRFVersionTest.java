@@ -30,7 +30,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-public class ITRFTypeTest {
+public class ITRFVersionTest {
 
     @Test
     public void testYears() {

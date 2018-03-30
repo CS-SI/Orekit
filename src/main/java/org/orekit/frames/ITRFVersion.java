@@ -24,6 +24,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Enumerate for ITRF versions.
+ * @see EOPEntry
  * @see HelmertTransformation
  * @author Luc Maisonobe
  * @since 9.2

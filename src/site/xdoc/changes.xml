@@ -22,6 +22,14 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added an itrf-versions.conf configuration file allowing to specify
+        which ITRF version each EOP file defines for which date
+      </action>
+      <action dev="luc" type="add">
+        EOP history now contains the ITRF version corresponding to each
+        EOP entry on a per date basis
+      </action>
+      <action dev="luc" type="add">
         Added an ITRFVersion enumerate to simplify conversion between ITRF frames,
         even when no direct Helmert transformation is available
       </action>

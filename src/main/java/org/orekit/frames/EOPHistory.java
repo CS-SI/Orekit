@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -529,6 +530,31 @@ public class EOPHistory implements Serializable {
 
         // we have EOP data for date -> interpolate correction
         return interpolate(date, aDate, entry -> entry.getDx(), entry -> entry.getDy());
+
+    }
+
+    /** Get the ITRF version.
+     * @param date date at which the value is desired
+     * @return ITRF version of the EOP covering the specified date
+     * @since 9.2
+     */
+    public ITRFVersion getITRFType(final AbsoluteDate date) {
+
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default ITRF 2014
+            return ITRFVersion.ITRF_2014;
+        }
+
+        try {
+            // we have EOP data for date
+            final Optional<EOPEntry> first = getNeighbors(date).findFirst();
+            return first.isPresent() ? first.get().getITRFType() : ITRFVersion.ITRF_2014;
+
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check performed at start
+            throw new OrekitInternalError(tce);
+        }
 
     }
 
