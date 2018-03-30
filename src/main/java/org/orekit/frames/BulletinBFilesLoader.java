@@ -43,7 +43,7 @@ import org.orekit.utils.IERSConventions;
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link EOPEntry
  * Earth Orientation Parameters} for a few months periods.
- * They correspond fo tinalized data, suitable for long term
+ * They correspond to finalized data, suitable for long term
  * a posteriori analysis.</p>
  * <p>The bulletin B files are recognized thanks to their base names,
  * which must match one of the patterns <code>bulletinb_IAU2000-###.txt</code>,
@@ -55,7 +55,7 @@ import org.orekit.utils.IERSConventions;
  * written in a format containing nutation corrections for both the
  * new IAU2000 nutation model as dx, dy entries in its section 1 and nutation
  * corrections for the old IAU1976 nutation model as dPsi, dEpsilon entries in
- * its sections 2. These bulletins are available from IERS <a
+ * its section 2. These bulletins are available from IERS <a
  * href="ftp://ftp.iers.org/products/eop/bulletinb/format_2009/">
  *  FTP site</a>. They are also available with exactly the same content
  * (but a different naming convention) from <a
