@@ -16,19 +16,20 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+//import org.hipparchus.Field;
+//import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
+//import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.propagation.FieldSpacecraftState;
+//import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.utils.Constants;
 
 /** Atmospheric drag contribution to the
@@ -105,26 +106,29 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
-        final double perigee = a * (1. - ecc);
+    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
+
+        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
+        final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
         // Trajectory entirely out of the atmosphere
         if (perigee > rbar) {
             return new double[2];
         }
-        final double apogee  = a * (1. + ecc);
+        final double apogee  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
             return new double[]{-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
                                 FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
         }
         // Else, trajectory partialy within of the atmosphere
-        final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);
-        final double wW = FastMath.atan2(h, k);
+        final double fb = FastMath.acos(((auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc() * auxiliaryElements.getEcc()) / rbar) - 1.) / auxiliaryElements.getEcc());
+        final double wW = FastMath.atan2(auxiliaryElements.getH(), auxiliaryElements.getK());
         return new double[] {wW - fb, wW + fb};
     }
 
-    /** {@inheritDoc} */
-    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state) throws OrekitException {
+    ///** {@inheritDoc} */
+    /**protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state) throws OrekitException {
 
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();
@@ -150,7 +154,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         tab[0] = wW.subtract(fb);
         tab[1] = wW.add(fb);
         return tab;
-    }
+    }*/
 
     /** Get spacecraft shape.
      *

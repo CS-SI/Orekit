@@ -28,14 +28,14 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.hipparchus.Field;
-import org.hipparchus.RealFieldElement;
+//import org.hipparchus.Field;
+//import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
+//import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -44,10 +44,10 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldSpacecraftState;
+//import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.semianalytical.dsst.forces.FieldUnnormalizedSphericalHarmonicsProvider.FieldUnnormalizedSphericalHarmonics;
+//import org.orekit.propagation.semianalytical.dsst.forces.FieldUnnormalizedSphericalHarmonicsProvider.FieldUnnormalizedSphericalHarmonics;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.GHmsjPolynomials;
@@ -56,7 +56,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+//import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
 /** Tesseral contribution to the central body gravitational perturbation.
@@ -67,20 +67,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTTesseral implements DSSTForceModel {
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in seconds.
-     */
-    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in satellite revolutions.
-     */
-    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
-
-    /** Number of points for interpolation. */
-    private static final int INTERPOLATION_POINTS = 3;
+public class DSSTTesseral implements DSSTForceModel<DSSTTesseralContext> {
 
     /** Retrograde factor I.
      *  <p>
@@ -97,11 +84,24 @@ public class DSSTTesseral implements DSSTForceModel {
      */
     private static final int I = 1;
 
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in seconds.
+     */
+    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
+
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in satellite revolutions.
+     */
+    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
+
+    /** Number of points for interpolation. */
+    private static final int INTERPOLATION_POINTS = 3;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Provider for spherical harmonics. */
-    private final FieldUnnormalizedSphericalHarmonicsProvider providerField;
+    //private final FieldUnnormalizedSphericalHarmonicsProvider providerField;
 
     /** Central body rotating frame. */
     private final Frame bodyFrame;
@@ -155,82 +155,6 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** Ratio of satellite period to central body rotation period. */
     private double ratio;
-
-    // Equinoctial elements (according to DSST notation)
-    /** a. */
-    private double a;
-
-    /** ex. */
-    private double k;
-
-    /** ey. */
-    private double h;
-
-    /** hx. */
-    private double q;
-
-    /** hy. */
-    private double p;
-
-    /** lm. */
-    private double lm;
-
-    /** Eccentricity. */
-    private double ecc;
-
-    // Common factors for potential computation
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double chi;
-
-    /** &Chi;². */
-    private double chi2;
-
-    // Equinoctial reference frame vectors (according to DSST notation)
-    /** Equinoctial frame f vector. */
-    private Vector3D f;
-
-    /** Equinoctial frame g vector. */
-    private Vector3D g;
-
-    /** Central body rotation angle θ. */
-    private double theta;
-
-    /** Direction cosine α. */
-    private double alpha;
-
-    /** Direction cosine β. */
-    private double beta;
-
-    /** Direction cosine γ. */
-    private double gamma;
-
-    // Common factors from equinoctial coefficients
-    /** 2 * a / A .*/
-    private double ax2oA;
-
-    /** 1 / (A * B) .*/
-    private double ooAB;
-
-    /** B / A .*/
-    private double BoA;
-
-    /** B / (A * (1 + B)) .*/
-    private double BoABpo;
-
-    /** C / (2 * A * B) .*/
-    private double Co2AB;
-
-    /** μ / a .*/
-    private double moa;
-
-    /** R / a .*/
-    private double roa;
-
-    /** ecc². */
-    private double e2;
-
-    /** The satellite mean motion. */
-    private double meanMotion;
 
     /** List of non resonant orders with j != 0. */
     private final SortedMap<Integer, List<Integer> > nonResOrders;
@@ -291,7 +215,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         // Provider for spherical harmonics
         this.provider      = provider;
-        this.providerField = null;
+        //this.providerField = null;
         this.maxDegree     = provider.getMaxDegree();
         this.maxOrder      = provider.getMaxOrder();
 
@@ -370,7 +294,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         // Provider for spherical harmonics
         this.provider      = null;
-        this.providerField = provider;
+        //this.providerField = provider;
         this.maxDegree     = provider.getMaxDegree();
         this.maxOrder      = provider.getMaxOrder();
 
@@ -421,16 +345,16 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly)
         throws OrekitException {
 
         // Keplerian period
-        orbitPeriod = aux.getKeplerianPeriod();
+        orbitPeriod = auxiliaryElements.getKeplerianPeriod();
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
         // spherical harmonic perturbation
-        final double e = aux.getEcc();
+        final double e = auxiliaryElements.getEcc();
         if (e <= 0.005) {
             maxEccPow = 3;
         } else if (e <= 0.02) {
@@ -531,73 +455,18 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
-
-        // Equinoctial elements
-        a  = aux.getSma();
-        k  = aux.getK();
-        h  = aux.getH();
-        q  = aux.getQ();
-        p  = aux.getP();
-        lm = aux.getLM();
-
-        // Eccentricity
-        ecc = aux.getEcc();
-        e2 = ecc * ecc;
-
-        // Equinoctial frame vectors
-        f = aux.getVectorF();
-        g = aux.getVectorG();
-
-        // Central body rotation angle from equation 2.7.1-(3)(4).
-        final Transform t = bodyFrame.getTransformTo(aux.getFrame(), aux.getDate());
-        final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
-        final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
-        theta = FastMath.atan2(-f.dotProduct(yB) + I * g.dotProduct(xB),
-                                f.dotProduct(xB) + I * g.dotProduct(yB));
-
-        // Direction cosines
-        alpha = aux.getAlpha();
-        beta  = aux.getBeta();
-        gamma = aux.getGamma();
-
-        // Equinoctial coefficients
-        // A = sqrt(μ * a)
-        final double A = aux.getA();
-        // B = sqrt(1 - h² - k²)
-        final double B = aux.getB();
-        // C = 1 + p² + q²
-        final double C = aux.getC();
-        // Common factors from equinoctial coefficients
-        // 2 * a / A
-        ax2oA  = 2. * a / A;
-        // B / A
-        BoA  = B / A;
-        // 1 / AB
-        ooAB = 1. / (A * B);
-        // C / 2AB
-        Co2AB = C * ooAB / 2.;
-        // B / (A * (1 + B))
-        BoABpo = BoA / (1. + B);
-        // &mu / a
-        moa = provider.getMu() / a;
-        // R / a
-        roa = provider.getAe() / a;
-
-        // &Chi; = 1 / B
-        chi = 1. / B;
-        chi2 = chi * chi;
-
-        //mean motion n
-        meanMotion = aux.getMeanMotion();
+    public DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements) throws OrekitException {
+        return new DSSTTesseralContext(auxiliaryElements, bodyFrame, provider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final DSSTTesseralContext context) throws OrekitException {
+
+        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         // Compute potential derivatives
-        final double[] dU  = computeUDerivatives(spacecraftState.getDate());
+        final double[] dU  = computeUDerivatives(spacecraftState.getDate(), context);
         final double dUda  = dU[0];
         final double dUdh  = dU[1];
         final double dUdk  = dU[2];
@@ -607,25 +476,25 @@ public class DSSTTesseral implements DSSTForceModel {
         final double dUdGa = dU[6];
 
         // Compute the cross derivative operator :
-        final double UAlphaGamma   = alpha * dUdGa - gamma * dUdAl;
-        final double UAlphaBeta    = alpha * dUdBe - beta  * dUdAl;
-        final double UBetaGamma    =  beta * dUdGa - gamma * dUdBe;
-        final double Uhk           =     h * dUdk  -     k * dUdh;
-        final double pUagmIqUbgoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
-        final double UhkmUabmdUdl  =  Uhk - UAlphaBeta - dUdl;
+        final double UAlphaGamma   = auxiliaryElements.getAlpha() * dUdGa - auxiliaryElements.getGamma() * dUdAl;
+        final double UAlphaBeta    = auxiliaryElements.getAlpha() * dUdBe - auxiliaryElements.getBeta()  * dUdAl;
+        final double UBetaGamma    = auxiliaryElements.getBeta() * dUdGa - auxiliaryElements.getGamma() * dUdBe;
+        final double Uhk           = auxiliaryElements.getH() * dUdk  - auxiliaryElements.getK() * dUdh;
+        final double pUagmIqUbgoAB = (auxiliaryElements.getP() * UAlphaGamma - auxiliaryElements.getRetrogradeFactor() * auxiliaryElements.getQ() * UBetaGamma) * context.getOoAB();
+        final double UhkmUabmdUdl  = Uhk - UAlphaBeta - dUdl;
 
-        final double da =  ax2oA * dUdl;
-        final double dh =    BoA * dUdk + k * pUagmIqUbgoAB - h * BoABpo * dUdl;
-        final double dk =  -(BoA * dUdh + h * pUagmIqUbgoAB + k * BoABpo * dUdl);
-        final double dp =  Co2AB * (p * UhkmUabmdUdl - UBetaGamma);
-        final double dq =  Co2AB * (q * UhkmUabmdUdl - I * UAlphaGamma);
-        final double dM = -ax2oA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUagmIqUbgoAB;
+        final double da =  context.getAx2oA() * dUdl;
+        final double dh =    context.getBoA() * dUdk + auxiliaryElements.getK() * pUagmIqUbgoAB - auxiliaryElements.getH() * context.getBoABpo() * dUdl;
+        final double dk =  -(context.getBoA() * dUdh + auxiliaryElements.getH() * pUagmIqUbgoAB + auxiliaryElements.getK() * context.getBoABpo() * dUdl);
+        final double dp =  context.getCo2AB() * (auxiliaryElements.getP() * UhkmUabmdUdl - UBetaGamma);
+        final double dq =  context.getCo2AB() * (auxiliaryElements.getQ() * UhkmUabmdUdl - context.getRetrogadeFactor() * UAlphaGamma);
+        final double dM = -context.getAx2oA() * dUda + context.getBoABpo() * (auxiliaryElements.getH() * dUdh + auxiliaryElements.getK() * dUdk) + pUagmIqUbgoAB;
 
         return new double[] {da, dk, dh, dq, dp, dM};
     }
 
-    /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState) throws OrekitException {
+    ///** {@inheritDoc} */
+    /**public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState) throws OrekitException {
 
         // Parameters for array building
         final int dimension = computeUDerivatives(spacecraftState.getDate()).length;
@@ -667,7 +536,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         return elements;
 
-    }
+    }*/
 
     /** {@inheritDoc} */
     @Override
@@ -678,16 +547,18 @@ public class DSSTTesseral implements DSSTForceModel {
 
         for (final SpacecraftState meanState : meanStates) {
 
-            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
+            final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
+
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
                 // coefficients with j == 0 are always needed
-                this.hansenObjects[s + maxDegree][0].computeInitValues(e2, chi, chi2);
+                this.hansenObjects[s + maxDegree][0].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
                 if (maxDegreeTesseralSP >= 0) {
                     // initialize other objects only if required
                     for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
-                        this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
+                        this.hansenObjects[s + maxDegree][j].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
                     }
                 }
             }
@@ -696,15 +567,15 @@ public class DSSTTesseral implements DSSTForceModel {
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Generate the fourrier coefficients
-                cjsjFourier.generateCoefficients(meanState.getDate());
+                cjsjFourier.generateCoefficients(meanState.getDate(), context);
 
                 // the coefficient 3n / 2a
-                final double tnota = 1.5 * meanMotion / a;
+                final double tnota = 1.5 * auxiliaryElements.getMeanMotion() / auxiliaryElements.getSma();
 
                 // build the mDaily coefficients
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     // build the coefficients
-                    buildCoefficients(meanState.getDate(), slot, m, 0, tnota);
+                    buildCoefficients(meanState.getDate(), slot, m, 0, tnota, context);
                 }
 
                 if (maxDegreeTesseralSP >= 0) {
@@ -713,7 +584,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                         for (int j : entry.getValue()) {
                             // build the coefficients
-                            buildCoefficients(meanState.getDate(), slot, entry.getKey(), j, tnota);
+                            buildCoefficients(meanState.getDate(), slot, entry.getKey(), j, tnota, context);
                         }
                     }
                 }
@@ -730,15 +601,19 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param m m index
      * @param j j index
      * @param tnota 3n/2a
+     * @param context container for attributes
      */
     private void buildCoefficients(final AbsoluteDate date, final Slot slot,
-                                   final int m, final int j, final double tnota) {
+                                   final int m, final int j, final double tnota, final DSSTTesseralContext context) {
+
+        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
         // Create local arrays
         final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
         final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
 
         // compute the term 1 / (jn - mθ<sup>.</sup>)
-        final double oojnmt = 1. / (j * meanMotion - m * centralBodyRotationRate);
+        final double oojnmt = 1. / (j * auxiliaryElements.getMeanMotion() - m * centralBodyRotationRate);
 
         // initialise the coeficients
         for (int i = 0; i < 6; i++) {
@@ -820,10 +695,13 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </p>
      *
      *  @param date current date
+     *  @param context container for attributes
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs
      */
-    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date, final DSSTTesseralContext context) throws OrekitException {
+
+        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         // Potential derivatives
         double dUda  = 0.;
@@ -837,16 +715,16 @@ public class DSSTTesseral implements DSSTForceModel {
         // Compute only if there is at least one resonant tesseral
         if (!resOrders.isEmpty()) {
             // Gmsj and Hmsj polynomials
-            final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
+            final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getRetrogadeFactor());
 
             // GAMMAmns function
-            final GammaMnsFunction gammaMNS = new GammaMnsFunction(maxDegree, gamma, I);
+            final GammaMnsFunction gammaMNS = new GammaMnsFunction(maxDegree, auxiliaryElements.getGamma(), context.getRetrogadeFactor());
 
             // R / a up to power degree
             final double[] roaPow = new double[maxDegree + 1];
             roaPow[0] = 1.;
             for (int i = 1; i <= maxDegree; i++) {
-                roaPow[i] = roa * roaPow[i - 1];
+                roaPow[i] = context.getRoa() * roaPow[i - 1];
             }
 
             // SUM over resonant terms {j,m}
@@ -856,7 +734,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
 
                 // Phase angle
-                final double jlMmt  = j * lm - m * theta;
+                final double jlMmt  = j * auxiliaryElements.getLM() - m * context.getTheta();
                 final double sinPhi = FastMath.sin(jlMmt);
                 final double cosPhi = FastMath.cos(jlMmt);
 
@@ -882,11 +760,11 @@ public class DSSTTesseral implements DSSTForceModel {
                 for (int s = 0; s <= sMax; s++) {
 
                     //Compute the initial values for Hansen coefficients using newComb operators
-                    this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
+                    this.hansenObjects[s + maxDegree][j].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
 
                     // n-SUM for s positive
                     final double[][] nSumSpos = computeNSum(date, j, m, s, maxDegree,
-                                                            roaPow, ghMSJ, gammaMNS);
+                                                            roaPow, ghMSJ, gammaMNS, context);
                     dUdaCos  += nSumSpos[0][0];
                     dUdaSin  += nSumSpos[0][1];
                     dUdhCos  += nSumSpos[1][0];
@@ -905,10 +783,10 @@ public class DSSTTesseral implements DSSTForceModel {
                     // n-SUM for s negative
                     if (s > 0 && s <= sMin) {
                         //Compute the initial values for Hansen coefficients using newComb operators
-                        this.hansenObjects[maxDegree - s][j].computeInitValues(e2, chi, chi2);
+                        this.hansenObjects[maxDegree - s][j].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
 
                         final double[][] nSumSneg = computeNSum(date, j, m, -s, maxDegree,
-                                                                roaPow, ghMSJ, gammaMNS);
+                                                                roaPow, ghMSJ, gammaMNS, context);
                         dUdaCos  += nSumSneg[0][0];
                         dUdaSin  += nSumSneg[0][1];
                         dUdhCos  += nSumSneg[1][0];
@@ -936,37 +814,37 @@ public class DSSTTesseral implements DSSTForceModel {
                 dUdGa += cosPhi * dUdGaCos + sinPhi * dUdGaSin;
             }
 
-            dUda  *= -moa / a;
-            dUdh  *=  moa;
-            dUdk  *=  moa;
-            dUdl  *=  moa;
-            dUdAl *=  moa;
-            dUdBe *=  moa;
-            dUdGa *=  moa;
+            dUda  *= -context.getMoa() / auxiliaryElements.getSma();
+            dUdh  *=  context.getMoa();
+            dUdk  *=  context.getMoa();
+            dUdl  *=  context.getMoa();
+            dUdAl *=  context.getMoa();
+            dUdBe *=  context.getMoa();
+            dUdGa *=  context.getMoa();
         }
 
         return new double[] {dUda, dUdh, dUdk, dUdl, dUdAl, dUdBe, dUdGa};
     }
 
-    /** Computes the potential U derivatives.
-     *  <p>The following elements are computed from expression 3.3 - (4).
-     *  <pre>
-     *  dU / da
-     *  dU / dh
-     *  dU / dk
-     *  dU / dλ
-     *  dU / dα
-     *  dU / dβ
-     *  dU / dγ
-     *  </pre>
-     *  </p>
-     *
-     *  @param date current date
-     *  @param <T> the type of the field elements
-     *  @return potential derivatives
-     *  @throws OrekitException if an error occurs
-     */
-    private <T extends RealFieldElement<T>> T[] computeUDerivatives(final FieldAbsoluteDate<T> date) throws OrekitException {
+    ///** Computes the potential U derivatives.
+     //*  <p>The following elements are computed from expression 3.3 - (4).
+     //*  <pre>
+     //*  dU / da
+     //*  dU / dh
+     //*  dU / dk
+     //*  dU / dλ
+     //*  dU / dα
+     //*  dU / dβ
+     //*  dU / dγ
+     //*  </pre>
+     //*  </p>
+     //*
+     //*  @param date current date
+     //*  @param <T> the type of the field elements
+     //*  @return potential derivatives
+     //*  @throws OrekitException if an error occurs
+     //*/
+    /**private <T extends RealFieldElement<T>> T[] computeUDerivatives(final FieldAbsoluteDate<T> date) throws OrekitException {
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -1101,7 +979,7 @@ public class DSSTTesseral implements DSSTForceModel {
         derivatives[5] = dUdGa;
 
         return derivatives;
-    }
+    }*/
 
     /** Compute the n-SUM for potential derivatives components.
      *  @param date current date
@@ -1112,13 +990,16 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param roaPow powers of R/a up to degree <i>n</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
+     *  @param context container for attributes
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
-                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
+                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS, final DSSTTesseralContext context)
         throws OrekitException {
+
+        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         //spherical harmonics
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
@@ -1141,7 +1022,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         // I^m
         @SuppressWarnings("unused")
-        final int Im = I > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
+        final int Im = context.getRetrogadeFactor() > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
 
         // jacobi v, w, indices from 2.7.1-(15)
         final int v = FastMath.abs(m - s);
@@ -1168,8 +1049,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 final double dGaMNS = gammaMNS.getDerivative(m, n, s);
 
                 // Hansen kernel value and derivative
-                final double kJNS   = hans.getValue(-n - 1, chi);
-                final double dkJNS  = hans.getDerivative(-n - 1, chi);
+                final double kJNS   = hans.getValue(-n - 1, context.getChi());
+                final double dkJNS  = hans.getDerivative(-n - 1, context.getChi());
 
                 // Gjms, Hjms polynomials and derivatives
                 final double gMSJ   = ghMSJ.getGmsj(m, s, j);
@@ -1187,7 +1068,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
                 final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v, w, factory.variable(0, gamma));
+                        JacobiPolynomials.getValue(l, v, w, factory.variable(0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -1210,12 +1091,12 @@ public class DSSTTesseral implements DSSTForceModel {
                 dUdaSin  += dUdaCoef * gsMhc;
 
                 // dU / dh components
-                dUdhCos  += cf_1 * (kJNS * (cnm * dGdh + snm * dHdh) + h * dKgcPhsx2);
-                dUdhSin  += cf_1 * (kJNS * (snm * dGdh - cnm * dHdh) + h * dKgsMhcx2);
+                dUdhCos  += cf_1 * (kJNS * (cnm * dGdh + snm * dHdh) + auxiliaryElements.getH() * dKgcPhsx2);
+                dUdhSin  += cf_1 * (kJNS * (snm * dGdh - cnm * dHdh) + auxiliaryElements.getH() * dKgsMhcx2);
 
                 // dU / dk components
-                dUdkCos  += cf_1 * (kJNS * (cnm * dGdk + snm * dHdk) + k * dKgcPhsx2);
-                dUdkSin  += cf_1 * (kJNS * (snm * dGdk - cnm * dHdk) + k * dKgsMhcx2);
+                dUdkCos  += cf_1 * (kJNS * (cnm * dGdk + snm * dHdk) + auxiliaryElements.getK() * dKgcPhsx2);
+                dUdkSin  += cf_1 * (kJNS * (snm * dGdk - cnm * dHdk) + auxiliaryElements.getK() * dKgsMhcx2);
 
                 // dU / dLambda components
                 dUdlCos  +=  dUdlCoef * gsMhc;
@@ -1244,20 +1125,20 @@ public class DSSTTesseral implements DSSTForceModel {
                                {dUdGaCos, dUdGaSin}};
     }
 
-    /** Compute the n-SUM for potential derivatives components.
-     *  @param <T> the type of the field elements
-     *  @param date current date
-     *  @param j resonant index <i>j</i>
-     *  @param m resonant order <i>m</i>
-     *  @param s d'Alembert characteristic <i>s</i>
-     *  @param maxN maximum possible value for <i>n</i> index
-     *  @param roaPow powers of R/a up to degree <i>n</i>
-     *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
-     *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
-     *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
-     * @throws OrekitException if some error occurred
-     */
-    private <T extends RealFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
+    ///** Compute the n-SUM for potential derivatives components.
+     //*  @param <T> the type of the field elements
+     //*  @param date current date
+     //*  @param j resonant index <i>j</i>
+     //*  @param m resonant order <i>m</i>
+     //*  @param s d'Alembert characteristic <i>s</i>
+     //*  @param maxN maximum possible value for <i>n</i> index
+     //*  @param roaPow powers of R/a up to degree <i>n</i>
+     //*  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
+     //*  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
+     //*  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
+     //* @throws OrekitException if some error occurred
+     //*/
+    /**private <T extends RealFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
                                    final int j, final int m, final int s, final int maxN, final T[] roaPow,
                                    final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
         throws OrekitException {
@@ -1399,7 +1280,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         return derivatives;
 
-    }
+    }*/
 
     /** {@inheritDoc} */
     @Override
@@ -1475,27 +1356,31 @@ public class DSSTTesseral implements DSSTForceModel {
         /**
          * Generate the coefficients.
          * @param date the current date
+         * @param context container for attributes
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        public void generateCoefficients(final AbsoluteDate date) throws OrekitException {
+        public void generateCoefficients(final AbsoluteDate date, final DSSTTesseralContext context) throws OrekitException {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Gmsj and Hmsj polynomials
-                ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
+                ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getRetrogadeFactor());
 
                 // GAMMAmns function
-                gammaMNS = new GammaMnsFunction(maxDegree, gamma, I);
+                gammaMNS = new GammaMnsFunction(maxDegree, auxiliaryElements.getGamma(), context.getRetrogadeFactor());
 
                 final int maxRoaPower = FastMath.max(maxDegreeTesseralSP, maxDegreeMdailyTesseralSP);
 
                 // R / a up to power degree
                 for (int i = 1; i <= maxRoaPower; i++) {
-                    roaPow[i] = roa * roaPow[i - 1];
+                    roaPow[i] = context.getRoa() * roaPow[i - 1];
                 }
 
                 //generate the m-daily coefficients
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
-                    buildFourierCoefficients(date, m, 0, maxDegreeMdailyTesseralSP);
+                    buildFourierCoefficients(date, m, 0, maxDegreeMdailyTesseralSP, context);
                 }
 
                 // generate the other coefficients only if required
@@ -1504,7 +1389,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final List<Integer> listJ = nonResOrders.get(m);
 
                         for (int j: listJ) {
-                            buildFourierCoefficients(date, m, j, maxDegreeTesseralSP);
+                            buildFourierCoefficients(date, m, j, maxDegreeTesseralSP, context);
                         }
                     }
                 }
@@ -1517,10 +1402,14 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param m m index
          * @param j j index
          * @param maxN  maximum value for n index
+         * @param context container for attributes
          * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final AbsoluteDate date,
-               final int m, final int j, final int maxN) throws OrekitException {
+               final int m, final int j, final int maxN, final DSSTTesseralContext context) throws OrekitException {
+
+            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
             // Potential derivatives components for a given non-resonant pair {j,m}
             double dRdaCos  = 0.;
             double dRdaSin  = 0.;
@@ -1544,7 +1433,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // n-SUM for s positive
                 final double[][] nSumSpos = computeNSum(date, j, m, s, maxN,
-                                                        roaPow, ghMSJ, gammaMNS);
+                                                        roaPow, ghMSJ, gammaMNS, context);
                 dRdaCos  += nSumSpos[0][0];
                 dRdaSin  += nSumSpos[0][1];
                 dRdhCos  += nSumSpos[1][0];
@@ -1563,7 +1452,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 // n-SUM for s negative
                 if (s > 0 && s <= sMin) {
                     final double[][] nSumSneg = computeNSum(date, j, m, -s, maxN,
-                                                            roaPow, ghMSJ, gammaMNS);
+                                                            roaPow, ghMSJ, gammaMNS, context);
                     dRdaCos  += nSumSneg[0][0];
                     dRdaSin  += nSumSneg[0][1];
                     dRdhCos  += nSumSneg[1][0];
@@ -1580,58 +1469,58 @@ public class DSSTTesseral implements DSSTForceModel {
                     dRdGaSin += nSumSneg[6][1];
                 }
             }
-            dRdaCos  *= -moa / a;
-            dRdaSin  *= -moa / a;
-            dRdhCos  *=  moa;
-            dRdhSin  *=  moa;
-            dRdkCos  *=  moa;
-            dRdkSin *=  moa;
-            dRdlCos *=  moa;
-            dRdlSin *=  moa;
-            dRdAlCos *=  moa;
-            dRdAlSin *=  moa;
-            dRdBeCos *=  moa;
-            dRdBeSin *=  moa;
-            dRdGaCos *=  moa;
-            dRdGaSin *=  moa;
+            dRdaCos  *= -context.getMoa() / auxiliaryElements.getSma();
+            dRdaSin  *= -context.getMoa() / auxiliaryElements.getSma();
+            dRdhCos  *=  context.getMoa();
+            dRdhSin  *=  context.getMoa();
+            dRdkCos  *=  context.getMoa();
+            dRdkSin *=  context.getMoa();
+            dRdlCos *=  context.getMoa();
+            dRdlSin *=  context.getMoa();
+            dRdAlCos *=  context.getMoa();
+            dRdAlSin *=  context.getMoa();
+            dRdBeCos *=  context.getMoa();
+            dRdBeSin *=  context.getMoa();
+            dRdGaCos *=  context.getMoa();
+            dRdGaSin *=  context.getMoa();
 
             // Compute the cross derivative operator :
-            final double RAlphaGammaCos   = alpha * dRdGaCos - gamma * dRdAlCos;
-            final double RAlphaGammaSin   = alpha * dRdGaSin - gamma * dRdAlSin;
-            final double RAlphaBetaCos    = alpha * dRdBeCos - beta  * dRdAlCos;
-            final double RAlphaBetaSin    = alpha * dRdBeSin - beta  * dRdAlSin;
-            final double RBetaGammaCos    =  beta * dRdGaCos - gamma * dRdBeCos;
-            final double RBetaGammaSin    =  beta * dRdGaSin - gamma * dRdBeSin;
-            final double RhkCos           =     h * dRdkCos  -     k * dRdhCos;
-            final double RhkSin           =     h * dRdkSin  -     k * dRdhSin;
-            final double pRagmIqRbgoABCos = (p * RAlphaGammaCos - I * q * RBetaGammaCos) * ooAB;
-            final double pRagmIqRbgoABSin = (p * RAlphaGammaSin - I * q * RBetaGammaSin) * ooAB;
+            final double RAlphaGammaCos   = auxiliaryElements.getAlpha() * dRdGaCos - auxiliaryElements.getGamma() * dRdAlCos;
+            final double RAlphaGammaSin   = auxiliaryElements.getAlpha() * dRdGaSin - auxiliaryElements.getGamma() * dRdAlSin;
+            final double RAlphaBetaCos    = auxiliaryElements.getAlpha() * dRdBeCos - auxiliaryElements.getBeta()  * dRdAlCos;
+            final double RAlphaBetaSin    = auxiliaryElements.getAlpha() * dRdBeSin - auxiliaryElements.getBeta()  * dRdAlSin;
+            final double RBetaGammaCos    =  auxiliaryElements.getBeta() * dRdGaCos - auxiliaryElements.getGamma() * dRdBeCos;
+            final double RBetaGammaSin    =  auxiliaryElements.getBeta() * dRdGaSin - auxiliaryElements.getGamma() * dRdBeSin;
+            final double RhkCos           =     auxiliaryElements.getH() * dRdkCos  -     auxiliaryElements.getK() * dRdhCos;
+            final double RhkSin           =     auxiliaryElements.getH() * dRdkSin  -     auxiliaryElements.getK() * dRdhSin;
+            final double pRagmIqRbgoABCos = (auxiliaryElements.getP() * RAlphaGammaCos - context.getRetrogadeFactor() * auxiliaryElements.getQ() * RBetaGammaCos) * context.getOoAB();
+            final double pRagmIqRbgoABSin = (auxiliaryElements.getP() * RAlphaGammaSin - context.getRetrogadeFactor() * auxiliaryElements.getQ() * RBetaGammaSin) * context.getOoAB();
             final double RhkmRabmdRdlCos  =  RhkCos - RAlphaBetaCos - dRdlCos;
             final double RhkmRabmdRdlSin  =  RhkSin - RAlphaBetaSin - dRdlSin;
 
             // da/dt
-            cCoef[m][j + jMax][0] = ax2oA * dRdlCos;
-            sCoef[m][j + jMax][0] = ax2oA * dRdlSin;
+            cCoef[m][j + jMax][0] = context.getAx2oA() * dRdlCos;
+            sCoef[m][j + jMax][0] = context.getAx2oA() * dRdlSin;
 
             // dk/dt
-            cCoef[m][j + jMax][1] = -(BoA * dRdhCos + h * pRagmIqRbgoABCos + k * BoABpo * dRdlCos);
-            sCoef[m][j + jMax][1] = -(BoA * dRdhSin + h * pRagmIqRbgoABSin + k * BoABpo * dRdlSin);
+            cCoef[m][j + jMax][1] = -(context.getBoA() * dRdhCos + auxiliaryElements.getH() * pRagmIqRbgoABCos + auxiliaryElements.getK() * context.getBoABpo() * dRdlCos);
+            sCoef[m][j + jMax][1] = -(context.getBoA() * dRdhSin + auxiliaryElements.getH() * pRagmIqRbgoABSin + auxiliaryElements.getK() * context.getBoABpo() * dRdlSin);
 
             // dh/dt
-            cCoef[m][j + jMax][2] = BoA * dRdkCos + k * pRagmIqRbgoABCos - h * BoABpo * dRdlCos;
-            sCoef[m][j + jMax][2] = BoA * dRdkSin + k * pRagmIqRbgoABSin - h * BoABpo * dRdlSin;
+            cCoef[m][j + jMax][2] = context.getBoA() * dRdkCos + auxiliaryElements.getK() * pRagmIqRbgoABCos - auxiliaryElements.getH() * context.getBoABpo() * dRdlCos;
+            sCoef[m][j + jMax][2] = context.getBoA() * dRdkSin + auxiliaryElements.getK() * pRagmIqRbgoABSin - auxiliaryElements.getH() * context.getBoABpo() * dRdlSin;
 
             // dq/dt
-            cCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlCos - I * RAlphaGammaCos);
-            sCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlSin - I * RAlphaGammaSin);
+            cCoef[m][j + jMax][3] = context.getCo2AB() * (auxiliaryElements.getQ() * RhkmRabmdRdlCos - context.getRetrogadeFactor() * RAlphaGammaCos);
+            sCoef[m][j + jMax][3] = context.getCo2AB() * (auxiliaryElements.getQ() * RhkmRabmdRdlSin - context.getRetrogadeFactor() * RAlphaGammaSin);
 
             // dp/dt
-            cCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlCos - RBetaGammaCos);
-            sCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlSin - RBetaGammaSin);
+            cCoef[m][j + jMax][4] = context.getCo2AB() * (auxiliaryElements.getP() * RhkmRabmdRdlCos - RBetaGammaCos);
+            sCoef[m][j + jMax][4] = context.getCo2AB() * (auxiliaryElements.getP() * RhkmRabmdRdlSin - RBetaGammaSin);
 
             // dλ/dt
-            cCoef[m][j + jMax][5] = -ax2oA * dRdaCos + BoABpo * (h * dRdhCos + k * dRdkCos) + pRagmIqRbgoABCos;
-            sCoef[m][j + jMax][5] = -ax2oA * dRdaSin + BoABpo * (h * dRdhSin + k * dRdkSin) + pRagmIqRbgoABSin;
+            cCoef[m][j + jMax][5] = -context.getAx2oA() * dRdaCos + context.getBoABpo() * (auxiliaryElements.getH() * dRdhCos + auxiliaryElements.getK() * dRdkCos) + pRagmIqRbgoABCos;
+            sCoef[m][j + jMax][5] = -context.getAx2oA() * dRdaSin + context.getBoABpo() * (auxiliaryElements.getH() * dRdhSin + auxiliaryElements.getK() * dRdkSin) + pRagmIqRbgoABSin;
         }
 
         /** Get the coefficient C<sub>i</sub><sup>jm</sup>.

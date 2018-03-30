@@ -50,6 +50,7 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.ForceModelContext;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
@@ -337,7 +338,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // Set the force models
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        for (final DSSTForceModel force : forces) {
+        for (final DSSTForceModel<?> force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
             shortPeriodTerms.addAll(force.initialize(aux, false));
             force.updateShortPeriodTerms(mean);
@@ -429,7 +430,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        for (final DSSTForceModel force : forceModels) {
+        for (final DSSTForceModel<?> force : forceModels) {
             shortPeriodTerms.addAll(force.initialize(aux, meanOnly));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
@@ -518,7 +519,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-            for (final DSSTForceModel force : forceModels) {
+            for (final DSSTForceModel<?> force : forceModels) {
                 shortPeriodTerms.addAll(force.initialize(aux, false));
                 force.updateShortPeriodTerms(meanState);
             }
@@ -877,18 +878,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             // compute common auxiliary elements
-            final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
-
-            // initialize all perturbing forces
-            for (final DSSTForceModel force : forceModels) {
-                force.initializeStep(aux);
-            }
+            final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
 
             Arrays.fill(yDot, 0.0);
 
             // compute the contributions of all perturbing forces
-            for (final DSSTForceModel forceModel : forceModels) {
-                final double[] daidt = forceModel.getMeanElementRate(state);
+            for (final DSSTForceModel<?> forceModel : forceModels) {
+                final double[] daidt = elementRates(forceModel, state, auxiliaryElements);
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
                 }
@@ -899,6 +895,22 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
 
             return yDot.clone();
+        }
+
+        /** This method allows to compute the mean equinoctial elements rates dai / dt
+         *  for a specific for model.
+         *  @param <K> the type of the force model context
+         *  @param forceModel force to take into account
+         *  @param state current state
+         *  @param auxiliaryElements auxiliary elements related to the current orbit
+         *  @return the mean equinoctial elements rates dai / dt
+         *  @throws OrekitException if some specific error occurs
+         */
+        private <K extends ForceModelContext> double[] elementRates(final DSSTForceModel<K> forceModel,
+                                                             final SpacecraftState state,
+                                                             final AuxiliaryElements auxiliaryElements)
+            throws OrekitException {
+            return forceModel.getMeanElementRate(state, forceModel.initializeStep(auxiliaryElements));
         }
 
     }
