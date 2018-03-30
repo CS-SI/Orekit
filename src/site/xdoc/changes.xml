@@ -22,6 +22,9 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added TransformProviderUtility to reverse or combine TransformProvider instances.
+      </action>
+      <action dev="luc" type="add">
         Allow attitude overriding during constant-thrust maneuvers.
         Fixes issue #410.
       </action>
