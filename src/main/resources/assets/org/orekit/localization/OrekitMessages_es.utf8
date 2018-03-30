@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = el sistema de referencia {0} no es ancestro ni
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = el sistema de referencia {0} está a una profundidad {1}, no puede tener un ancestro {2} niveles por encima
 
+# no ITRF frame for year {0}
+NO_ITRF_FRAME_FOR_YEAR = <MISSING TRANSLATION>
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconocido, sistemas de referencia reconocidos : {0} y {1}
 

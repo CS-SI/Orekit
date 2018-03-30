@@ -73,7 +73,7 @@ import org.orekit.utils.OrekitConfiguration;
  * <p>
  * This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link org.orekit.data.DataProvidersManager IERS data}.
+ * provided by IERS {@link EOPHistory Earth Orientation Parameters}.
  * Its pole axis is the IERS Reference Pole (IRP).
  * </p>
  * <p>
@@ -88,7 +88,7 @@ import org.orekit.utils.OrekitConfiguration;
  * ITRF can be built using the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8 and any supported {@link IERSConventions
  * IERS conventions} (even IERS 1996 can be used with non-rotating origin paradigm,
- * despite the resolution was not yet adopted at conventions publication time.
+ * despite the resolution was not yet adopted at conventions publication time).
  * </p>
  * <p>
  * ITRF can also be built using the classical equinox paradigm used prior to IAU 2000
@@ -118,7 +118,7 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getEOPHistory(IERSConventions, boolean)}, {@link EOPHistory#getStartDate()},
  * and {@link EOPHistory#getEndDate()}.
  * <p>
- * For more on configuring the EOP data Orekit uses see
+ * For more information on configuring the EOP data Orekit uses see
  * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
  * https://www.orekit.org/forge/projects/orekit/wiki/Configuration</a>.
  * <p>

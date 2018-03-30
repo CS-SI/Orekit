@@ -22,6 +22,10 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added an ITRFVersion enumerate to simplify conversion between ITRF frames,
+        even when no direct Helmert transformation is available
+      </action>
+      <action dev="luc" type="add">
         Added TransformProviderUtility to reverse or combine TransformProvider instances.
       </action>
       <action dev="luc" type="add">

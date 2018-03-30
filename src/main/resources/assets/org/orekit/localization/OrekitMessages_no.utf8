@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = ramme {0} er ikke en forgjenger for verken ram
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = ramme {0} har dybden {1}, den kan ikke ha en forgjenger {2} nivåer ovenfor
 
+# no ITRF frame for year {0}
+NO_ITRF_FRAME_FOR_YEAR = <MISSING TRANSLATION>
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete typer: {0} og {1}
 
