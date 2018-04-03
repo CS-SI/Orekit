@@ -37,8 +37,8 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = frame {0} is an ancestor of neither frame {1} 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 
-# no ITRF frame for year {0}
-NO_ITRF_FRAME_FOR_YEAR = no ITRF frame for year {0}
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = ITRF frame {0} not found
 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported types: {0} and {1}

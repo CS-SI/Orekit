@@ -37,8 +37,8 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = le repère {0} n''est ancêtre ni du repère {
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut avoir d''ancêtre {2} niveaux plus haut
 
-# no ITRF frame for year {0}
-NO_ITRF_FRAME_FOR_YEAR = pas de repère ITRF pour l''année {0}
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = le repère ITRF {0} n''a pas été trouvé
 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}

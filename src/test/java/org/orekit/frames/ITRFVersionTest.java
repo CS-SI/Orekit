@@ -50,6 +50,23 @@ public class ITRFVersionTest {
     }
 
     @Test
+    public void testNames() {
+        Assert.assertEquals("ITRF-2014", ITRFVersion.ITRF_2014.getName());
+        Assert.assertEquals("ITRF-2008", ITRFVersion.ITRF_2008.getName());
+        Assert.assertEquals("ITRF-2005", ITRFVersion.ITRF_2005.getName());
+        Assert.assertEquals("ITRF-2000", ITRFVersion.ITRF_2000.getName());
+        Assert.assertEquals("ITRF-97",   ITRFVersion.ITRF_97.getName());
+        Assert.assertEquals("ITRF-96",   ITRFVersion.ITRF_96.getName());
+        Assert.assertEquals("ITRF-94",   ITRFVersion.ITRF_94.getName());
+        Assert.assertEquals("ITRF-93",   ITRFVersion.ITRF_93.getName());
+        Assert.assertEquals("ITRF-92",   ITRFVersion.ITRF_92.getName());
+        Assert.assertEquals("ITRF-91",   ITRFVersion.ITRF_91.getName());
+        Assert.assertEquals("ITRF-90",   ITRFVersion.ITRF_90.getName());
+        Assert.assertEquals("ITRF-89",   ITRFVersion.ITRF_89.getName());
+        Assert.assertEquals("ITRF-88",   ITRFVersion.ITRF_88.getName());
+    }
+
+    @Test
     public void testBuildFromYear() throws OrekitException {
         Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion(2014));
         Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
@@ -72,8 +89,36 @@ public class ITRFVersionTest {
             ITRFVersion.getITRFVersion(1999);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NO_ITRF_FRAME_FOR_YEAR, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
             Assert.assertEquals(1999, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
+    @Test
+    public void testBuildFromName() throws OrekitException {
+        Assert.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("itrf-2014"));
+        Assert.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("itrf-2008"));
+        Assert.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("itrf-2005"));
+        Assert.assertEquals(ITRFVersion.ITRF_2000, ITRFVersion.getITRFVersion("itrf-2000"));
+        Assert.assertEquals(ITRFVersion.ITRF_97,   ITRFVersion.getITRFVersion("itrf-97"));
+        Assert.assertEquals(ITRFVersion.ITRF_96,   ITRFVersion.getITRFVersion("itrf-96"));
+        Assert.assertEquals(ITRFVersion.ITRF_94,   ITRFVersion.getITRFVersion("itrf-94"));
+        Assert.assertEquals(ITRFVersion.ITRF_93,   ITRFVersion.getITRFVersion("itrf-93"));
+        Assert.assertEquals(ITRFVersion.ITRF_92,   ITRFVersion.getITRFVersion("itrf-92"));
+        Assert.assertEquals(ITRFVersion.ITRF_91,   ITRFVersion.getITRFVersion("itrf-91"));
+        Assert.assertEquals(ITRFVersion.ITRF_90,   ITRFVersion.getITRFVersion("itrf-90"));
+        Assert.assertEquals(ITRFVersion.ITRF_89,   ITRFVersion.getITRFVersion("itrf-89"));
+        Assert.assertEquals(ITRFVersion.ITRF_88,   ITRFVersion.getITRFVersion("itrf-88"));
+    }
+
+    @Test
+    public void testInexistantName() {
+        try {
+            ITRFVersion.getITRFVersion("itrf-99");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_SUCH_ITRF_FRAME, oe.getSpecifier());
+            Assert.assertEquals("itrf-99", oe.getParts()[0]);
         }
     }
 
@@ -85,7 +130,7 @@ public class ITRFVersionTest {
 
         for (final ITRFVersion origin : ITRFVersion.values()) {
             for (final ITRFVersion destination : ITRFVersion.values()) {
-                ITRFVersion.Converter converter = ITRFVersion.getTransformProvider(origin, destination);
+                ITRFVersion.Converter converter = ITRFVersion.getConverter(origin, destination);
                 Assert.assertEquals(origin,      converter.getOrigin());
                 Assert.assertEquals(destination, converter.getDestination());
                 Frame originFrame      = origin == ITRFVersion.ITRF_2014 ?

@@ -118,7 +118,7 @@ class ITRFVersionLoader {
         private static final String INFINITY_DATE  = "\\s+-+";
 
         /** Regular expression matching an ITRF version. */
-        private static final String ITRF  = "\\s+(ITRF[-_]\\d\\d(?:\\d\\d)?)";
+        private static final String ITRF  = "\\s+(ITRF-\\d\\d(?:\\d\\d)?)";
 
         /** Regular expression matching end of line. */
         private static final String END  = "$";
@@ -158,7 +158,7 @@ class ITRFVersionLoader {
                             // both start and end of validity are at infinity
                             // the ITRF version applies throughout history
                             pattern = Pattern.compile(ANYTHING + matcherII.group(1));
-                            version = ITRFVersion.valueOf(matcherII.group(2).replace('-', '_'));
+                            version = ITRFVersion.getITRFVersion(matcherII.group(2));
                         } else {
                             final Matcher matcherID = patternID.matcher(line);
                             if (matcherID.matches()) {
@@ -168,7 +168,7 @@ class ITRFVersionLoader {
                                 validityEnd = new DateComponents(Integer.parseInt(matcherID.group(2)),
                                                                  Integer.parseInt(matcherID.group(3)),
                                                                  Integer.parseInt(matcherID.group(4))).getMJD();
-                                version     = ITRFVersion.valueOf(matcherID.group(5).replace('-', '_'));
+                                version     = ITRFVersion.getITRFVersion(matcherID.group(5));
                             } else {
                                 final Matcher matcherDI = patternDI.matcher(line);
                                 if (matcherDI.matches()) {
@@ -178,7 +178,7 @@ class ITRFVersionLoader {
                                     validityStart = new DateComponents(Integer.parseInt(matcherDI.group(2)),
                                                                        Integer.parseInt(matcherDI.group(3)),
                                                                        Integer.parseInt(matcherDI.group(4))).getMJD();
-                                    version       = ITRFVersion.valueOf(matcherDI.group(5).replace('-', '_'));
+                                    version       = ITRFVersion.getITRFVersion(matcherDI.group(5));
                                 } else {
                                     final Matcher matcherDD = patternDD.matcher(line);
                                     if (matcherDD.matches()) {
@@ -190,7 +190,7 @@ class ITRFVersionLoader {
                                         validityEnd   = new DateComponents(Integer.parseInt(matcherDD.group(5)),
                                                                            Integer.parseInt(matcherDD.group(6)),
                                                                            Integer.parseInt(matcherDD.group(7))).getMJD();
-                                        version       = ITRFVersion.valueOf(matcherDI.group(8).replace('-', '_'));
+                                        version       = ITRFVersion.getITRFVersion(matcherDD.group(8));
                                     } else {
                                         // data line was not recognized
                                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

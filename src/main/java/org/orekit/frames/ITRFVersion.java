@@ -73,11 +73,15 @@ public enum ITRFVersion {
     /** Reference year of the frame version. */
     private final int year;
 
+    /** Name. */
+    private final String name;
+
     /** Simple constructor.
      * @param year reference year of the frame version
      */
     ITRFVersion(final int year) {
         this.year = year;
+        this.name = "ITRF-" + ((year >= 2000) ? year : (year - 1900));
     }
 
     /** Get the reference year of the frame version.
@@ -85,6 +89,13 @@ public enum ITRFVersion {
      */
     public int getYear() {
         return year;
+    }
+
+    /** Get the name the frame version.
+     * @return name of the frame version
+     */
+    public String getName() {
+        return name;
     }
 
     /** Find an ITRF version from its reference year.
@@ -103,16 +114,36 @@ public enum ITRFVersion {
         }
 
         // we don't have the required frame
-        throw new OrekitException(OrekitMessages.NO_ITRF_FRAME_FOR_YEAR, year);
+        throw new OrekitException(OrekitMessages.NO_SUCH_ITRF_FRAME, year);
 
     }
 
-    /** Find a transform provider between specified ITRF frames.
+    /** Find an ITRF version from its name.
+     * @param name name of the frame version (case is ignored)
+     * @return ITRF version
+     * @exception OrekitException if no ITRF frame version is found with this name
+     */
+    public static ITRFVersion getITRFVersion(final String name)
+        throws OrekitException {
+
+        // loop over all predefined frames versions
+        for (final ITRFVersion version : values()) {
+            if (version.getName().equalsIgnoreCase(name)) {
+                return version;
+            }
+        }
+
+        // we don't have the required frame
+        throw new OrekitException(OrekitMessages.NO_SUCH_ITRF_FRAME, name);
+
+    }
+
+    /** Find a converter between specified ITRF frames.
      * @param origin origin ITRF
      * @param destination destination ITRF
      * @return transform from {@code origin} to {@code destination}
      */
-    public static Converter getTransformProvider(final ITRFVersion origin, final ITRFVersion destination) {
+    public static Converter getConverter(final ITRFVersion origin, final ITRFVersion destination) {
 
         TransformProvider provider = null;
 

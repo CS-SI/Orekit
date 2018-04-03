@@ -538,7 +538,7 @@ public class EOPHistory implements Serializable {
      * @return ITRF version of the EOP covering the specified date
      * @since 9.2
      */
-    public ITRFVersion getITRFType(final AbsoluteDate date) {
+    public ITRFVersion getITRFVersion(final AbsoluteDate date) {
 
         // check if there is data for date
         if (!this.hasDataFor(date)) {

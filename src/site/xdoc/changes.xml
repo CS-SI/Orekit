@@ -22,6 +22,12 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added VersionedITRF frame that allow users with needs for very high
+        accuracy to specify which ITRF version they want, and stick to it
+        regardless of their EOP source.
+        Fixes issue #412.
+      </action>
+      <action dev="luc" type="add">
         Added an itrf-versions.conf configuration file allowing to specify
         which ITRF version each EOP file defines for which date
       </action>
