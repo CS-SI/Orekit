@@ -245,6 +245,12 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
 
+        /** Configuration for ITRF versions. */
+        private final ITRFVersionLoader itrfVersionLoader;
+
+        /** ITRF version configuration. */
+        private ITRFVersionLoader.ITRFVersionConfiguration configuration;
+
         /** History entries. */
         private final List<EOPEntry> history;
 
@@ -265,14 +271,17 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          * @param converter converter to use
+         * @exception OrekitException if ITRF version loader cannot be parsed
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter  = converter;
-            this.history    = new ArrayList<EOPEntry>();
-            this.fieldsMap  = new HashMap<Integer, double[]>();
-            this.lineNumber = 0;
-            this.mjdMin     = Integer.MAX_VALUE;
-            this.mjdMax     = Integer.MIN_VALUE;
+        Parser(final IERSConventions.NutationCorrectionConverter converter)
+            throws OrekitException {
+            this.converter         = converter;
+            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.history           = new ArrayList<EOPEntry>();
+            this.fieldsMap         = new HashMap<Integer, double[]>();
+            this.lineNumber        = 0;
+            this.mjdMin            = Integer.MAX_VALUE;
+            this.mjdMax            = Integer.MIN_VALUE;
         }
 
         /** {@inheritDoc} */
@@ -283,6 +292,8 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
             throws OrekitException, IOException {
+
+            configuration = null;
 
             // set up a reader for line-oriented bulletin B files
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
@@ -328,8 +339,13 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                             new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                              TimeScalesFactory.getUTC());
                     final double[] equinox = converter.toEquinox(mjdDate, array[4], array[5]);
+                    if (configuration == null || !configuration.isValid(mjd)) {
+                        // get a configuration for current name and date range
+                        configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                    }
                     history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
-                                             equinox[0], equinox[1], array[4], array[5]));
+                                             equinox[0], equinox[1], array[4], array[5],
+                                             configuration.getVersion()));
                 }
 
             }
@@ -441,7 +457,12 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                             };
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion()));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {
                         line = reader.readLine();
