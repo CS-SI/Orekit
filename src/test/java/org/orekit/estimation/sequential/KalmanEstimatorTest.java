@@ -99,12 +99,11 @@ public class KalmanEstimatorTest {
   
 
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -185,21 +184,20 @@ public class KalmanEstimatorTest {
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 1.77e-4;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 7.93e-8;
-        final double[] expectedSigmasPos = {0.742488, 0.281910, 0.563217};
+        final double[] expectedSigmasPos = {0.742488, 0.281914, 0.563213};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {2.206622e-4, 1.306669e-4, 1.293996e-4};
+        final double[] expectedSigmasVel = {2.206636e-4, 1.306656e-4, 1.293981e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -281,21 +279,20 @@ public class KalmanEstimatorTest {
         RealMatrix Q = MatrixUtils.createRealMatrix(6, 6);
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 4.57e-3;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 7.29e-6;
-        final double[] expectedSigmasPos = {1.105194, 0.930785, 1.254579};
+        final double[] expectedSigmasPos = {1.105198, 0.930797, 1.254581};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {6.193718e-4, 4.088774e-4, 3.299135e-4};
+        final double[] expectedSigmasVel = {6.193757e-4, 4.088798e-4, 3.299140e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -365,12 +362,11 @@ public class KalmanEstimatorTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -448,12 +444,11 @@ public class KalmanEstimatorTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -531,12 +526,10 @@ public class KalmanEstimatorTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
@@ -640,21 +633,19 @@ public class KalmanEstimatorTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
 
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.91e-2;
+        final double   posEps            = 2.92e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 5.52e-6;
-        final double[] expectedSigmasPos = {1.747570, 0.666879, 1.696182};
+        final double   velEps            = 5.71e-6;
+        final double[] expectedSigmasPos = {1.747576, 0.666887, 1.696202};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {5.413666e-4, 4.088359e-4, 4.315316e-4};
+        final double[] expectedSigmasVel = {5.413690e-4, 4.088395e-4, 4.315368e-4};
         final double   sigmaVelEps       = 1e-10;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -733,21 +724,19 @@ public class KalmanEstimatorTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
         
         // Build the Kalman filter
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        initialCovarianceMatrix(initialP).
+                        build();
         
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 5.96e-3;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 2.06e-6;
-        final double[] expectedSigmasPos = {0.341538, 8.175281, 4.634384};
+        final double[] expectedSigmasPos = {0.341538, 8.175380, 4.634436};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {1.167838e-3, 1.036437e-3, 2.834385e-3};
+        final double[] expectedSigmasVel = {1.167852e-3, 1.036451e-3, 2.834419e-3};
         final double   sigmaVelEps       = 1e-9;
         EstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngle,
@@ -787,10 +776,10 @@ public class KalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
+        kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
+                                                  new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
         kalmanBuilder.initialCovarianceMatrix(MatrixUtils.createRealMatrix(6, 6));
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();

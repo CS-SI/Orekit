@@ -56,7 +56,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class BatchLSEstimator {
 
-    /** Builders for propagator. */
+    /** Builders for propagators. */
     private final NumericalPropagatorBuilder[] builders;
 
     /** Measurements. */
