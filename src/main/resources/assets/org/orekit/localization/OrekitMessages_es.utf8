@@ -456,3 +456,9 @@ NO_REFERENCE_DATE_FOR_PARAMETER = la fecha de referencia para el parámetro {0} 
 
 # station {0} not found, known stations: {1}
 STATION_NOT_FOUND = no se encontró la estación {0}, estaciones conocidas: {1}
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = <MISSING TRANSLATION>
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = <MISSING TRANSLATION>

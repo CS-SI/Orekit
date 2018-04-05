@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -49,6 +50,18 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 public class KalmanEstimatorTest {
+
+    @Test
+    public void testMissingPropagatorBuilder() {
+        try {
+            new KalmanEstimatorBuilder().
+            initialCovarianceMatrix(MatrixUtils.createRealIdentityMatrix(6)).
+            build();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        }
+    }
 
     /**
      * Perfect PV measurements with a perfect start

@@ -457,3 +457,9 @@ NO_REFERENCE_DATE_FOR_PARAMETER = <MISSING TRANSLATION>
 # station {0} not found, known stations: {1}
 STATION_NOT_FOUND = <MISSING TRANSLATION>
 
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = <MISSING TRANSLATION>
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = <MISSING TRANSLATION>
+
