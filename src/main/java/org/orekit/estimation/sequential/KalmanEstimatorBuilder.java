@@ -43,9 +43,6 @@ public class KalmanEstimatorBuilder {
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
-    /** Initial covariance matrix. */
-    private RealMatrix initialCovarianceMatrix;
-
     /** Process noise matrices providers. */
     private List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders;
 
@@ -56,7 +53,6 @@ public class KalmanEstimatorBuilder {
         this.decomposer                      = new QRDecomposer(1.0e-15);
         this.propagatorBuilders              = new ArrayList<>();
         this.estimatedMeasurementsParameters = new ParameterDriversList();
-        this.initialCovarianceMatrix         = null;
         this.processNoiseMatricesProviders   = new ArrayList<>();
     }
 
@@ -77,11 +73,8 @@ public class KalmanEstimatorBuilder {
         if (n == 0) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
-        return new KalmanEstimator(decomposer,
-                                   propagatorBuilders.toArray(new NumericalPropagatorBuilder[n]),
-                                   estimatedMeasurementsParameters,
-                                   initialCovarianceMatrix,
-                                   processNoiseMatricesProviders.toArray(new ProcessNoiseMatrixProvider[n]));
+        return new KalmanEstimator(decomposer, propagatorBuilders, processNoiseMatricesProviders,
+                                   estimatedMeasurementsParameters);
     }
 
     /** Configure the matrix decomposer.
@@ -133,15 +126,6 @@ public class KalmanEstimatorBuilder {
      */
     public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
-        return this;
-    }
-
-    /** Configure the initial covariance matrix.
-     * @param initialP The initial covariance matrix to use.
-     * @return this object.
-     */
-    public KalmanEstimatorBuilder initialCovarianceMatrix(final RealMatrix initialP) {
-        initialCovarianceMatrix = initialP;
         return this;
     }
 

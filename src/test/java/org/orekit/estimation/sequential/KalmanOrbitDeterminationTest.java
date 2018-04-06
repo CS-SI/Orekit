@@ -686,9 +686,8 @@ public class KalmanOrbitDeterminationTest {
 
         // Build the Kalman
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(estimatedMeasurementsParameters).
-                        initialCovarianceMatrix(initialP).
                         build();
 
         // Add an observer

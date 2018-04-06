@@ -55,7 +55,6 @@ public class KalmanEstimatorTest {
     public void testMissingPropagatorBuilder() {
         try {
             new KalmanEstimatorBuilder().
-            initialCovarianceMatrix(MatrixUtils.createRealIdentityMatrix(6)).
             build();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -113,9 +112,8 @@ public class KalmanEstimatorTest {
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList()).
-                        initialCovarianceMatrix(initialP).
                         build();
         
         // Filter the measurements and check the results
@@ -198,9 +196,8 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList()).
-                        initialCovarianceMatrix(initialP).
                         build();
         
         // Filter the measurements and check the results
@@ -293,9 +290,8 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList()).
-                        initialCovarianceMatrix(initialP).
                         build();
         
         // Filter the measurements and check the results
@@ -376,9 +372,8 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList()).
-                        initialCovarianceMatrix(initialP).
                         build();
         
         // Filter the measurements and check the results
@@ -458,9 +453,8 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         estimatedMeasurementsParameters(new ParameterDriversList()).
-                        initialCovarianceMatrix(initialP).
                         build();
         
         // Filter the measurements and check the results
@@ -540,8 +534,7 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
-                        initialCovarianceMatrix(initialP).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
         
         // Filter the measurements and check the results
@@ -647,8 +640,7 @@ public class KalmanEstimatorTest {
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
-                        initialCovarianceMatrix(initialP).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
         
         // Filter the measurements and check the results
@@ -738,8 +730,7 @@ public class KalmanEstimatorTest {
         
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(Q)).
-                        initialCovarianceMatrix(initialP).
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
         
         // Filter the measurements and check the results
@@ -792,7 +783,6 @@ public class KalmanEstimatorTest {
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
                                                   new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
         kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
-        kalmanBuilder.initialCovarianceMatrix(MatrixUtils.createRealMatrix(6, 6));
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();

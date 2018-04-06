@@ -17,11 +17,12 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
@@ -33,6 +34,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -57,7 +59,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
-    private final NumericalPropagatorBuilder[] builders;
+    private final List<NumericalPropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -77,14 +79,14 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
-    /** Map for propagation parameters columns. */
-    private final Map<String, Integer> propagationParameterColumns;
-
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
 
     /** Providers for process noise matrices. */
-    private final ProcessNoiseMatrixProvider[] processNoiseMatricesProviders;
+    private final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders;
+
+    /** Indirection arrays to extract the noise components for estimated parameters. */
+    private final int[][] processNoiseIndirection;
 
     /** Scaling factors. */
     private final double[] scale;
@@ -118,51 +120,46 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
-     * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param physicalInitialCovariance "Physical" initial covariance matrix (i.e. not normalized)
      * @param processNoiseMatricesProviders providers for process noise matrices
+     * @param estimatedMeasurementParameters measurement parameters to estimate
      * @throws OrekitException propagation exception.
      */
-    Model(final NumericalPropagatorBuilder[] propagatorBuilders,
-          final ParameterDriversList estimatedMeasurementParameters,
-          final RealMatrix physicalInitialCovariance,
-          final ProcessNoiseMatrixProvider[] processNoiseMatricesProviders)
+    Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
+          final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders,
+          final ParameterDriversList estimatedMeasurementParameters)
         throws OrekitException {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
 
-        this.orbitsStartColumns = new int[builders.length];
-        this.orbitsEndColumns   = new int[builders.length];
+        final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());
+        orbitsStartColumns      = new int[builders.size()];
+        orbitsEndColumns        = new int[builders.size()];
         int columns = 0;
         allEstimatedOrbitalParameters = new ParameterDriversList();
-        for (int i = 0; i < builders.length; ++i) {
-            this.orbitsStartColumns[i] = columns;
-            for (final DelegatingDriver delegating : builders[i].getOrbitalParametersDrivers().getDrivers()) {
-                if (delegating.isSelected()) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        allEstimatedOrbitalParameters.add(driver);
-                    }
-                    ++columns;
+        for (int k = 0; k < builders.size(); ++k) {
+            orbitsStartColumns[k] = columns;
+            for (final ParameterDriver driver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    allEstimatedOrbitalParameters.add(driver);
+                    orbitalParameterColumns.put(driver.getName(), columns++);
                 }
             }
-            this.orbitsEndColumns[i] = columns;
+            orbitsEndColumns[k] = columns;
         }
 
         // Gather all the propagation drivers names in a list
         allEstimatedPropagationParameters = new ParameterDriversList();
-        estimatedPropagationParameters    = new ParameterDriversList[builders.length];
+        estimatedPropagationParameters    = new ParameterDriversList[builders.size()];
         final List<String> estimatedPropagationParametersNames = new ArrayList<>();
-        for (int i = 0; i < builders.length; ++i) {
-            estimatedPropagationParameters[i] = new ParameterDriversList();
-            for (final DelegatingDriver delegating : builders[i].getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected()) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        allEstimatedPropagationParameters.add(driver);
-                        estimatedPropagationParameters[i].add(driver);
-                    }
-                    final String driverName = delegating.getName();
+        for (int k = 0; k < builders.size(); ++k) {
+            estimatedPropagationParameters[k] = new ParameterDriversList();
+            for (final ParameterDriver driver : builders.get(k).getPropagationParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    allEstimatedPropagationParameters.add(driver);
+                    estimatedPropagationParameters[k].add(driver);
+                    final String driverName = driver.getName();
                     // Add the driver name if it has not been added yet
                     if (!estimatedPropagationParametersNames.contains(driverName)) {
                         estimatedPropagationParametersNames.add(driverName);
@@ -170,9 +167,10 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
                 }
             }
         }
+        estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
-        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
             propagationParameterColumns.put(driverName, columns);
             ++columns;
@@ -184,25 +182,34 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             ++columns;
         }
 
-        // Check the size consistency of the covariance and process noise matrices
-        final int m = columns;
-        // Covariance
-        if (physicalInitialCovariance.getColumnDimension() != m) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      physicalInitialCovariance.getColumnDimension(),
-                                      m);
-        }
-        if (physicalInitialCovariance.getRowDimension() != m) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      physicalInitialCovariance.getRowDimension(),
-                                      m);
-        }
-
         // Store providers for process noise matrices
         this.processNoiseMatricesProviders = processNoiseMatricesProviders;
+        this.processNoiseIndirection       = new int[processNoiseMatricesProviders.size()][columns];
+        for (int k = 0; k < processNoiseIndirection.length; ++k) {
+            final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
+            final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
+            Arrays.fill(processNoiseIndirection[k], -1);
+            int i = 0;
+            for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
+                final Integer c = orbitalParameterColumns.get(driver.getName());
+                processNoiseIndirection[k][i++] = (c == null) ? -1 : c.intValue();
+            }
+            for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
+                final Integer c = propagationParameterColumns.get(driver.getName());
+                if (c != null) {
+                    processNoiseIndirection[k][i++] = c.intValue();
+                }
+            }
+            for (final ParameterDriver driver : estimatedMeasurementParameters.getDrivers()) {
+                final Integer c = measurementParameterColumns.get(driver.getName());
+                if (c != null) {
+                    processNoiseIndirection[k][i++] = c.intValue();
+                }
+            }
+        }
 
         // Compute the scale factors
-        this.scale = new double[m];
+        this.scale = new double[columns];
         int index = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
             scale[index++] = driver.getScale();
@@ -215,7 +222,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        mappers = new JacobiansMapper[builders.length];
+        mappers = new JacobiansMapper[builders.size()];
         updateReferenceTrajectories(getEstimatedPropagators());
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
@@ -224,8 +231,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         this.correctedSpacecraftStates = predictedSpacecraftStates.clone();
 
         // Initialize the estimated normalized state and fill its values
-        final RealVector correctedState = MatrixUtils.createRealVector(m);
-        final RealMatrix correctedCovariance = normalizeCovarianceMatrix(physicalInitialCovariance);
+        final RealVector correctedState      = MatrixUtils.createRealVector(columns);
 
         int i = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
@@ -237,11 +243,66 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             correctedState.setEntry(i++, driver.getNormalizedValue());
         }
+
+        // Set up initial covariance
+        final RealMatrix correctedCovariance = buildCompleteProcessNoiseMatrix(columns, null, correctedSpacecraftStates);
+
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
 
         this.currentMeasurementNumber = 0;
-        this.currentDate              = propagatorBuilders[0].getInitialOrbitDate();
+        this.currentDate              = propagatorBuilders.get(0).getInitialOrbitDate();
 
+
+    }
+
+    /** Check dimension.
+     * @param dimension dimension to check
+     * @param orbitalParameters orbital parameters
+     * @param propagationParameters propagation parameters
+     * @param measurementParameters measurements parameters
+     * @exception OrekitException if dimension != requiredDimension
+     */
+    private void checkDimension(final int dimension,
+                                final ParameterDriversList orbitalParameters,
+                                final ParameterDriversList propagationParameters,
+                                final ParameterDriversList measurementParameters) throws OrekitException {
+
+        // count parameters, taking care of counting all orbital parameters
+        // regardless of them being estimated or not
+        int requiredDimension = orbitalParameters.getNbParams();
+        for (final ParameterDriver driver : propagationParameters.getDrivers()) {
+            if (driver.isSelected()) {
+                ++requiredDimension;
+            }
+        }
+        for (final ParameterDriver driver : measurementParameters.getDrivers()) {
+            if (driver.isSelected()) {
+                ++requiredDimension;
+            }
+        }
+
+        if (dimension != requiredDimension) {
+            // there is a problem, set up an explicit error message
+            final StringBuilder builder = new StringBuilder();
+            for (final ParameterDriver driver : orbitalParameters.getDrivers()) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(driver.getName());
+            }
+            for (final ParameterDriver driver : propagationParameters.getDrivers()) {
+                if (driver.isSelected()) {
+                    builder.append(driver.getName());
+                }
+            }
+            for (final ParameterDriver driver : measurementParameters.getDrivers()) {
+                if (driver.isSelected()) {
+                    builder.append(driver.getName());
+                }
+            }
+            throw new OrekitException(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS,
+                                      dimension, builder.toString());
+        }
 
     }
 
@@ -326,9 +387,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         throws OrekitException {
 
         // Return propagators built with current instantiation of the propagator builders
-        final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
-        for (int k = 0; k < builders.length; ++k) {
-            propagators[k] = builders[k].buildPropagator(builders[k].getSelectedNormalizedParameters());
+        final NumericalPropagator[] propagators = new NumericalPropagator[builders.size()];
+        for (int k = 0; k < builders.size(); ++k) {
+            propagators[k] = builders.get(k).buildPropagator(builders.get(k).getSelectedNormalizedParameters());
         }
         return propagators;
     }
@@ -375,11 +436,13 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             mappers[k].getStateJacobian(predictedSpacecraftStates[k], dYdY0 );
 
             // Fill upper left corner (dY/dY0)
+            final List<ParameterDriversList.DelegatingDriver> drivers =
+                            builders.get(k).getOrbitalParametersDrivers().getDrivers();
             for (int i = 0; i < dYdY0.length; ++i) {
-                if (builders[k].getOrbitalParametersDrivers().getDrivers().get(i).isSelected()) {
+                if (drivers.get(i).isSelected()) {
                     int jOrb = orbitsStartColumns[k];
                     for (int j = 0; j < dYdY0[i].length; ++j) {
-                        if (builders[k].getOrbitalParametersDrivers().getDrivers().get(j).isSelected()) {
+                        if (drivers.get(j).isSelected()) {
                             stm.setEntry(i, jOrb++, dYdY0[i][j]);
                         }
                     }
@@ -449,7 +512,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
             // Partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
-            predictedOrbit.getJacobianWrtParameters(builders[p].getPositionAngle(), aCY);   //dC/dY
+            predictedOrbit.getJacobianWrtParameters(builders.get(p).getPositionAngle(), aCY);   //dC/dY
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current Cartesian coordinates
@@ -462,7 +525,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             for (int i = 0; i < dMdY.getRowDimension(); ++i) {
                 int jOrb = orbitsStartColumns[p];
                 for (int j = 0; j < dMdY.getColumnDimension(); ++j) {
-                    final ParameterDriver driver = builders[p].getOrbitalParametersDrivers().getDrivers().get(j);
+                    final ParameterDriver driver = builders.get(p).getOrbitalParametersDrivers().getDrivers().get(j);
                     if (driver.isSelected()) {
                         measurementMatrix.setEntry(i, jOrb++,
                                                    dMdY.getEntry(i, j) / sigma[i] * driver.getScale());
@@ -680,7 +743,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
             for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
                 if (driver.getReferenceDate() == null) {
-                    driver.setReferenceDate(builders[0].getInitialOrbitDate());
+                    driver.setReferenceDate(builders.get(0).getInitialOrbitDate());
                 }
             }
 
@@ -718,40 +781,57 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             final RealMatrix measurementMatrix = getMeasurementMatrix();
 
             // compute process noise matrix
-            final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(predictedState.getDimension(),
-                                                                                 predictedState.getDimension());
-            int index = 0;
-            for (int k = 0; k < processNoiseMatricesProviders.length; ++k) {
-                final RealMatrix noiseK = processNoiseMatricesProviders[k].getProcessNoiseMatrix(correctedSpacecraftStates[k],
-                                                                                                 predictedSpacecraftStates[k]);
-                int iSel = index;
-                for (int i = 0; i < 6; ++i) {
-                    if (builders[k].getOrbitalParametersDrivers().getDrivers().get(i).isSelected()) {
-                        int jSel = index;
-                        for (int j = 0; j < 6; ++j) {
-                            if (builders[k].getOrbitalParametersDrivers().getDrivers().get(i).isSelected()) {
-                                physicalProcessNoise.setEntry(iSel, jSel, noiseK.getEntry(i, j));
-                                ++jSel;
-                            }
-                        }
-                        ++iSel;
-                    }
-                }
-
-                index = iSel;
-
-            }
-
-            // TODO: set up process noise part due to propagation parameters
-
-            final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(physicalProcessNoise);
+            final RealMatrix normalizedProcessNoise = buildCompleteProcessNoiseMatrix(previousState.getDimension(),
+                                                                                      correctedSpacecraftStates,
+                                                                                      predictedSpacecraftStates);
             return new NonLinearEvolution(measurement.getTime(), predictedState,
                                           stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
-
 
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);
         }
+    }
+
+    /** Build a physical process noise matrix.
+     * <p>
+     * This method picks up components from individual process noise matrices
+     * associated with all propagators and creates a single composite matrix from them.
+     * </p>
+     * @param m state dimension
+     * @param previous previous states to use (null array initial process noise)
+     * @param current current states
+     * @return normalized process noise matrix
+     * @exception OrekitException if providers cannot provide the parts of
+     * the noise matrix, or if some dimension mismatch occurs
+     */
+    private RealMatrix buildCompleteProcessNoiseMatrix(final int m,
+                                                       final SpacecraftState[] previous,
+                                                       final SpacecraftState[] current)
+        throws OrekitException {
+
+        final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(m, m);
+        for (int k = 0; k < processNoiseMatricesProviders.size(); ++k) {
+            final RealMatrix noiseK = processNoiseMatricesProviders.get(k).
+                                      getProcessNoiseMatrix(previous == null ? null : previous[k], current[k]);
+            checkDimension(noiseK.getRowDimension(),
+                           builders.get(k).getOrbitalParametersDrivers(),
+                           builders.get(k).getPropagationParametersDrivers(),
+                           estimatedMeasurementsParameters);
+            final int[] indK = processNoiseIndirection[k];
+            for (int i = 0; i < indK.length; ++i) {
+                if (indK[i] >= 0) {
+                    for (int j = 0; j < indK.length; ++j) {
+                        if (indK[j] >= 0) {
+                            physicalProcessNoise.setEntry(indK[i], indK[j], noiseK.getEntry(i, j));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return normalizeCovarianceMatrix(physicalProcessNoise);
+
     }
 
     /** {@inheritDoc} */
@@ -836,13 +916,13 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
             // Update the builder with the predicted orbit
             // This updates the orbital drivers with the values of the predicted orbit
-            builders[k].resetOrbit(predictedSpacecraftStates[k].getOrbit());
+            builders.get(k).resetOrbit(predictedSpacecraftStates[k].getOrbit());
 
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
             // As the propagator builder was previously updated with the predicted orbit,
             // the selected orbital drivers are already up to date with the prediction
-            for (DelegatingDriver orbitalDriver : builders[k].getOrbitalParametersDrivers().getDrivers()) {
+            for (DelegatingDriver orbitalDriver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
                 if (orbitalDriver.isSelected()) {
                     predictedState.setEntry(jOrb++, orbitalDriver.getNormalizedValue());
                 }

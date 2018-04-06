@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
@@ -71,7 +73,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanEstimator {
 
     /** Builders for numerical propagators. */
-    private NumericalPropagatorBuilder[] propagatorBuilders;
+    private List<NumericalPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -88,27 +90,23 @@ public class KalmanEstimator {
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
-     * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param physicalInitialCovariance physical initial covariance matrix
      * @param processNoiseMatricesProviders providers for process noise matrices
+     * @param estimatedMeasurementParameters measurement parameters to estimate
      * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final NumericalPropagatorBuilder[] propagatorBuilders,
-                    final ParameterDriversList estimatedMeasurementParameters,
-                    final RealMatrix physicalInitialCovariance,
-                    final ProcessNoiseMatrixProvider[] processNoiseMatricesProviders)
+                    final List<NumericalPropagatorBuilder> propagatorBuilders,
+                    final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders,
+                    final ParameterDriversList estimatedMeasurementParameters)
         throws OrekitException {
 
-        this.propagatorBuilders = propagatorBuilders.clone();
-        this.referenceDate      = propagatorBuilders[0].getInitialOrbitDate();
+        this.propagatorBuilders = propagatorBuilders;
+        this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
         this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = new Model(propagatorBuilders,
-                                      estimatedMeasurementParameters,
-                                      physicalInitialCovariance,
-                                      processNoiseMatricesProviders);
+        this.processModel = new Model(propagatorBuilders, processNoiseMatricesProviders,
+                                      estimatedMeasurementParameters);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
@@ -166,9 +164,9 @@ public class KalmanEstimator {
         throws OrekitException {
 
         final ParameterDriversList estimated = new ParameterDriversList();
-        for (int i = 0; i < propagatorBuilders.length; ++i) {
-            final String suffix = propagatorBuilders.length > 1 ? "[" + i + "]" : null;
-            for (final DelegatingDriver delegating : propagatorBuilders[i].getOrbitalParametersDrivers().getDrivers()) {
+        for (int i = 0; i < propagatorBuilders.size(); ++i) {
+            final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
+            for (final DelegatingDriver delegating : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
                 if (delegating.isSelected() || !estimatedOnly) {
                     for (final ParameterDriver driver : delegating.getRawDrivers()) {
                         if (suffix != null && !driver.getName().endsWith(suffix)) {
