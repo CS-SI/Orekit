@@ -338,7 +338,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // Set the force models
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        for (final DSSTForceModel<?> force : forces) {
+        for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
             shortPeriodTerms.addAll(force.initialize(aux, false));
             force.updateShortPeriodTerms(mean);
@@ -430,7 +430,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        for (final DSSTForceModel<?> force : forceModels) {
+        for (final DSSTForceModel force : forceModels) {
             shortPeriodTerms.addAll(force.initialize(aux, meanOnly));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
@@ -519,7 +519,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-            for (final DSSTForceModel<?> force : forceModels) {
+            for (final DSSTForceModel force : forceModels) {
                 shortPeriodTerms.addAll(force.initialize(aux, false));
                 force.updateShortPeriodTerms(meanState);
             }
@@ -883,7 +883,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             Arrays.fill(yDot, 0.0);
 
             // compute the contributions of all perturbing forces
-            for (final DSSTForceModel<?> forceModel : forceModels) {
+            for (final DSSTForceModel forceModel : forceModels) {
                 final double[] daidt = elementRates(forceModel, state, auxiliaryElements);
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
@@ -906,11 +906,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          *  @return the mean equinoctial elements rates dai / dt
          *  @throws OrekitException if some specific error occurs
          */
-        private <K extends ForceModelContext> double[] elementRates(final DSSTForceModel<K> forceModel,
+        private <K extends ForceModelContext> double[] elementRates(final DSSTForceModel forceModel,
                                                              final SpacecraftState state,
                                                              final AuxiliaryElements auxiliaryElements)
             throws OrekitException {
-            return forceModel.getMeanElementRate(state, forceModel.initializeStep(auxiliaryElements));
+            return forceModel.getMeanElementRate(state, auxiliaryElements);
         }
 
     }

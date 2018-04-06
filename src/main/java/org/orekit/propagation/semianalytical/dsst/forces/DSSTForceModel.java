@@ -18,13 +18,14 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
-//import org.hipparchus.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-//import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -55,7 +56,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Romain Di Constanzo
  * @author Pascal Parraud
  */
-public interface DSSTForceModel<K extends ForceModelContext> {
+public interface DSSTForceModel {
 
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
@@ -78,24 +79,38 @@ public interface DSSTForceModel<K extends ForceModelContext> {
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    K initializeStep(AuxiliaryElements auxiliaryElements) throws OrekitException;
+    ForceModelContext initializeStep(AuxiliaryElements auxiliaryElements) throws OrekitException;
+
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param <T> type of the elements
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @return new force model context
+     *  @throws OrekitException if some specific error occurs
+     */
+    <T extends RealFieldElement<T>> FieldForceModelContext<T> initializeStep(FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException;
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
-     *  @param context container for attributes
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @return the mean element rates dai/dt
      *  @throws OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(SpacecraftState state, K context) throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliaryElements) throws OrekitException;
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
-    *  @param <T> the type of the field elements
+    *  @param <T> type of the elements
     *  @param state current state information: date, kinematics, attitude
+    *  @param auxiliaryElements auxiliary elements related to the current orbit
     *  @return the mean element rates dai/dt
     *  @throws OrekitException if some specific error occurs
     */
-    //<T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state) throws OrekitException;
+    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state, FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException;
 
 
     /** Get the discrete events related to the model.

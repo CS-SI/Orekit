@@ -26,23 +26,24 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-//import org.hipparchus.Field;
-//import org.hipparchus.RealFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
-//import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
-//import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
@@ -56,7 +57,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
+public class DSSTThirdBody implements DSSTForceModel {
 
     /** Retrograde factor I.
      *  <p>
@@ -90,9 +91,6 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
-
-    /** Standard gravitational parameter μ for the body in m³/s². */
-    private final double           gm;
 
     /** Factorial. */
     private final double[]         fact;
@@ -137,7 +135,6 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
      */
     public DSSTThirdBody(final CelestialBody body) {
         this.body = body;
-        this.gm   = body.getGM();
 
         this.maxAR3Pow = Integer.MIN_VALUE;
         this.maxEccPow = Integer.MIN_VALUE;
@@ -198,7 +195,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
         final double[] eccPwr = new double[MAX_POWER];
         final double[] chiPwr = new double[MAX_POWER];
         eccPwr[0] = 1.;
-        chiPwr[0] = initializeStep(auxiliaryElements).getX();
+        chiPwr[0] = context.getX();
         for (int i = 1; i < MAX_POWER; i++) {
             eccPwr[i] = eccPwr[i - 1] * eo2;
             chiPwr[i] = chiPwr[i - 1] * x2o2;
@@ -206,7 +203,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
         // Auxiliary quantities.
         final double ao2rxx = aor / (2. * context.getXX());
-        double xmuarn       = ao2rxx * ao2rxx * gm / (context.getX() * context.getR3());
+        double xmuarn       = ao2rxx * ao2rxx * context.getGM() / (context.getX() * context.getR3());
         double term         = 0.;
 
         // Compute max power for a/R3 and e.
@@ -273,9 +270,17 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState currentState, final DSSTThirdBodyContext context) throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException {
+        return new FieldDSSTThirdBodyContext<>(auxiliaryElements, body);
+    }
 
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+    /** {@inheritDoc} */
+    @Override
+    public double[] getMeanElementRate(final SpacecraftState currentState, final AuxiliaryElements auxiliaryElements) throws OrekitException {
+
+        // Container for attributes
+        final DSSTThirdBodyContext context = initializeStep(auxiliaryElements);
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(context.getGamma(), maxAR3Pow, maxEccPow);
         // a / R3 up to power maxAR3Pow
@@ -314,19 +319,24 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
     }
 
-    ///** {@inheritDoc} */
-    /**@Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState) {
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState,
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException {
+
+        // Container for attributes
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements);
 
         // Parameters for array building
         final Field<T> field = currentState.getDate().getField();
-        final int dimension = computeUDerivatives(field).length;
+        final int dimension = computeUDerivatives(context).length;
         final T zero = field.getZero();
 
         // Qns coefficients
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
+        Qns = CoefficientsFactory.computeQns(context.getGamma().getReal(), maxAR3Pow, maxEccPow);
         // a / R3 up to power maxAR3Pow
-        final T aoR3 = zero.add(a / R3);
+        final T aoR3 = auxiliaryElements.getSma().divide(context.getR3());
         aoR3Pow[0] = 1.;
         for (int i = 1; i <= maxAR3Pow; i++) {
             aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]).getReal();
@@ -334,7 +344,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
         // Compute potential U derivatives
         T[] dU  = MathArrays.buildArray(field, dimension);
-        dU = computeUDerivatives(field);
+        dU = computeUDerivatives(context);
         final T dUda  = dU[0];
         final T dUdk  = dU[1];
         final T dUdh  = dU[2];
@@ -344,19 +354,19 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final T UAlphaGamma   = dUdGa.multiply(alpha).subtract(dUdAl.multiply(gamma));
+        final T UAlphaGamma   = dUdGa.multiply(context.getAlpha()).subtract(dUdAl.multiply(context.getGamma()));
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final T UBetaGamma    =  dUdGa.multiply(beta).subtract(dUdBe.multiply(gamma));
+        final T UBetaGamma    =  dUdGa.multiply(context.getBeta()).subtract(dUdBe.multiply(context.getGamma()));
         // Common factor
-        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(p).subtract(UBetaGamma.multiply(q).multiply(I))).multiply(ooAB);
+        final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(auxiliaryElements.getP()).subtract(UBetaGamma.multiply(auxiliaryElements.getQ()).multiply(I))).multiply(context.getOoAB());
 
         // Compute mean elements rates [Eq. 3.1-(1)]
         final T da =  zero;
-        final T dh =  dUdk.multiply(BoA).add(pUAGmIqUBGoAB.multiply(k));
-        final T dk =  ((dUdh.multiply(BoA)).negate()).subtract(pUAGmIqUBGoAB.multiply(h));
-        final T dp =  UBetaGamma.multiply(mCo2AB);
-        final T dq =  UAlphaGamma.multiply(I).multiply(mCo2AB);
-        final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(m2aoA)).add((dUdh.multiply(h).add(dUdk.multiply(k))).multiply(BoABpo));
+        final T dh =  dUdk.multiply(context.getBoA()).add(pUAGmIqUBGoAB.multiply(auxiliaryElements.getK()));
+        final T dk =  ((dUdh.multiply(context.getBoA())).negate()).subtract(pUAGmIqUBGoAB.multiply(auxiliaryElements.getH()));
+        final T dp =  UBetaGamma.multiply(context.getMCo2AB());
+        final T dq =  UAlphaGamma.multiply(I).multiply(context.getMCo2AB());
+        final T dM =  pUAGmIqUBGoAB.add(dUda.multiply(context.getM2aoA())).add((dUdh.multiply(auxiliaryElements.getH()).add(dUdk.multiply(auxiliaryElements.getK()))).multiply(context.getBoABpo()));
 
         final T[] elements = MathArrays.buildArray(field, dimension);
         elements[0] = da;
@@ -368,7 +378,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
         return elements;
 
-    }*/
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -477,6 +487,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
      */
     private double[] computeUDerivatives(final DSSTThirdBodyContext context) {
 
+        // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         // Gs and Hs coefficients
@@ -567,17 +578,23 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
     }
 
-    ///** Compute potential derivatives.
-     //*  @param <T> the type of the field elements
-     //*  @param field field used by default
-     //*  @return derivatives of the potential with respect to orbital parameters
-     //*/
-    /**private <T extends RealFieldElement<T>> T[] computeUDerivatives(final Field<T> field) {
+    /** Compute potential derivatives.
+     *  @param <T> type of the elements
+     *  @param context container for attributes
+     *  @return derivatives of the potential with respect to orbital parameters
+     */
+    private <T extends RealFieldElement<T>> T[] computeUDerivatives(final FieldDSSTThirdBodyContext<T> context) {
 
+        // Auxiliary elements related to the current orbit
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+        // Field for array building
+        final Field<T> field = auxiliaryElements.getDate().getField();
+        // Zero for initialization
         final T zero = field.getZero();
 
         // Gs and Hs coefficients
-        final T[][] GsHs = CoefficientsFactory.computeGsHs(zero.add(k), zero.add(h), zero.add(alpha), zero.add(beta), maxEccPow);
+        final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), maxEccPow);
 
         // Initialise U.
         U = 0.;
@@ -592,7 +609,7 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
 
         for (int s = 0; s <= maxEccPow; s++) {
             // initialise the Hansen roots
-            this.hansenObjects[s].computeInitValues(B, BB, BBB);
+            this.hansenObjects[s].computeInitValues(auxiliaryElements.getB().getReal(), context.getBB().getReal(), context.getBBB().getReal());
 
             // Get the current Gs coefficient
             final T gs = GsHs[0][s];
@@ -607,10 +624,10 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
                 final T sxGsm1 = GsHs[0][s - 1].multiply(s);
                 final T sxHsm1 = GsHs[1][s - 1].multiply(s);
                 // Then compute derivatives
-                dGsdh  = sxGsm1.multiply(beta).subtract(sxHsm1.multiply(alpha));
-                dGsdk  = sxGsm1.multiply(alpha).add(sxHsm1.multiply(beta));
-                dGsdAl = sxGsm1.multiply(k).subtract(sxHsm1.multiply(h));
-                dGsdBe = sxGsm1.multiply(h).add(sxHsm1.multiply(k));
+                dGsdh  = sxGsm1.multiply(context.getBeta()).subtract(sxHsm1.multiply(context.getAlpha()));
+                dGsdk  = sxGsm1.multiply(context.getAlpha()).add(sxHsm1.multiply(context.getBeta()));
+                dGsdAl = sxGsm1.multiply(auxiliaryElements.getK()).subtract(sxHsm1.multiply(auxiliaryElements.getH()));
+                dGsdBe = sxGsm1.multiply(auxiliaryElements.getH()).add(sxHsm1.multiply(auxiliaryElements.getK()));
             }
 
             // Kronecker symbol (2 - delta(0,s))
@@ -620,8 +637,8 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :
-                    final T kns   = zero.add(this.hansenObjects[s].getValue(n, B));
-                    final T dkns  = zero.add(this.hansenObjects[s].getDerivative(n, B));
+                    final T kns   = zero.add(this.hansenObjects[s].getValue(n, auxiliaryElements.getB().getReal()));
+                    final T dkns  = zero.add(this.hansenObjects[s].getDerivative(n, auxiliaryElements.getB().getReal()));
 
                     final T vns   = zero.add(Vns.get(new NSKey(n, s)));
                     final T coef0 = vns.multiply(delta0s).multiply(aoR3Pow[n]);
@@ -637,9 +654,9 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
                     // Compute dU / da :
                     dUda = dUda.add(coef2.multiply(n).multiply(gs));
                     // Compute dU / dh
-                    dUdh = dUdh.add(coef1.multiply(kns.multiply(dGsdh).add(dkns.multiply(gs).multiply(hXXX))));
+                    dUdh = dUdh.add(coef1.multiply(kns.multiply(dGsdh).add(dkns.multiply(gs).multiply(context.getHXXX()))));
                     // Compute dU / dk
-                    dUdk = dUdk.add(coef1.multiply(kns.multiply(dGsdk).add(dkns.multiply(gs).multiply(kXXX))));
+                    dUdk = dUdk.add(coef1.multiply(kns.multiply(dGsdk).add(dkns.multiply(gs).multiply(context.getKXXX()))));
                     // Compute dU / dAlpha
                     dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
                     // Compute dU / dBeta
@@ -651,19 +668,19 @@ public class DSSTThirdBody implements DSSTForceModel<DSSTThirdBodyContext> {
         }
 
         // multiply by mu3 / R3
-        U *= muoR3;
+        U *= context.getMuoR3().getReal();
 
         final T[] derivatives = MathArrays.buildArray(field, 6);
-        derivatives[0] = dUda.multiply(muoR3 / a);
-        derivatives[1] = dUdk.multiply(muoR3);
-        derivatives[2] = dUdh.multiply(muoR3);
-        derivatives[3] = dUdAl.multiply(muoR3);
-        derivatives[4] = dUdBe.multiply(muoR3);
-        derivatives[5] = dUdGa.multiply(muoR3);
+        derivatives[0] = dUda.multiply(context.getMuoR3().divide(auxiliaryElements.getSma()));
+        derivatives[1] = dUdk.multiply(context.getMuoR3());
+        derivatives[2] = dUdh.multiply(context.getMuoR3());
+        derivatives[3] = dUdAl.multiply(context.getMuoR3());
+        derivatives[4] = dUdBe.multiply(context.getMuoR3());
+        derivatives[5] = dUdGa.multiply(context.getMuoR3());
 
         return derivatives;
 
-    }*/
+    }
 
     /** {@inheritDoc} */
     @Override

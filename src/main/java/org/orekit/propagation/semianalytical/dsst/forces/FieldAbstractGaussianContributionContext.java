@@ -16,10 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
-/** This class is a container for the attributes of
+/** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianontribution AbstractGaussianContribution}.
  * <p>
  * It replaces the last version of the method
@@ -27,80 +29,80 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * initializeStep(AuxiliaryElements)}.
  * </p>
  */
-public class AbstractGaussianContributionContext extends ForceModelContext {
+public class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
     /** 2 / (n² * a) . */
-    protected double ton2a;
+    protected T ton2a;
     /** 1 / A .*/
-    protected double ooA;
+    protected T ooA;
     /** 1 / (A * B) .*/
-    protected double ooAB;
+    protected T ooAB;
     /** C / (2 * A * B) .*/
-    protected double co2AB;
+    protected T co2AB;
     /** 1 / (1 + B) .*/
-    protected double ooBpo;
+    protected T ooBpo;
     /** 1 / μ .*/
     protected double ooMu;
 
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
-     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param fieldAuxiliaryElements auxiliary elements related to the current orbit
      * @throws OrekitException if some specific error occurs
      */
-    public AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> fieldAuxiliaryElements) throws OrekitException {
 
-        super(auxiliaryElements);
+        super(fieldAuxiliaryElements);
 
         // 1 / A
-        ooA = 1. / auxiliaryElements.getA();
+        ooA = fieldAuxiliaryElements.getA().reciprocal();
         // 1 / AB
-        ooAB = ooA / auxiliaryElements.getB();
+        ooAB = ooA.divide(fieldAuxiliaryElements.getB());
         // C / 2AB
-        co2AB = auxiliaryElements.getC() * ooAB / 2.;
+        co2AB = fieldAuxiliaryElements.getC().multiply(ooAB).divide(2.);
         // 1 / (1 + B)
-        ooBpo = 1. / (1. + auxiliaryElements.getB());
+        ooBpo = fieldAuxiliaryElements.getB().add(1.).reciprocal();
         // 2 / (n² * a)
-        ton2a = 2. / (auxiliaryElements.getMeanMotion() * auxiliaryElements.getMeanMotion() * auxiliaryElements.getSma());
+        ton2a = (fieldAuxiliaryElements.getMeanMotion().multiply(fieldAuxiliaryElements.getMeanMotion()).multiply(fieldAuxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = 1. / auxiliaryElements.getMu();
+        ooMu  = 1 / fieldAuxiliaryElements.getMu();
 
     }
 
     /** Get ooA = 1 / A.
      * @return ooA
      */
-    public double getOOA() {
+    public T getOOA() {
         return ooA;
     }
 
     /** Get ooAB = 1 / (A * B).
      * @return ooAB
      */
-    public double getOOAB() {
+    public T getOOAB() {
         return ooAB;
     }
 
     /** Get co2AB = C / 2AB.
      * @return co2AB
      */
-    public double getCo2AB() {
+    public T getCo2AB() {
         return co2AB;
     }
 
     /** Get ooBpo = 1 / (B + 1).
      * @return ooBpo
      */
-    public double getOoBpo() {
+    public T getOoBpo() {
         return ooBpo;
     }
 
     /** Get ton2a = 2 / (n² * a).
      * @return ton2a
      */
-    public double getTon2a() {
+    public T getTon2a() {
         return ton2a;
     }
 

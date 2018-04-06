@@ -25,29 +25,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-//import org.hipparchus.Field;
-//import org.hipparchus.RealFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateVectorFunction;
-//import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-//import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-//import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
-//import org.orekit.orbits.FieldEquinoctialOrbit;
-//import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-//import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -78,7 +79,7 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  * @author Pascal Parraud
  */
-public abstract class AbstractGaussianContribution implements DSSTForceModel<AbstractGaussianContributionContext> {
+public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** Retrograde factor I.
      *  <p>
@@ -167,8 +168,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException {
+        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public double[] getMeanElementRate(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) throws OrekitException {
+
+        // Container for attributes
+        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
         final double[] ll = getLLimits(state, context);
@@ -190,23 +200,27 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
         return meanElementRate;
     }
 
-    ///** {@inheritDoc} */
-    /**@Override
-    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state) throws OrekitException {
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements)
+        throws OrekitException {
 
+        // Container for attributes
+        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements);
         final Field<T> field = state.getDate().getField();
 
         T[] meanElementRate = MathArrays.buildArray(field, 6);
         // Computes the limits for the integral
-        final T[] ll = getLLimits(state);
+        final T[] ll = getLLimits(state, context);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0].getReal() < ll[1].getReal()) {
-            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1]);
+            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context);
             if (isDirty) {
                 boolean next = true;
                 for (int i = 0; i < MAX_ORDER_RANK && next; i++) {
-                    final T[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1]);
-                    if (getRatesDiff(meanElementRate, meanRates).getReal() < threshold) {
+                    final T[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1], context);
+                    if (getRatesDiff(meanElementRate, meanRates, context).getReal() < threshold) {
                         integrator = new GaussQuadrature(GAUSS_ORDER[i]);
                         next = false;
                     }
@@ -215,7 +229,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             }
         }
         return meanElementRate;
-    }*/
+    }
 
     /** Compute the limits in L, the true longitude, for integration.
      *
@@ -226,42 +240,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
      */
     protected abstract double[] getLLimits(SpacecraftState state, AbstractGaussianContributionContext context) throws OrekitException;
 
-    ///** Compute the limits in L, the true longitude, for integration.
-    //*
-    //*  @param  state current state information: date, kinematics, attitude
-    //*  @param <T> the type of the field elements
-    //*  @return the integration limits in L
-    //*  @exception OrekitException if some specific error occurs
-    //*/
-    //*protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state) throws OrekitException;*/
-
-    ///** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
-     //*
-     //*  @param state current state
-     //*  @param gauss Gauss quadrature
-     //*  @param low lower bound of the integral interval
-     //*  @param high upper bound of the integral interval
-     //*  @param <T> the type of the field elements
-     //*  @return the mean element rates
-     //*  @throws OrekitException if some specific error occurs
-     //*/
-    /**private <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
-            final GaussQuadrature gauss,
-            final T low,
-            final T high) throws OrekitException {
-
-        final Field<T> field = state.getDate().getField();
-        final T zero = field.getZero();
-
-        final T[] meanElementRate = gauss.integrate(new FieldIntegrableFunction<T>(state, true, 0), low, high);
-        // Constant multiplier for integral
-        final T coef = zero.add(1. / (2. * FastMath.PI * B));
-        // Corrects mean element rates
-        for (int i = 0; i < 6; i++) {
-            meanElementRate[i] = meanElementRate[i].multiply(coef);
-        }
-        return meanElementRate;
-    }*/
+    /** Compute the limits in L, the true longitude, for integration.
+    *  @param <T> type of the elements
+    *  @param state current state information: date, kinematics, attitude
+    *  @param context container for attributes
+    *  @return the integration limits in L
+    *  @exception OrekitException if some specific error occurs
+    */
+    protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+                                                                      FieldAbstractGaussianContributionContext<T> context)
+        throws OrekitException;
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *
@@ -279,14 +267,45 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
            final double high,
            final AbstractGaussianContributionContext context) throws OrekitException {
 
+        // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
-        final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0, context.getAuxiliaryElements()), low, high);
+        final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0), low, high);
         // Constant multiplier for integral
         final double coef = 1. / (2. * FastMath.PI * auxiliaryElements.getB());
         // Corrects mean element rates
         for (int i = 0; i < 6; i++) {
             meanElementRate[i] *= coef;
+        }
+        return meanElementRate;
+    }
+
+    /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
+    *
+    *  @param <T> type of the elements
+    *  @param state current state
+    *  @param gauss Gauss quadrature
+    *  @param low lower bound of the integral interval
+    *  @param high upper bound of the integral interval
+    *  @param context container for attributes
+    *  @return the mean element rates
+    *  @throws OrekitException if some specific error occurs
+    */
+    private <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
+           final GaussQuadrature gauss,
+           final T low,
+           final T high,
+           final FieldAbstractGaussianContributionContext<T> context) throws OrekitException {
+
+        // Auxiliary elements related to the current orbit
+        final FieldAuxiliaryElements<T> fieldAuxiliaryElements = context.getFieldAuxiliaryElements();
+
+        final T[] meanElementRate = gauss.integrate(new FieldIntegrableFunction<T>(state, true, 0), low, high, context);
+        // Constant multiplier for integral
+        final T coef = fieldAuxiliaryElements.getB().multiply(FastMath.PI).multiply(2.).reciprocal();
+        // Corrects mean element rates
+        for (int i = 0; i < 6; i++) {
+            meanElementRate[i] = meanElementRate[i].multiply(coef);
         }
         return meanElementRate;
     }
@@ -299,7 +318,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
      *  @return estimated magnitude of weighted differences
      */
     private double getRatesDiff(final double[] meanRef, final double[] meanCur, final AbstractGaussianContributionContext context) {
+
+        // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
         double maxDiff = FastMath.abs(meanRef[0] - meanCur[0]) / auxiliaryElements.getSma();
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
@@ -309,22 +331,27 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
         return maxDiff;
     }
 
-    ///** Estimates the weighted magnitude of the difference between 2 sets of equinoctial elements rates.
-    //*
-    //*  @param meanRef reference rates
-    //*  @param meanCur current rates
-    //*  @param <T> the type of the field elements
-    //*  @return estimated magnitude of weighted differences
-    //*/
-    /**private <T extends RealFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur) {
-        T maxDiff = (meanRef[0].subtract(meanCur[0])).abs().divide(a);
+    /** Estimates the weighted magnitude of the difference between 2 sets of equinoctial elements rates.
+    *
+    *  @param <T> type of the elements
+    *  @param meanRef reference rates
+    *  @param meanCur current rates
+    *  @param fieldContext container for attributes
+    *  @return estimated magnitude of weighted differences
+    */
+    private <T extends RealFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur, final FieldAbstractGaussianContributionContext<T> fieldContext) {
+
+        // Auxiliary elements related to the current orbit
+        final FieldAuxiliaryElements<T> fieldAuxiliaryElements = fieldContext.getFieldAuxiliaryElements();
+
+        T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(fieldAuxiliaryElements.getSma());;
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
-            final T diff = (meanRef[i].subtract(meanCur[i])).abs();
+            final T diff = FastMath.abs(meanRef[i].subtract(meanCur[i]));
             if (maxDiff.getReal() < diff.getReal()) maxDiff = diff;
         }
         return maxDiff;
-    }*/
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -337,17 +364,15 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
     public void updateShortPeriodTerms(final SpacecraftState... meanStates)
         throws OrekitException {
 
-        //final AbstractGaussianContributionContext context
-
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            initializeStep(auxiliaryElements);
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
 
-            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), initializeStep(auxiliaryElements));
-            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, initializeStep(auxiliaryElements));
+            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
+            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context);
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
             gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, auxiliaryElements.getMeanMotion(), auxiliaryElements.getSma());
         }
@@ -385,29 +410,36 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
         return currentRhoSigmaj;
     }
 
-    ///** Internal class for numerical quadrature. */
-    //private class FieldIntegrableFunction<T extends RealFieldElement<T>> implements FieldUnivariateVectorFunction<T> {
+    /** Internal class for numerical quadrature. */
+    private class FieldIntegrableFunction<T extends RealFieldElement<T>> implements FieldUnivariateVectorFunction<T> {
 
         /** Current state. */
-        //private final FieldSpacecraftState<T> fieldState;
+        private final FieldSpacecraftState<T> state;
 
         /** Signal that this class is used to compute the values required by the mean element variations
          * or by the short periodic element variations. */
-        //private final boolean meanMode;
+        private final boolean meanMode;
 
         /** The j index.
          * <p>
          * Used only for short periodic variation. Ignored for mean elements variation.
          * </p> */
-        //private final int j;
+        private final int j;
+
+        /** Container for attributes. */
+        private final FieldAbstractGaussianContributionContext<T> context;
+
+        /** Auxiliary Elements. */
+        private final FieldAuxiliaryElements<T> auxiliaryElements;
 
         /** Build a new instance with a new field.
          *  @param  state current state information: date, kinematics, attitude
          *  @param meanMode if true return the value associated to the mean elements variation,
          *                  if false return the values associated to the short periodic elements variation
          *  @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
+         *  @throws OrekitException if some specific error occurs
          */
-        /**FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j) {
+        FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j) throws OrekitException {
 
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
@@ -416,43 +448,43 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
                                                                            state.getDate(),
                                                                            state.getMu(),
                                                                            state.getFrame());
-            this.fieldState = new FieldSpacecraftState<T>(fixedOrbit, state.getAttitude(), state.getMass());
+            this.state = new FieldSpacecraftState<T>(fixedOrbit, state.getAttitude(), state.getMass());
             this.meanMode = meanMode;
             this.j = j;
-        }*/
+            this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+        }
 
         /** {@inheritDoc} */
-        /**@Override
+        @Override
         public T[] value(final T x) {
 
             // Parameters for array building
-            final Field<T> field = fieldState.getDate().getField();
-            final T zero = field.getZero();
+            final Field<T> field = state.getDate().getField();
             final int dimension = 6;
 
             //Compute the time difference from the true longitude difference
             final T shiftedLm = trueToMean(x);
-            final T dLm = shiftedLm.subtract(lm);
-            final T dt = dLm.divide(n);
+            final T dLm = shiftedLm.subtract(auxiliaryElements.getLM());
+            final T dt = dLm.divide(auxiliaryElements.getMeanMotion());
 
-            final T cosL = x.cos();
-            final T sinL = x.sin();
-            final T roa  = ((sinL.multiply(h).add(cosL.multiply(k)).add(1.)).reciprocal()).multiply(B * B);
+            final T cosL = FastMath.cos(x);
+            final T sinL = FastMath.sin(x);
+            final T roa  = auxiliaryElements.getB().multiply(auxiliaryElements.getB()).divide(auxiliaryElements.getH().multiply(sinL).add(auxiliaryElements.getK().multiply(cosL)).add(1.));
             final T roa2 = roa.multiply(roa);
-            final T r    = roa.multiply(a);
+            final T r    = auxiliaryElements.getSma().multiply(roa);
             final T X    = r.multiply(cosL);
             final T Y    = r.multiply(sinL);
-            final T naob = zero.add(n * a / B);
-            final T Xdot = naob.multiply(sinL.add(h)).negate();
-            final T Ydot =  naob.multiply(cosL.add(k));
-            final FieldVector3D<T> vel = new FieldVector3D<>(Xdot, f, Ydot, g);
-
+            final T naob = auxiliaryElements.getMeanMotion().multiply(auxiliaryElements.getSma()).divide(auxiliaryElements.getB());
+            final T Xdot = naob.multiply(auxiliaryElements.getH().add(sinL)).negate();
+            final T Ydot =  naob.multiply(auxiliaryElements.getK().add(cosL));
+            final FieldVector3D<T> vel = new FieldVector3D<>(Xdot, auxiliaryElements.getVectorF(), Ydot, auxiliaryElements.getVectorG());
             // Compute acceleration
             FieldVector3D<T> acc = FieldVector3D.getZero(field);
             try {
 
                 // shift the orbit to dt
-                final FieldOrbit<T> shiftedOrbit = (FieldOrbit<T>) fieldState.getOrbit().shiftedBy(dt);
+                final FieldOrbit<T> shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
                 // Recompose an orbit with time held fixed to be compliant with DSST theory
                 final FieldOrbit<T> recomposedOrbit =
@@ -464,7 +496,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
                                              shiftedOrbit.getLv(),
                                              PositionAngle.TRUE,
                                              shiftedOrbit.getFrame(),
-                                             fieldState.getDate(),
+                                             state.getDate(),
                                              shiftedOrbit.getMu());
 
                 // Get the corresponding attitude
@@ -475,7 +507,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
 
                 // create shifted SpacecraftState with attitude at specified time
                 final FieldSpacecraftState<T> shiftedState =
-                        new FieldSpacecraftState<T>(recomposedOrbit, recomposedAttitude, fieldState.getMass());
+                        new FieldSpacecraftState<T>(recomposedOrbit, recomposedAttitude, state.getMass());
 
                 acc = contribution.acceleration(shiftedState, contribution.getParameters(field));
 
@@ -509,8 +541,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             } else {
                 val = MathArrays.buildArray(field, dimension * 2);
                 //Compute cos(j*L) and sin(j*L);
-                final T cosjL = j == 1 ? cosL : x.multiply(j).cos();
-                final T sinjL = j == 1 ? sinL : x.multiply(j).sin();
+                final T cosjL = j == 1 ? cosL : FastMath.cos(x.multiply(j));
+                final T sinjL = j == 1 ? sinL : FastMath.sin(x.multiply(j));
 
                 for (int i = 0; i < 6; i++) {
                     // da<sub>i</sub>/dv * cos(jL)
@@ -521,43 +553,43 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             }
 
             return val;
-        }*/
+        }
 
         /** Converts true longitude to mean longitude.
          * @param lv True longitude
          * @return Eccentric longitude
          */
-        /**private T trueToMean (final T lv) {
+        private T trueToMean (final T lv) {
             return eccentricToMean(trueToEccentric(lv));
-        }*/
+        }
 
         /** Converts true longitude to eccentric longitude.
          * @param lv True longitude
          * @return Eccentric longitude
          */
-        /**private T trueToEccentric (final T lv) {
-            final T cosLv   = lv.cos();
-            final T sinLv   = lv.sin();
-            final T num     = cosLv.multiply(h).subtract(sinLv.multiply(k));
-            final T den     = cosLv.multiply(k).add(sinLv.multiply(h)).add(1.).add(B);
-            return lv.add((num.divide(den).atan()).multiply(2.));
-        }*/
+        private T trueToEccentric (final T lv) {
+            final T cosLv   = FastMath.cos(lv);
+            final T sinLv   = FastMath.sin(lv);
+            final T num     = auxiliaryElements.getH().multiply(cosLv).subtract(auxiliaryElements.getK().multiply(sinLv));
+            final T den     = auxiliaryElements.getB().add(auxiliaryElements.getK().multiply(cosLv)).add(auxiliaryElements.getH().multiply(sinLv)).add(1.);
+            return lv.add(FastMath.atan(num.divide(den)).multiply(2.));
+        }
 
         /** Converts eccentric longitude to mean longitude.
          * @param le Eccentric longitude
          * @return Mean longitude
          */
-        /**private T eccentricToMean (final T le) {
-            return le.subtract(le.sin().multiply(k)).add(le.cos().multiply(h));
-        }*/
+        private T eccentricToMean (final T le) {
+            return le.subtract(auxiliaryElements.getK().multiply(FastMath.sin(le))).add(auxiliaryElements.getH().multiply(FastMath.cos(le)));
+        }
 
         /** Compute δa/δv.
          *  @param vel satellite velocity
          *  @return δa/δv
          */
-        /**private FieldVector3D<T> getAoV(final FieldVector3D<T> vel) {
-            return new FieldVector3D<>(ton2a, vel);
-        }*/
+        private FieldVector3D<T> getAoV(final FieldVector3D<T> vel) {
+            return new FieldVector3D<>(context.getTon2a(), vel);
+        }
 
         /** Compute δh/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
@@ -566,12 +598,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
          *  @return δh/δv
          */
-        /**private FieldVector3D<T> getHoV(final T X, final T Y, final T Xdot, final T Ydot) {
-            final T kf = (Xdot.multiply(Y).multiply(2.).subtract(X.multiply(Ydot))).multiply(ooMu);
-            final T kg = X.multiply(Xdot).multiply(ooMu);
-            final T kw = (Y.multiply(I).multiply(q).subtract(X.multiply(p))).multiply(ooAB).multiply(k);
-            return new FieldVector3D<>(kf, f, kg.negate(), g, kw, w);
-        }*/
+        private FieldVector3D<T> getHoV(final T X, final T Y, final T Xdot, final T Ydot) {
+            final T kf = (Xdot.multiply(Y).multiply(2.).subtract(X.multiply(Ydot))).multiply(context.getOoMU());
+            final T kg = X.multiply(Xdot).multiply(context.getOoMU());
+            final T kw = auxiliaryElements.getK().multiply(auxiliaryElements.getQ().multiply(Y).multiply(I).subtract(auxiliaryElements.getP().multiply(X))).multiply(context.getOOAB());
+            return new FieldVector3D<>(kf, auxiliaryElements.getVectorF(), kg.negate(), auxiliaryElements.getVectorG(), kw, auxiliaryElements.getVectorW());
+        }
 
         /** Compute δk/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
@@ -580,28 +612,28 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
          *  @return δk/δv
          */
-        /**private FieldVector3D<T> getKoV(final T X, final T Y, final T Xdot, final T Ydot) {
-            final T kf = Ydot.multiply(Y).multiply(ooMu);
-            final T kg = (Ydot.multiply(X).multiply(2.).subtract(Y.multiply(Xdot))).multiply(ooMu);
-            final T kw = (Y.multiply(q).multiply(I).subtract(X.multiply(p))).multiply(h).multiply(ooAB);
-            return new FieldVector3D<>(kf.negate(), f, kg, g, kw.negate(), w);
-        }*/
+        private FieldVector3D<T> getKoV(final T X, final T Y, final T Xdot, final T Ydot) {
+            final T kf = Y.multiply(Ydot).multiply(context.getOoMU());
+            final T kg = (X.multiply(Ydot).multiply(2.).subtract(Xdot.multiply(Y))).multiply(context.getOoMU());
+            final T kw = auxiliaryElements.getH().multiply(auxiliaryElements.getQ().multiply(Y).multiply(I).subtract(auxiliaryElements.getP().multiply(X))).multiply(context.getOOAB());
+            return new FieldVector3D<>(kf.negate(), auxiliaryElements.getVectorF(), kg, auxiliaryElements.getVectorG(), kw.negate(), auxiliaryElements.getVectorW());
+        }
 
         /** Compute δp/δv.
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @return δp/δv
          */
-        /**private FieldVector3D<T> getPoV(final T Y) {
-            return new FieldVector3D<>(Y.multiply(co2AB), w);
-        }*/
+        private FieldVector3D<T> getPoV(final T Y) {
+            return new FieldVector3D<>(context.getCo2AB().multiply(Y), auxiliaryElements.getVectorW());
+        }
 
         /** Compute δq/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @return δq/δv
          */
-        /**private FieldVector3D<T> getQoV(final T X) {
-            return new FieldVector3D<>(X.multiply(I).multiply(co2AB), w);
-        }*/
+        private FieldVector3D<T> getQoV(final T X) {
+            return new FieldVector3D<>(context.getCo2AB().multiply(X).multiply(I), auxiliaryElements.getVectorW());
+        }
 
         /** Compute δλ/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
@@ -610,19 +642,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
          *  @return δλ/δv
          */
-        /**private FieldVector3D<T> getLoV(final T X, final T Y, final T Xdot, final T Ydot) {
-            final Field<T> field = X.getField();
-            final T zero = field.getZero();
-
-            // Conversion of Vector3D w to a FieldVector3D
-            final FieldVector3D<T> ww = new FieldVector3D<>(zero.add(1.), w);
-
-            final FieldVector3D<T> pos = new FieldVector3D<>(X, f, Y, g);
-            final FieldVector3D<T> v2  = new FieldVector3D<>(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
-            return new FieldVector3D<>(-2. * ooA, pos, ooBpo, v2, (I * q * Y.getReal() - p * X.getReal()) * ooA, ww);
+        private FieldVector3D<T> getLoV(final T X, final T Y, final T Xdot, final T Ydot) {
+            final FieldVector3D<T> pos = new FieldVector3D<>(X, auxiliaryElements.getVectorF(), Y, auxiliaryElements.getVectorG());
+            final FieldVector3D<T> v2  = new FieldVector3D<>(auxiliaryElements.getK(), getHoV(X, Y, Xdot, Ydot), auxiliaryElements.getH().negate(), getKoV(X, Y, Xdot, Ydot));
+            return new FieldVector3D<>(context.getOOA().multiply(-2.), pos, context.getOoBpo(), v2, context.getOOA().multiply(auxiliaryElements.getQ().multiply(Y).multiply(I).subtract(auxiliaryElements.getP().multiply(X))), auxiliaryElements.getVectorW());
         }
 
-    }*/
+    }
 
     /** Internal class for numerical quadrature. */
     private class IntegrableFunction implements UnivariateVectorFunction {
@@ -643,15 +669,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
         /** Container for attributes. */
         private final AbstractGaussianContributionContext context;
 
+        /** Auxiliary Elements. */
+        private final AuxiliaryElements auxiliaryElements;
+
         /** Build a new instance.
          *  @param  state current state information: date, kinematics, attitude
          *  @param meanMode if true return the value associated to the mean elements variation,
          *                  if false return the values associated to the short periodic elements variation
          *  @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
-         *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @throws OrekitException if some specific error occurs
          */
-        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j, final AuxiliaryElements auxiliaryElements) throws OrekitException {
+        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) throws OrekitException {
 
             // remove derivatives from state
             final double[] stateVector = new double[6];
@@ -663,6 +691,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
             this.meanMode = meanMode;
             this.j = j;
+            this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
             this.context = new AbstractGaussianContributionContext(auxiliaryElements);
         }
 
@@ -670,7 +699,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
         @Override
         public double[] value(final double x) {
 
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+            //final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             //Compute the time difference from the true longitude difference
             final double shiftedLm = trueToMean(x);
@@ -681,10 +710,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             final double sinL = FastMath.sin(x);
             final double roa  = auxiliaryElements.getB() * auxiliaryElements.getB() / (1. + auxiliaryElements.getH() * sinL + auxiliaryElements.getK() * cosL);
             final double roa2 = roa * roa;
-            final double r    = auxiliaryElements.getA() * roa;
+            final double r    = auxiliaryElements.getSma() * roa;
             final double X    = r * cosL;
             final double Y    = r * sinL;
-            final double naob = auxiliaryElements.getMeanMotion() * auxiliaryElements.getA() / auxiliaryElements.getB();
+            final double naob = auxiliaryElements.getMeanMotion() * auxiliaryElements.getSma() / auxiliaryElements.getB();
             final double Xdot = -naob * (auxiliaryElements.getH() + sinL);
             final double Ydot =  naob * (auxiliaryElements.getK() + cosL);
             final Vector3D vel = new Vector3D(Xdot, auxiliaryElements.getVectorF(), Ydot, auxiliaryElements.getVectorG());
@@ -768,7 +797,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          * @return Eccentric longitude
          */
         private double trueToEccentric (final double lv) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             final double cosLv   = FastMath.cos(lv);
             final double sinLv   = FastMath.sin(lv);
             final double num     = auxiliaryElements.getH() * cosLv - auxiliaryElements.getK() * sinLv;
@@ -781,7 +809,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          * @return Mean longitude
          */
         private double eccentricToMean (final double le) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             return le - auxiliaryElements.getK() * FastMath.sin(le) + auxiliaryElements.getH() * FastMath.cos(le);
         }
 
@@ -809,7 +836,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @return δh/δv
          */
         private Vector3D getHoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             final double kf = (2. * Xdot * Y - X * Ydot) * context.getOoMU();
             final double kg = X * Xdot * context.getOoMU();
             final double kw = auxiliaryElements.getK() * (I * auxiliaryElements.getQ() * Y - auxiliaryElements.getP() * X) * context.getOOAB();
@@ -824,7 +850,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @return δk/δv
          */
         private Vector3D getKoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             final double kf = Y * Ydot * context.getOoMU();
             final double kg = (2. * X * Ydot - Xdot * Y) * context.getOoMU();
             final double kw = auxiliaryElements.getH() * (I * auxiliaryElements.getQ() * Y - auxiliaryElements.getP() * X) * context.getOOAB();
@@ -836,7 +861,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @return δp/δv
          */
         private Vector3D getPoV(final double Y) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             return new Vector3D(context.getCo2AB() * Y, auxiliaryElements.getVectorW());
         }
 
@@ -845,7 +869,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @return δq/δv
          */
         private Vector3D getQoV(final double X) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             return new Vector3D(I * context.getCo2AB() * X, auxiliaryElements.getVectorW());
         }
 
@@ -857,7 +880,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
          *  @return δλ/δv
          */
         private Vector3D getLoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             final Vector3D pos = new Vector3D(X, auxiliaryElements.getVectorF(), Y, auxiliaryElements.getVectorG());
             final Vector3D v2  = new Vector3D(auxiliaryElements.getK(), getHoV(X, Y, Xdot, Ydot), -auxiliaryElements.getH(), getKoV(X, Y, Xdot, Ydot));
             return new Vector3D(-2. * context.getOOA(), pos, context.getOoBpo(), v2, (I * auxiliaryElements.getQ() * Y - auxiliaryElements.getP() * X) * context.getOOA(), auxiliaryElements.getVectorW());
@@ -1378,21 +1400,23 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             return basicIntegrate(f, adaptedPoints, adaptedWeights);
         }
 
-       ///** Integrates a given function on the given interval.
-       //*
-       //*  @param f Function to integrate.
-       //*  @param lowerBound Lower bound of the integration interval.
-       //*  @param upperBound Upper bound of the integration interval.
-       //*  @param <T> the type of the field elements
-       //*  @return the integral of the weighted function.
-       //*/
-       /** public <T extends RealFieldElement<T>> T[] integrate(final FieldUnivariateVectorFunction<T> f,
-              final T lowerBound, final T upperBound) {
+       /** Integrates a given function on the given interval.
+       *
+       *  @param <T> the type of the field elements
+       *  @param f Function to integrate.
+       *  @param lowerBound Lower bound of the integration interval.
+       *  @param upperBound Upper bound of the integration interval.
+       *  @param context container for attributes
+       *  @return the integral of the weighted function.
+       */
+        public <T extends RealFieldElement<T>> T[] integrate(final FieldUnivariateVectorFunction<T> f,
+                                                            final T lowerBound, final T upperBound,
+                                                            final FieldAbstractGaussianContributionContext<T> context) {
 
             final int pointsLength = nodePoints.length;
             final int weightsLength = nodeWeights.length;
 
-            final Field<T> field = lowerBound.getField();
+            final Field<T> field = context.getFieldAuxiliaryElements().getDate().getField();
             final T zero = field.getZero();
 
             T[] adaptedPoints = MathArrays.buildArray(field, pointsLength);
@@ -1409,8 +1433,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             adaptedPoints  = nodePoint.clone();
             adaptedWeights = nodeWeight.clone();
             transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);
-            return basicIntegrate(f, adaptedPoints, adaptedWeights);
-        }*/
+            return basicIntegrate(f, adaptedPoints, adaptedWeights, context);
+        }
 
         /** Performs a change of variable so that the integration
          *  can be performed on an arbitrary interval {@code [a, b]}.
@@ -1434,19 +1458,18 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             }
         }
 
-        ///** Performs a change of variable so that the integration
-         ///*  can be performed on an arbitrary interval {@code [a, b]}.
-         //*  <p>
-         //*  It is assumed that the natural interval is {@code [-1, 1]}.
-         //*  </p>
-         //*
-         //* @param points  Points to adapt to the new interval.
-         //* @param weights Weights to adapt to the new interval.
-         //* @param a Lower bound of the integration interval.
-         //* @param b Lower bound of the integration interval
-         //* @param <T> the type of the field elements
-         //*/
-        /**private <T extends RealFieldElement<T>> void transform(final T[] points, final T[] weights,
+        /** Performs a change of variable so that the integration
+         *  can be performed on an arbitrary interval {@code [a, b]}.
+         *  <p>
+         *  It is assumed that the natural interval is {@code [-1, 1]}.
+         *  </p>
+         * @param <T> the type of the field elements
+         * @param points  Points to adapt to the new interval.
+         * @param weights Weights to adapt to the new interval.
+         * @param a Lower bound of the integration interval.
+         * @param b Lower bound of the integration interval
+         */
+        private <T extends RealFieldElement<T>> void transform(final T[] points, final T[] weights,
                 final T a, final T b) {
             // Scaling
             final T scale = (b.subtract(a)).divide(2.);
@@ -1455,7 +1478,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
                 points[i]   = scale.multiply(points[i]).add(shift);
                 weights[i] = scale.multiply(weights[i]);
             }
-        }*/
+        }
 
         /** Returns an estimate of the integral of {@code f(x) * w(x)},
          *  where {@code w} is a weight function that depends on the actual
@@ -1493,26 +1516,27 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
             return s;
         }
 
-        ///** Returns an estimate of the integral of {@code f(x) * w(x)},
-         //*  where {@code w} is a weight function that depends on the actual
-         //*  flavor of the Gauss integration scheme.
-         //*
-         //* @param f Function to integrate.
-         //* @param points  Nodes.
-         //* @param weights Nodes weight
-         //* @param <T> the type of the field elementss.
-         //* @return the integral of the weighted function.
-         //*/
-        /**private <T extends RealFieldElement<T>> T[] basicIntegrate(final FieldUnivariateVectorFunction<T> f,
+        /** Returns an estimate of the integral of {@code f(x) * w(x)},
+         *  where {@code w} is a weight function that depends on the actual
+         *  flavor of the Gauss integration scheme.
+         *
+         * @param <T> the type of the field elements.
+         * @param f Function to integrate.
+         * @param points  Nodes.
+         * @param weights Nodes weight
+         * @param context container for attributes
+         * @return the integral of the weighted function.
+         */
+        private <T extends RealFieldElement<T>> T[] basicIntegrate(final FieldUnivariateVectorFunction<T> f,
                 final T[] points,
-                final T[] weights) {
+                final T[] weights,
+                final FieldAbstractGaussianContributionContext<T> context) {
 
             T x = points[0];
             T w = weights[0];
             T[] v = f.value(x);
 
-            final Field<T> field = x.getField();
-
+            final Field<T> field = context.getFieldAuxiliaryElements().getDate().getField();
             final T[] y = MathArrays.buildArray(field, v.length);
             for (int j = 0; j < v.length; j++) {
                 y[j] = v[j].multiply(w);
@@ -1532,7 +1556,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
                 }
             }
             return s;
-        }*/
+        }
 
     }
 
@@ -1616,7 +1640,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel<Abs
                 // loop through all values of j
                 for (int j = 0; j <= jMax; j++) {
                     final double[] curentCoefficients =
-                            integrator.integrate(new IntegrableFunction(state, false, j, context.getAuxiliaryElements()), ll[0], ll[1]);
+                            integrator.integrate(new IntegrableFunction(state, false, j), ll[0], ll[1]);
 
                     //divide by PI and set the values for the coefficients
                     for (int i = 0; i < 6; i++) {

@@ -16,22 +16,25 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
-/** This class is a container for the attributes of
+/** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral DSSTTesseral}.
  * <p>
  * It replaces the last version of the method
  * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements) initializeStep(AuxiliaryElements)}.
  * </p>
  */
-public class DSSTTesseralContext extends ForceModelContext {
+public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -46,166 +49,165 @@ public class DSSTTesseralContext extends ForceModelContext {
      *  has been kept in the formulas.
      *  </p>
      */
-    private static final int I = 1;
+    private final int I = 1;
 
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double chi;
+    private T chi;
 
     /** &Chi;². */
-    private double chi2;
+    private T chi2;
 
     /** Central body rotation angle θ. */
-    private double theta;
+    private T theta;
 
     // Common factors from equinoctial coefficients
     /** 2 * a / A .*/
-    private double ax2oA;
+    private T ax2oA;
 
     /** 1 / (A * B) .*/
-    private double ooAB;
+    private T ooAB;
 
     /** B / A .*/
-    private double BoA;
+    private T BoA;
 
     /** B / (A * (1 + B)) .*/
-    private double BoABpo;
+    private T BoABpo;
 
     /** C / (2 * A * B) .*/
-    private double Co2AB;
+    private T Co2AB;
 
     /** μ / a .*/
-    private double moa;
+    private T moa;
 
     /** R / a .*/
-    private double roa;
+    private T roa;
 
     /** ecc². */
-    private double e2;
+    private T e2;
 
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
-     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param fieldAuxiliaryElements auxiliary elements related to the current orbit
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @throws OrekitException if some specific error occurs
      */
-    public DSSTTesseralContext(final AuxiliaryElements auxiliaryElements,
+    public FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> fieldAuxiliaryElements,
                                final Frame centralBodyFrame,
                                final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
 
-        super(auxiliaryElements);
+        super(fieldAuxiliaryElements);
 
         // Eccentricity square
-        e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
+        e2 = fieldAuxiliaryElements.getEcc().multiply(fieldAuxiliaryElements.getEcc());
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final Transform t = centralBodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
-        final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
-        final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
-        theta = FastMath.atan2(-auxiliaryElements.getVectorF().dotProduct(yB) + I * auxiliaryElements.getVectorG().dotProduct(xB),
-                               auxiliaryElements.getVectorF().dotProduct(xB) + I * auxiliaryElements.getVectorG().dotProduct(yB));
+        final FieldTransform<T> t = centralBodyFrame.getTransformTo(fieldAuxiliaryElements.getFrame(), fieldAuxiliaryElements.getDate());
+        final FieldVector3D<T> xB = t.transformVector(Vector3D.PLUS_I);
+        final FieldVector3D<T> yB = t.transformVector(Vector3D.PLUS_J);
+        theta = FastMath.atan2(((T) fieldAuxiliaryElements.getVectorF().dotProduct(yB).reciprocal()).add((T) fieldAuxiliaryElements.getVectorG().dotProduct(xB).multiply(I)),
+                               ((T) fieldAuxiliaryElements.getVectorF().dotProduct(xB)).add((T) fieldAuxiliaryElements.getVectorG().dotProduct(yB).multiply(I)));
 
         // Common factors from equinoctial coefficients
         // 2 * a / A
-        ax2oA  = 2. * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        ax2oA  = fieldAuxiliaryElements.getSma().divide(fieldAuxiliaryElements.getA()).multiply(2.);
         // B / A
-        BoA  = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA  = fieldAuxiliaryElements.getB().divide(fieldAuxiliaryElements.getA());
         // 1 / AB
-        ooAB = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB = fieldAuxiliaryElements.getA().multiply(fieldAuxiliaryElements.getB()).reciprocal();
         // C / 2AB
-        Co2AB = auxiliaryElements.getC() * ooAB / 2.;
+        Co2AB = fieldAuxiliaryElements.getC().multiply(ooAB).divide(2.);
         // B / (A * (1 + B))
-        BoABpo = BoA / (1. + auxiliaryElements.getB());
+        BoABpo = BoA.divide(fieldAuxiliaryElements.getB().add(1.));
         // &mu / a
-        moa = provider.getMu() / auxiliaryElements.getSma();
+        moa = fieldAuxiliaryElements.getSma().divide(provider.getMu()).reciprocal();
         // R / a
-        roa = provider.getAe() / auxiliaryElements.getSma();
+        roa = fieldAuxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
 
         // &Chi; = 1 / B
-        chi = 1. / auxiliaryElements.getB();
-        chi2 = chi * chi;
+        chi = fieldAuxiliaryElements.getB().reciprocal();
+        chi2 = chi.multiply(chi);
 
     }
 
     /** Get ecc².
      * @return e2
      */
-    public double getE2() {
+    public T getE2() {
         return e2;
     }
 
     /** Get Central body rotation angle θ.
      * @return theta
      */
-    public double getTheta() {
+    public T getTheta() {
         return theta;
     }
 
     /** Get ax2oA = 2 * a / A .
      * @return ax2oA
      */
-    public double getAx2oA() {
+    public T getAx2oA() {
         return ax2oA;
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
      * @return chi
      */
-    public double getChi() {
+    public T getChi() {
         return chi;
     }
 
     /** Get &Chi;².
      * @return chi2
      */
-    public double getChi2() {
+    public T getChi2() {
         return chi2;
     }
 
     /** Get B / A.
      * @return BoA
      */
-    public double getBoA() {
+    public T getBoA() {
         return BoA;
     }
 
     /** Get ooAB = 1 / (A * B).
      * @return ooAB
      */
-    public double getOoAB() {
+    public T getOoAB() {
         return ooAB;
     }
 
     /** Get Co2AB = C / 2AB.
      * @return Co2AB
      */
-    public double getCo2AB() {
+    public T getCo2AB() {
         return Co2AB;
     }
 
     /** Get BoABpo = B / A(1 + B).
      * @return BoABpo
      */
-    public double getBoABpo() {
+    public T getBoABpo() {
         return BoABpo;
     }
 
     /** Get μ / a .
      * @return moa
      */
-    public double getMoa() {
+    public T getMoa() {
         return moa;
     }
 
     /** Get roa = R / a.
      * @return roa
      */
-    public double getRoa() {
+    public T getRoa() {
         return roa;
     }
-
 
 }

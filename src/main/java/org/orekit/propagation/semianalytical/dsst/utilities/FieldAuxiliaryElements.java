@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.FieldAbsoluteDate;
@@ -62,6 +63,15 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
 
     /** y component of inclination vector. */
     private final T p;
+
+    /** Mean longitude. */
+    private final T lm;
+
+    /** True longitude. */
+    private final T lv;
+
+    /** Eccentric longitude. */
+    private final T le;
 
     /** Retrograde factor I.
      *  <p>
@@ -134,6 +144,9 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         h   = orbit.getEquinoctialEy();
         q   = orbit.getHx();
         p   = orbit.getHy();
+        lm  = normalizeAngle(orbit.getLM(), FastMath.PI);
+        lv  = normalizeAngle(orbit.getLv(), FastMath.PI);
+        le  = normalizeAngle(orbit.getLE(), FastMath.PI);
 
         // Retrograde factor [Eq. 2.1.2-(2)]
         I = retrogradeFactor;
@@ -153,14 +166,36 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         final T px2 = p.multiply(2.);
         final T qx2 = q.multiply(2.);
         final T pq2 = px2.multiply(q);
-        f = new FieldVector3D<T>(ooC, new FieldVector3D<T>(p2.negate().add(1.).add(q2), pq2, px2.multiply(I).negate()));
-        g = new FieldVector3D<T>(ooC, new FieldVector3D<T>(pq2.multiply(I), (p2.add(1.).subtract(q2)).multiply(I), qx2));
-        w = new FieldVector3D<T>(ooC, new FieldVector3D<T>(px2, qx2.negate(), (p2.add(q2).negate().add(1.)).multiply(I)));
+        f = new FieldVector3D<>(ooC, new FieldVector3D<>(p2.negate().add(1.).add(q2), pq2, px2.multiply(I).negate()));
+        g = new FieldVector3D<>(ooC, new FieldVector3D<>(pq2.multiply(I), (p2.add(1.).subtract(q2)).multiply(I), qx2));
+        w = new FieldVector3D<>(ooC, new FieldVector3D<>(px2, qx2.negate(), (p2.add(q2).negate().add(1.)).multiply(I)));
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
         alpha = (T) f.getZ();
         beta  = (T) g.getZ();
         gamma = (T) w.getZ();
+    }
+
+    /**
+     * Normalize an angle in a 2&pi; wide interval around a center value.
+     * <p>This method has three main uses:</p>
+     * <ul>
+     *   <li>normalize an angle between 0 and 2&pi;:<br/>
+     *       {@code a = MathUtils.normalizeAngle(a, FastMath.PI);}</li>
+     *   <li>normalize an angle between -&pi; and +&pi;<br/>
+     *       {@code a = MathUtils.normalizeAngle(a, 0.0);}</li>
+     *   <li>compute the angle between two defining angular positions:<br>
+     *       {@code angle = MathUtils.normalizeAngle(end, start) - start;}</li>
+     * </ul>
+     * <p>Note that due to numerical accuracy and since &pi; cannot be represented
+     * exactly, the result interval is <em>closed</em>, it cannot be half-closed
+     * as would be more satisfactory in a purely mathematical view.</p>
+     * @param a angle to normalize
+     * @param center center of the desired 2&pi; interval for the result
+     * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
+     */
+    public T normalizeAngle(final T a, final double center) {
+        return a.subtract(2 * FastMath.PI).multiply(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(2 * FastMath.PI)));
     }
 
     /** Get the date of the orbit.
@@ -256,6 +291,27 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         return p;
     }
 
+    /** Get the mean longitude.
+     * @return lm
+     */
+    public T getLM() {
+        return lm;
+    }
+
+    /** Get the true longitude.
+     * @return lv
+     */
+    public T getLv() {
+        return lv;
+    }
+
+    /** Get the eccentric longitude.
+     * @return le
+     */
+    public T getLe() {
+        return le;
+    }
+
     /** Get the retrograde factor.
      * @return the retrograde factor I
      */
@@ -287,21 +343,21 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
     /** Get equinoctial frame vector f.
      * @return f vector
      */
-    public FieldVector3D getVectorF() {
+    public FieldVector3D<T> getVectorF() {
         return f;
     }
 
     /** Get equinoctial frame vector g.
      * @return g vector
      */
-    public FieldVector3D getVectorG() {
+    public FieldVector3D<T> getVectorG() {
         return g;
     }
 
     /** Get equinoctial frame vector w.
      * @return w vector
      */
-    public FieldVector3D getVectorW() {
+    public FieldVector3D<T> getVectorW() {
         return w;
     }
 

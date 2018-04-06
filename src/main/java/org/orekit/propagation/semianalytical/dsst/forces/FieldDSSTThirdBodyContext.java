@@ -16,13 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
-/** This class is a container for the attributes of
+/** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody DSSTThirdBody}.
  * <p>
  * It replaces the last version of the method
@@ -30,233 +31,232 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * initializeStep(AuxiliaryElements)}.
  * </p>
  */
-public class DSSTThirdBodyContext extends ForceModelContext {
+public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final double           gm;
 
     /** Distance from center of mass of the central body to the 3rd body. */
-    private double R3;
+    private T R3;
 
     // Direction cosines of the symmetry axis
     /** α. */
-    private double alpha;
+    private final T alpha;
     /** β. */
-    private double beta;
+    private final T beta;
     /** γ. */
-    private double gamma;
+    private final T gamma;
 
     /** B². */
-    private double BB;
+    private final T BB;
     /** B³. */
-    private double BBB;
+    private final T BBB;
 
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double X;
+    private final T X;
     /** &Chi;². */
-    private double XX;
+    private final T XX;
     /** &Chi;³. */
-    private double XXX;
+    private final T XXX;
     /** -2 * a / A. */
-    private double m2aoA;
+    private final T m2aoA;
     /** B / A. */
-    private double BoA;
+    private final T BoA;
     /** 1 / (A * B). */
-    private double ooAB;
+    private final T ooAB;
     /** -C / (2 * A * B). */
-    private double mCo2AB;
+    private final T mCo2AB;
     /** B / A(1 + B). */
-    private double BoABpo;
+    private final T BoABpo;
 
     /** mu3 / R3. */
-    private double muoR3;
+    private final T muoR3;
 
     /** b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B).*/
-    private double b;
+    private final T b;
 
     /** h * &Chi;³. */
-    private double hXXX;
+    private final T hXXX;
     /** k * &Chi;³. */
-    private double kXXX;
+    private final T kXXX;
 
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
-     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param fieldAuxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
      * @throws OrekitException if some specific error occurs
      */
-    public DSSTThirdBodyContext(final AuxiliaryElements auxiliaryElements, final CelestialBody thirdBody) throws OrekitException {
+    public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> fieldAuxiliaryElements, final CelestialBody thirdBody) throws OrekitException {
 
-        super(auxiliaryElements);
+        super(fieldAuxiliaryElements);
 
         this.gm = thirdBody.getGM();
-
         // Distance from center of mass of the central body to the 3rd body
-        final Vector3D bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
+        final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(fieldAuxiliaryElements.getDate(), fieldAuxiliaryElements.getFrame()).getPosition();
         R3 = bodyPos.getNorm();
 
         // Direction cosines
-        final Vector3D bodyDir = bodyPos.normalize();
-        alpha = bodyDir.dotProduct(auxiliaryElements.getVectorF());
-        beta  = bodyDir.dotProduct(auxiliaryElements.getVectorG());
-        gamma = bodyDir.dotProduct(auxiliaryElements.getVectorW());
+        final FieldVector3D<T> bodyDir = bodyPos.normalize();
+        alpha = (T) bodyDir.dotProduct(fieldAuxiliaryElements.getVectorF());
+        beta  = (T) bodyDir.dotProduct(fieldAuxiliaryElements.getVectorG());
+        gamma = (T) bodyDir.dotProduct(fieldAuxiliaryElements.getVectorW());
 
         //&Chi;<sup>-2</sup>.
-        BB = auxiliaryElements.getB() * auxiliaryElements.getB();
+        BB = fieldAuxiliaryElements.getB().multiply(fieldAuxiliaryElements.getB());
         //&Chi;<sup>-3</sup>.
-        BBB = BB * auxiliaryElements.getB();
+        BBB = BB.multiply(fieldAuxiliaryElements.getB());
 
         //b = 1 / (1 + B)
-        b = 1. / (1. + auxiliaryElements.getB());
+        b = fieldAuxiliaryElements.getB().add(1.).reciprocal();
 
         // &Chi;
-        X = 1. / auxiliaryElements.getB();
-        XX = X * X;
-        XXX = X * XX;
+        X = fieldAuxiliaryElements.getB().reciprocal();
+        XX = X.multiply(X);
+        XXX = X.multiply(XX);
+
         // -2 * a / A
-        m2aoA = -2. * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        m2aoA = fieldAuxiliaryElements.getSma().multiply(-2.).divide(fieldAuxiliaryElements.getA());
         // B / A
-        BoA = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA = fieldAuxiliaryElements.getB().divide(fieldAuxiliaryElements.getA());
         // 1 / AB
-        ooAB = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB = (fieldAuxiliaryElements.getA().multiply(fieldAuxiliaryElements.getB())).reciprocal();
         // -C / 2AB
-        mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
+        mCo2AB = fieldAuxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
         // B / A(1 + B)
-        BoABpo = BoA / (1. + auxiliaryElements.getB());
-
+        BoABpo = BoA.divide(fieldAuxiliaryElements.getB().add(1.));
         // mu3 / R3
-        muoR3 = gm / R3;
-
+        muoR3 = R3.divide(gm).reciprocal();
         //h * &Chi;³
-        hXXX = auxiliaryElements.getH() * XXX;
+        hXXX = XXX.multiply(fieldAuxiliaryElements.getH());
         //k * &Chi;³
-        kXXX = auxiliaryElements.getK() * XXX;
+        kXXX = XXX.multiply(fieldAuxiliaryElements.getK());
+
     }
 
     /** Get distance from center of mass of the central body to the 3rd body.
      * @return R3
      */
-    public double getR3() {
+    public T getR3() {
         return R3;
     }
 
     /** Get direction cosine α for central body.
      * @return α
      */
-    public double getAlpha() {
+    public T getAlpha() {
         return alpha;
     }
 
     /** Get direction cosine β for central body.
      * @return β
      */
-    public double getBeta() {
+    public T getBeta() {
         return beta;
     }
 
     /** Get direction cosine γ for central body.
      * @return γ
      */
-    public double getGamma() {
+    public T getGamma() {
         return gamma;
     }
 
     /** Get B².
      * @return B²
      */
-    public double getBB() {
+    public T getBB() {
         return BB;
     }
 
     /** Get B³.
      * @return B³
      */
-    public double getBBB() {
+    public T getBBB() {
         return BBB;
     }
 
     /** Get b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B).
      * @return b
      */
-    public double getb() {
+    public T getb() {
         return b;
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
      * @return &Chi;
      */
-    public double getX() {
+    public T getX() {
         return X;
     }
 
     /** Get &Chi;².
      * @return &Chi;².
      */
-    public double getXX() {
+    public T getXX() {
         return XX;
     }
 
     /** Get &Chi;³.
      * @return &Chi;³
      */
-    public double getXXX() {
+    public T getXXX() {
         return XXX;
     }
 
     /** Get m2aoA = -2 * a / A.
      * @return m2aoA
      */
-    public double getM2aoA() {
+    public T getM2aoA() {
         return m2aoA;
     }
 
     /** Get B / A.
      * @return BoA
      */
-    public double getBoA() {
+    public T getBoA() {
         return BoA;
     }
 
     /** Get ooAB = 1 / (A * B).
      * @return ooAB
      */
-    public double getOoAB() {
+    public T getOoAB() {
         return ooAB;
     }
 
     /** Get mCo2AB = -C / 2AB.
      * @return mCo2AB
      */
-    public double getMCo2AB() {
+    public T getMCo2AB() {
         return mCo2AB;
     }
 
     /** Get BoABpo = B / A(1 + B).
      * @return BoABpo
      */
-    public double getBoABpo() {
+    public T getBoABpo() {
         return BoABpo;
     }
 
     /** Get muoR3 = mu3 / R3.
      * @return muoR3
      */
-    public double getMuoR3() {
+    public T getMuoR3() {
         return muoR3;
     }
 
     /** Get hXXX = h * &Chi;³.
      * @return hXXX
      */
-    public double getHXXX() {
+    public T getHXXX() {
         return hXXX;
     }
 
     /** Get kXXX = h * &Chi;³.
      * @return kXXX
      */
-    public double getKXXX() {
+    public T getKXXX() {
         return kXXX;
     }
 

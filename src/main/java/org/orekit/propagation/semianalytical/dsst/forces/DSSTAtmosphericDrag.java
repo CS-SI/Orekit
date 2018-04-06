@@ -16,20 +16,20 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-//import org.hipparchus.Field;
-//import org.hipparchus.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-//import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
-//import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.Constants;
 
 /** Atmospheric drag contribution to the
@@ -108,6 +108,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
 
+        // AuxiliaryElements auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
@@ -127,34 +128,36 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return new double[] {wW - fb, wW + fb};
     }
 
-    ///** {@inheritDoc} */
-    /**protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state) throws OrekitException {
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
+                                                             final FieldAbstractGaussianContributionContext<T> context)
+        throws OrekitException {
 
-        final Field<T> field = state.getDate().getField();
-        final T zero = field.getZero();
+        // AuxiliaryElements auxiliary elements related to the current orbit
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
-        final T[] tab = MathArrays.buildArray(field, 2);
+        final T[] tab = MathArrays.buildArray(state.getDate().getField(), 2);
 
-        final T perigee = zero.add(a * (1. - ecc));
+        final T perigee = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().negate().add(1.));
         // Trajectory entirely out of the atmosphere
         if (perigee.getReal() > rbar) {
             return tab;
         }
-        final T apogee  = zero.add(a * (1. + ecc));
+        final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
         if (apogee.getReal() < rbar) {
-            tab[0] = (zero.subtract(FastMath.PI)).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
-            tab[1] = zero.add(FastMath.PI).add(MathUtils.normalizeAngle(state.getLv().getReal(), 0));
+            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), 0).subtract(FastMath.PI);
+            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), 0).add(FastMath.PI);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere
-        final T fb = zero.add(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc).acos();
-        final T wW = (zero.add(h)).divide(k).atan();
+        final T fb = FastMath.acos(((auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc()).negate().add(1.)).divide(rbar)).subtract(1.)).divide(auxiliaryElements.getEcc()));
+        final T wW = FastMath.atan2(auxiliaryElements.getH(), auxiliaryElements.getK());
 
         tab[0] = wW.subtract(fb);
         tab[1] = wW.add(fb);
         return tab;
-    }*/
+    }
 
     /** Get spacecraft shape.
      *
