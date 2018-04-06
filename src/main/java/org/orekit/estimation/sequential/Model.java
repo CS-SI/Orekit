@@ -103,6 +103,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Current number of measurement. */
     private int currentMeasurementNumber;
 
+    /** Reference date. */
+    private AbsoluteDate referenceDate;
+
     /** Current date. */
     private AbsoluteDate currentDate;
 
@@ -132,6 +135,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.currentMeasurementNumber        = 0;
+        this.referenceDate                   = propagatorBuilders.get(0).getInitialOrbitDate();
+        this.currentDate                     = referenceDate;
 
         final Map<String, Integer> orbitalParameterColumns = new HashMap<>(6 * builders.size());
         orbitsStartColumns      = new int[builders.size()];
@@ -140,7 +146,16 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         allEstimatedOrbitalParameters = new ParameterDriversList();
         for (int k = 0; k < builders.size(); ++k) {
             orbitsStartColumns[k] = columns;
+            final String suffix = propagatorBuilders.size() > 1 ? "[" + k + "]" : null;
             for (final ParameterDriver driver : builders.get(k).getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.getReferenceDate() == null) {
+                    driver.setReferenceDate(currentDate);
+                }
+                if (suffix != null && !driver.getName().endsWith(suffix)) {
+                    // we add suffix only conditionally because the method may already have been called
+                    // and suffixes may have already been appended
+                    driver.setName(driver.getName() + suffix);
+                }
                 if (driver.isSelected()) {
                     allEstimatedOrbitalParameters.add(driver);
                     orbitalParameterColumns.put(driver.getName(), columns++);
@@ -156,6 +171,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         for (int k = 0; k < builders.size(); ++k) {
             estimatedPropagationParameters[k] = new ParameterDriversList();
             for (final ParameterDriver driver : builders.get(k).getPropagationParametersDrivers().getDrivers()) {
+                if (driver.getReferenceDate() == null) {
+                    driver.setReferenceDate(currentDate);
+                }
                 if (driver.isSelected()) {
                     allEstimatedPropagationParameters.add(driver);
                     estimatedPropagationParameters[k].add(driver);
@@ -178,6 +196,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
         // Populate the map of measurement drivers' columns and update the total number of columns
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
+            if (parameter.getReferenceDate() == null) {
+                parameter.setReferenceDate(currentDate);
+            }
             measurementParameterColumns.put(parameter.getName(), columns);
             ++columns;
         }
@@ -248,10 +269,6 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         final RealMatrix correctedCovariance = buildCompleteProcessNoiseMatrix(columns, null, correctedSpacecraftStates);
 
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
-
-        this.currentMeasurementNumber = 0;
-        this.currentDate              = propagatorBuilders.get(0).getInitialOrbitDate();
-
 
     }
 

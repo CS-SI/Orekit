@@ -166,16 +166,14 @@ public class KalmanEstimator {
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < propagatorBuilders.size(); ++i) {
             final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
-            for (final DelegatingDriver delegating : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
-                if (delegating.isSelected() || !estimatedOnly) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        if (suffix != null && !driver.getName().endsWith(suffix)) {
-                            // we add suffix only conditionally because the method may already have been called
-                            // and suffixes may have already been appended
-                            driver.setName(driver.getName() + suffix);
-                        }
-                        estimated.add(driver);
+            for (final ParameterDriver driver : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected() || !estimatedOnly) {
+                    if (suffix != null && !driver.getName().endsWith(suffix)) {
+                        // we add suffix only conditionally because the method may already have been called
+                        // and suffixes may have already been appended
+                        driver.setName(driver.getName() + suffix);
                     }
+                    estimated.add(driver);
                 }
             }
         }
