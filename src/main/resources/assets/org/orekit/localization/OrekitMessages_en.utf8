@@ -456,3 +456,9 @@ NO_REFERENCE_DATE_FOR_PARAMETER = no reference date set for parameter {0}
 
 # station {0} not found, known stations: {1}
 STATION_NOT_FOUND = station {0} not found, known stations: {1}
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = no propagator configured
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = dimension {0} is inconsistent with parameters list: {1}

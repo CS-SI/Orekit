@@ -16,10 +16,14 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
@@ -33,41 +37,44 @@ public class KalmanEstimatorBuilder {
     /** Decomposer to use for the correction phase. */
     private MatrixDecomposer decomposer;
 
-    /** Builder for propagator. */
-    private NumericalPropagatorBuilder propagatorBuilder;
+    /** Builders for propagators. */
+    private List<NumericalPropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
 
-    /** Initial covariance matrix. */
-    private RealMatrix initialCovarianceMatrix;
-
-    /** Process noise matrix provider. */
-    private ProcessNoiseMatrixProvider processNoiseMatrixProvider;
+    /** Process noise matrices providers. */
+    private List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders;
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
      */
     public KalmanEstimatorBuilder() {
         this.decomposer                      = new QRDecomposer(1.0e-15);
-        this.propagatorBuilder               = null;
-        this.estimatedMeasurementsParameters = null;
-        this.initialCovarianceMatrix         = null;
-        this.processNoiseMatrixProvider      = null;
+        this.propagatorBuilders              = new ArrayList<>();
+        this.estimatedMeasurementsParameters = new ParameterDriversList();
+        this.processNoiseMatricesProviders   = new ArrayList<>();
     }
 
     /** Construct a {@link KalmanEstimatorReal} from the data in this builder.
+     * <p>
+     * Before this method is called, {@link #addPropagationConfiguration(NumericalPropagatorBuilder,
+     * ProcessNoiseMatrixProvider)addPropagationConfiguration()} must have been called
+     * at least once and {@link #initialCovarianceMatrix(RealMatrix) initialCovarianceMatrix()}
+     * must have been called, otherwise configuration is incomplete and an exception
+     * will be raised.
+     * </p>
      * @return a new {@link KalmanEstimatorReal}.
-     * @throws OrekitException if building the filter failed
+     * @throws OrekitException if some configuration parameters are missing
      */
     public KalmanEstimator build()
         throws OrekitException {
-        // FIXME: Add checks on the existence of the different arguments
-        return new KalmanEstimator(decomposer,
-                                   propagatorBuilder,
-                                   estimatedMeasurementsParameters,
-                                   initialCovarianceMatrix,
-                                   processNoiseMatrixProvider);
+        final int n = propagatorBuilders.size();
+        if (n == 0) {
+            throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
+        }
+        return new KalmanEstimator(decomposer, propagatorBuilders, processNoiseMatricesProviders,
+                                   estimatedMeasurementsParameters);
     }
 
     /** Configure the matrix decomposer.
@@ -79,40 +86,46 @@ public class KalmanEstimatorBuilder {
         return this;
     }
 
-    /** Configure the propagator builder.
-     * @param propBuilder The propagator builder to use in the Kalman filter.
+    /** Add a propagation configuration.
+     * <p>
+     * This method must be called once for each propagator to managed with the
+     * {@link KalmanEstimator Kalman estimator}. The propagators order in the
+     * Kalman filter will be the call order.
+     * </p>
+     * <p>
+     * The {@code provider} should return a matrix with dimensions and ordering
+     * consistent with the {@link builder} configuration. The first 6 rows/columns
+     * correspond to the 6 orbital parameters which must all be present, regardless
+     * of the fact they are estimated or not. The remaining elements correspond
+     * to the subset of propagation parameters that are estimated, in the
+     * same order as propagatorBuilder.{@link
+     * org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
+     * getPropagationParametersDrivers()}.{@link org.orekit.utils.ParameterDriversList#getDrivers()
+     * getDrivers()} (but filtering out the non selected drivers).
+     * </p>
+     * @param builder The propagator builder to use in the Kalman filter.
+     * @param provider The process noise matrices provider to use, consistent with the builder.
      * @return this object.
+     * @see ProcessNoiseMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
+     * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder builder(final NumericalPropagatorBuilder propBuilder) {
-        propagatorBuilder = propBuilder;
+    public KalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
+                                                              final ProcessNoiseMatrixProvider provider) {
+        propagatorBuilders.add(builder);
+        processNoiseMatricesProviders.add(provider);
         return this;
     }
 
     /** Configure the estimated measurement parameters.
+     * <p>
+     * If this method is not called, no measurement parameters will be estimated.
+     * </p>
      * @param estimatedMeasurementsParams The estimated measurements' parameters list.
      * @return this object.
      *
      */
     public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
-        return this;
-    }
-
-    /** Configure the initial covariance matrix.
-     * @param initialP The initial covariance matrix to use.
-     * @return this object.
-     */
-    public KalmanEstimatorBuilder initialCovarianceMatrix(final RealMatrix initialP) {
-        initialCovarianceMatrix = initialP;
-        return this;
-    }
-
-    /** Configure the process noise matrix provider.
-     * @param provider The process noise matrix provider to use.
-     * @return this object.
-     */
-    public KalmanEstimatorBuilder processNoiseMatrixProvider(final ProcessNoiseMatrixProvider provider) {
-        processNoiseMatrixProvider = provider;
         return this;
     }
 

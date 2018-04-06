@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.List;
+
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
@@ -28,6 +30,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -69,8 +72,8 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class KalmanEstimator {
 
-    /** Builder for a numerical propagator. */
-    private NumericalPropagatorBuilder propagatorBuilder;
+    /** Builders for numerical propagators. */
+    private List<NumericalPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -86,30 +89,24 @@ public class KalmanEstimator {
 
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
-     * @param propagatorBuilder propagator builder used to evaluate the orbit.
+     * @param propagatorBuilders propagators builders used to evaluate the orbit.
+     * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param physicalInitialCovariance physical initial covariance matrix
-     * @param processNoiseMatrixProvider provider for process noise matrix
      * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final NumericalPropagatorBuilder propagatorBuilder,
-                    final ParameterDriversList estimatedMeasurementParameters,
-                    final RealMatrix physicalInitialCovariance,
-                    final ProcessNoiseMatrixProvider processNoiseMatrixProvider)
+                    final List<NumericalPropagatorBuilder> propagatorBuilders,
+                    final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders,
+                    final ParameterDriversList estimatedMeasurementParameters)
         throws OrekitException {
 
-        this.propagatorBuilder = propagatorBuilder;
-        this.referenceDate     = propagatorBuilder.getInitialOrbitDate();
-        this.observer          = null;
+        this.propagatorBuilders = propagatorBuilders;
+        this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
+        this.observer           = null;
 
         // Build the process model and measurement model
-        this.processModel = new Model(propagatorBuilder,
-                                      getOrbitalParametersDrivers(true),
-                                      getPropagationParametersDrivers(true),
-                                      estimatedMeasurementParameters,
-                                      physicalInitialCovariance,
-                                      processNoiseMatrixProvider);
+        this.processModel = new Model(propagatorBuilders, processNoiseMatricesProviders,
+                                      estimatedMeasurementParameters);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
@@ -151,6 +148,14 @@ public class KalmanEstimator {
     }
 
     /** Get the orbital parameters supported by this estimator.
+     * <p>
+     * If there are more than one propagator builder, then the names
+     * of the drivers have an index marker in square brackets appended
+     * to them in order to distinguish the various orbits. So for example
+     * with one builder generating Keplerian orbits the names would be
+     * simply "a", "e", "i"... but if there are several builders the
+     * names would be "a[0]", "e[0]", "i[0]"..."a[1]", "e[1]", "i[1]"...
+     * </p>
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
@@ -159,9 +164,15 @@ public class KalmanEstimator {
         throws OrekitException {
 
         final ParameterDriversList estimated = new ParameterDriversList();
-        for (final DelegatingDriver delegating : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-            if (delegating.isSelected() || !estimatedOnly) {
-                for (final ParameterDriver driver : delegating.getRawDrivers()) {
+        for (int i = 0; i < propagatorBuilders.size(); ++i) {
+            final String suffix = propagatorBuilders.size() > 1 ? "[" + i + "]" : null;
+            for (final ParameterDriver driver : propagatorBuilders.get(i).getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected() || !estimatedOnly) {
+                    if (suffix != null && !driver.getName().endsWith(suffix)) {
+                        // we add suffix only conditionally because the method may already have been called
+                        // and suffixes may have already been appended
+                        driver.setName(driver.getName() + suffix);
+                    }
                     estimated.add(driver);
                 }
             }
@@ -178,10 +189,12 @@ public class KalmanEstimator {
         throws OrekitException {
 
         final ParameterDriversList estimated = new ParameterDriversList();
-        for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (delegating.isSelected() || !estimatedOnly) {
-                for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                    estimated.add(driver);
+        for (PropagatorBuilder builder : propagatorBuilders) {
+            for (final DelegatingDriver delegating : builder.getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected() || !estimatedOnly) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
+                    }
                 }
             }
         }
@@ -200,10 +213,10 @@ public class KalmanEstimator {
      * Update the filter with the new measurement by calling the estimate method.
      * </p>
      * @param observedMeasurement the measurement to process
-     * @return estimated propagator
+     * @return estimated propagators
      * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator estimationStep(final ObservedMeasurement<?> observedMeasurement)
+    public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement)
         throws OrekitException {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
@@ -211,7 +224,7 @@ public class KalmanEstimator {
             if (observer != null) {
                 observer.evaluationPerformed(processModel);
             }
-            return processModel.getEstimatedPropagator();
+            return processModel.getEstimatedPropagators();
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
         } catch (OrekitExceptionWrapper oew) {
@@ -221,16 +234,16 @@ public class KalmanEstimator {
 
     /** Process several measurements.
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
-     * @return a stream of estimated propagators
+     * @return estimated propagators
      * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements)
+    public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements)
         throws OrekitException {
-        NumericalPropagator propagator = null;
+        NumericalPropagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
-            propagator = estimationStep(observedMeasurement);
+            propagators = estimationStep(observedMeasurement);
         }
-        return propagator;
+        return propagators;
     }
 
     /** Decorate an observed measurement.
