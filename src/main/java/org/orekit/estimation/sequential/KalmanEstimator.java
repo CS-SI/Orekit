@@ -96,7 +96,7 @@ public class KalmanEstimator {
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final List<NumericalPropagatorBuilder> propagatorBuilders,
-                    final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders,
+                    final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters)
         throws OrekitException {
 

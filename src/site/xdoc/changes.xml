@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Split initial covariance matrix and process noise matrix in two
+        methods in the covariance matrix provider interface.
+      </action>
       <action dev="luc" type="add">
         Added VersionedITRF frame that allow users with needs for very high
         accuracy to specify which ITRF version they want, and stick to it
