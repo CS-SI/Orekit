@@ -44,7 +44,7 @@ public class KalmanEstimatorBuilder {
     private ParameterDriversList estimatedMeasurementsParameters;
 
     /** Process noise matrices providers. */
-    private List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders;
+    private List<CovarianceMatrixProvider> processNoiseMatricesProviders;
 
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
@@ -106,11 +106,11 @@ public class KalmanEstimatorBuilder {
      * @param builder The propagator builder to use in the Kalman filter.
      * @param provider The process noise matrices provider to use, consistent with the builder.
      * @return this object.
-     * @see ProcessNoiseMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
+     * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
     public KalmanEstimatorBuilder addPropagationConfiguration(final NumericalPropagatorBuilder builder,
-                                                              final ProcessNoiseMatrixProvider provider) {
+                                                              final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);
         return this;
