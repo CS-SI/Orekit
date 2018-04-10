@@ -24,6 +24,38 @@
       <action dev="luc" type="add" due-to="Albert Alcarraz García">
         Added loading of RINEX observation files (versions 2 and 3)
       </action>
+      <action dev="luc" type="add">
+        Added VersionedITRF frame that allow users with needs for very high
+        accuracy to specify which ITRF version they want, and stick to it
+        regardless of their EOP source.
+        Fixes issue #412.
+      </action>
+      <action dev="luc" type="add">
+        Added an itrf-versions.conf configuration file allowing to specify
+        which ITRF version each EOP file defines for which date
+      </action>
+      <action dev="luc" type="add">
+        EOP history now contains the ITRF version corresponding to each
+        EOP entry on a per date basis
+      </action>
+      <action dev="luc" type="add">
+        Added an ITRFVersion enumerate to simplify conversion between ITRF frames,
+        even when no direct Helmert transformation is available
+      </action>
+      <action dev="luc" type="add">
+        Added TransformProviderUtility to reverse or combine TransformProvider instances.
+      </action>
+      <action dev="luc" type="add">
+        Allow attitude overriding during constant-thrust maneuvers.
+        Fixes issue #410.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed out-of-sync attitude computation near switch events in AttitudeSequence.
+        Fixes issue #404.
+      </action>
+      <action dev="luc" type="add">
+        Added a method to extract sub-ranges from TimeSpanMap instances.
+      </action>
       <action dev="luc" type="fix">
         Fixed TLE creation with B* coefficients having single digits like 1.0e-4.
         Fixes issue #388.

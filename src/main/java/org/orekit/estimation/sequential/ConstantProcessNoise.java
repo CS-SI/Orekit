@@ -21,7 +21,8 @@ import org.orekit.propagation.SpacecraftState;
 
 /** Provider for constant process noise matrices.
  * <p>
- * This class always provides the same process noise matrix,
+ * This class always provides one initial noise matrix and
+ * one constant process noise matrix (both can be identical),
  * regardless of states.
  * </p>
  * @author Luc Maisonobe
@@ -29,13 +30,26 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class ConstantProcessNoise implements ProcessNoiseMatrixProvider {
 
+    /** Initial process noise. */
+    private final RealMatrix initialNoiseMatrix;
+
     /** Constant process noise. */
     private final RealMatrix processNoiseMatrix;
 
     /** Simple constructor.
-     * @param processNoiseMatrix constant process noise
+     * @param processNoiseMatrix constant process noise, used for both initial noise
+     * and noise between previous and current state
      */
     public ConstantProcessNoise(final RealMatrix processNoiseMatrix) {
+        this(processNoiseMatrix, processNoiseMatrix);
+    }
+
+    /** Simple constructor.
+     * @param initialNoiseMatrix initial process noise
+     * @param processNoiseMatrix constant process noise
+     */
+    public ConstantProcessNoise(final RealMatrix initialNoiseMatrix, final RealMatrix processNoiseMatrix) {
+        this.initialNoiseMatrix = initialNoiseMatrix;
         this.processNoiseMatrix = processNoiseMatrix;
     }
 
@@ -43,7 +57,7 @@ public class ConstantProcessNoise implements ProcessNoiseMatrixProvider {
     @Override
     public RealMatrix getProcessNoiseMatrix(final SpacecraftState previous,
                                             final SpacecraftState current) {
-        return processNoiseMatrix;
+        return previous == null ? initialNoiseMatrix : processNoiseMatrix;
     }
 
 }

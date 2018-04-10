@@ -86,8 +86,8 @@ public class TEMEProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 280000);
-        Assert.assertTrue(bos.size() < 285000);
+        Assert.assertTrue(bos.size() > 295000);
+        Assert.assertTrue(bos.size() < 300000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

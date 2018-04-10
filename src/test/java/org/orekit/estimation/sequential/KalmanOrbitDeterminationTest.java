@@ -685,12 +685,10 @@ public class KalmanOrbitDeterminationTest {
         }
 
         // Build the Kalman
-        KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
-        kalmanBuilder.builder(propagatorBuilder);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
-        kalmanBuilder.initialCovarianceMatrix(initialP);
-        kalmanBuilder.processNoiseMatrixProvider(new ConstantProcessNoise(Q));
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        estimatedMeasurementsParameters(estimatedMeasurementsParameters).
+                        build();
 
         // Add an observer
         kalman.setObserver(new KalmanObserver() {
@@ -834,7 +832,7 @@ public class KalmanOrbitDeterminationTest {
         });
 
         // Process the list measurements 
-        final Orbit estimated = kalman.processMeasurements(measurements).getInitialState().getOrbit();
+        final Orbit estimated = kalman.processMeasurements(measurements)[0].getInitialState().getOrbit();
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();

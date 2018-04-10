@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = το πλαίσιο {0} δεν είναι πρ
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = το πλαίσιο {0} έχει βάθος {1}, δεν μπορεί να έχει πρόγονο {2} επίπεδα πιο πάνω
 
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = <MISSING TRANSLATION>
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο,υποστηριζόμενοι τύποι {0} και {1}  
 
@@ -483,3 +486,9 @@ INCONSISTENT_NUMBER_OF_SATS = <MISSING TRANSLATION>
 
 # the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
 INCONSISTENT_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = <MISSING TRANSLATION>
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = <MISSING TRANSLATION>

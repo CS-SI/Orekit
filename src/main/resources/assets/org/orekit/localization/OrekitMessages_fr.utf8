@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = le repère {0} n''est ancêtre ni du repère {
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut avoir d''ancêtre {2} niveaux plus haut
 
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = le repère ITRF {0} n''a pas été trouvé
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}
 
@@ -483,3 +486,9 @@ INCONSISTENT_NUMBER_OF_SATS = nombre incohérent de satellites à la ligne {0} d
 
 # the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
 INCONSISTENT_SATELLITE_SYSTEM = système satellitaire {3} incohérent à la ligne {0} du fichier {1}, l''en-tête mentionne {2} comme système satellitaire Rinex
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = aucun propagateur configuré
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = la dimension {0} est incohérente avec la liste de paramètres : {1}

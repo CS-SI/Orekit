@@ -60,6 +60,7 @@ public enum OrekitMessages implements Localizable {
     FRAME_ANCESTOR_OF_BOTH_FRAMES("frame {0} is an ancestor of both frames {1} and {2}"),
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
+    NO_SUCH_ITRF_FRAME("ITRF frame {0} not found"),
     UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
     NON_PSEUDO_INERTIAL_FRAME("non pseudo-inertial frame \"{0}\""),
     DATA_ROOT_DIRECTORY_DOES_NOT_EXIST("data root directory {0} does not exist"),
@@ -212,7 +213,9 @@ public enum OrekitMessages implements Localizable {
     UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"),
     INCOMPLETE_HEADER("incomplete header in file {0}"),
     INCONSISTENT_NUMBER_OF_SATS("inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}"),
-    INCONSISTENT_SATELLITE_SYSTEM("the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header");
+    INCONSISTENT_SATELLITE_SYSTEM("the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header"),
+    NO_PROPAGATOR_CONFIGURED("no propagator configured"),
+    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}");
 
 
     // CHECKSTYLE: resume JavadocVariable check

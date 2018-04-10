@@ -640,8 +640,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        default void init(SpacecraftState initialState, AbsoluteDate target)
-                throws OrekitException {
+        default void init(final SpacecraftState initialState, final AbsoluteDate target)
+            throws OrekitException {
         }
 
         /** Compute differential equations for main state.
@@ -676,7 +676,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] y0, final double finalTime) {
             try {
                 // update space dynamics view
-                // use only ODE elements
                 SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
                 initialState = updateAdditionalStates(initialState);
                 final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
@@ -695,7 +694,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 ++calls;
 
                 // update space dynamics view
-                // use only ODE elements
                 SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
                 currentState = updateAdditionalStates(currentState);
 
@@ -729,11 +727,30 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public int getDimension() {
             return dimension;
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void init(final double t0, final double[] primary0,
+                         final double[] secondary0, final double finalTime) {
+            try {
+                // update space dynamics view
+                SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+                initialState = updateAdditionalStates(initialState);
+                initialState = initialState.addAdditionalState(equations.getName(), secondary0);
+                final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
+                equations.init(initialState, target);
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final double t, final double[] primary,
                                            final double[] primaryDot, final double[] secondary)
             throws OrekitExceptionWrapper {
@@ -741,7 +758,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                // the state contains only the ODE elements
                 SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);

@@ -78,6 +78,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
         Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
         Assert.assertEquals(asToRad((9 * (-0.105933  + -0.108553)  - (-0.103513  + -0.111054))  / 16), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assert.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(ITRFVersion.ITRF_2008, history.getITRFVersion(date));
     }
 
     private double asToRad(double as) {
