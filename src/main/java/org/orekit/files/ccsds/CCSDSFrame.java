@@ -82,7 +82,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 2014. */
+    /** International Terrestrial Reference Frame 2014. */
     ITRF2014(null) {
 
         /** {@inheritDoc} */
@@ -97,7 +97,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 2008. */
+    /** International Terrestrial Reference Frame 2008. */
     ITRF2008(null) {
 
         /** {@inheritDoc} */
@@ -112,7 +112,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 2005. */
+    /** International Terrestrial Reference Frame 2005. */
     ITRF2005(null) {
 
         /** {@inheritDoc} */
@@ -127,7 +127,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 2000. */
+    /** International Terrestrial Reference Frame 2000. */
     ITRF2000(null) {
 
         /** {@inheritDoc} */
@@ -142,7 +142,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 1993. */
+    /** International Terrestrial Reference Frame 1993. */
     ITRF93(null) {
 
         /** {@inheritDoc} */
@@ -157,7 +157,7 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 1997. */
+    /** International Terrestrial Reference Frame 1997. */
     ITRF97(null) {
 
         /** {@inheritDoc} */
