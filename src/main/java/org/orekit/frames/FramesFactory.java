@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -193,6 +194,10 @@ public class FramesFactory {
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
         new HashMap<Predefined, FactoryManagedFrame>();
+
+    /** Predefined versioned ITRF frames. */
+    private static transient Map<ITRFKey, VersionedITRF> VERSIONED_ITRF_FRAMES =
+        new HashMap<ITRFKey, VersionedITRF>();
 
     /** Loaders for Earth Orientation parameters. */
     private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
@@ -698,6 +703,12 @@ public class FramesFactory {
     }
 
     /** Get an specific International Terrestrial Reference Frame.
+     * <p>
+     * Note that if a specific version of ITRF is required, then {@code simpleEOP}
+     * should most probably be set to {@code false}, as ignoring tidal effects
+     * has an effect of the same order of magnitude as the differences between
+     * the various {@link ITRFVersion ITRF versions}.
+     * </p>
      * @param version ITRF version
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -709,12 +720,25 @@ public class FramesFactory {
                                         final IERSConventions conventions,
                                         final boolean simpleEOP)
         throws OrekitException {
-        final Frame rawITRF = getITRF(conventions, simpleEOP);
-        return new VersionedITRF(rawITRF.getParent(), version,
-                                 (ITRFProvider) rawITRF.getTransformProvider(),
-                                 version.toString().replace('_', '-') +
-                                 "/" +
-                                 rawITRF.getName());
+        synchronized (FramesFactory.class) {
+            // try to find an already built frame
+            final ITRFKey key = new ITRFKey(version, conventions, simpleEOP);
+            VersionedITRF frame = VERSIONED_ITRF_FRAMES.get(key);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                final FactoryManagedFrame rawITRF = getITRF(conventions, simpleEOP);
+                frame = new VersionedITRF(rawITRF.getParent(), version,
+                                          (ITRFProvider) rawITRF.getTransformProvider(),
+                                          version.toString().replace('_', '-') +
+                                          "/" +
+                                          rawITRF.getName());
+                VERSIONED_ITRF_FRAMES.put(key, frame);
+            }
+
+            return frame;
+
+        }
     }
 
     /** Get the TIRF reference frame.
@@ -1403,6 +1427,62 @@ public class FramesFactory {
         }
 
         return peeled;
+
+    }
+
+    /** Local class for different ITRF versions keys.
+     * @since 9.2
+     */
+    private static class ITRFKey implements Serializable {
+
+        /** Serialized UID. */
+        private static final long serialVersionUID = 20180412L;
+
+        /** ITRF version. */
+        private final ITRFVersion version;
+
+        /** IERS conventions to apply. */
+        private final IERSConventions conventions;
+
+        /** Tidal effects flag. */
+        private final boolean simpleEOP;
+
+        /** Simple constructor.
+         * @param version ITRF version
+         * @param conventions IERS conventions to apply
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+         */
+        ITRFKey(final ITRFVersion version, final IERSConventions conventions, final boolean simpleEOP) {
+            this.version     = version;
+            this.conventions = conventions;
+            this.simpleEOP   = simpleEOP;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int hashCode() {
+            return (version.ordinal()     << 5) +
+                   (conventions.ordinal() << 1) +
+                   (simpleEOP ? 0 : 1);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(final Object other) {
+
+            if (this == other) {
+                return true;
+            }
+
+            if (other instanceof ITRFKey) {
+                final ITRFKey key = (ITRFKey) other;
+                return version     == key.version     &&
+                       conventions == key.conventions &&
+                       simpleEOP   == key.simpleEOP;
+            }
+
+            return false;
+        }
 
     }
 
