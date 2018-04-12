@@ -44,7 +44,7 @@ import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.HelmertTransformation.Predefined;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
@@ -464,21 +464,17 @@ public class OEMParserTest {
         Charset utf8 = StandardCharsets.UTF_8;
         IERSConventions conventions = IERSConventions.IERS_2010;
         boolean simpleEop = true;
-        Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEop);
         OEMParser parser = new OEMParser()
                 .withSimpleEOP(simpleEop)
                 .withConventions(conventions);
         // frames to check
         List<Pair<String, Frame>> frames = new ArrayList<>();
-        frames.add(new Pair<>("ITRF-93", Predefined.ITRF_2008_TO_ITRF_93
-                .createTransformedITRF(itrf2008, "ITRF93")));
-        frames.add(new Pair<>("ITRF-97", Predefined.ITRF_2008_TO_ITRF_97
-                .createTransformedITRF(itrf2008, "ITRF97")));
-        frames.add(new Pair<>("ITRF2000", Predefined.ITRF_2008_TO_ITRF_2000
-                .createTransformedITRF(itrf2008, "ITRF2000")));
-        frames.add(new Pair<>("ITRF2005", Predefined.ITRF_2008_TO_ITRF_2005
-                .createTransformedITRF(itrf2008, "ITRF2005")));
-        frames.add(new Pair<>("ITRF2008", itrf2008));
+        frames.add(new Pair<>("ITRF-93",  FramesFactory.getITRF(ITRFVersion.ITRF_93,   conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF-97",  FramesFactory.getITRF(ITRFVersion.ITRF_97,   conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2000", FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2005", FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2008", FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEop)));
+        frames.add(new Pair<>("ITRF2014", FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEop)));
 
         for (Pair<String, Frame> frame : frames) {
             final String frameName = frame.getFirst();
@@ -501,9 +497,9 @@ public class OEMParserTest {
             // check expected frame
             Frame actualFrame = actualBlock.getFrame();
             Frame expectedFrame = frame.getSecond();
-            Assert.assertEquals(actualFrame.getName(), expectedFrame.getName());
-            Assert.assertEquals(actualFrame.getTransformProvider(),
-                    expectedFrame.getTransformProvider());
+            Assert.assertEquals(expectedFrame, actualFrame);
+            Assert.assertEquals(expectedFrame.getTransformProvider(),
+                                actualFrame.getTransformProvider());
         }
     }
 

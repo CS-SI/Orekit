@@ -22,6 +22,10 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Ensure the correct ITRF version is used in CCSDS files, regardless
+        of the EOP source chosen, defaulting to ITRF-2014.
+      </action>
+      <action dev="luc" type="fix">
         Split initial covariance matrix and process noise matrix in two
         methods in the covariance matrix provider interface.
       </action>
