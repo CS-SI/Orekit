@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="maxime" type="add">
+        Increased visibility of attributes in propagator builders.
+        By adding getters for all attributes in NumericalPropagatorBuilder
+        and AbstractPropagatorBuilder.
+        Also made the method findByName in ParameterDriversList public.
+        Fixes issue #425.
+      </action>
       <action dev="luc" type="fix">
         Ensure the correct ITRF version is used in CCSDS files, regardless
         of the EOP source chosen, defaulting to ITRF-2014.
