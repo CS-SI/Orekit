@@ -16,16 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-//import org.hipparchus.Field;
-//import org.hipparchus.RealFieldElement;
-//import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-//import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -33,7 +30,6 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.FieldSpacecraftState;
-//import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;

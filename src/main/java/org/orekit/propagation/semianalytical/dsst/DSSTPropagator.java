@@ -50,7 +50,6 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.ForceModelContext;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
@@ -899,14 +898,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** This method allows to compute the mean equinoctial elements rates dai / dt
          *  for a specific for model.
-         *  @param <K> the type of the force model context
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @return the mean equinoctial elements rates dai / dt
          *  @throws OrekitException if some specific error occurs
          */
-        private <K extends ForceModelContext> double[] elementRates(final DSSTForceModel forceModel,
+        private double[] elementRates(final DSSTForceModel forceModel,
                                                              final SpacecraftState state,
                                                              final AuxiliaryElements auxiliaryElements)
             throws OrekitException {

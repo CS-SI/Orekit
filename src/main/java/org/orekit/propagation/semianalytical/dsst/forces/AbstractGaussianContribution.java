@@ -27,6 +27,7 @@ import java.util.SortedSet;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.RealFieldUnivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -159,16 +160,29 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements)
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @return new force model context
+     *  @throws OrekitException if some specific error occurs
+     */
+    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements)
         throws OrekitException {
         return new AbstractGaussianContributionContext(auxiliaryElements);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param <T> type of the elements
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @return new force model context
+     *  @throws OrekitException if some specific error occurs
+     */
+    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
         throws OrekitException {
         return new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
     }
@@ -336,15 +350,15 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     *  @param <T> type of the elements
     *  @param meanRef reference rates
     *  @param meanCur current rates
-    *  @param fieldContext container for attributes
+    *  @param context container for attributes
     *  @return estimated magnitude of weighted differences
     */
-    private <T extends RealFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur, final FieldAbstractGaussianContributionContext<T> fieldContext) {
+    private <T extends RealFieldElement<T>> T getRatesDiff(final T[] meanRef, final T[] meanCur, final FieldAbstractGaussianContributionContext<T> context) {
 
         // Auxiliary elements related to the current orbit
-        final FieldAuxiliaryElements<T> fieldAuxiliaryElements = fieldContext.getFieldAuxiliaryElements();
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
-        T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(fieldAuxiliaryElements.getSma());;
+        T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(auxiliaryElements.getSma());;
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
             final T diff = FastMath.abs(meanRef[i].subtract(meanCur[i]));
@@ -411,7 +425,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** Internal class for numerical quadrature. */
-    private class FieldIntegrableFunction<T extends RealFieldElement<T>> implements FieldUnivariateVectorFunction<T> {
+    private class FieldIntegrableFunction <T extends RealFieldElement<T>> implements RealFieldUnivariateVectorFunction<T> {
 
         /** Current state. */
         private final FieldSpacecraftState<T> state;
@@ -556,11 +570,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /** Converts true longitude to mean longitude.
-         * @param lv True longitude
+         * @param x True longitude
          * @return Eccentric longitude
          */
-        private T trueToMean (final T lv) {
-            return eccentricToMean(trueToEccentric(lv));
+        private T trueToMean (final T x) {
+            return eccentricToMean(trueToEccentric(x));
         }
 
         /** Converts true longitude to eccentric longitude.
@@ -572,7 +586,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T sinLv   = FastMath.sin(lv);
             final T num     = auxiliaryElements.getH().multiply(cosLv).subtract(auxiliaryElements.getK().multiply(sinLv));
             final T den     = auxiliaryElements.getB().add(auxiliaryElements.getK().multiply(cosLv)).add(auxiliaryElements.getH().multiply(sinLv)).add(1.);
-            return lv.add(FastMath.atan(num.divide(den)).multiply(2.));
+            return FastMath.atan(num.divide(den)).multiply(2.).add(lv);
         }
 
         /** Converts eccentric longitude to mean longitude.
@@ -1409,7 +1423,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
        *  @param context container for attributes
        *  @return the integral of the weighted function.
        */
-        public <T extends RealFieldElement<T>> T[] integrate(final FieldUnivariateVectorFunction<T> f,
+        public <T extends RealFieldElement<T>> T[] integrate(final RealFieldUnivariateVectorFunction<T> f,
                                                             final T lowerBound, final T upperBound,
                                                             final FieldAbstractGaussianContributionContext<T> context) {
 
@@ -1425,10 +1439,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T[] nodePoint = MathArrays.buildArray(field, pointsLength);
             final T[] nodeWeight = MathArrays.buildArray(field, weightsLength);
 
-            for (int i = 0; i <= pointsLength; i++)
+            for (int i = 0; i <= pointsLength; i++) {
                 nodePoint[i] = zero.add(nodePoints[i]);
-            for (int i = 0; i <= weightsLength; i++)
+            }
+
+            for (int i = 0; i <= weightsLength; i++) {
                 nodeWeight[i] = zero.add(nodeWeights[i]);
+            }
 
             adaptedPoints  = nodePoint.clone();
             adaptedWeights = nodeWeight.clone();
@@ -1527,7 +1544,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param context container for attributes
          * @return the integral of the weighted function.
          */
-        private <T extends RealFieldElement<T>> T[] basicIntegrate(final FieldUnivariateVectorFunction<T> f,
+        private <T extends RealFieldElement<T>> T[] basicIntegrate(final RealFieldUnivariateVectorFunction<T> f,
                 final T[] points,
                 final T[] weights,
                 final FieldAbstractGaussianContributionContext<T> context) {

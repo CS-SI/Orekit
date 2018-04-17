@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -23,6 +26,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 
 /** This class is a container for the attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral DSSTTesseral}.
@@ -31,7 +35,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * {@link  org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel#initializeStep(AuxiliaryElements) initializeStep(AuxiliaryElements)}.
  * </p>
  */
-public class DSSTTesseralContext extends ForceModelContext {
+class DSSTTesseralContext extends ForceModelContext {
 
     /** Retrograde factor I.
      *  <p>
@@ -83,20 +87,55 @@ public class DSSTTesseralContext extends ForceModelContext {
     /** ecc². */
     private double e2;
 
+    /** Maximum power of the eccentricity to use in summation over s. */
+    private int maxEccPow;
+
+    /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
+    private int maxHansen;
+
+    /** Keplerian period. */
+    private double orbitPeriod;
+
+    /** Maximal degree to consider for harmonics potential. */
+    private final int maxDegree;
+
+    /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
+     * The indexes are s + maxDegree and j */
+    private HansenTesseralLinear[][] hansenObjects;
+
+    /** Ratio of satellite period to central body rotation period. */
+    private double ratio;
+
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param meanOnly create only the objects required for the mean contribution
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
+     * @param maxFrequencyShortPeriodics maximum value for j
+     * @param resOrders list of resonant orders
+     * @param bodyPeriod central body rotation period (seconds)
      * @throws OrekitException if some specific error occurs
      */
-    public DSSTTesseralContext(final AuxiliaryElements auxiliaryElements,
-                               final Frame centralBodyFrame,
-                               final UnnormalizedSphericalHarmonicsProvider provider)
+    DSSTTesseralContext(final AuxiliaryElements auxiliaryElements,
+                        final boolean meanOnly,
+                        final Frame centralBodyFrame,
+                        final UnnormalizedSphericalHarmonicsProvider provider,
+                        final int maxFrequencyShortPeriodics,
+                        final List<Integer> resOrders,
+                        final double bodyPeriod)
         throws OrekitException {
 
         super(auxiliaryElements);
+
+        this.maxEccPow = 0;
+        this.maxHansen = 0;
+        this.maxDegree = provider.getMaxDegree();
+        this.factory = new DSFactory(1, 1);
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
@@ -128,6 +167,94 @@ public class DSSTTesseralContext extends ForceModelContext {
         chi = 1. / auxiliaryElements.getB();
         chi2 = chi * chi;
 
+        // Set the highest power of the eccentricity in the analytical power
+        // series expansion for the averaged high order resonant central body
+        // spherical harmonic perturbation
+        final double e = auxiliaryElements.getEcc();
+        if (e <= 0.005) {
+            maxEccPow = 3;
+        } else if (e <= 0.02) {
+            maxEccPow = 4;
+        } else if (e <= 0.1) {
+            maxEccPow = 7;
+        } else if (e <= 0.2) {
+            maxEccPow = 10;
+        } else if (e <= 0.3) {
+            maxEccPow = 12;
+        } else if (e <= 0.4) {
+            maxEccPow = 15;
+        } else {
+            maxEccPow = 20;
+        }
+
+        // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+        maxHansen = maxEccPow / 2;
+
+        // Keplerian period
+        orbitPeriod = auxiliaryElements.getKeplerianPeriod();
+
+        // Ratio of satellite to central body periods to define resonant terms
+        ratio = orbitPeriod / bodyPeriod;
+
+        //Allocate the two dimensional array
+        final int rows     = 2 * maxDegree + 1;
+        final int columns  = maxFrequencyShortPeriodics + 1;
+        this.hansenObjects = new HansenTesseralLinear[rows][columns];
+
+        if (meanOnly) {
+            // loop through the resonant orders
+            for (int m : resOrders) {
+                //Compute the corresponding j term
+                final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+
+                //Compute the sMin and sMax values
+                final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+
+                //loop through the s values
+                for (int s = 0; s <= sMax; s++) {
+                    //Compute the n0 value
+                    final int n0 = FastMath.max(FastMath.max(2, m), s);
+
+                    //Create the object for the pair j, s
+                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
+                    this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+
+                    if (s > 0 && s <= sMin) {
+                        //Also create the object for the pair j, -s
+                        //context.getHansenObjects()[maxDegree - s][j] = new HansenTesseralLinear(maxDegree, -s, j, n0, context.getMaxHansen());
+                        this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
+                    }
+                }
+            }
+        } else {
+            // create all objects
+            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                for (int s = -maxDegree; s <= maxDegree; s++) {
+                    //Compute the n0 value
+                    final int n0 = FastMath.max(2, FastMath.abs(s));
+
+                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
+                    this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+                }
+            }
+        }
+
+    }
+
+    /** Compute init values for hansen objects.
+     * @param rows number of rows of the hansen matrix
+     * @param columns columns number of columns of the hansen matrix
+     */
+    public void computeHansenObjectsInitValues(final int rows, final int columns) {
+        hansenObjects[rows][columns].computeInitValues(e2, chi, chi2);
+    }
+
+    /** Get hansen object.
+     * @return hansenObjects
+     */
+    public HansenTesseralLinear[][] getHansenObjects() {
+        return hansenObjects;
     }
 
     /** Get ecc².
@@ -207,5 +334,46 @@ public class DSSTTesseralContext extends ForceModelContext {
         return roa;
     }
 
+    /** Get the maximum power of the eccentricity to use in summation over s.
+     * @return maxEccPow
+     */
+    public int getMaxEccPow() {
+        return maxEccPow;
+    }
+
+    /** Get the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+     * @return maxHansen
+     */
+    public int getMaxHansen() {
+        return maxHansen;
+    }
+
+    /** Get keplerian period.
+     * @return orbitPeriod
+     */
+    public double getOrbitPeriod() {
+        return orbitPeriod;
+    }
+
+    /** Get the maximal degree to consider for harmonics potential.
+     * @return maxDegree
+     */
+    public int getMaxDegree() {
+        return maxDegree;
+    }
+
+    /** Factory for the DerivativeStructure instances.
+     * @return factory
+     */
+    public DSFactory getFactory() {
+        return factory;
+    }
+
+    /** Get the ratio of satellite period to central body rotation period.
+     * @return ratio
+     */
+    public double getRatio() {
+        return ratio;
+    }
 
 }

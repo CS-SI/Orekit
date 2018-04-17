@@ -22,20 +22,20 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
 
     /** Common parameters used by all DSST forces. */
-    private final FieldAuxiliaryElements<T> fieldAuxiliaryElements;
+    private final FieldAuxiliaryElements<T> auxiliaryElements;
 
     /** Simple constructor.
-     * @param fieldAuxiliaryElements auxiliary elements related to the current orbit
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      */
-    protected  FieldForceModelContext(final FieldAuxiliaryElements<T> fieldAuxiliaryElements) {
-        this.fieldAuxiliaryElements = fieldAuxiliaryElements;
+    protected  FieldForceModelContext(final FieldAuxiliaryElements<T> auxiliaryElements) {
+        this.auxiliaryElements = auxiliaryElements;
     }
 
     /** Method to get the auxiliary elements.
      * @return field auxiliary elements
      */
     public FieldAuxiliaryElements<T> getFieldAuxiliaryElements() {
-        return fieldAuxiliaryElements;
+        return auxiliaryElements;
     }
 
 }

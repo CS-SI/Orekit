@@ -18,26 +18,31 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.Arrays;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 
 /** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
- *
- *  @author Romain Di Costanzo
- */
-public class GammaMnsFunction {
+*
+*/
+public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
 
     /** Factorial ratios. */
     private static double[] PRECOMPUTED_RATIOS;
+
+    /** Field element. */
+    private final Field<T> field;
 
     /** Factorial ratios. */
     private final double[] ratios;
 
     /** Storage array. */
-    private final double[] values;
+    private final T[] values;
 
     /** 1 + I * γ. */
-    private final double opIg;
+    private final T opIg;
 
     /** I = +1 for a prograde orbit, -1 otherwise. */
     private final int    I;
@@ -46,13 +51,15 @@ public class GammaMnsFunction {
      *  @param nMax max value for n
      *  @param gamma γ
      *  @param I retrograde factor
+     *  @param field field element
      */
-    public GammaMnsFunction(final int nMax, final double gamma, final int I) {
+    public FieldGammaMnsFunction(final int nMax, final T gamma, final int I, final Field<T> field) {
+        this.field = field;
         final int size = (nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6;
-        this.values = new double[size];
+        this.values = MathArrays.buildArray(field, size);
         this.ratios = getRatios(nMax, size);
         Arrays.fill(values, Double.NaN);
-        this.opIg   = 1. + I * gamma;
+        this.opIg   = gamma.multiply(I).add(1.);
         this.I      = I;
     }
 
@@ -114,13 +121,13 @@ public class GammaMnsFunction {
      *  @param s s
      *  @return &Gamma;<sup>m</sup><sub>n, s</sub>(γ)
      */
-    public double getValue(final int m, final int n, final int s) {
+    public T getValue(final int m, final int n, final int s) {
         final int i = index(m, n, s);
-        if (Double.isNaN(values[i])) {
+        if (Double.isNaN(values[i].getReal())) {
             if (s <= -m) {
-                values[i] = (((m - s) & 0x1) == 0 ? +1 : -1) * FastMath.scalb(FastMath.pow(opIg, -I * m), s);
+                values[i] = FastMath.scalb(FastMath.pow(opIg, -I * m), s).multiply(((m - s) & 0x1) == 0 ? +1 : -1);
             } else if (s <= m) {
-                values[i] = (((m - s) & 0x1) == 0 ? +1 : -1) * FastMath.scalb(FastMath.pow(opIg, I * s), -m) * ratios[i];
+                values[i] = FastMath.scalb(FastMath.pow(opIg, I * s), -m).multiply(ratios[i]).multiply(((m - s) & 0x1) == 0 ? +1 : -1);
             } else {
                 values[i] = FastMath.scalb(FastMath.pow(opIg, I * m), -s);
             }
@@ -134,14 +141,15 @@ public class GammaMnsFunction {
      * @param s s
      * @return d&Gamma;<sup>m</sup><sub>n,s</sub>(γ)/dγ
      */
-    public double getDerivative(final int m, final int n, final int s) {
-        double res = 0.;
+    public T getDerivative(final int m, final int n, final int s) {
+        final T zero = field.getZero();
+        T res = zero;
         if (s <= -m) {
-            res = -m * I * getValue(m, n, s) / opIg;
+            res = getValue(m, n, s).multiply(I).multiply(-m).divide(opIg);
         } else if (s >= m) {
-            res =  m * I * getValue(m, n, s) / opIg;
+            res =  getValue(m, n, s).multiply(I).multiply(m).divide(opIg);;
         } else {
-            res =  s * I * getValue(m, n, s) / opIg;
+            res =  getValue(m, n, s).multiply(I).multiply(s).divide(opIg);;
         }
         return res;
     }

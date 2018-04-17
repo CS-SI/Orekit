@@ -71,28 +71,6 @@ public interface DSSTForceModel {
     List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly)
         throws OrekitException;
 
-    /** Performs initialization at each integration step for the current force model.
-     *  <p>
-     *  This method aims at being called before mean elements rates computation.
-     *  </p>
-     *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
-     */
-    ForceModelContext initializeStep(AuxiliaryElements auxiliaryElements) throws OrekitException;
-
-    /** Performs initialization at each integration step for the current force model.
-     *  <p>
-     *  This method aims at being called before mean elements rates computation.
-     *  </p>
-     *  @param <T> type of the elements
-     *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
-     */
-    <T extends RealFieldElement<T>> FieldForceModelContext<T> initializeStep(FieldAuxiliaryElements<T> auxiliaryElements)
-        throws OrekitException;
-
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude

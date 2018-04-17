@@ -16,8 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 
 /**
  * Hansen coefficients K(t,n,s) for t=0 and n &gt; 0.
@@ -30,7 +33,7 @@ import org.hipparchus.util.FastMath;
  * @author Petre Bazavan
  * @author Lucian Barbulescu
  */
-public class HansenThirdBodyLinear {
+public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
 
     /** The number of coefficients that will be computed with a set of roots. */
     private  static final int SLICE = 10;
@@ -45,10 +48,10 @@ public class HansenThirdBodyLinear {
     private PolynomialFunction[][] mpvecDeriv;
 
     /** The Hansen coefficients used as roots. */
-    private double[][] hansenRoot;
+    private T[][] hansenRoot;
 
     /** The derivatives of the Hansen coefficients used as roots. */
-    private double[][] hansenDerivRoot;
+    private T[][] hansenDerivRoot;
 
     /** The number of slices needed to compute the coefficients. */
     private int numSlices;
@@ -63,16 +66,16 @@ public class HansenThirdBodyLinear {
     private int s;
 
     /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+1)!  */
-    private double twosp1dfosp1f;
+    private T twosp1dfosp1f;
 
     /** (-1)<sup>s</sup> * (2*s + 1)!! / (s+2)!  */
-    private double twosp1dfosp2f;
+    private T twosp1dfosp2f;
 
     /** (-1)<sup>s</sup> * 2 * (2*s + 1)!! / (s+2)!  */
-    private double two2sp1dfosp2f;
+    private T two2sp1dfosp2f;
 
     /** (2*s + 3). */
-    private double twosp3;
+    private T twosp3;
 
     /**
      * Constructor.
@@ -80,8 +83,9 @@ public class HansenThirdBodyLinear {
      * @param nMax the maximum value of n
      * @param s the value of s
      */
-    public HansenThirdBodyLinear(final int nMax, final int s) {
-
+    public FieldHansenThirdBodyLinear(final int nMax, final int s) {
+        final Field<T> field = twosp1dfosp1f.getField();
+        final T zero = field.getZero();
         // initialise fields
         this.nMax = nMax;
         N0 = s;
@@ -92,22 +96,22 @@ public class HansenThirdBodyLinear {
         mpvecDeriv = new PolynomialFunction[this.nMax + 1][];
 
         //Compute the fields that will be used to determine the initial values for the coefficients
-        this.twosp1dfosp1f = (s % 2 == 0) ? 1.0 : -1.0;
+        this.twosp1dfosp1f = zero.add((s % 2 == 0) ? 1.0 : -1.0);
         for (int i = s; i >= 1; i--) {
-            this.twosp1dfosp1f *= (2.0 * i + 1.0) / (i + 1.0);
+            this.twosp1dfosp1f = this.twosp1dfosp1f.multiply((2.0 * i + 1.0) / (i + 1.0));
         }
 
-        this.twosp1dfosp2f = this.twosp1dfosp1f / (s + 2.);
-        this.twosp3 = 2 * s + 3;
-        this.two2sp1dfosp2f = 2 * this.twosp1dfosp2f;
+        this.twosp1dfosp2f = this.twosp1dfosp1f.divide(s + 2.);
+        this.twosp3 = zero.add(2 * s + 3);
+        this.two2sp1dfosp2f = this.twosp1dfosp2f.multiply(2.);
 
         // initialization of structures for stored data
         mpvec = new PolynomialFunction[this.nMax + 1][];
         mpvecDeriv = new PolynomialFunction[this.nMax + 1][];
 
         this.numSlices  = FastMath.max(1, (nMax - s + SLICE - 2) / SLICE);
-        hansenRoot      = new double[numSlices][2];
-        hansenDerivRoot = new double[numSlices][2];
+        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
+        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
 
         // Prepare the database of the associated polynomials
         generatePolynomials();
@@ -276,11 +280,12 @@ public class HansenThirdBodyLinear {
      * @param chitm2 sqrt(1 - e²)²
      * @param chitm3 sqrt(1 - e²)³
      */
-    public void computeInitValues(final double chitm1, final double chitm2, final double chitm3) {
+    public void computeInitValues(final T chitm1, final T chitm2, final T chitm3) {
+        final T zero = chitm1.getField().getZero();
         this.hansenRoot[0][0] = this.twosp1dfosp1f;
-        this.hansenRoot[0][1] = this.twosp1dfosp2f * (this.twosp3 - chitm2);
-        this.hansenDerivRoot[0][0] = 0;
-        this.hansenDerivRoot[0][1] = this.two2sp1dfosp2f * chitm3;
+        this.hansenRoot[0][1] = (chitm2.negate().add(this.twosp3)).multiply(this.twosp1dfosp2f);
+        this.hansenDerivRoot[0][0] = zero;
+        this.hansenDerivRoot[0][1] = chitm3.multiply(this.two2sp1dfosp2f);
 
         for (int i = 1; i < numSlices; i++) {
             for (int j = 0; j < 2; j++) {
@@ -289,14 +294,14 @@ public class HansenThirdBodyLinear {
                 final PolynomialFunction[] sv = mpvecDeriv[s + (i * SLICE) + j];
 
                 //Compute the root derivatives
-                hansenDerivRoot[i][j] = mv[1].value(chitm1) * hansenDerivRoot[i - 1][1] +
-                                        mv[0].value(chitm1) * hansenDerivRoot[i - 1][0] +
-                                        sv[1].value(chitm1) * hansenRoot[i - 1][1] +
-                                        sv[0].value(chitm1) * hansenRoot[i - 1][0];
+                hansenDerivRoot[i][j] = mv[1].value(chitm1).multiply(hansenDerivRoot[i - 1][1]).
+                                    add(mv[0].value(chitm1).multiply(hansenDerivRoot[i - 1][0])).
+                                    add(sv[1].value(chitm1).multiply(hansenRoot[i - 1][1])).
+                                    add(sv[0].value(chitm1).multiply(hansenRoot[i - 1][0]));
 
                 //Compute the root Hansen coefficients
-                hansenRoot[i][j] =  mv[1].value(chitm1) * hansenRoot[i - 1][1] +
-                                    mv[0].value(chitm1) * hansenRoot[i - 1][0];
+                hansenRoot[i][j] =  mv[1].value(chitm1).multiply(hansenRoot[i - 1][1]).
+                                add(mv[0].value(chitm1).multiply(hansenRoot[i - 1][0]));
             }
         }
     }
@@ -308,7 +313,7 @@ public class HansenThirdBodyLinear {
      * @param chitm1 χ<sup>-1</sup>
      * @return the coefficient K₀<sup>n, s</sup>
      */
-    public double getValue(final int n, final double chitm1) {
+    public T getValue(final int n, final T chitm1) {
         //Compute the potential slice
         int sliceNo = (n - s) / SLICE;
         if (sliceNo < numSlices) {
@@ -327,9 +332,9 @@ public class HansenThirdBodyLinear {
 
         // Danielson 2.7.3-(6c)/Collins 4-242 and Petre's paper
         final PolynomialFunction[] v = mpvec[n];
-        double ret = v[1].value(chitm1) * hansenRoot[sliceNo][1];
-        if (hansenRoot[sliceNo][0] != 0) {
-            ret += v[0].value(chitm1) * hansenRoot[sliceNo][0];
+        T ret = v[1].value(chitm1).multiply(hansenRoot[sliceNo][1]);
+        if (hansenRoot[sliceNo][0].getReal() != 0) {
+            ret = ret.add(v[0].value(chitm1).multiply(hansenRoot[sliceNo][0]));
         }
 
         return ret;
@@ -343,7 +348,7 @@ public class HansenThirdBodyLinear {
      * @param chitm1 χ<sup>-1</sup>
      * @return the coefficient dK₀<sup>n, s</sup> / d&Chi;
      */
-    public double getDerivative(final int n, final double chitm1) {
+    public T getDerivative(final int n, final T chitm1) {
         //Compute the potential slice
         int sliceNo = (n - s) / SLICE;
         if (sliceNo < numSlices) {
@@ -361,16 +366,16 @@ public class HansenThirdBodyLinear {
         }
 
         final PolynomialFunction[] v = mpvec[n];
-        double ret = v[1].value(chitm1) * hansenDerivRoot[sliceNo][1];
-        if (hansenDerivRoot[sliceNo][0] != 0) {
-            ret += v[0].value(chitm1) * hansenDerivRoot[sliceNo][0];
+        T ret = v[1].value(chitm1).multiply(hansenDerivRoot[sliceNo][1]);
+        if (hansenDerivRoot[sliceNo][0].getReal() != 0) {
+            ret = ret.add(v[0].value(chitm1).multiply(hansenDerivRoot[sliceNo][0]));
         }
 
         // Danielson 2.7.3-(7c)/Collins 4-254 and Petre's paper
         final PolynomialFunction[] v1 = mpvecDeriv[n];
-        ret += v1[1].value(chitm1) * hansenRoot[sliceNo][1];
-        if (hansenRoot[sliceNo][0] != 0) {
-            ret += v1[0].value(chitm1) * hansenRoot[sliceNo][0];
+        ret = ret.add(v1[1].value(chitm1).multiply(hansenRoot[sliceNo][1]));
+        if (hansenRoot[sliceNo][0].getReal() != 0) {
+            ret = ret.add(v1[0].value(chitm1).multiply(hansenRoot[sliceNo][0]));
         }
         return ret;
 

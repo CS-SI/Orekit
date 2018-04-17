@@ -27,7 +27,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * initializeStep(AuxiliaryElements)}.
  * </p>
  */
-public class AbstractGaussianContributionContext extends ForceModelContext {
+class AbstractGaussianContributionContext extends ForceModelContext {
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -50,7 +50,7 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @throws OrekitException if some specific error occurs
      */
-    public AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements) throws OrekitException {
 
         super(auxiliaryElements);
 
