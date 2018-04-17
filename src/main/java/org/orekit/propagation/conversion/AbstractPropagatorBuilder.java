@@ -165,6 +165,14 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         return positionScale;
     }
 
+    /** Get the central attraction coefficient (µ - m³/s²) value.
+     * @return the central attraction coefficient (µ - m³/s²) value
+     * @since 9.2
+     */
+    public double getMu() {
+        return mu;
+    }
+
     /** Get the number of selected parameters.
      * @return number of selected parameters
      */
@@ -274,7 +282,6 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** Reset the orbit in the propagator builder.
-     * Note: The orbit has to be the same type as the original orbit
      * @param newOrbit New orbit to set in the propagator builder
      * @exception OrekitException if a parameter observer throws an exception during reset
      */
@@ -283,7 +290,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        getOrbitType().mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
+        orbitType.mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
         final List<DelegatingDriver> orbitalDriversList = getOrbitalParametersDrivers().getDrivers();

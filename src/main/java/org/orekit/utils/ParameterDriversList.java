@@ -119,7 +119,7 @@ public class ParameterDriversList {
      * @return a {@link DelegatingDriver delegating driver} managing this parameter name
      * @since 9.1
      */
-    private DelegatingDriver findByName(final String name) {
+    public DelegatingDriver findByName(final String name) {
         for (final DelegatingDriver d : delegating) {
             if (d.getName().equals(name)) {
                 return d;
