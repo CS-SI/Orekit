@@ -82,9 +82,9 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
      *
      * @param nMax the maximum value of n
      * @param s the value of s
+     * @param field field of elements
      */
-    public FieldHansenThirdBodyLinear(final int nMax, final int s) {
-        final Field<T> field = twosp1dfosp1f.getField();
+    public FieldHansenThirdBodyLinear(final int nMax, final int s, final Field<T> field) {
         final T zero = field.getZero();
         // initialise fields
         this.nMax = nMax;
@@ -98,12 +98,12 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
         //Compute the fields that will be used to determine the initial values for the coefficients
         this.twosp1dfosp1f = zero.add((s % 2 == 0) ? 1.0 : -1.0);
         for (int i = s; i >= 1; i--) {
-            this.twosp1dfosp1f = this.twosp1dfosp1f.multiply((2.0 * i + 1.0) / (i + 1.0));
+            this.twosp1dfosp1f = twosp1dfosp1f.multiply((2.0 * i + 1.0) / (i + 1.0));
         }
 
-        this.twosp1dfosp2f = this.twosp1dfosp1f.divide(s + 2.);
+        this.twosp1dfosp2f = twosp1dfosp1f.divide(s + 2.);
         this.twosp3 = zero.add(2 * s + 3);
-        this.two2sp1dfosp2f = this.twosp1dfosp2f.multiply(2.);
+        this.two2sp1dfosp2f = twosp1dfosp2f.multiply(2.);
 
         // initialization of structures for stored data
         mpvec = new PolynomialFunction[this.nMax + 1][];
@@ -279,13 +279,14 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
      * @param chitm1 sqrt(1 - e²)
      * @param chitm2 sqrt(1 - e²)²
      * @param chitm3 sqrt(1 - e²)³
+     * @param field field of elements
      */
-    public void computeInitValues(final T chitm1, final T chitm2, final T chitm3) {
-        final T zero = chitm1.getField().getZero();
-        this.hansenRoot[0][0] = this.twosp1dfosp1f;
-        this.hansenRoot[0][1] = (chitm2.negate().add(this.twosp3)).multiply(this.twosp1dfosp2f);
+    public void computeInitValues(final T chitm1, final T chitm2, final T chitm3, final Field<T> field) {
+        final T zero = field.getZero();
+        this.hansenRoot[0][0] = twosp1dfosp1f;
+        this.hansenRoot[0][1] = twosp1dfosp2f.multiply(chitm2.negate().add(twosp3));
         this.hansenDerivRoot[0][0] = zero;
-        this.hansenDerivRoot[0][1] = chitm3.multiply(this.two2sp1dfosp2f);
+        this.hansenDerivRoot[0][1] = chitm3.multiply(two2sp1dfosp2f);
 
         for (int i = 1; i < numSlices; i++) {
             for (int j = 0; j < 2; j++) {

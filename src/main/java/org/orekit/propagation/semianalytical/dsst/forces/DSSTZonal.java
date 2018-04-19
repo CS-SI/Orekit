@@ -2096,7 +2096,7 @@ public class DSSTZonal implements DSSTForceModel {
             U = zero;
 
             // Gs and Hs coefficients
-            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getMaxEccPowMeanElements());
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getMaxEccPowMeanElements(), field);
             // Qns coefficients
             final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), context.getMaxEccPowMeanElements());
 

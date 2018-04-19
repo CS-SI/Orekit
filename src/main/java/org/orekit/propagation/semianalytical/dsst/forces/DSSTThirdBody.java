@@ -2079,7 +2079,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T zero = field.getZero();
 
             // Gs and Hs coefficients
-            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), context.getMaxEccPow());
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), context.getMaxEccPow(), field);
 
             // Initialise U.
             U = zero;
@@ -2094,7 +2094,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             for (int s = 0; s <= context.getMaxEccPow(); s++) {
                 // initialise the Hansen roots
-                context.computeHansenObjectsInitValues(auxiliaryElements.getB(), s);
+                context.computeHansenObjectsInitValues(auxiliaryElements.getB(), s, field);
 
                 // Get the current Gs coefficient
                 final T gs = GsHs[0][s];

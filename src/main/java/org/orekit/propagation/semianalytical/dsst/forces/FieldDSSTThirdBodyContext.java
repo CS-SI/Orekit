@@ -166,7 +166,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         //Initialise the HansenCoefficient generator
         this.hansenObjects = new FieldHansenThirdBodyLinear[MAX_POWER + 1];
         for (int s = 0; s <= MAX_POWER; s++) {
-            this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s);
+            this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s, field);
         }
 
         // Distance from center of mass of the central body to the 3rd body
@@ -290,9 +290,10 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** Initialise the Hansen roots for third body problem.
      * @param B = sqrt(1 - e²).
      * @param element element of the array to compute the init values
+     * @param field field of elements
      */
-    public void computeHansenObjectsInitValues(final T B, final int element) {
-        hansenObjects[element].computeInitValues(B, BB, BBB);
+    public void computeHansenObjectsInitValues(final T B, final int element, final Field<T> field) {
+        hansenObjects[element].computeInitValues(B, BB, BBB, field);
     }
 
     /** Get the Hansen Objects.

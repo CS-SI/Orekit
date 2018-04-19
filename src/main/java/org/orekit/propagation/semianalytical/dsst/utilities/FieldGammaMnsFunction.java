@@ -55,10 +55,11 @@ public class FieldGammaMnsFunction <T extends RealFieldElement<T>> {
      */
     public FieldGammaMnsFunction(final int nMax, final T gamma, final int I, final Field<T> field) {
         this.field = field;
+        final T zero = field.getZero();
         final int size = (nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6;
         this.values = MathArrays.buildArray(field, size);
         this.ratios = getRatios(nMax, size);
-        Arrays.fill(values, Double.NaN);
+        Arrays.fill(values, zero.add(Double.NaN));
         this.opIg   = gamma.multiply(I).add(1.);
         this.I      = I;
     }

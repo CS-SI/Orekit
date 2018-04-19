@@ -172,6 +172,7 @@ public class CoefficientsFactory {
      *  @param alpha 1st direction cosine
      *  @param beta 2nd direction cosine
      *  @param order development order
+     *  @param field field of elements
      *  @param <T> the type of the field elements
      *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.<br>
      *          The 1st column contains the G<sub>s</sub> values.
@@ -179,16 +180,15 @@ public class CoefficientsFactory {
      */
     public static <T extends RealFieldElement<T>> T[][] computeGsHs(final T k, final T h,
                                          final T alpha, final T beta,
-                                         final int order) {
-
-        final Field<T> field = k.getField();
+                                         final int order, final Field<T> field) {
+        // Zero for initialization
         final T zero = field.getZero();
 
         // Constant terms
         final T hamkb = h.multiply(alpha).subtract(k.multiply(beta));
         final T kaphb = k.multiply(alpha).add(h.multiply(beta));
         // Initialization
-        final T[][] GsHs = MathArrays.buildArray(k.getField(), 2, order + 1);
+        final T[][] GsHs = MathArrays.buildArray(field, 2, order + 1);
         GsHs[0][0] = zero.add(1.);
         GsHs[1][0] = zero;
 
