@@ -25,7 +25,7 @@ Randy Osborne       LASU                                    OBSERVER / AGENCY
 teqc.w windowed: start @ 2016 Feb 13 00:00:00.000           COMMENT
 teqc.w windowed:  end  @ 2016 Feb 13 05:00:00.000           COMMENT
 teqc.w edited: all GLONASS satellites excluded              COMMENT
-  2016     2    13    50     0    0.0000000     GPS         TIME OF FIRST OBS
+  2016     2    13     0    50    0.0000000     GPS         TIME OF FIRST OBS
                                                             END OF HEADER
  16  2 13  0 50  0.0000000  0 10G30G07G08G11G16G27G01G28G09G23
  124715056.737 6  97180603.218 6  23732478.250    23732485.203

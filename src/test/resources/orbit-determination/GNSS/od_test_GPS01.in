@@ -1,15 +1,3 @@
-#######################################
-#        GPS-01
-#
-#
-# Initial orbit extracted from the following TLE
-#
-#  1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990
-#  2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192
-#
-#
-#######################################
-##
 ## Input file for OrbitDetermination
 
 ## The input file syntax is a set of key=value lines.
@@ -27,28 +15,21 @@
 
 ## All dates are treated in UTC timescale.
 ## The inertial frame for orbit definition and propagation is EME2000.
-## Physical data are read from the src/tutorial/resources/tutorial-orekit-data
-## directory.
 
 ### Orbit definition
 ## date of the orbital parameters (UTC)
-orbit.date = 2016-02-14T12:14:48.132
-
+orbit.date = 2016-02-13T23:44:43.000
 
 ## Position & velocity along X, y, z in inertial frame (m) 
-orbit.cartesian.px =  1658.006790
-orbit.cartesian.py = -16330.224472
-orbit.cartesian.pz = -20909.301387
-orbit.cartesian.vx =  -3871.2032545876173
-orbit.cartesian.vy = -607.9056504788068
-orbit.cartesian.vz = 4281.008504966887
-#orbit.tle.line_1 = 1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990
-#orbit.tle.line_2 = 2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192
-#orbit.tle.line_1 =1 22195U 92070B   16061.61468796 -.00000009 +00000-0 +00000-0 0  9998
-#orbit.tle.line_2 = 2 22195 052.6496 122.7359 0137661 343.3246 089.0633 06.47294129552242
+orbit.cartesian.px =  10212717.949
+orbit.cartesian.py =  11974599.483
+orbit.cartesian.pz = -21437986.912
+orbit.cartesian.vx =     -2283.640879
+orbit.cartesian.vy =      3056.107412
+orbit.cartesian.vz =       642.493866
 
 ## Spacecraft mass (kg) [1000.]
-mass = 405.380
+mass = 1630
 
 # IERS conventions [2010]
 iers.conventions = 2010
@@ -83,7 +64,7 @@ ocean.tides.degree = -1
 ocean.tides.order  = -1
 
 ## solid tides (true/false) [false]
-solid.tides.sun    = false;
+solid.tides.sun    = false
 solid.tides.moon   = false
 
 ## Atmospheric drag (true/false) [false]
@@ -96,13 +77,13 @@ drag.cd.estimated = false
 drag.area = 0.28270
 
 ## Solar Radiation Pressure (true/false) [false]
-solar.radiation.pressure = false
+solar.radiation.pressure = true
 ## SRP coefficient
 solar.radiation.pressure.cr =  1.134
 ## Estimation flag for SRP coefficient (true/false) [false]
 solar.radiation.pressure.cr.estimated = true
 ## SRP area (m^2)
-solar.radiation.pressure.area = 0.28270
+solar.radiation.pressure.area = 50
 
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = false
@@ -224,32 +205,32 @@ ground.station.az.el.biases.estimated          [3] = false
 ground.station.elevation.refraction.correction [3] = true
 ground.station.range.tropospheric.correction   [3] = true
 
-ground.station.name                            [3] =  AZBH 
-ground.station.latitude                        [3] =  35.107490
-ground.station.longitude                       [3] =  -114.604973 
-ground.station.altitude                        [3] =  152.411
-ground.station.position.estimated              [3] = false
-ground.station.range.sigma                     [3] = 20.0
-ground.station.range.bias                      [3] = 0.0
-ground.station.range.bias.min                  [3] = -1000.0
-ground.station.range.bias.max                  [3] = +1000.0
-ground.station.range.bias.estimated            [3] = false
-ground.station.range.rate.sigma                [3] = 0.001
-ground.station.range.rate.bias                 [3] =  0.0
-ground.station.range.rate.bias.min             [3] = -1.0
-ground.station.range.rate.bias.max             [3] = +1.0
-ground.station.range.rate.bias.estimated       [3] = false
-ground.station.azimuth.sigma                   [3] =  0.02
-ground.station.azimuth.bias                    [3] =  0.01
-ground.station.azimuth.bias.min                [3] = -0.50
-ground.station.azimuth.bias.max                [3] = +0.50
-ground.station.elevation.sigma                 [3] =  0.02
-ground.station.elevation.bias                  [3] =  0.01
-ground.station.elevation.bias.min              [3] = -0.50
-ground.station.elevation.bias.max              [3] = +0.50
-ground.station.az.el.biases.estimated          [3] = false
-ground.station.elevation.refraction.correction [3] = true
-ground.station.range.tropospheric.correction   [3] = true
+ground.station.name                            [4] =  AZBH 
+ground.station.latitude                        [4] =  35.107490
+ground.station.longitude                       [4] =  -114.604973 
+ground.station.altitude                        [4] =  152.411
+ground.station.position.estimated              [4] = false
+ground.station.range.sigma                     [4] = 20.0
+ground.station.range.bias                      [4] = 0.0
+ground.station.range.bias.min                  [4] = -1000.0
+ground.station.range.bias.max                  [4] = +1000.0
+ground.station.range.bias.estimated            [4] = false
+ground.station.range.rate.sigma                [4] = 0.001
+ground.station.range.rate.bias                 [4] =  0.0
+ground.station.range.rate.bias.min             [4] = -1.0
+ground.station.range.rate.bias.max             [4] = +1.0
+ground.station.range.rate.bias.estimated       [4] = false
+ground.station.azimuth.sigma                   [4] =  0.02
+ground.station.azimuth.bias                    [4] =  0.01
+ground.station.azimuth.bias.min                [4] = -0.50
+ground.station.azimuth.bias.max                [4] = +0.50
+ground.station.elevation.sigma                 [4] =  0.02
+ground.station.elevation.bias                  [4] =  0.01
+ground.station.elevation.bias.min              [4] = -0.50
+ground.station.elevation.bias.max              [4] = +0.50
+ground.station.az.el.biases.estimated          [4] = false
+ground.station.elevation.refraction.correction [4] = true
+ground.station.range.tropospheric.correction   [4] = true
 
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6
@@ -309,4 +290,4 @@ estimator.max.evaluations                               = 35
 satellite.id.in.rinex.files = G01
 
 # comma-separated list of measurements files (in the same directory as this file)
-measurements.files = shld044.16o, seat044.16o, sbch044.16o, brig044.16o, azbh044.16o
+measurements.files = shld0440.16o, seat0440.16o, sbch0440.16o, brig0440.16o, azbh0440.16o
