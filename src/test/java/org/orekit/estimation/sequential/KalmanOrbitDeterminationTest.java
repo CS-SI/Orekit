@@ -130,7 +130,7 @@ public class KalmanOrbitDeterminationTest {
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
-        Utils.setDataRoot("orbit-determination/Lageos2:potential/icgem-format");
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         // Choice of an orbit type to use
