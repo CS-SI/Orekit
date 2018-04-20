@@ -16,138 +16,62 @@
  */
 package org.orekit.gnss;
 
-import java.util.List;
-
-import org.orekit.time.AbsoluteDate;
-
-
-/** Observation Data set.
+/** Observation Data.
+ * @since 9.2
  */
 public class ObservationData {
 
-    /** Satellite System. */
-    private final SatelliteSystem satelliteSystem;
+    /** Observed RINEX frequency. */
+    private RinexFrequency rf;
 
-    /** PRN Number of the satellite observed. */
-    private final int prnNumber;
+    /** Observed value. */
+    private double value;
 
-    /** Date of the observation. */
-    private AbsoluteDate tObs;
+    /** Loss of Lock Indicator (LLI). */
+    private int lli;
 
-    /** List of Observation types. */
-    private List<RinexFrequency> typesObs;
+    /** Signal strength. */
+    private int signalStrength;
 
-    /** List of observations. */
-    private double[] obs;
-
-    /** List of Loss of lock Indicators (LLI). */
-    private int[] lli;
-
-    /** List of Signal Strength. */
-    private int[] sigStrength;
-
-    /** Receiver clock offset (seconds). */
-    private double rcvrClkOffset;
-
-    /**
-     * Simple constructor.
-     * @param satelliteSystem Satellite system
-     * @param prnNumber PRN number
-     * @param tObs Observation date
-     * @param rcvrClkOffset Receiver clock offset (optional, 0 by default)
-     * @param typesObs List of Observation types
-     * @param obs List of observations
-     * @param lli List of LLI
-     * @param sigStrength List of Signal Strengths
+    /** Simple constructor.
+     * @param rf observed RINEX frequency
+     * @param value observed value
+     * @param lli Loss of Lock Indicator
+     * @param signalStrength signal strength
      */
-    public ObservationData(final SatelliteSystem satelliteSystem,
-                           final int prnNumber, final AbsoluteDate tObs,
-                           final double rcvrClkOffset, final List<RinexFrequency> typesObs,
-                           final double[] obs, final int[] lli, final int[] sigStrength) {
-        this.satelliteSystem = satelliteSystem;
-        this.prnNumber       = prnNumber;
-        this.tObs            = tObs;
-        this.typesObs        = typesObs;
-        this.obs             = obs;
-        this.lli             = lli;
-        this.sigStrength     = sigStrength;
-        this.rcvrClkOffset   = rcvrClkOffset;
+    public ObservationData(final RinexFrequency rf, final double value, final int lli, final int signalStrength) {
+        this.rf             = rf;
+        this.value          = value;
+        this.lli            = lli;
+        this.signalStrength = signalStrength;
     }
 
-    /** Get Satellite System.
-     * @return satellite system of observed satellite
+    /** Get the observed RINEX frequency.
+     * @return observed RINEX frequency
      */
-    public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
+    public RinexFrequency getRinexFrequency() {
+        return rf;
     }
-    /** Get PRN number.
-     * @return PRN number of the observed satellite
-     */
-    public int getPrnNumber() {
-        return prnNumber;
-    }
-    /** Get observation date.
-     * @return date of observation
-     */
-    public AbsoluteDate getTObs() {
-        return tObs;
-    }
-    /** Get list of Observation types.
-     * @return list of observation types for the observed satellite
-     */
-    public List<RinexFrequency> getTypesObs() {
-        return typesObs;
-    }
-    /** Get receiver clock offset.
-     * @return receiver clock offset (it is optional, may be 0)
-     */
-    public double getRcvrClkOffset() {
-        return rcvrClkOffset;
-    }
-    /** Get rinex observation for a specific observation type.
-     * @param type Observation type for which we want to get the observation
-     * @return observation for a specific observation type
-     */
-    public double getObs(final String type) {
 
-        int j = 1;
-
-        for (int i = 0; i < typesObs.size(); i++) {
-            if (typesObs.get(i).equals(RinexFrequency.valueOf(type))) {
-                j = i;
-            }
-        }
-        return obs[j];
-    }
-    /** Get LLI for a specific observation type.
-     * @param type Observation type for which we want to get the LLI
-     * @return LLI for a specific observation type
+    /** Get the observed value.
+     * @return observed value
      */
-    public int getLli(final String type) {
-
-        int j = 1;
-
-        for (int i = 0; i < typesObs.size(); i++) {
-            if (typesObs.get(i).equals(RinexFrequency.valueOf(type))) {
-                j = i;
-            }
-        }
-        return lli[j];
+    public double getValue() {
+        return value;
     }
-    /** Get Signal Strength for a specific observation type.
-     * @param type Observation type for which we want to get the signal strength
-     * @return signal strength for a specific observation type
+
+    /** Get the Loss of Lock Indicator.
+     * @return Loss of Lock Indicator
      */
-    public int getSignStrength(final String type) {
+    public int getLossOfLockIndicator() {
+        return lli;
+    }
 
-        int j = 1;
-
-        for (int i = 0; i < typesObs.size(); i++) {
-            if (typesObs.get(i).equals(RinexFrequency.valueOf(type))) {
-                j = i;
-            }
-        }
-        return sigStrength[j];
+    /** Get the signal strength.
+     * @return signal strength
+     */
+    public int getSignalStrength() {
+        return signalStrength;
     }
 
 }
