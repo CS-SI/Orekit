@@ -95,16 +95,16 @@ public class Range extends AbstractMeasurement<Range> {
      * orbit determination.
      * </p>
      * @param station ground station from which measurement is performed
-     * @param twoWay flag indicating whether it is a two-way measurement
      * @param date date of the measurement
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param twoWay flag indicating whether it is a two-way measurement
      * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
-    public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
-                 final double range, final double sigma, final double baseWeight)
+    public Range(final GroundStation station, final AbsoluteDate date, final double range,
+                 final double sigma, final double baseWeight, final boolean twoWay)
          throws OrekitException {
          this(station, twoWay, date, range, sigma, baseWeight, 0);
     }

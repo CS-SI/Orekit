@@ -1403,11 +1403,11 @@ public class OrbitDeterminationTest {
                         for (final ObservationData od : observationDataSet.getObservationData()) {
                             if (od.getRinexFrequency().getType() == MeasurementType.PSEUDO_RANGE) {
                                 // this is a measurement we want
-                                measurements.add(new Range(stationData.station, false,
-                                                           observationDataSet.getDate(),
+                                measurements.add(new Range(stationData.station, observationDataSet.getDate(),
                                                            od.getValue(),
                                                            stationData.rangeSigma,
-                                                           weights.rangeBaseWeight));
+                                                           weights.rangeBaseWeight,
+                                                           false));
                             } else if (od.getRinexFrequency().getType() == MeasurementType.DOPPLER) {
                                 // this is a measurement we want
                                 measurements.add(new RangeRate(stationData.station,
