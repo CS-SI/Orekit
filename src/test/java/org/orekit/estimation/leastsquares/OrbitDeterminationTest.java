@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -91,6 +92,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.gnss.MeasurementType;
+import org.orekit.gnss.ObservationData;
+import org.orekit.gnss.ObservationDataSet;
+import org.orekit.gnss.RinexHeader;
+import org.orekit.gnss.RinexLoader;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.SaastamoinenModel;
@@ -128,7 +135,7 @@ public class OrbitDeterminationTest {
         final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
-        // configure Orekit data acces
+        // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
@@ -179,6 +186,71 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+
+    }
+    
+    
+    @Test
+    // Orbit determination for GNSS satellite based on range measurements
+    public void testGNSS()
+        throws URISyntaxException, IllegalArgumentException, IOException,
+               OrekitException, ParseException {
+
+        // input in tutorial resources directory/output
+        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS01.in").toURI().getPath();
+        final File input  = new File(inputPath);
+
+        // configure Orekit data access
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
+        //orbit determination run.
+        ResultOD odGNSS = run(input, false);
+
+        //test
+        //definition of the accuracy for the test
+        final double distanceAccuracy = 0.1;
+        final double velocityAccuracy = 1e-4;
+
+        //test on the convergence
+        final int numberOfIte  = 4;
+        final int numberOfEval = 4;
+
+        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+
+        //test on the estimated position and velocity
+        final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
+        final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
+        //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
+        //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
+        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
+        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+
+        //test on measurements parameters
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
+        list.addAll(odGNSS.measurementsParameters.getDrivers());
+        sortParametersChanges(list);
+        //final double[] stationOffSet = { -1.351682,  -2.180542,  -5.278784 };
+        //final double rangeBias = -7.923393;
+        final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
+        final double rangeBias = -0.286275;
+        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
+
+        //test on statistic for the range residuals
+        final long nbRange = 258;
+        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
+        final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
+        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              distanceAccuracy);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
 
@@ -398,7 +470,6 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-5c.gfc", true));
         final NormalizedSphericalHarmonicsProvider gravityField = createGravityField(parser);
 
-
         // Orbit initial guess
         final Orbit initialGuess = createOrbit(parser, gravityField.getMu());
 
@@ -420,19 +491,37 @@ public class OrbitDeterminationTest {
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
+        final Map<String, StationData>   stations                 = createStationsData(parser, body);
+        final PVData                     pvData                   = createPVData(parser);
+        final Bias<Range>                satRangeBias             = createSatRangeBias(parser);
+        final Weights                    weights                  = createWeights(parser);
+        final OutlierFilter<Range>       rangeOutliersManager     = createRangeOutliersManager(parser);
+        final OutlierFilter<RangeRate>   rangeRateOutliersManager = createRangeRateOutliersManager(parser);
+        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser);
+        final OutlierFilter<PV>          pvOutliersManager        = createPVOutliersManager(parser);
+
         // measurements
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
-            measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
-                                                 createStationsData(parser, body),
-                                                 createPVData(parser),
-                                                 createSatRangeBias(parser),
-                                                 createWeights(parser),
-                                                 createRangeOutliersManager(parser),
-                                                 createRangeRateOutliersManager(parser),
-                                                 createAzElOutliersManager(parser),
-                                                 createPVOutliersManager(parser)));
+            if (Pattern.matches(RinexLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, fileName) ||
+                Pattern.matches(RinexLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, fileName)) {
+                // the measurements come from a Rinex file
+                measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
+                                              parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
+                                              stations, satRangeBias, weights,
+                                              rangeOutliersManager, rangeRateOutliersManager));
+            } else {
+                // the measurements come from an Orekit custom file
+                measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
+                                                     stations, pvData, satRangeBias, weights,
+                                                     rangeOutliersManager,
+                                                     rangeRateOutliersManager,
+                                                     azElOutliersManager,
+                                                     pvOutliersManager));
+            }
+
         }
+
         for (ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
@@ -1273,6 +1362,73 @@ public class OrbitDeterminationTest {
 
     /** Read a measurements file.
      * @param file measurements file
+     * @param satId satellite we are interested in
+     * @param stations name to stations data map
+     * @param satRangeBias range bias due to transponder delay
+     * @param weights base weights for measurements
+     * @param rangeOutliersManager manager for range measurements outliers (null if none configured)
+     * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
+     * @return measurements list
+     */
+    private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
+                                                   final Map<String, StationData> stations,
+                                                   final Bias<Range> satRangeBias,
+                                                   final Weights weights,
+                                                   final OutlierFilter<Range> rangeOutliersManager,
+                                                   final OutlierFilter<RangeRate> rangeRateOutliersManager)
+        throws UnsupportedEncodingException, IOException, OrekitException {
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(satId);
+        final int prnNumber;
+        switch (system) {
+            case GPS:
+            case GLONASS:
+            case GALILEO:
+                prnNumber = Integer.parseInt(satId.substring(1));
+                break;
+            case SBAS:
+                prnNumber = Integer.parseInt(satId.substring(1)) + 100;
+                break;
+            default:
+                prnNumber = -1;
+        }
+        final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
+        for (final Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
+            final RinexHeader header = entry.getKey();
+            final StationData stationData = stations.get(header.getMarkerName());
+            if (stationData != null) {
+                for (final ObservationDataSet observationDataSet : entry.getValue()) {
+                    if (observationDataSet.getSatelliteSystem() == system    &&
+                                    observationDataSet.getPrnNumber()       == prnNumber) {
+                        for (final ObservationData od : observationDataSet.getObservationData()) {
+                            if (od.getRinexFrequency().getType() == MeasurementType.PSEUDO_RANGE) {
+                                // this is a measurement we want
+                                measurements.add(new Range(stationData.station, false,
+                                                           observationDataSet.getDate(),
+                                                           od.getValue(),
+                                                           stationData.rangeSigma,
+                                                           weights.rangeBaseWeight));
+                            } else if (od.getRinexFrequency().getType() == MeasurementType.DOPPLER) {
+                                // this is a measurement we want
+                                measurements.add(new RangeRate(stationData.station,
+                                                               observationDataSet.getDate(),
+                                                               od.getValue(),
+                                                               stationData.rangeRateSigma,
+                                                               weights.rangeRateBaseWeight,
+                                                               false));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return measurements;
+
+    }
+
+    /** Read a measurements file.
+     * @param file measurements file
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satRangeBias range bias due to transponder delay
@@ -1284,14 +1440,14 @@ public class OrbitDeterminationTest {
      * @return measurements list
      */
     private List<ObservedMeasurement<?>> readMeasurements(final File file,
-                                                  final Map<String, StationData> stations,
-                                                  final PVData pvData,
-                                                  final Bias<Range> satRangeBias,
-                                                  final Weights weights,
-                                                  final OutlierFilter<Range> rangeOutliersManager,
-                                                  final OutlierFilter<RangeRate> rangeRateOutliersManager,
-                                                  final OutlierFilter<AngularAzEl> azElOutliersManager,
-                                                  final OutlierFilter<PV> pvOutliersManager)
+                                                          final Map<String, StationData> stations,
+                                                          final PVData pvData,
+                                                          final Bias<Range> satRangeBias,
+                                                          final Weights weights,
+                                                          final OutlierFilter<Range> rangeOutliersManager,
+                                                          final OutlierFilter<RangeRate> rangeRateOutliersManager,
+                                                          final OutlierFilter<AngularAzEl> azElOutliersManager,
+                                                          final OutlierFilter<PV> pvOutliersManager)
         throws UnsupportedEncodingException, IOException, OrekitException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -2028,6 +2184,7 @@ public class OrbitDeterminationTest {
         AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION,
         PV_OUTLIER_REJECTION_MULTIPLIER,
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
+        SATELLITE_ID_IN_RINEX_FILES,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
         ESTIMATOR_OPTIMIZATION_ENGINE,
