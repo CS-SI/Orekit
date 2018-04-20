@@ -224,12 +224,13 @@ public class RinexLoader {
                 String line = reader.readLine();
                 lineNumber++;
                 formatVersion = parseDouble(line, 0, 9);
+                int format100 = (int) FastMath.rint(100 * formatVersion);
 
-                if ((formatVersion != 2) && (formatVersion != 2.10) && (formatVersion != 2.11) &&
-                                (formatVersion != 3.00) && (formatVersion != 3.01) &&
-                                (formatVersion != 3.02) && (formatVersion != 3.03)) {
+                if ((format100 != 200) && (format100 != 210) && (format100 != 211) &&
+                    (format100 != 300) && (format100 != 301) && (format100 != 302) && (format100 != 303)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
+
                 //File Type must be Observation_Data
                 if (!(parseString(line, 20, 1)).equals(FILE_TYPE)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
@@ -237,7 +238,7 @@ public class RinexLoader {
                 satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(line, 40, 1));
                 inRinexVersion = true;
 
-                switch ((int) formatVersion) {
+                switch (format100 / 100) {
                     case 2:
 
                         final int                   MAX_OBS_TYPES_PER_LINE_RNX2 = 9;
@@ -367,11 +368,15 @@ public class RinexLoader {
                                         break;
                                     case NB_TYPES_OF_OBSERV :
                                         nbTypes = parseInt(line, 0, 6);
-                                        final int nbLinesTypesObs = (int) (nbTypes + MAX_OBS_TYPES_PER_LINE_RNX2 - 1 ) / MAX_OBS_TYPES_PER_LINE_RNX2;
+                                        final int nbLinesTypesObs = (nbTypes + MAX_OBS_TYPES_PER_LINE_RNX2 - 1 ) / MAX_OBS_TYPES_PER_LINE_RNX2;
 
-                                        //If there is 9 or less Types of Observations, only read one line
-                                        if (nbTypes <= MAX_OBS_TYPES_PER_LINE_RNX2) {
-                                            for (int i = 0; i < nbTypes; i++) {
+                                        for (int j = 0; j < nbLinesTypesObs; j++) {
+                                            if (j > 0) {
+                                                line = reader.readLine(); //Next line
+                                                lineNumber++;
+                                            }
+                                            final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX2, nbTypes - typesObs.size());
+                                            for (int i = 0; i < iMax; i++) {
                                                 try {
                                                     typesObs.add(RinexFrequency.valueOf(parseString(line, 10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
@@ -379,27 +384,6 @@ public class RinexLoader {
                                                                               parseString(line, 10 + (6 * i), 2), name, lineNumber);
                                                 }
                                             }
-                                        } else {
-                                            //For all the lines with 9 Types of Observations
-                                            for (int j = 0; j < (nbLinesTypesObs - 1); j++) {
-                                                for (int i = 0; i < MAX_OBS_TYPES_PER_LINE_RNX2; i++) {
-                                                    try {
-                                                        typesObs.add(RinexFrequency.valueOf(parseString(line, 10 + (6 * i), 2)));
-                                                    } catch (IllegalArgumentException iae) {
-                                                        throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                                  parseString(line, 10 + (6 * i), 2), name, lineNumber);
-                                                    }                                                }
-                                                line = reader.readLine(); //Next line
-                                                lineNumber++;
-                                            }
-                                            //For the Last lines of Types of Observations
-                                            for (int i = 0; i < (nbTypes - MAX_OBS_TYPES_PER_LINE_RNX2 * (nbLinesTypesObs - 1)); i++) {
-                                                try {
-                                                    typesObs.add(RinexFrequency.valueOf(parseString(line, 10 + (6 * i), 2)));
-                                                } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                              parseString(line, 10 + (6 * i), 2), name, lineNumber);
-                                                }                                            }
                                         }
                                         inTypesObs = true;
                                         break;
@@ -442,8 +426,8 @@ public class RinexLoader {
                                 if (eventFlag != 0) {
                                     if (eventFlag == 6) {
                                         nbSatObs  = parseInt(line, 29, 3);
-                                        nbLinesSat = (int) ((nbSatObs + 12 - 1) / 12);
-                                        final int nbLinesObs = (int) ((nbTypes + 5 - 1) / 5);
+                                        nbLinesSat = (nbSatObs + 12 - 1) / 12;
+                                        final int nbLinesObs = (nbTypes + 5 - 1) / 5;
                                         final int nbLinesSkip = (nbLinesSat - 1) + nbSatObs * nbLinesObs;
                                         for (int i = 0; i < nbLinesSkip; i++) {
                                             line = reader.readLine(); //Next line
@@ -458,19 +442,18 @@ public class RinexLoader {
                                     }
                                 } else {
 
-                                    if (79 < Integer.parseInt(parseString(line, 0, 3)) &&
-                                                    Integer.parseInt(parseString(line, 0, 3)) <= 99) {
-                                        strYear = "19" + parseString(line, 0, 3);
-                                    } else if (0 <= Integer.parseInt(parseString(line, 0, 3)) &&
-                                                    Integer.parseInt(parseString(line, 0, 3)) <= 79) {
+                                    final int y = Integer.parseInt(parseString(line, 0, 3));
+                                    if (79 < y && y <= 99) {
+                                        strYear = "19" + y;
+                                    } else if (0 <= y && y <= 79) {
                                         strYear = "20" + parseString(line, 0, 3);
                                     }
                                     tObs = new AbsoluteDate(Integer.parseInt(strYear),
-                                                                parseInt(line, 3, 3),
-                                                                parseInt(line, 6, 3),
-                                                                parseInt(line, 9, 3),
-                                                                parseInt(line, 12, 3),
-                                                                parseDouble(line, 15, 11), timeScale);
+                                                            parseInt(line, 3, 3),
+                                                            parseInt(line, 6, 3),
+                                                            parseInt(line, 9, 3),
+                                                            parseInt(line, 12, 3),
+                                                            parseDouble(line, 15, 11), timeScale);
 
                                     nbSatObs  = parseInt(line, 29, 3);
                                     satsObsList   = new String[nbSatObs];
@@ -481,59 +464,40 @@ public class RinexLoader {
                                                                   lineNumber, name, nbSatObs, nbSat);
                                     }
 
-                                    //If 12 or less satellites, only one line
-                                    if (nbSatObs <= MAX_N_SAT_OBSERVATION) {
-                                        for (int i = 0; i < nbSatObs; i++) {
-                                            //String Vector with name of the Satellites for this observation
-                                            satsObsList[i] = parseString(line, 32 + 3 * i, 3);
+                                    nbLinesSat = (nbSatObs + MAX_N_SAT_OBSERVATION - 1) / MAX_N_SAT_OBSERVATION;
+                                    for (int j = 0; j < nbLinesSat; j++) {
+                                        if (j > 0) {
+                                            line = reader.readLine(); //Next line
+                                            lineNumber++;
+                                        }
+                                        final int iMax = FastMath.min(MAX_N_SAT_OBSERVATION, nbSatObs  - j * MAX_N_SAT_OBSERVATION);
+                                        for (int i = 0; i < iMax; i++) {
+                                            satsObsList[i + MAX_N_SAT_OBSERVATION * j] = parseString(line, 32 + 3 * i, 3);
                                         }
 
                                         //Read the Receiver Clock offset, if present
                                         rcvrClkOffset = parseDouble(line, 68, 12);
 
-                                    } else {
-                                        nbLinesSat = (int) ((nbSatObs + MAX_N_SAT_OBSERVATION - 1) / MAX_N_SAT_OBSERVATION);
-                                        //For all the lines with list of 12 Satellites
-                                        for (int j = 0; j < (nbLinesSat - 1); j++) {
-                                            for (int i = 0; i < MAX_N_SAT_OBSERVATION; i++) {
-                                                satsObsList[i + 12 * j] = parseString(line, 32 + 3 * i, 3);
-                                            }
-
-                                            //Read the Receiver Clock offset, if present
-                                            rcvrClkOffset = parseDouble(line, 68, 12);
-
-                                            line = reader.readLine(); //Next line
-                                            lineNumber++;
-                                        }
-                                        //For the last line with Satellites list
-                                        for (int i = 0; i < (nbSatObs - MAX_N_SAT_OBSERVATION * (nbLinesSat - 1)); i++) {
-                                            satsObsList[i + 12 * (nbLinesSat - 1)] = parseString(line, 32 + 3 * i, 3);
-                                        }
                                     }
 
                                     //For each one of the Satellites in this observation
-                                    final List<ObservationData> observationData = new ArrayList<>(nbSatObs);
+                                    final int nbLinesObs = (nbTypes + MAX_N_TYPES_OBSERVATION - 1) / MAX_N_TYPES_OBSERVATION;
                                     for (int k = 0; k < nbSatObs; k++) {
-                                        line = reader.readLine(); //Next line
-                                        lineNumber++;
+
 
                                         //Once the Date and Satellites list is read:
                                         //  - to read the Data for each satellite
                                         //  - 5 Observations per line
-                                        final int nbLinesObs = (int) ((nbTypes + MAX_N_TYPES_OBSERVATION - 1) / MAX_N_TYPES_OBSERVATION);
-                                        //For all the lines with 5 Observations
+                                        final List<ObservationData> observationData = new ArrayList<>(nbSatObs);
                                         for (int j = 0; j < nbLinesObs; j++) {
+                                            line = reader.readLine(); //Next line
+                                            lineNumber++;
                                             final int iMax = FastMath.min(MAX_N_TYPES_OBSERVATION, nbTypes - observationData.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 observationData.add(new ObservationData(typesObs.get(observationData.size()),
                                                                                         parseDouble(line, 16 * i, 14),
                                                                                         parseInt(line, 14 + 16 * i, 1),
                                                                                         parseInt(line, 15 + 16 * i, 1)));
-                                            }
-
-                                            if (j < nbLinesObs - 1) {
-                                                line = reader.readLine(); //Next line
-                                                lineNumber++;
                                             }
                                         }
 
@@ -551,10 +515,10 @@ public class RinexLoader {
                                             case GPS:
                                             case GLONASS:
                                             case GALILEO:
-                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3));
+                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3).trim());
                                                 break;
                                             case SBAS:
-                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3)) + 100;
+                                                prnNumber = Integer.parseInt(satsObsList[k].substring(1, 3).trim()) + 100;
                                                 break;
                                             default:
                                                 // MIXED satellite system is not allowed here
@@ -601,10 +565,10 @@ public class RinexLoader {
                             ++lineNumber;
                             if (observationsList == null) {
                                 switch(line.substring(LABEL_START).trim()) {
-                                    case RINEX_VERSION_TYPE :
+                                    case RINEX_VERSION_TYPE : {
                                         formatVersion = parseDouble(line, 0, 9);
-                                        if ((formatVersion != 3.00) && (formatVersion != 3.01) &&
-                                                        (formatVersion != 3.02) && (formatVersion != 3.03)) {
+                                        format100     = (int) FastMath.rint(100 * formatVersion);
+                                        if ((format100 != 300) && (format100 != 301) && (format100 != 302) && (format100 != 303)) {
                                             throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                         }
                                         //File Type must be Observation_Data
@@ -613,6 +577,7 @@ public class RinexLoader {
                                         }
                                         satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(line, 40, 1));
                                         inRinexVersion = true;
+                                    }
                                         break;
                                     case COMMENT :
                                         // nothing to do
@@ -777,33 +742,14 @@ public class RinexLoader {
                                         obsTypesSystem = SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1));
                                         nbTypes = parseInt(line, 3, 3);
 
-                                        final int nbLinesTypesObs = (int) ((nbTypes + MAX_OBS_TYPES_PER_LINE_RNX3 - 1) / MAX_OBS_TYPES_PER_LINE_RNX3);
-                                        //If there is 13 or less Types of Observations, only read one line
-                                        if (nbTypes <= MAX_OBS_TYPES_PER_LINE_RNX3) {
-                                            for (int i = 0; i < nbTypes; i++) {
-                                                try {
-                                                    typeObs.add(RinexFrequency.valueOf(parseString(line, 7 + (4 * i), 3)));
-                                                } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                              parseString(line, 7 + (4 * i), 3), name, lineNumber);
-                                                }
-                                            }
-                                        } else {
-                                          //For all the lines with 13 Types of Observations
-                                            for (int j = 0; j < (nbLinesTypesObs - 1); j++) {
-                                                for (int i = 0; i < MAX_OBS_TYPES_PER_LINE_RNX3; i++) {
-                                                    try {
-                                                        typeObs.add(RinexFrequency.valueOf(parseString(line, 7 + (4 * i), 3)));
-                                                    } catch (IllegalArgumentException iae) {
-                                                        throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
-                                                                                  parseString(line, 7 + (4 * i), 3), name, lineNumber);
-                                                    }
-                                                }
+                                        final int nbLinesTypesObs = (nbTypes + MAX_OBS_TYPES_PER_LINE_RNX3 - 1) / MAX_OBS_TYPES_PER_LINE_RNX3;
+                                        for (int j = 0; j < nbLinesTypesObs; j++) {
+                                            if (j > 0) {
                                                 line = reader.readLine(); //Next line
                                                 lineNumber++;
                                             }
-                                            //For the Last lines of Types of Observations
-                                            for (int i = 0; i < (nbTypes - MAX_OBS_TYPES_PER_LINE_RNX3  * (nbLinesTypesObs - 1)); i++) {
+                                            final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX3, nbTypes - typeObs.size());
+                                            for (int i = 0; i < iMax; i++) {
                                                 try {
                                                     typeObs.add(RinexFrequency.valueOf(parseString(line, 7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
@@ -838,25 +784,15 @@ public class RinexLoader {
                                         if (nbObsScaleFactor == 0) {
                                             typesObsScaleFactor.addAll(listTypeObs.get(satSystemScaleFactor));
                                         } else {
-
-                                            final int nbLinesTypesObsScaleFactor = (int)
-                                                            ((nbObsScaleFactor + MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE - 1) / MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE);
-                                            //If there is 12 or less Types of Observations Scaled, only read one line
-                                            if (nbObsScaleFactor <= MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE) {
-                                                for (int i = 0; i < nbObsScaleFactor; i++) {
-                                                    typesObsScaleFactor.add(RinexFrequency.valueOf(parseString(line, 11 + (4 * i), 3)));
-                                                }
-                                            } else {
-                                                //For all the lines with 12 Types of Observations Scaled
-                                                for (int j = 0; j < (nbLinesTypesObsScaleFactor - 1); j++) {
-                                                    for (int i = 0; i < MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE; i++) {
-                                                        typesObsScaleFactor.add(RinexFrequency.valueOf(parseString(line, 11 + (4 * i), 3)));
-                                                    }
+                                            final int nbLinesTypesObsScaleFactor = (nbObsScaleFactor + MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE - 1) /
+                                                                                   MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE;
+                                            for (int j = 0; j < nbLinesTypesObsScaleFactor; j++) {
+                                                if ( j > 0) {
                                                     line = reader.readLine(); //Next line
                                                     lineNumber++;
                                                 }
-                                                //For the Last lines of Types of Observations
-                                                for (int i = 0; i < (nbObsScaleFactor - MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE * (nbLinesTypesObsScaleFactor - 1)); i++) {
+                                                final int iMax = FastMath.min(MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE, nbObsScaleFactor - typesObsScaleFactor.size());
+                                                for (int i = 0; i < iMax; i++) {
                                                     typesObsScaleFactor.add(RinexFrequency.valueOf(parseString(line, 11 + (4 * i), 3)));
                                                 }
                                             }
@@ -882,22 +818,15 @@ public class RinexLoader {
                                             //If nbSat with Phase Shift is not indicated: all the satellites are affected for this Obs Type
                                         } else {
                                             satsPhaseShift = new String[nbSatPhaseShift];
-                                            if (nbSatPhaseShift <= MAX_N_SAT_PHSHIFT_PER_LINE) {
-                                                for (int i = 0; i < nbSatPhaseShift; i++) {
-                                                    satsPhaseShift[i] = parseString(line, 19 + 4 * i, 3);
-                                                }
-                                            } else {
-                                                final int nbLinesSatPhaseShift = (int) ((nbSatPhaseShift + MAX_N_SAT_PHSHIFT_PER_LINE - 1) / MAX_N_SAT_PHSHIFT_PER_LINE);
-                                                for (int j = 0; j < (nbLinesSatPhaseShift - 1); j++) {
-                                                    for (int i = 0; i < MAX_N_SAT_PHSHIFT_PER_LINE; i++) {
-                                                        satsPhaseShift[i + 10 * j] = parseString(line, 19 + 4 * i, 3);
-                                                    }
+                                            final int nbLinesSatPhaseShift = (nbSatPhaseShift + MAX_N_SAT_PHSHIFT_PER_LINE - 1) / MAX_N_SAT_PHSHIFT_PER_LINE;
+                                            for (int j = 0; j < nbLinesSatPhaseShift; j++) {
+                                                if (j > 0) {
                                                     line = reader.readLine(); //Next line
                                                     lineNumber++;
                                                 }
-                                                //For the Last lines of Types of Observations
-                                                for (int i = 0; i < (nbSatPhaseShift - MAX_N_SAT_PHSHIFT_PER_LINE * (nbLinesSatPhaseShift - 1)); i++) {
-                                                    satsPhaseShift[i + 10 * (nbLinesSatPhaseShift - 1)] = parseString(line, 19 + 4 * i, 3);
+                                                final int iMax = FastMath.min(MAX_N_SAT_PHSHIFT_PER_LINE, nbSatPhaseShift - j * MAX_N_SAT_PHSHIFT_PER_LINE);
+                                                for (int i = 0; i < iMax; i++) {
+                                                    satsPhaseShift[i + 10 * j] = parseString(line, 19 + 4 * i, 3);
                                                 }
                                             }
                                         }
@@ -984,7 +913,6 @@ public class RinexLoader {
                                         rcvrClkOffset = parseDouble(line, 41, 15);
 
                                         //For each one of the Satellites in this Observation
-                                        final List<ObservationData> observationData = new ArrayList<>(nbSatObs);
                                         for (int i = 0; i < nbSatObs; i++) {
 
                                             line = reader.readLine();
@@ -1020,6 +948,7 @@ public class RinexLoader {
                                                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                               lineNumber, name, line);
                                             }
+                                            final List<ObservationData> observationData = new ArrayList<>(nbSatObs);
                                             for (int j = 0; j < listTypeObs.get(satelliteSystemSat).size(); j++) {
                                                 final RinexFrequency rf = listTypeObs.get(satelliteSystemSat).get(j);
                                                 boolean scaleFactorFound = false;
