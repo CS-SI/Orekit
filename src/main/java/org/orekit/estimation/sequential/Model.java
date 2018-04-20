@@ -82,11 +82,11 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
 
-    /** Providers for process noise matrices. */
-    private final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders;
+    /** Providers for covariance matrices. */
+    private final List<CovarianceMatrixProvider> covarianceMatricesProviders;
 
     /** Indirection arrays to extract the noise components for estimated parameters. */
-    private final int[][] processNoiseIndirection;
+    private final int[][] covarianceIndirection;
 
     /** Scaling factors. */
     private final double[] scale;
@@ -123,12 +123,12 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
 
     /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
-     * @param processNoiseMatricesProviders providers for process noise matrices
+     * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @throws OrekitException propagation exception.
      */
     Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
-          final List<ProcessNoiseMatrixProvider> processNoiseMatricesProviders,
+          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters)
         throws OrekitException {
 
@@ -204,27 +204,27 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         }
 
         // Store providers for process noise matrices
-        this.processNoiseMatricesProviders = processNoiseMatricesProviders;
-        this.processNoiseIndirection       = new int[processNoiseMatricesProviders.size()][columns];
-        for (int k = 0; k < processNoiseIndirection.length; ++k) {
+        this.covarianceMatricesProviders = covarianceMatricesProviders;
+        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
+        for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
-            Arrays.fill(processNoiseIndirection[k], -1);
+            Arrays.fill(covarianceIndirection[k], -1);
             int i = 0;
             for (final ParameterDriver driver : orbitDrivers.getDrivers()) {
                 final Integer c = orbitalParameterColumns.get(driver.getName());
-                processNoiseIndirection[k][i++] = (c == null) ? -1 : c.intValue();
+                covarianceIndirection[k][i++] = (c == null) ? -1 : c.intValue();
             }
             for (final ParameterDriver driver : parametersDrivers.getDrivers()) {
                 final Integer c = propagationParameterColumns.get(driver.getName());
                 if (c != null) {
-                    processNoiseIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c.intValue();
                 }
             }
             for (final ParameterDriver driver : estimatedMeasurementParameters.getDrivers()) {
                 final Integer c = measurementParameterColumns.get(driver.getName());
                 if (c != null) {
-                    processNoiseIndirection[k][i++] = c.intValue();
+                    covarianceIndirection[k][i++] = c.intValue();
                 }
             }
         }
@@ -254,19 +254,39 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         // Initialize the estimated normalized state and fill its values
         final RealVector correctedState      = MatrixUtils.createRealVector(columns);
 
-        int i = 0;
+        int p = 0;
         for (final ParameterDriver driver : allEstimatedOrbitalParameters.getDrivers()) {
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            correctedState.setEntry(p++, driver.getNormalizedValue());
         }
         for (final ParameterDriver driver : allEstimatedPropagationParameters.getDrivers()) {
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            correctedState.setEntry(p++, driver.getNormalizedValue());
         }
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            correctedState.setEntry(i++, driver.getNormalizedValue());
+            correctedState.setEntry(p++, driver.getNormalizedValue());
         }
 
         // Set up initial covariance
-        final RealMatrix correctedCovariance = buildCompleteProcessNoiseMatrix(columns, null, correctedSpacecraftStates);
+        final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(columns, columns);
+        for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
+            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+                                      getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+            checkDimension(noiseK.getRowDimension(),
+                           builders.get(k).getOrbitalParametersDrivers(),
+                           builders.get(k).getPropagationParametersDrivers(),
+                           estimatedMeasurementsParameters);
+            final int[] indK = covarianceIndirection[k];
+            for (int i = 0; i < indK.length; ++i) {
+                if (indK[i] >= 0) {
+                    for (int j = 0; j < indK.length; ++j) {
+                        if (indK[j] >= 0) {
+                            physicalProcessNoise.setEntry(indK[i], indK[j], noiseK.getEntry(i, j));
+                        }
+                    }
+                }
+            }
+
+        }
+        final RealMatrix correctedCovariance = normalizeCovarianceMatrix(physicalProcessNoise);
 
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
 
@@ -798,57 +818,36 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
             final RealMatrix measurementMatrix = getMeasurementMatrix();
 
             // compute process noise matrix
-            final RealMatrix normalizedProcessNoise = buildCompleteProcessNoiseMatrix(previousState.getDimension(),
-                                                                                      correctedSpacecraftStates,
-                                                                                      predictedSpacecraftStates);
+            final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(previousState.getDimension(),
+                                                                                 previousState.getDimension());
+            for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
+                final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
+                                                                predictedSpacecraftStates[k]);
+                checkDimension(noiseK.getRowDimension(),
+                               builders.get(k).getOrbitalParametersDrivers(),
+                               builders.get(k).getPropagationParametersDrivers(),
+                               estimatedMeasurementsParameters);
+                final int[] indK = covarianceIndirection[k];
+                for (int i = 0; i < indK.length; ++i) {
+                    if (indK[i] >= 0) {
+                        for (int j = 0; j < indK.length; ++j) {
+                            if (indK[j] >= 0) {
+                                physicalProcessNoise.setEntry(indK[i], indK[j], noiseK.getEntry(i, j));
+                            }
+                        }
+                    }
+                }
+
+            }
+            final RealMatrix normalizedProcessNoise = normalizeCovarianceMatrix(physicalProcessNoise);
+
             return new NonLinearEvolution(measurement.getTime(), predictedState,
                                           stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
 
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);
         }
-    }
-
-    /** Build a physical process noise matrix.
-     * <p>
-     * This method picks up components from individual process noise matrices
-     * associated with all propagators and creates a single composite matrix from them.
-     * </p>
-     * @param m state dimension
-     * @param previous previous states to use (null array initial process noise)
-     * @param current current states
-     * @return normalized process noise matrix
-     * @exception OrekitException if providers cannot provide the parts of
-     * the noise matrix, or if some dimension mismatch occurs
-     */
-    private RealMatrix buildCompleteProcessNoiseMatrix(final int m,
-                                                       final SpacecraftState[] previous,
-                                                       final SpacecraftState[] current)
-        throws OrekitException {
-
-        final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(m, m);
-        for (int k = 0; k < processNoiseMatricesProviders.size(); ++k) {
-            final RealMatrix noiseK = processNoiseMatricesProviders.get(k).
-                                      getProcessNoiseMatrix(previous == null ? null : previous[k], current[k]);
-            checkDimension(noiseK.getRowDimension(),
-                           builders.get(k).getOrbitalParametersDrivers(),
-                           builders.get(k).getPropagationParametersDrivers(),
-                           estimatedMeasurementsParameters);
-            final int[] indK = processNoiseIndirection[k];
-            for (int i = 0; i < indK.length; ++i) {
-                if (indK[i] >= 0) {
-                    for (int j = 0; j < indK.length; ++j) {
-                        if (indK[j] >= 0) {
-                            physicalProcessNoise.setEntry(indK[i], indK[j], noiseK.getEntry(i, j));
-                        }
-                    }
-                }
-            }
-
-        }
-
-        return normalizeCovarianceMatrix(physicalProcessNoise);
-
     }
 
     /** {@inheritDoc} */

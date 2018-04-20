@@ -30,6 +30,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -320,8 +321,10 @@ public class StreamingOemWriter {
             return tod;
         } else if (name.contains("Equinox") && name.contains(itrf)) {
             return "GRC";
+        } else if (frame instanceof VersionedITRF) {
+            return ((VersionedITRF) frame).getITRFVersion().getName().replace("-", "");
         } else if (name.contains("CIO") && name.contains(itrf)) {
-            return "ITRF2008";
+            return "ITRF2014";
         } else {
             // don't know how to map it to a CCSDS reference frame
             return name;

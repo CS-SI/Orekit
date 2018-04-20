@@ -39,8 +39,8 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
@@ -1152,7 +1152,7 @@ public class OrbitDetermination {
             optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
         } else {
             // we want to use a Gauss-Newton optimization engine
-            optimizer = new GaussNewtonOptimizer(Decomposition.QR);
+            optimizer = new GaussNewtonOptimizer(new QRDecomposer(1e-11), false);
         }
 
         final double convergenceThreshold;

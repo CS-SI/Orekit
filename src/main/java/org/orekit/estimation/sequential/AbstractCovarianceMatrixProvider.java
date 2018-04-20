@@ -19,42 +19,29 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.SpacecraftState;
 
-/** Provider for constant process noise matrices.
+/** Abstract provider handling a predefined initial covariance matrix.
  * <p>
- * This class always provides one initial noise matrix and
- * one constant process noise matrix (both can be identical),
- * regardless of states.
+ * This class always provides a predefined initial noise matrix.
  * </p>
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class ConstantProcessNoise extends AbstractCovarianceMatrixProvider {
+public abstract class AbstractCovarianceMatrixProvider implements CovarianceMatrixProvider {
 
-    /** Constant process noise. */
-    private final RealMatrix processNoiseMatrix;
-
-    /** Simple constructor.
-     * @param processNoiseMatrix constant process noise, used for both initial noise
-     * and noise between previous and current state
-     */
-    public ConstantProcessNoise(final RealMatrix processNoiseMatrix) {
-        this(processNoiseMatrix, processNoiseMatrix);
-    }
+    /** Initial process noise. */
+    private final RealMatrix initialNoiseMatrix;
 
     /** Simple constructor.
      * @param initialNoiseMatrix initial process noise
-     * @param processNoiseMatrix constant process noise
      */
-    public ConstantProcessNoise(final RealMatrix initialNoiseMatrix, final RealMatrix processNoiseMatrix) {
-        super(initialNoiseMatrix);
-        this.processNoiseMatrix = processNoiseMatrix;
+    protected AbstractCovarianceMatrixProvider(final RealMatrix initialNoiseMatrix) {
+        this.initialNoiseMatrix = initialNoiseMatrix;
     }
 
     /** {@inheritDoc} */
     @Override
-    public RealMatrix getProcessNoiseMatrix(final SpacecraftState previous,
-                                            final SpacecraftState current) {
-        return processNoiseMatrix;
+    public RealMatrix getInitialCovarianceMatrix(final SpacecraftState initial) {
+        return initialNoiseMatrix;
     }
 
 }
