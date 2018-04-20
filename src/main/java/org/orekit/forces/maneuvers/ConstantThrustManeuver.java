@@ -100,6 +100,17 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
 
+    /** User-defined name of the maneuver.
+     * This String attribute is empty by default.
+     * It is added as a prefix to the parameter drivers of the maneuver.
+     * The purpose is to differentiate between drivers in the case where several maneuvers
+     * were added to a propagator force model.
+     * Additionally, the user can retrieve the whole maneuver by looping on the force models of a propagator,
+     * scanning for its name.
+     * @since 9.2
+     */
+    private final String name;
+
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
      * Calling this constructor is equivalent to call {@link
@@ -159,14 +170,14 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @param thrust the thrust force (N)
      * @param isp engine specific impulse (s)
      * @param direction the acceleration direction in satellite frame
-     * @param driversNamePrefix prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
      * @since 9.0
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
                                   final Vector3D direction,
-                                  final String driversNamePrefix) {
-        this(date, duration, thrust, isp, null, direction, driversNamePrefix);
+                                  final String name) {
+        this(date, duration, thrust, isp, null, direction, name);
     }
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -187,13 +198,13 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame
-     * @param driversNamePrefix prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
      * @since 9.2
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp,
                                   final AttitudeProvider attitudeOverride, final Vector3D direction,
-                                  final String driversNamePrefix) {
+                                  final String name) {
 
         if (duration >= 0) {
             this.startDate = date;
@@ -206,14 +217,16 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         final double flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
         this.attitudeOverride = attitudeOverride;
         this.direction = direction.normalize();
+        this.name = name;
         firing = false;
 
+        // Build the parameter drivers, using maneuver name as prefix
         ParameterDriver tpd = null;
         ParameterDriver fpd = null;
         try {
-            tpd = new ParameterDriver(driversNamePrefix + THRUST, thrust, THRUST_SCALE,
+            tpd = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
                                       0.0, Double.POSITIVE_INFINITY);
-            fpd = new ParameterDriver(driversNamePrefix + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+            fpd = new ParameterDriver(name + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
                                       Double.NEGATIVE_INFINITY, 0.0 );
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
@@ -268,6 +281,55 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         return flowRateDriver.getValue();
     }
 
+    /** Get the direction.
+     * @return the direction
+     * @since 9.2
+     */
+    public Vector3D getDirection() {
+        return direction;
+    }
+
+    /** Get the name.
+     * @return the name
+     * @since 9.2
+     */
+    public String getName() {
+        return name;
+    }
+
+    /** Get the start date.
+     * @return the start date
+     * @since 9.2
+     */
+    public AbsoluteDate getStartDate() {
+        return startDate;
+    }
+
+    /** Get the end date.
+     * @return the end date
+     * @since 9.2
+     */
+    public AbsoluteDate getEndDate() {
+        return endDate;
+    }
+
+    /** Get the duration of the maneuver (s).
+     * duration = endDate - startDate
+     * @return the duration of the maneuver (s)
+     * @since 9.2
+     */
+    public double getDuration() {
+        return endDate.durationFrom(startDate);
+    }
+
+    /** Get the attitude override used for the maneuver.
+     * @return the attitude override
+     * @since 9.2
+     */
+    public AttitudeProvider getAttitudeOverride() {
+        return attitudeOverride;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
@@ -283,7 +345,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             adder.addMassDerivative(parameters[1]);
 
         }
-
     }
 
     /** {@inheritDoc} */
@@ -301,9 +362,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
             // compute flow rate
             adder.addMassDerivative(parameters[1]);
-
         }
-
     }
 
     /** {@inheritDoc} */

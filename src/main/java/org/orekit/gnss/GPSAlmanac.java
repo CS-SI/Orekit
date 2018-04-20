@@ -162,7 +162,8 @@ public class GPSAlmanac implements GPSOrbitalElements {
 
     @Override
     public double getMeanMotion() {
-        return FastMath.sqrt(GPS_MU / FastMath.pow(sma, 3));
+        final double absA = FastMath.abs(sma);
+        return FastMath.sqrt(GPS_MU / absA) / absA;
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -57,7 +58,7 @@ public class StreamingOemWriterTest {
             if (!ccsdsFrame.isLof()) {
                 Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true);
                 String actual = StreamingOemWriter.guessFrame(frame);
-                assertThat(actual.replace("-", ""), CoreMatchers.is(ccsdsFrame.name()));
+                assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
             }
         }
 
@@ -73,15 +74,26 @@ public class StreamingOemWriterTest {
         assertThat(StreamingOemWriter.guessFrame(FramesFactory.getICRF()),
                 CoreMatchers.is("ICRF"));
         assertThat(
-                StreamingOemWriter.guessFrame(
-                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
-                CoreMatchers.is("ITRF2008"));
+                   StreamingOemWriter.guessFrame(
+                           FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                   CoreMatchers.is("ITRF2014"));
         assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGTOD(true)),
                 CoreMatchers.is("TDR"));
         assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTEME()),
                 CoreMatchers.is("TEME"));
         assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTOD(true)),
                 CoreMatchers.is("TOD"));
+
+        // check that guessed name loses the IERS conventions and simpleEOP flag
+        for (ITRFVersion version : ITRFVersion.values()) {
+            final String name = version.getName().replaceAll("-", "");
+            for (final IERSConventions conventions : IERSConventions.values()) {
+                assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, true)),
+                           CoreMatchers.is(name));
+                assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, false)),
+                           CoreMatchers.is(name));
+            }
+        }
 
         // check other names in Annex A
         assertThat(
