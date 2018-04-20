@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -88,8 +89,8 @@ public class RinexLoader {
     private static final String IRN                  = "IRN";
     // CHECKSTYLE: resume JavadocVariable check
 
-    /** Rinex Observations. */
-    private final List<ObservationData> rinexObservations;
+    /** Rinex Observations, grouped by file. */
+    private final Map<RinexHeader, List<ObservationData>> observations;
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
@@ -97,22 +98,25 @@ public class RinexLoader {
      */
     public RinexLoader(final String supportedNames)
         throws OrekitException {
-        rinexObservations = new ArrayList<>();
+        observations = new HashMap<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
     }
 
-    /** Add a Rinex observation.
-     * @param observation rinex observation to add
+    /** Add a Rinex header.
+     * @param header rinex header to add
+     * @return the list into which observations should be added
      */
-    private void addObservationData(final ObservationData observation) {
-        rinexObservations.add(observation);
+    private List<ObservationData> addHeader(final RinexHeader header) {
+        final List<ObservationData> list = new ArrayList<>();
+        observations.put(header, list);
+        return list;
     }
 
     /** Get parsed rinex observations.
      * @return unmodifiable view of parsed rinex observations
      */
-    public List<ObservationData> getRinexObservations() {
-        return Collections.unmodifiableList(rinexObservations);
+    public Map<RinexHeader, List<ObservationData>> getObservations() {
+        return Collections.unmodifiableMap(observations);
     }
 
     /** Parser for rinex files.
@@ -135,13 +139,13 @@ public class RinexLoader {
         /** {@inheritDoc} */
         @Override
         public void loadData(final InputStream input, final String name)
-                        throws IOException, OrekitException {
+            throws IOException, OrekitException {
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
 
                 // placeholders for parsed data
                 SatelliteSystem                  satelliteSystem        = null;
-                double                           FORMAT_VERSION         = Double.NaN;
+                double                           formatVersion          = Double.NaN;
                 boolean                          inRinexVersion         = false;
                 int                              lineNumber             = 0;
                 SatelliteSystem                  obsTypesSystem         = null;
@@ -184,11 +188,9 @@ public class RinexLoader {
                 int                              nbSatObs               = -1;
                 int                              nbLinesSat             = -1;
                 double                           rcvrClkOffset          = 0;
-                ObservationData                  obser                  = null;
                 int                              nbLinesSkip            = 0;
                 int                              nbLinesObs             = 0;
                 int                              n                      = -1;
-                boolean                          endOfHeader            = false;
                 boolean                          inRunBy                = false;
                 boolean                          inMarkerName           = false;
                 boolean                          inMarkerType           = false;
@@ -202,15 +204,16 @@ public class RinexLoader {
                 boolean                          inPhaseShift           = false;
                 boolean                          inGlonassSlot          = false;
                 boolean                          inGlonassCOD           = false;
+                List<ObservationData>            observationsList       = null;
 
                 //First line must  always contain Rinex Version, File Type and Satellite Systems Observed
                 String line = reader.readLine();
                 lineNumber++;
-                FORMAT_VERSION = parseDouble(line, 0, 9);
+                formatVersion = parseDouble(line, 0, 9);
 
-                if ((FORMAT_VERSION != 2) && (FORMAT_VERSION != 2.10) && (FORMAT_VERSION != 2.11) &&
-                                (FORMAT_VERSION != 3.00) && (FORMAT_VERSION != 3.01) &&
-                                (FORMAT_VERSION != 3.02) && (FORMAT_VERSION != 3.03)) {
+                if ((formatVersion != 2) && (formatVersion != 2.10) && (formatVersion != 2.11) &&
+                                (formatVersion != 3.00) && (formatVersion != 3.01) &&
+                                (formatVersion != 3.02) && (formatVersion != 3.03)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
                 //File Type must be Observation_Data
@@ -220,22 +223,22 @@ public class RinexLoader {
                 satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(line, 40, 1));
                 inRinexVersion = true;
 
-                switch ((int) FORMAT_VERSION) {
+                switch ((int) formatVersion) {
                     case 2:
 
-                        final int                        MAX_OBS_TYPES_PER_LINE_RNX2 = 9;
-                        final int                        MAX_N_SAT_OBSERVATION = 12;
-                        final int                        MAX_N_TYPES_OBSERVATION = 5;
-                        final ArrayList<RinexFrequency>  typesObs             = new ArrayList<RinexFrequency>();
+                        final int                   MAX_OBS_TYPES_PER_LINE_RNX2 = 9;
+                        final int                   MAX_N_SAT_OBSERVATION       = 12;
+                        final int                   MAX_N_TYPES_OBSERVATION     = 5;
+                        final List<RinexFrequency>  typesObs = new ArrayList<>();
 
                         for (line = reader.readLine(); line != null; line = reader.readLine()) {
                             ++lineNumber;
 
-                            if (!endOfHeader) {
+                            if (observationsList == null) {
                                 switch(line.substring(LABEL_START).trim()) {
                                     case RINEX_VERSION_TYPE :
 
-                                        FORMAT_VERSION = parseDouble(line, 0, 9);
+                                        formatVersion = parseDouble(line, 0, 9);
                                         //File Type must be Observation_Data
                                         if (!(parseString(line, 20, 1)).equals(FILE_TYPE)) {
                                             throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
@@ -387,32 +390,30 @@ public class RinexLoader {
                                         inTypesObs = true;
                                         break;
                                     case END_OF_HEADER :
-                                        endOfHeader = true;
+                                        //We make sure that we have read all the mandatory fields inside the header of the Rinex
+                                        if (!inRinexVersion || !inRunBy || !inMarkerName ||
+                                            !inObserver || !inRecType || !inAntType ||
+                                            !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs) {
+                                            throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
+                                        }
+
+                                        //Header information gathered
+                                        observationsList = addHeader(new RinexHeader(formatVersion, satelliteSystem,
+                                                                                     markerName, markerNumber, observerName,
+                                                                                     agencyName, receiverNumber, receiverType,
+                                                                                     receiverVersion, antennaNumber, antennaType,
+                                                                                     approxPos, antHeight, eccentricities, interval,
+                                                                                     tFirstObs, tLastObs, clkOffset, leapSeconds));
                                         break;
                                     default :
-                                        if (!endOfHeader) {
+                                        if (observationsList == null) {
                                             //There must be an error due to an unknown Label inside the Header
                                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                       lineNumber, name, line);
                                         }
                                 }
                             } else {
-                                //If End of Header
 
-                                //We make sure that we have read all the mandatory fields inside the header of the Rinex
-                                if (!inRinexVersion || !inRunBy || !inMarkerName ||
-                                    !inObserver || !inRecType || !inAntType ||
-                                    !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs) {
-                                    throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
-                                }
-
-                                //Header information gathered
-                                final RinexHeader rinexHeader = new RinexHeader(FORMAT_VERSION, satelliteSystem,
-                                                                                markerName, markerNumber, observerName,
-                                                                                agencyName, receiverNumber, receiverType,
-                                                                                receiverVersion, antennaNumber, antennaType,
-                                                                                approxPos, antHeight, eccentricities, interval,
-                                                                                tFirstObs, tLastObs, clkOffset, leapSeconds);
                                 //Start of a new Observation
                                 rcvrClkOffset     =  0;
                                 nbLinesSat        = -1;
@@ -512,7 +513,6 @@ public class RinexLoader {
                                         obs         = new double[nbTypes];
                                         lli         = new int[nbTypes];
                                         sigStrength = new int[nbTypes];
-                                        obser       = null;
                                         n           = -1;
 
 
@@ -573,10 +573,9 @@ public class RinexLoader {
                                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                           lineNumber, name, line);
                                         }
-                                        obser = new ObservationData(satelliteSystemSat, prnNumber, tObs, rcvrClkOffset,
-                                                                    typesObs, obs, lli, sigStrength);
 
-                                        addObservationData(obser);
+                                        observationsList.add(new ObservationData(satelliteSystemSat, prnNumber, tObs, rcvrClkOffset,
+                                                                                 typesObs, obs, lli, sigStrength));
 
                                     }
                                 }
@@ -589,38 +588,35 @@ public class RinexLoader {
                         final int           MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE = 12;
                         final int                    MAX_N_SAT_PHSHIFT_PER_LINE = 10;
 
-                        final HashMap<SatelliteSystem, ArrayList<RinexFrequency>>
-                                                         listTypeObs            = new HashMap<SatelliteSystem, ArrayList<RinexFrequency>>();
-                        final ArrayList<RinexFrequency>  typeObs                = new ArrayList<RinexFrequency>();
-                        String                           sigStrengthUnit        = null;
-                        int                              leapSecondsFuture      = 0;
-                        int                              leapSecondsWeekNum     = 0;
-                        int                              leapSecondsDayNum      = 0;
-                        final ArrayList<AppliedDCBs>     listAppliedDCBs        = new ArrayList<AppliedDCBs>();
-                        final ArrayList<AppliedPCVS>     listAppliedPCVS        = new ArrayList<AppliedPCVS>();
-                        SatelliteSystem                  satSystemScaleFactor   = null;
-                        int                              scaleFactor            = 1;
-                        int                              nbObsScaleFactor       = 0;
-                        ArrayList<RinexFrequency>        typesObsScaleFactor    = new ArrayList<RinexFrequency>();
-                        final ArrayList<ScaleFactorCorrection>
-                                                         scaleFactorCorrections = new ArrayList<ScaleFactorCorrection>();
-                        String[]                         satsPhaseShift         = null;
-                        int                              nbSatPhaseShift        = 0;
-                        SatelliteSystem                  satSystemPhaseShift    = null;
-                        double                           corrPhaseShift         = 0.0;
-                        final ArrayList<PhaseShiftCorrection>
-                                                         phaseSfhiftCorrections = new ArrayList<PhaseShiftCorrection>();
-                        RinexFrequency                   phaseShiftTypeObs      = null;
+                        final Map<SatelliteSystem, List<RinexFrequency>> listTypeObs            = new HashMap<>();
+                        final List<RinexFrequency>                       typeObs                = new ArrayList<>();
+                        String                                           sigStrengthUnit        = null;
+                        int                                              leapSecondsFuture      = 0;
+                        int                                              leapSecondsWeekNum     = 0;
+                        int                                              leapSecondsDayNum      = 0;
+                        final List<AppliedDCBs>                          listAppliedDCBs        = new ArrayList<>();
+                        final List<AppliedPCVS>                          listAppliedPCVS        = new ArrayList<>();
+                        SatelliteSystem                                  satSystemScaleFactor   = null;
+                        int                                              scaleFactor            = 1;
+                        int                                              nbObsScaleFactor       = 0;
+                        final List<RinexFrequency>                       typesObsScaleFactor    = new ArrayList<>();
+                        final List<ScaleFactorCorrection>                scaleFactorCorrections = new ArrayList<>();
+                        String[]                                         satsPhaseShift         = null;
+                        int                                              nbSatPhaseShift        = 0;
+                        SatelliteSystem                                  satSystemPhaseShift    = null;
+                        double                                           corrPhaseShift         = 0.0;
+                        final List<PhaseShiftCorrection>                 phaseShiftCorrections  = new ArrayList<>();
+                        RinexFrequency                                   phaseShiftTypeObs      = null;
 
 
                         for (line = reader.readLine(); line != null; line = reader.readLine()) {
                             ++lineNumber;
-                            if (!endOfHeader) {
+                            if (observationsList == null) {
                                 switch(line.substring(LABEL_START).trim()) {
                                     case RINEX_VERSION_TYPE :
-                                        FORMAT_VERSION = parseDouble(line, 0, 9);
-                                        if ((FORMAT_VERSION != 3.00) && (FORMAT_VERSION != 3.01) &&
-                                                        (FORMAT_VERSION != 3.02) && (FORMAT_VERSION != 3.03)) {
+                                        formatVersion = parseDouble(line, 0, 9);
+                                        if ((formatVersion != 3.00) && (formatVersion != 3.01) &&
+                                                        (formatVersion != 3.02) && (formatVersion != 3.03)) {
                                             throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                         }
                                         //File Type must be Observation_Data
@@ -820,7 +816,7 @@ public class RinexLoader {
                                                 }
                                             }
                                         }
-                                        listTypeObs.put(obsTypesSystem, new ArrayList<RinexFrequency>(typeObs));
+                                        listTypeObs.put(obsTypesSystem, new ArrayList<>(typeObs));
                                         inTypesObs = true;
                                         break;
                                     case SIGNAL_STRENGTH_UNIT :
@@ -844,10 +840,8 @@ public class RinexLoader {
                                         nbObsScaleFactor     = parseInt(line, 8, 2);
 
                                         if (nbObsScaleFactor == 0) {
-                                            typesObsScaleFactor = listTypeObs.get(satSystemScaleFactor);
-                                        }
-
-                                        if (nbObsScaleFactor != 0) {
+                                            typesObsScaleFactor.addAll(listTypeObs.get(satSystemScaleFactor));
+                                        } else {
 
                                             final int nbLinesTypesObsScaleFactor = (int)
                                                             ((nbObsScaleFactor + MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE - 1) / MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE);
@@ -909,8 +903,10 @@ public class RinexLoader {
                                                 }
                                             }
                                         }
-                                        phaseSfhiftCorrections.add(new PhaseShiftCorrection(satSystemPhaseShift,
-                                                                                            phaseShiftTypeObs, corrPhaseShift, satsPhaseShift));
+                                        phaseShiftCorrections.add(new PhaseShiftCorrection(satSystemPhaseShift,
+                                                                                           phaseShiftTypeObs,
+                                                                                           corrPhaseShift,
+                                                                                           satsPhaseShift));
                                         inPhaseShift = true;
                                         break;
                                     case GLONASS_SLOT_FRQ_NB :
@@ -922,10 +918,29 @@ public class RinexLoader {
                                         inGlonassCOD = true;
                                         break;
                                     case END_OF_HEADER :
-                                        endOfHeader = true;
+                                        //We make sure that we have read all the mandatory fields inside the header of the Rinex
+                                        if (!inRinexVersion || !inRunBy || !inMarkerName ||
+                                            !inMarkerType || !inObserver || !inRecType || !inAntType ||
+                                            !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs ||
+                                            (formatVersion >= 3.01 && !inPhaseShift) ||
+                                            (formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD))) {
+                                            throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
+                                        }
+
+                                        //Header information gathered
+                                        observationsList = addHeader(new RinexHeader(formatVersion, satelliteSystem,
+                                                                                     markerName, markerNumber, markerType,
+                                                                                     observerName, agencyName, receiverNumber,
+                                                                                     receiverType, receiverVersion, antennaNumber,
+                                                                                     antennaType, approxPos, antHeight, eccentricities,
+                                                                                     antRefPoint, obsCode, antPhaseCenter, antBSight,
+                                                                                     antAzi, antZeroDir, centerMass, sigStrengthUnit,
+                                                                                     interval, tFirstObs, tLastObs, clkOffset, listAppliedDCBs,
+                                                                                     listAppliedPCVS, phaseShiftCorrections, leapSeconds,
+                                                                                     leapSecondsFuture, leapSecondsWeekNum, leapSecondsDayNum));
                                         break;
                                     default :
-                                        if (!endOfHeader) {
+                                        if (observationsList == null) {
                                             //There must be an error due to an unknown Label inside the Header
                                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                       lineNumber, name, line);
@@ -933,26 +948,6 @@ public class RinexLoader {
                                 }
                             } else {
                                 //If End of Header
-                                //We make sure that we have read all the mandatory fields inside the header of the Rinex
-                                if (!inRinexVersion || !inRunBy || !inMarkerName ||
-                                          !inMarkerType || !inObserver || !inRecType || !inAntType ||
-                                          !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs) {
-                                    //inPhaseShift could be added (obligatory in the header) but only after version 3.01 RINEX
-                                    //inGlonassSlot and inGlonassCOD are obligatory after version 3.03
-                                    throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
-                                }
-
-                                //Header information gathered
-                                final RinexHeader rinexHeader = new RinexHeader(FORMAT_VERSION, satelliteSystem,
-                                                                                markerName, markerNumber, markerType,
-                                                                                observerName, agencyName, receiverNumber,
-                                                                                receiverType, receiverVersion, antennaNumber,
-                                                                                antennaType, approxPos, antHeight, eccentricities,
-                                                                                antRefPoint, obsCode, antPhaseCenter, antBSight,
-                                                                                antAzi, antZeroDir, centerMass, sigStrengthUnit,
-                                                                                interval, tFirstObs, tLastObs, clkOffset, listAppliedDCBs,
-                                                                                listAppliedPCVS, phaseSfhiftCorrections, leapSeconds,
-                                                                                leapSecondsFuture, leapSecondsWeekNum, leapSecondsDayNum);
 
                                 //Start of a new Observation
                                 rcvrClkOffset     =  0;
@@ -998,7 +993,6 @@ public class RinexLoader {
                                             obs         = null;
                                             lli         = null;
                                             sigStrength = null;
-                                            obser       = null;
                                             SatelliteSystem satelliteSystemSat = null;
 
                                             //We check the Satellite System of the satellite with the first character of the line
@@ -1056,9 +1050,8 @@ public class RinexLoader {
                                                 lli[j] = parseInt(line, 17 + j * 16, 1);
                                                 sigStrength[j] = parseInt(line, 18 + j * 16, 1);
                                             }
-                                            obser = new ObservationData(satelliteSystemSat, prnNumber, tObs, rcvrClkOffset,
-                                                                        listTypeObs.get(satelliteSystemSat), obs, lli, sigStrength);
-                                            addObservationData(obser);
+                                            observationsList.add(new ObservationData(satelliteSystemSat, prnNumber, tObs, rcvrClkOffset,
+                                                                                     listTypeObs.get(satelliteSystemSat), obs, lli, sigStrength));
 
                                         }
                                     }
@@ -1184,7 +1177,7 @@ public class RinexLoader {
             /** Satellite System. */
             private final SatelliteSystem satSystemScaleFactor;
             /** List of Observations types that have been scaled. */
-            private final ArrayList<RinexFrequency> typesObsScaleFactor;
+            private final List<RinexFrequency> typesObsScaleFactor;
             /** Factor to divide stored observations with before use. */
             private final double scaleFactor;
 
@@ -1195,7 +1188,7 @@ public class RinexLoader {
              */
             private ScaleFactorCorrection (final SatelliteSystem satSystemScaleFactor,
                                           final double scaleFactor,
-                                          final ArrayList<RinexFrequency> typesObsScaleFactor) {
+                                          final List<RinexFrequency> typesObsScaleFactor) {
                 this.satSystemScaleFactor = satSystemScaleFactor;
                 this.scaleFactor = scaleFactor;
                 this.typesObsScaleFactor = typesObsScaleFactor;
@@ -1215,7 +1208,7 @@ public class RinexLoader {
             /** Get the list of Observation Types scaled.
              * @return List of Observation types scaled
              */
-            public ArrayList<RinexFrequency> getTypesObsScaled() {
+            public List<RinexFrequency> getTypesObsScaled() {
                 return typesObsScaleFactor;
             }
         }

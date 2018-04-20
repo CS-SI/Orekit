@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -111,13 +111,13 @@ public class RinexHeader {
     private final int clkOffset;
 
     /** List of applied differential code bias corrections. */
-    private ArrayList<AppliedDCBs> listAppliedDCBs;
+    private List<AppliedDCBs> listAppliedDCBs;
 
     /** List of antenna center variation corrections. */
-    private ArrayList<AppliedPCVS> listAppliedPCVS;
+    private List<AppliedPCVS> listAppliedPCVS;
 
     /** List of phase shift correction used to generate phases consistent w/r to cycle shifts. */
-    private ArrayList<PhaseShiftCorrection> phaseSfhiftCorrections;
+    private List<PhaseShiftCorrection> phaseShiftCorrections;
 
     /** Number of leap seconds since 6-Jan-1980. */
     private final int leapSeconds;
@@ -155,13 +155,13 @@ public class RinexHeader {
      * @param clkOffset Realtime-derived receiver clock offset
      * @param leapSeconds Number of leap seconds since 6-Jan-1980
      */
-    public RinexHeader (final double rinexVersion, final SatelliteSystem satelliteSystem,
-                        final String markerName, final String markerNumber, final String observerName,
-                        final String agencyName, final String receiverNumber, final String receiverType,
-                        final String receiverVersion, final String antennaNumber, final String antennaType,
-                        final Vector3D approxPos, final double antHeight, final Vector2D eccentricities,
-                        final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                        final int clkOffset, final int leapSeconds) {
+    public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
+                       final String markerName, final String markerNumber, final String observerName,
+                       final String agencyName, final String receiverNumber, final String receiverType,
+                       final String receiverVersion, final String antennaNumber, final String antennaType,
+                       final Vector3D approxPos, final double antHeight, final Vector2D eccentricities,
+                       final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
+                       final int clkOffset, final int leapSeconds) {
         this.rinexVersion = rinexVersion;
         this.satelliteSystem = satelliteSystem;
         this.markerName = markerName;
@@ -214,25 +214,25 @@ public class RinexHeader {
     * @param clkOffset Realtime-derived receiver clock offset
     * @param listAppliedDCBs List of applied differential code bias corrections
     * @param listAppliedPCVS List of antenna center variation corrections
-    * @param phaseSfhiftCorrections List of phase shift correction used to generate phases consistent w/r to cycle shifts
+    * @param phaseShiftCorrections List of phase shift correction used to generate phases consistent w/r to cycle shifts
     * @param leapSeconds Number of leap seconds since 6-Jan-1980
     * @param leapSecondsFuture Future or past leap seconds
     * @param leapSecondsWeekNum Respective leap second week number
     * @param leapSecondsDayNum Respective leap second day number
     */
-    public RinexHeader (final double rinexVersion, final SatelliteSystem satelliteSystem,
-                        final String markerName, final String markerNumber, final String markerType,
-                        final String observerName, final String agencyName, final String receiverNumber,
-                        final String receiverType, final String receiverVersion, final String antennaNumber,
-                        final String antennaType, final Vector3D approxPos, final double antHeight,
-                        final Vector2D eccentricities, final Vector3D antRefPoint, final String obsCode,
-                        final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
-                        final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
-                        final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                        final int clkOffset, final ArrayList<AppliedDCBs> listAppliedDCBs,
-                        final ArrayList<AppliedPCVS> listAppliedPCVS,
-                        final ArrayList<PhaseShiftCorrection> phaseSfhiftCorrections, final int leapSeconds,
-                        final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
+    public RinexHeader(final double rinexVersion, final SatelliteSystem satelliteSystem,
+                       final String markerName, final String markerNumber, final String markerType,
+                       final String observerName, final String agencyName, final String receiverNumber,
+                       final String receiverType, final String receiverVersion, final String antennaNumber,
+                       final String antennaType, final Vector3D approxPos, final double antHeight,
+                       final Vector2D eccentricities, final Vector3D antRefPoint, final String obsCode,
+                       final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
+                       final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
+                       final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
+                       final int clkOffset, final List<AppliedDCBs> listAppliedDCBs,
+                       final List<AppliedPCVS> listAppliedPCVS,
+                       final List<PhaseShiftCorrection> phaseShiftCorrections, final int leapSeconds,
+                       final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
         this.rinexVersion = rinexVersion;
         this.satelliteSystem = satelliteSystem;
         this.markerName = markerName;
@@ -254,7 +254,7 @@ public class RinexHeader {
         this.leapSeconds = leapSeconds;
         this.markerType = markerType;
         this.sigStrengthUnit = sigStrengthUnit;
-        this.phaseSfhiftCorrections = phaseSfhiftCorrections;
+        this.phaseShiftCorrections = phaseShiftCorrections;
         this.obsCode = obsCode;
         this.listAppliedDCBs = listAppliedDCBs;
         this.listAppliedPCVS = listAppliedPCVS;
@@ -276,203 +276,236 @@ public class RinexHeader {
     public double getRinexVersion() {
         return rinexVersion;
     }
+
     /** Get Satellite System.
      * @return satellite system of the observation file
      */
     public SatelliteSystem getSatelliteSystem() {
         return satelliteSystem;
     }
+
     /** Get name of the antenna marker.
      * @return name of the antenna marker
      */
     public String getMarkerName() {
         return markerName;
     }
+
     /** Get number of the antenna marker.
      * @return number of the antenna marker
      */
     public String getMarkerNumber() {
         return markerNumber;
     }
-    /** Get name of the agency.
-     * @return name of the agency
+
+    /** Get name of the observer.
+     * @return name of the observer
      */
     public String getObserverName() {
         return observerName;
     }
-    /** Get name of the observer.
-     * @return name of the observer
+
+    /** Get name of the agency.
+     * @return name of the agency
      */
     public String getAgencyName() {
         return agencyName;
     }
+
     /** Get the number of the receiver.
      * @return number of the receiver
      */
-    public String getreceiverNumber() {
+    public String getReceiverNumber() {
         return receiverNumber;
     }
+
     /** Get the type of the receiver.
      * @return type of the receiver
      */
-    public String getreceiverType() {
+    public String getReceiverType() {
         return receiverType;
     }
+
     /** Get the version of the receiver.
      * @return version of the receiver
      */
-    public String getreceiverVersion() {
+    public String getReceiverVersion() {
         return receiverVersion;
     }
+
     /** Get the number of the antenna.
      * @return number of the antenna
      */
     public String getAntennaNumber() {
         return antennaNumber;
     }
+
     /** Get the type of the antenna.
      * @return type of the antenna
      */
     public String getAntennaType() {
         return antennaType;
     }
+
     /** Get the Approximate Marker Position.
      * @return Approximate Marker Position
      */
     public Vector3D getApproxPos() {
         return approxPos;
     }
+
     /** Get the antenna height.
      * @return height of the antenna
      */
     public double getAntennaHeight() {
         return antHeight;
     }
+
     /** Get the eccentricities of antenna center.
      * @return Eccentricities of antenna center
      */
     public Vector2D getEccentricities() {
         return eccentricities;
     }
+
     /** Get the realtime-derived receiver clock offset.
      * @return realtime-derived receiver clock offset
      */
     public int getClkOffset() {
         return clkOffset;
     }
+
     /** Get the observation interval in seconds.
      * @return Observation interval in seconds
      */
     public double getInterval() {
         return interval;
     }
+
     /** Get the time of First observation record.
      * @return Time of First observation record
      */
     public AbsoluteDate getTFirstObs() {
         return tFirstObs;
     }
+
     /** Get the time of last observation record.
      * @return Time of last observation record
      */
     public AbsoluteDate getTLastObs() {
         return tLastObs;
     }
+
     /** Get the Number of leap seconds since 6-Jan-1980.
      * @return Number of leap seconds since 6-Jan-1980
      */
     public int getLeapSeconds() {
         return leapSeconds;
     }
+
     /** Get type of the antenna marker.
      * @return type of the antenna marker
      */
     public String getMarkerType() {
         return markerType;
     }
+
     /** Get the position of antenna reference point for antenna on vehicle.
      * @return Position of antenna reference point for antenna on vehicle
      */
-    public Vector3D getAntRefPoint() {
+    public Vector3D getAntennaReferencePoint() {
         return antRefPoint;
     }
+
     /** Get the observation code of the average phasecenter position w/r to antenna reference point.
      * @return Observation code of the average phasecenter position w/r to antenna reference point
      */
-    public String getObsCode() {
+    public String getObservationCode() {
         return obsCode;
     }
+
     /** Get the antenna phasecenter.
      * @return Antenna phasecenter
      */
-    public Vector3D getAntPhaseCenter() {
+    public Vector3D getAntennaPhaseCenter() {
         return antPhaseCenter;
     }
+
     /** Get the antenna B.Sight.
      * @return Antenna B.Sight
      */
-    public Vector3D getAntBSight() {
+    public Vector3D getAntennaBSight() {
         return antBSight;
     }
+
     /** Get the azimuth of the zero direction of a fixed antenna.
      * @return Azimuth of the zero direction of a fixed antenna
      */
-    public double getAntAzi() {
+    public double getAntennaAzimuth() {
         return antAzi;
     }
+
     /** Get the zero direction of antenna.
      * @return Zero direction of antenna
      */
-    public Vector3D getAntZeroDir() {
+    public Vector3D getAntennaZeroDirection() {
         return antZeroDir;
     }
+
     /** Get the current center of mass of vehicle in body fixed coordinate system.
      * @return Current center of mass of vehicle in body fixed coordinate system
      */
     public Vector3D getCenterMass() {
         return centerMass;
     }
+
     /** Get the unit of the carrier to noise ratio observables.
      * @return Unit of the carrier to noise ratio observables
      */
-    public String getSigStrengthUnit() {
+    public String getSignalStrengthUnit() {
         return sigStrengthUnit;
     }
+
     /** Get the future or past leap seconds.
      * @return Future or past leap seconds
      */
     public int getLeapSecondsFuture() {
         return leapSecondsFuture;
     }
+
     /** Get the respective leap second week number.
      * @return Respective leap second week number
      */
     public int getLeapSecondsWeekNum() {
         return leapSecondsWeekNum;
     }
+
     /** Get the respective leap second day number.
      * @return Respective leap second day number
      */
     public int getLeapSecondsDayNum() {
         return leapSecondsDayNum;
     }
+
     /** Get the list of applied differential code bias corrections.
      * @return list of applied differential code bias corrections
      */
-    public ArrayList<AppliedDCBs> getListAppliedDCBs() {
+    public List<AppliedDCBs> getListAppliedDCBs() {
         return listAppliedDCBs;
     }
+
     /** Get the list of antenna center variation corrections.
      * @return List of antenna center variation corrections
      */
-    public ArrayList<AppliedPCVS> getListAppliedPCVS() {
+    public List<AppliedPCVS> getListAppliedPCVS() {
         return listAppliedPCVS;
     }
+
     /** Get the list of phase shift correction used to generate phases consistent w/r to cycle shifts.
      * @return List of phase shift correction used to generate phases consistent w/r to cycle shifts
      */
-    public ArrayList<PhaseShiftCorrection> getphaseSfhiftCorrections() {
-        return phaseSfhiftCorrections;
+    public List<PhaseShiftCorrection> getPhaseShiftCorrections() {
+        return phaseShiftCorrections;
     }
 
 }

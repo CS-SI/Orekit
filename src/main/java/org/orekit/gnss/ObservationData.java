@@ -16,7 +16,7 @@
  */
 package org.orekit.gnss;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.orekit.time.AbsoluteDate;
 
@@ -35,7 +35,7 @@ public class ObservationData {
     private AbsoluteDate tObs;
 
     /** List of Observation types. */
-    private ArrayList<RinexFrequency> typesObs;
+    private List<RinexFrequency> typesObs;
 
     /** List of observations. */
     private double[] obs;
@@ -62,7 +62,7 @@ public class ObservationData {
      */
     public ObservationData(final SatelliteSystem satelliteSystem,
                            final int prnNumber, final AbsoluteDate tObs,
-                           final double rcvrClkOffset, final ArrayList<RinexFrequency> typesObs,
+                           final double rcvrClkOffset, final List<RinexFrequency> typesObs,
                            final double[] obs, final int[] lli, final int[] sigStrength) {
         this.satelliteSystem = satelliteSystem;
         this.prnNumber       = prnNumber;
@@ -95,7 +95,7 @@ public class ObservationData {
     /** Get list of Observation types.
      * @return list of observation types for the observed satellite
      */
-    public ArrayList<RinexFrequency> getTypesObs() {
+    public List<RinexFrequency> getTypesObs() {
         return typesObs;
     }
     /** Get receiver clock offset.
