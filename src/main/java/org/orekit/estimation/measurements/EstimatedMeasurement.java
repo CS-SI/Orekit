@@ -33,7 +33,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements TimeStamped {
+public class EstimatedMeasurement<T extends ObservedMeasurement<T>>
+    implements TimeStamped, Comparable<EstimatedMeasurement<T>> {
 
     /** Associated observed measurement. */
     private final T observedMeasurement;
@@ -272,6 +273,17 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      */
     public void setParameterDerivatives(final ParameterDriver driver, final double... parameterDerivatives) {
         parametersDerivatives.put(driver, parameterDerivatives);
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * Measurements comparison is based on the underlying observed measurement only.
+     * </p>
+     * @since 9.2
+     */
+    @Override
+    public int compareTo(final EstimatedMeasurement<T> other) {
+        return observedMeasurement.compareTo(other.getObservedMeasurement());
     }
 
     /** Enumerate for the status of the measurement. */

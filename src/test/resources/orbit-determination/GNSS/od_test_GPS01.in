@@ -18,15 +18,15 @@
 
 ### Orbit definition
 ## date of the orbital parameters (UTC)
-orbit.date = 2016-02-13T23:44:43.000
+orbit.date = 2016-02-13T00:15:00.000
 
-## Position & velocity along X, y, z in inertial frame (m) 
-orbit.cartesian.px =  10212717.949
-orbit.cartesian.py =  11974599.483
-orbit.cartesian.pz = -21437986.912
-orbit.cartesian.vx =     -2283.640879
-orbit.cartesian.vy =      3056.107412
-orbit.cartesian.vz =       642.493866
+## Position & velocity along X, y, z in inertial frame (m)
+orbit.cartesian.px =   6380000.000
+orbit.cartesian.py =  16424000.000
+orbit.cartesian.pz = -19880000.000
+orbit.cartesian.vx =     -2565.000000
+orbit.cartesian.vy =      2580.000000
+orbit.cartesian.vz =      1335.000000
 
 ## Spacecraft mass (kg) [1000.]
 mass = 1630
@@ -38,9 +38,9 @@ iers.conventions = 2010
 inertial.frame = EME2000
 
 # Propagator min step (s), max step (s), position error (m) and normalization scale (m) [0.001, 300, 10.0, 1000.0]
-propagator.min.step                  = 0.001
-propagator.max.step                  = 300
-propagator.position.error            = 10.0
+propagator.min.step        = 0.001
+propagator.max.step        = 300
+propagator.position.error  = 0.01
 
 # body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
 body.frame              = CIO/2010-based ITRF simple EOP
@@ -50,9 +50,9 @@ body.inverse.flattening =     298.257223563
 ### Force models
 
 ## Central body gravity potential degree
-central.body.degree = 8
+central.body.degree = 20
 ## Central body gravity potential order
-central.body.order  =  8
+central.body.order  = 20
 
 ## 3rd body Sun (true/false) [false]
 third.body.sun  = true
@@ -64,8 +64,8 @@ ocean.tides.degree = -1
 ocean.tides.order  = -1
 
 ## solid tides (true/false) [false]
-solid.tides.sun    = false
-solid.tides.moon   = false
+solid.tides.sun    = true
+solid.tides.moon   = true
 
 ## Atmospheric drag (true/false) [false]
 drag = false
@@ -86,7 +86,7 @@ solar.radiation.pressure.cr.estimated = true
 solar.radiation.pressure.area = 50
 
 # Post-Newtonian correction force due to general relativity (true/false) [false]
-general.relativity = false
+general.relativity = true
 
 ## Transponder delay bias (m) [0.0]
 transponder.delay.bias     = 0.0
@@ -97,10 +97,10 @@ transponder.delay.bias.estimated = false
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD 
-ground.station.latitude                        [0] =  41.868362 
-ground.station.longitude                       [0] =  -119.015669
-ground.station.altitude                        [0] =  1458.088 
-ground.station.position.estimated              [0] = true
+ground.station.latitude                        [0] =   41.868362882 
+ground.station.longitude                       [0] = -119.015669632
+ground.station.altitude                        [0] = 1458.088101
+ground.station.position.estimated              [0] = false
 ground.station.range.sigma                     [0] = 20.0
 ground.station.range.bias                      [0] =     0.0
 ground.station.range.bias.min                  [0] = -1000.0
@@ -124,9 +124,9 @@ ground.station.elevation.refraction.correction [0] = true
 ground.station.range.tropospheric.correction   [0] = true
 
 ground.station.name                            [1] =  SEAT
-ground.station.latitude                        [1] =  47.653972
-ground.station.longitude                       [1] =  -122.309458
-ground.station.altitude                        [1] =  44.666 
+ground.station.latitude                        [1] =   47.653972656
+ground.station.longitude                       [1] = -122.309458826
+ground.station.altitude                        [1] =   44.666105
 ground.station.position.estimated              [1] = false
 ground.station.range.sigma                     [1] = 20.0
 ground.station.range.bias                      [1] = 0.0
@@ -152,9 +152,9 @@ ground.station.range.tropospheric.correction   [1] = true
 
 
 ground.station.name                            [2] =  SBCH 
-ground.station.latitude                        [2] =  29.868112 
-ground.station.longitude                       [2] =  -89.673232 
-ground.station.altitude                        [2] =  -14.853 
+ground.station.latitude                        [2] =  29.868112727
+ground.station.longitude                       [2] = -89.673232869
+ground.station.altitude                        [2] = -14.853146
 ground.station.position.estimated              [2] = false
 ground.station.range.sigma                     [2] = 20.0
 ground.station.range.bias                      [2] = 0.0
@@ -179,9 +179,9 @@ ground.station.elevation.refraction.correction [2] = true
 ground.station.range.tropospheric.correction   [2] = true
 
 ground.station.name                            [3] =  BRIG 
-ground.station.latitude                        [3] =  42.520093
-ground.station.longitude                       [3] =  -83.756648 
-ground.station.altitude                        [3] =  262.449
+ground.station.latitude                        [3] =  42.520093759
+ground.station.longitude                       [3] = -83.756648765
+ground.station.altitude                        [3] = 262.449442
 ground.station.position.estimated              [3] = false
 ground.station.range.sigma                     [3] = 20.0
 ground.station.range.bias                      [3] = 0.0
@@ -206,9 +206,9 @@ ground.station.elevation.refraction.correction [3] = true
 ground.station.range.tropospheric.correction   [3] = true
 
 ground.station.name                            [4] =  AZBH 
-ground.station.latitude                        [4] =  35.107490
-ground.station.longitude                       [4] =  -114.604973 
-ground.station.altitude                        [4] =  152.411
+ground.station.latitude                        [4] =   35.107490239
+ground.station.longitude                       [4] = -114.604973036
+ground.station.altitude                        [4] =  152.410214
 ground.station.position.estimated              [4] = false
 ground.station.range.sigma                     [4] = 20.0
 ground.station.range.bias                      [4] = 0.0
@@ -260,7 +260,7 @@ estimator.orbital.parameters.position.scale     = 10.0
 
 # we can use either a Levenberg-Marquardt or a Gauss-Newton
 # optimization engine. Default is Levenberg-Marquardt
-estimator.optimization.engine = Gauss-Newton
+estimator.optimization.engine = Levenberg-Marquardt
 
 # the default initial step bound factor is 100 for Levenberg-Marquardt
 # this is too small for normalized parameters when initial guess is very

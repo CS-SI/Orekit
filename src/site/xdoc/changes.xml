@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added natural order for observed measurements primarily based on
+        chronological order, but with also value comparisons if measurements
+        are simultaneous (which occurs a lot in GNSS), and ensuring no
+        measurements are lost if stored in SortedSet
+      </action>
       <action dev="luc" type="add" due-to="Albert Alcarraz García">
         Added loading of RINEX observation files (versions 2 and 3)
       </action>

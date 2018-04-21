@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,7 +42,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.StateFunction;
@@ -214,7 +214,7 @@ public class InterSatellitesRangeTest {
         propagator.propagate(context.initialOrbit.getDate());
 
         // Sort measurements chronologically
-        measurements.sort(new ChronologicalComparator());
+        measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
@@ -369,8 +369,8 @@ public class InterSatellitesRangeTest {
         // Rewind the propagator to initial date
         propagator.propagate(context.initialOrbit.getDate());
 
-        // Sort measurements chronologically
-        measurements.sort(new ChronologicalComparator());
+        // Sort measurements, primarily chronologically
+        measurements.sort(Comparator.naturalOrder());
 
         // Propagate to final measurement's date
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
