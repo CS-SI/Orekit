@@ -149,7 +149,7 @@ public class RinexLoaderTest {
             checkObservation(list.get(0),
                              2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GPS, 2, -0.03,
-                             typesobs, RinexFrequency.P1, 0, 0, 0);
+                             typesobs, RinexFrequency.P1, Double.NaN, 0, 0);
             checkObservation(list.get(3),
                              2017, 1, 11, 0, 0, 0, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GPS, 6, -0.03,
@@ -165,7 +165,7 @@ public class RinexLoaderTest {
             checkObservation(list.get(23),
                              2017, 1, 11, 0, 1, 0, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GPS, 3, 0,
-                             typesobs, RinexFrequency.P1, 0, 0, 0);
+                             typesobs, RinexFrequency.P1, Double.NaN, 0, 0);
             checkObservation(list.get(43),
                              2017, 1, 11, 0, 1, 30, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GPS, 30, 0,
@@ -206,7 +206,7 @@ public class RinexLoaderTest {
             checkObservation(list.get(7),
                              2001, 3, 24, 13, 10, 54, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GLONASS, 22, -.123456789,
-                             typesobs2, RinexFrequency.P2, 0, 0, 0);
+                             typesobs2, RinexFrequency.P2, Double.NaN, 0, 0);
             checkObservation(list.get(23),
                              2001, 3, 24, 13, 14, 48, TimeScalesFactory.getGPS(),
                              SatelliteSystem.GPS, 6, -.123456234,
@@ -293,7 +293,7 @@ public class RinexLoaderTest {
             checkObservation(list.get(13),
                              2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                              SatelliteSystem.COMPASS, 4, 0.0,
-                             typesobsC2, RinexFrequency.L2I, 0, 0, 0);
+                             typesobsC2, RinexFrequency.L2I, Double.NaN, 0, 0);
             checkObservation(list.get(12),
                              2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                              SatelliteSystem.SBAS, 138, 0.0,
@@ -446,9 +446,13 @@ public class RinexLoaderTest {
               final ObservationData od = obser.getObservationData().get(i);
               Assert.assertEquals(RinexFrequency.valueOf(typesObs[i]), od.getRinexFrequency());
               if (od.getRinexFrequency() == rf) {
-                  Assert.assertEquals(obsValue,       od.getValue(), 1.E-3);
-                  Assert.assertEquals(lliValue,       od.getLossOfLockIndicator());
-                  Assert.assertEquals(sigstrength,    od.getSignalStrength());
+                  if (Double.isNaN(obsValue)) {
+                      Assert.assertTrue(Double.isNaN(od.getValue()));
+                  } else {
+                      Assert.assertEquals(obsValue, od.getValue(), 1.E-3);
+                  }
+                  Assert.assertEquals(lliValue,    od.getLossOfLockIndicator());
+                  Assert.assertEquals(sigstrength, od.getSignalStrength());
               }
           }
 

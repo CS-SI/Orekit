@@ -35,7 +35,7 @@ public class ObservationData {
 
     /** Simple constructor.
      * @param rf observed RINEX frequency
-     * @param value observed value
+     * @param value observed value (may be {@code Double.NaN} if observation not available)
      * @param lli Loss of Lock Indicator
      * @param signalStrength signal strength
      */
@@ -54,7 +54,7 @@ public class ObservationData {
     }
 
     /** Get the observed value.
-     * @return observed value
+     * @return observed value (may be {@code Double.NaN} if observation not available)
      */
     public double getValue() {
         return value;

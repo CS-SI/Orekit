@@ -477,6 +477,9 @@ public class RinexLoader {
 
                                         //Read the Receiver Clock offset, if present
                                         rcvrClkOffset = parseDouble(line, 68, 12);
+                                        if (Double.isNaN(rcvrClkOffset)) {
+                                            rcvrClkOffset = 0.0;
+                                        }
 
                                     }
 
@@ -911,6 +914,9 @@ public class RinexLoader {
                                         }
                                         //Read the Receiver Clock offset, if present
                                         rcvrClkOffset = parseDouble(line, 41, 15);
+                                        if (Double.isNaN(rcvrClkOffset)) {
+                                            rcvrClkOffset = 0.0;
+                                        }
 
                                         //For each one of the Satellites in this Observation
                                         for (int i = 0; i < nbSatObs; i++) {
@@ -1008,8 +1014,7 @@ public class RinexLoader {
          * @return parsed integer
          */
         private int parseInt(final String line, final int start, final int length) {
-            if (line.length() > start &&
-                            !parseString(line, start, length).isEmpty()) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
                 return Integer.parseInt(parseString(line, start, length));
             } else {
                 return 0;
@@ -1020,14 +1025,13 @@ public class RinexLoader {
          * @param line to parse
          * @param start start index of the real
          * @param length length of the real
-         * @return parsed real
+         * @return parsed real, or {@code Double.NaN} if field was empty
          */
         private double parseDouble(final String line, final int start, final int length) {
-            if (line.length() > start &&
-                            !parseString(line, start, length).isEmpty()) {
+            if (line.length() > start && !parseString(line, start, length).isEmpty()) {
                 return Double.parseDouble(parseString(line, start, length));
             } else {
-                return 0.0;
+                return Double.NaN;
             }
         }
 
