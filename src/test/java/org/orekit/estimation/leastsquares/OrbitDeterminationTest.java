@@ -69,6 +69,8 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
+import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
@@ -92,6 +94,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
@@ -100,6 +103,9 @@ import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.IonosphericModel;
+import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
+import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
@@ -113,6 +119,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -203,12 +210,12 @@ public class OrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(input, true);
+        ResultOD odGNSS = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 0.1;
-        final double velocityAccuracy = 1e-4;
+        final double distanceAccuracy = 15.0;
+        final double velocityAccuracy = 5.0e-3;
 
         //test on the convergence
         final int numberOfIte  = 4;
@@ -222,29 +229,17 @@ public class OrbitDeterminationTest {
         final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
         final Vector3D refPos = new Vector3D(6380365.719,  16424492.770, -19879865.986);
         final Vector3D refVel = new Vector3D(   -2563.300830, 2579.037786, 1334.055882);
-        System.out.println(Vector3D.distance(refPos, estimatedPos) + " " + Vector3D.distance(refVel, estimatedVel));
-//        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-//        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
-        //test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(odGNSS.measurementsParameters.getDrivers());
-        sortParametersChanges(list);
-//        final double[] stationOffSet = { 126.931596,  127.690081,  -392.568475 };
-//        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-//        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-//        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 4347;
-        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        System.out.println(odGNSS.getRangeStat());
+        final double[] RefStatRange = { -9.339, 3.186, 0.0, 0.893 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 
@@ -1386,32 +1381,56 @@ public class OrbitDeterminationTest {
             default:
                 prnNumber = -1;
         }
+        final Iono iono = new Iono(false);
         final RinexLoader loader = new RinexLoader(new FileInputStream(file), file.getAbsolutePath());
         for (final Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             final RinexHeader header = entry.getKey();
-            final StationData stationData = stations.get(header.getMarkerName());
-            if (stationData != null) {
-                for (final ObservationDataSet observationDataSet : entry.getValue()) {
-                    if (observationDataSet.getSatelliteSystem() == system    &&
-                        observationDataSet.getPrnNumber()       == prnNumber) {
-                        for (final ObservationData od : observationDataSet.getObservationData()) {
-                            if (!Double.isNaN(od.getValue())) {
-                                if (od.getRinexFrequency().getType() == MeasurementType.PSEUDO_RANGE) {
-                                    // this is a measurement we want
-                                    measurements.add(new Range(stationData.station, observationDataSet.getDate(),
-                                                               od.getValue(),
-                                                               stationData.rangeSigma,
-                                                               weights.rangeBaseWeight,
-                                                               false));
-                                } else if (od.getRinexFrequency().getType() == MeasurementType.DOPPLER) {
-                                    // this is a measurement we want
-                                    measurements.add(new RangeRate(stationData.station,
-                                                                   observationDataSet.getDate(),
-                                                                   od.getValue(),
-                                                                   stationData.rangeRateSigma,
-                                                                   weights.rangeRateBaseWeight,
-                                                                   false));
+            for (final ObservationDataSet observationDataSet : entry.getValue()) {
+                if (observationDataSet.getSatelliteSystem() == system    &&
+                    observationDataSet.getPrnNumber()       == prnNumber) {
+                    for (final ObservationData od : observationDataSet.getObservationData()) {
+                        if (!Double.isNaN(od.getValue())) {
+                            if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+                                // this is a measurement we want
+                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
+                                StationData stationData = stations.get(stationName);
+                                if (stationData == null) {
+                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                              stationName + " not configured");
                                 }
+                                Range range = new Range(stationData.station, observationDataSet.getDate(),
+                                                        od.getValue(), stationData.rangeSigma,
+                                                        weights.rangeBaseWeight, false);
+                                range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
+                                                                        observationDataSet.getDate()));
+                                if (stationData.rangeBias != null) {
+                                    range.addModifier(stationData.rangeBias);
+                                }
+                                if (satRangeBias != null) {
+                                    range.addModifier(satRangeBias);
+                                }
+                                if (stationData.rangeTroposphericCorrection != null) {
+                                    range.addModifier(stationData.rangeTroposphericCorrection);
+                                }
+                                addIfNonZeroWeight(range, measurements);
+
+                            } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
+                                // this is a measurement we want
+                                final String stationName = header.getMarkerName() + "/" + od.getObservationType();
+                                StationData stationData = stations.get(stationName);
+                                if (stationData == null) {
+                                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                              stationName + " not configured");
+                                }
+                                RangeRate rangeRate = new RangeRate(stationData.station, observationDataSet.getDate(),
+                                                                    od.getValue(), stationData.rangeRateSigma,
+                                                                    weights.rangeRateBaseWeight, false);
+                                rangeRate.addModifier(iono.getRangeRateModifier(od.getObservationType().getFrequency(system),
+                                                                                observationDataSet.getDate()));
+                                if (stationData.rangeRateBias != null) {
+                                    rangeRate.addModifier(stationData.rangeRateBias);
+                                }
+                                addIfNonZeroWeight(rangeRate, measurements);
                             }
                         }
                     }
@@ -2068,6 +2087,92 @@ public class OrbitDeterminationTest {
                 }
             }
             return builder.toString();
+        }
+
+    }
+
+    /** Ionospheric modifiers. */
+    private static class Iono {
+
+        /** Flag for two-way range-rate. */
+        private final boolean twoWay;
+
+        /** Map for range modifiers. */
+        private final Map<Frequency, Map<DateComponents, RangeIonosphericDelayModifier>> rangeModifiers;
+
+        /** Map for range-rate modifiers. */
+        private final Map<Frequency, Map<DateComponents, RangeRateIonosphericDelayModifier>> rangeRateModifiers;
+
+        /** Simple constructor.
+         * @param twoWay flag for two-way range-rate
+         */
+        Iono(final boolean twoWay) {
+            this.twoWay             = twoWay;
+            this.rangeModifiers     = new HashMap<>();
+            this.rangeRateModifiers = new HashMap<>();
+        }
+
+        /** Get range modifier for a measurement.
+         * @param frequency frequency of the signal
+         * @param date measurement date
+         * @return range modifier
+         * @exception OrekitException if ionospheric model cannot be loaded
+         */
+        public RangeIonosphericDelayModifier getRangeModifier(final Frequency frequency,
+                                                              final AbsoluteDate date)
+            throws OrekitException {
+            final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
+            ensureFrequencyAndDateSupported(frequency, dc);
+            return rangeModifiers.get(frequency).get(dc);
+        }
+
+        /** Get range-rate modifier for a measurement.
+         * @param frequency frequency of the signal
+         * @param date measurement date
+         * @return range-rate modifier
+         * @exception OrekitException if ionospheric model cannot be loaded
+         */
+        public RangeRateIonosphericDelayModifier getRangeRateModifier(final Frequency frequency,
+                                                                      final AbsoluteDate date)
+            throws OrekitException {
+            final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
+            ensureFrequencyAndDateSupported(frequency, dc);
+            return rangeRateModifiers.get(frequency).get(dc);
+         }
+
+        /** Create modifiers for a frequency and date if needed.
+         * @param frequency frequency of the signal
+         * @param dc date for which modifiers are required
+         * @exception OrekitException if ionospheric model cannot be loaded
+         */
+        private void ensureFrequencyAndDateSupported(final Frequency frequency, final DateComponents dc)
+            throws OrekitException {
+
+            if (!rangeModifiers.containsKey(frequency)) {
+                rangeModifiers.put(frequency, new HashMap<>());
+                rangeRateModifiers.put(frequency, new HashMap<>());
+            }
+
+            if (!rangeModifiers.get(frequency).containsKey(dc)) {
+
+                // load Klobuchar model for the L1 frequency
+                final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
+                loader.loadKlobucharIonosphericCoefficients(dc);
+                final IonosphericModel l1Model   = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+
+                // scale for current frequency
+                final double fL1   = Frequency.G01.getMHzFrequency();
+                final double f     = frequency.getMHzFrequency();
+                final double ratio = (fL1 * fL1) / (f * f);
+                final IonosphericModel scaledModel = (date, geo, elevation, azimuth) ->
+                                                     ratio * l1Model.pathDelay(date, geo, elevation, azimuth);
+
+                // create modifiers
+                rangeModifiers.get(frequency).put(dc, new RangeIonosphericDelayModifier(scaledModel));
+                rangeRateModifiers.get(frequency).put(dc, new RangeRateIonosphericDelayModifier(scaledModel, twoWay));
+
+            }
+
         }
 
     }
