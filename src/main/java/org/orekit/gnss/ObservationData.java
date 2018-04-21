@@ -22,7 +22,7 @@ package org.orekit.gnss;
 public class ObservationData {
 
     /** Observed RINEX frequency. */
-    private RinexFrequency rf;
+    private ObservationType observationType;
 
     /** Observed value. */
     private double value;
@@ -34,23 +34,23 @@ public class ObservationData {
     private int signalStrength;
 
     /** Simple constructor.
-     * @param rf observed RINEX frequency
+     * @param observationType observation type
      * @param value observed value (may be {@code Double.NaN} if observation not available)
      * @param lli Loss of Lock Indicator
      * @param signalStrength signal strength
      */
-    public ObservationData(final RinexFrequency rf, final double value, final int lli, final int signalStrength) {
-        this.rf             = rf;
-        this.value          = value;
-        this.lli            = lli;
-        this.signalStrength = signalStrength;
+    public ObservationData(final ObservationType observationType, final double value, final int lli, final int signalStrength) {
+        this.observationType = observationType;
+        this.value           = value;
+        this.lli             = lli;
+        this.signalStrength  = signalStrength;
     }
 
-    /** Get the observed RINEX frequency.
-     * @return observed RINEX frequency
+    /** Get the observation type.
+     * @return observation type
      */
-    public RinexFrequency getRinexFrequency() {
-        return rf;
+    public ObservationType getObservationType() {
+        return observationType;
     }
 
     /** Get the observed value.

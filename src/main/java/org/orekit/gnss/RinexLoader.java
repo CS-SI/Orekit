@@ -244,7 +244,7 @@ public class RinexLoader {
                         final int                   MAX_OBS_TYPES_PER_LINE_RNX2 = 9;
                         final int                   MAX_N_SAT_OBSERVATION       = 12;
                         final int                   MAX_N_TYPES_OBSERVATION     = 5;
-                        final List<RinexFrequency>  typesObs = new ArrayList<>();
+                        final List<ObservationType> typesObs = new ArrayList<>();
 
                         for (line = reader.readLine(); line != null; line = reader.readLine()) {
                             ++lineNumber;
@@ -378,7 +378,7 @@ public class RinexLoader {
                                             final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX2, nbTypes - typesObs.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 try {
-                                                    typesObs.add(RinexFrequency.valueOf(parseString(line, 10 + (6 * i), 2)));
+                                                    typesObs.add(ObservationType.valueOf(parseString(line, 10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
                                                     throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(line, 10 + (6 * i), 2), name, lineNumber);
@@ -543,8 +543,8 @@ public class RinexLoader {
                         final int           MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE = 12;
                         final int                    MAX_N_SAT_PHSHIFT_PER_LINE = 10;
 
-                        final Map<SatelliteSystem, List<RinexFrequency>> listTypeObs            = new HashMap<>();
-                        final List<RinexFrequency>                       typeObs                = new ArrayList<>();
+                        final Map<SatelliteSystem, List<ObservationType>> listTypeObs            = new HashMap<>();
+                        final List<ObservationType>                       typeObs                = new ArrayList<>();
                         String                                           sigStrengthUnit        = null;
                         int                                              leapSecondsFuture      = 0;
                         int                                              leapSecondsWeekNum     = 0;
@@ -554,14 +554,14 @@ public class RinexLoader {
                         SatelliteSystem                                  satSystemScaleFactor   = null;
                         int                                              scaleFactor            = 1;
                         int                                              nbObsScaleFactor       = 0;
-                        final List<RinexFrequency>                       typesObsScaleFactor    = new ArrayList<>();
+                        final List<ObservationType>                       typesObsScaleFactor    = new ArrayList<>();
                         final List<ScaleFactorCorrection>                scaleFactorCorrections = new ArrayList<>();
                         String[]                                         satsPhaseShift         = null;
                         int                                              nbSatPhaseShift        = 0;
                         SatelliteSystem                                  satSystemPhaseShift    = null;
                         double                                           corrPhaseShift         = 0.0;
                         final List<PhaseShiftCorrection>                 phaseShiftCorrections  = new ArrayList<>();
-                        RinexFrequency                                   phaseShiftTypeObs      = null;
+                        ObservationType                                   phaseShiftTypeObs      = null;
 
 
                         for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -680,7 +680,7 @@ public class RinexLoader {
                                             case QZSS:
                                                 timeScale = TimeScalesFactory.getQZSS();
                                                 break;
-                                            case COMPASS:
+                                            case BEIDOU:
                                                 timeScale = TimeScalesFactory.getBDT();
                                                 break;
                                             case IRNSS:
@@ -754,7 +754,7 @@ public class RinexLoader {
                                             final int iMax = FastMath.min(MAX_OBS_TYPES_PER_LINE_RNX3, nbTypes - typeObs.size());
                                             for (int i = 0; i < iMax; i++) {
                                                 try {
-                                                    typeObs.add(RinexFrequency.valueOf(parseString(line, 7 + (4 * i), 3)));
+                                                    typeObs.add(ObservationType.valueOf(parseString(line, 7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
                                                     throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(line, 7 + (4 * i), 3), name, lineNumber);
@@ -796,7 +796,7 @@ public class RinexLoader {
                                                 }
                                                 final int iMax = FastMath.min(MAX_OBS_TYPES_SCALE_FACTOR_PER_LINE, nbObsScaleFactor - typesObsScaleFactor.size());
                                                 for (int i = 0; i < iMax; i++) {
-                                                    typesObsScaleFactor.add(RinexFrequency.valueOf(parseString(line, 11 + (4 * i), 3)));
+                                                    typesObsScaleFactor.add(ObservationType.valueOf(parseString(line, 11 + (4 * i), 3)));
                                                 }
                                             }
                                         }
@@ -813,7 +813,7 @@ public class RinexLoader {
                                         satSystemPhaseShift = null;
 
                                         satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1));
-                                        phaseShiftTypeObs = RinexFrequency.valueOf(parseString(line, 2, 3));
+                                        phaseShiftTypeObs = ObservationType.valueOf(parseString(line, 2, 3));
                                         nbSatPhaseShift = parseInt(line, 16, 2);
                                         corrPhaseShift = parseDouble(line, 6, 8);
 
@@ -939,7 +939,7 @@ public class RinexLoader {
                                                 case GPS:
                                                 case GLONASS:
                                                 case GALILEO:
-                                                case COMPASS:
+                                                case BEIDOU:
                                                 case IRNSS:
                                                     prnNumber = prn;
                                                     break;
@@ -956,7 +956,7 @@ public class RinexLoader {
                                             }
                                             final List<ObservationData> observationData = new ArrayList<>(nbSatObs);
                                             for (int j = 0; j < listTypeObs.get(satelliteSystemSat).size(); j++) {
-                                                final RinexFrequency rf = listTypeObs.get(satelliteSystemSat).get(j);
+                                                final ObservationType rf = listTypeObs.get(satelliteSystemSat).get(j);
                                                 boolean scaleFactorFound = false;
                                                 //We look for the lines of ScaledFactorCorrections that correspond to this SatSystem
                                                 int k = 0;
@@ -1044,7 +1044,7 @@ public class RinexLoader {
             /** Satellite System. */
             private final SatelliteSystem satSystemPhaseShift;
             /** Carrier Phase Observation Code. */
-            private final RinexFrequency typeObsPhaseShift;
+            private final ObservationType typeObsPhaseShift;
             /** Phase Shift Corrections (cycles). */
             private final double phaseShiftCorrection;
             /** List of satellites involved. */
@@ -1057,7 +1057,7 @@ public class RinexLoader {
              * @param satsPhaseShift List of satellites involved
              */
             private PhaseShiftCorrection (final SatelliteSystem satSystemPhaseShift,
-                                         final RinexFrequency typeObsPhaseShift,
+                                         final ObservationType typeObsPhaseShift,
                                          final double phaseShiftCorrection, final String[] satsPhaseShift) {
                 this.satSystemPhaseShift = satSystemPhaseShift;
                 this.typeObsPhaseShift = typeObsPhaseShift;
@@ -1074,7 +1074,7 @@ public class RinexLoader {
             /** Get the Carrier Phase Observation Code.
              * @return Carrier Phase Observation Code.
              */
-            public RinexFrequency getTypeObs() {
+            public ObservationType getTypeObs() {
                 return typeObsPhaseShift;
             }
             /** Get the Phase Shift Corrections.
@@ -1101,7 +1101,7 @@ public class RinexLoader {
             /** Satellite System. */
             private final SatelliteSystem satSystemScaleFactor;
             /** List of Observations types that have been scaled. */
-            private final List<RinexFrequency> typesObsScaleFactor;
+            private final List<ObservationType> typesObsScaleFactor;
             /** Factor to divide stored observations with before use. */
             private final double scaleFactor;
 
@@ -1112,7 +1112,7 @@ public class RinexLoader {
              */
             private ScaleFactorCorrection (final SatelliteSystem satSystemScaleFactor,
                                           final double scaleFactor,
-                                          final List<RinexFrequency> typesObsScaleFactor) {
+                                          final List<ObservationType> typesObsScaleFactor) {
                 this.satSystemScaleFactor = satSystemScaleFactor;
                 this.scaleFactor = scaleFactor;
                 this.typesObsScaleFactor = typesObsScaleFactor;
@@ -1132,7 +1132,7 @@ public class RinexLoader {
             /** Get the list of Observation Types scaled.
              * @return List of Observation types scaled
              */
-            public List<RinexFrequency> getTypesObsScaled() {
+            public List<ObservationType> getTypesObsScaled() {
                 return typesObsScaleFactor;
             }
         }
