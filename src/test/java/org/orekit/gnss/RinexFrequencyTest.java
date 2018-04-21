@@ -23,9 +23,9 @@ public class RinexFrequencyTest {
         
     @Test
     public void testMeasurementType() {
-        for (final RinexFrequency rf : RinexFrequency.values()) {
+        for (final ObservationType rf : ObservationType.values()) {
             final char c = rf.toString().charAt(0);
-            switch (rf.getType()) {
+            switch (rf.getMeasurementType()) {
                 case PSEUDO_RANGE :
                     Assert.assertTrue(c == 'C' || c == 'P');
                     break;
@@ -39,7 +39,7 @@ public class RinexFrequencyTest {
                     Assert.assertTrue(c == 'S');
                     break;
                 default :
-                    Assert.fail("unknown " + rf.getType());
+                    Assert.fail("unknown " + rf.getMeasurementType());
             }
         }
     }

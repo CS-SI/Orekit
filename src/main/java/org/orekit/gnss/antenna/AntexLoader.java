@@ -243,7 +243,7 @@ public class AntexLoader {
                                         case GPS:
                                         case GLONASS:
                                         case GALILEO:
-                                        case COMPASS:
+                                        case BEIDOU:
                                         case IRNSS:
                                             prnNumber = n;
                                             break;

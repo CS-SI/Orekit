@@ -142,15 +142,15 @@ public class AntexLoaderTest {
                        Frequency.E06, 110.0, 22.0 / 3.0, 0.64);
 
         checkSatellite(loader.getSatellitesAntennas().get( 9), 2010,  1, 16,
-                       SatelliteSystem.COMPASS, "BEIDOU-2G",    3, 1,
+                       SatelliteSystem.BEIDOU, "BEIDOU-2G",    3, 1,
                        Frequency.C01, 14.0, 7.0, 0.0);
 
         checkSatellite(loader.getSatellitesAntennas().get(10), 2010,  7, 31,
-                       SatelliteSystem.COMPASS, "BEIDOU-2I",    5, 6,
+                       SatelliteSystem.BEIDOU, "BEIDOU-2I",    5, 6,
                        Frequency.C02, 245.0, 8.0, 0.0);
 
         checkSatellite(loader.getSatellitesAntennas().get(11), 2012,  4, 29,
-                       SatelliteSystem.COMPASS, "BEIDOU-2M",   12, 11,
+                       SatelliteSystem.BEIDOU, "BEIDOU-2M",   12, 11,
                        Frequency.C06, 146.0, 3.2, 0.0);
 
         checkSatellite(loader.getSatellitesAntennas().get(12), 2010,  9, 11,

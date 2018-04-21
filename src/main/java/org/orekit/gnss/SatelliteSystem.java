@@ -39,8 +39,8 @@ public enum SatelliteSystem {
     /** Galileo system. */
     GALILEO('E'),
 
-    /** Compass system. */
-    COMPASS('C'),
+    /** Beidou system. */
+    BEIDOU('C'),
 
     /** Quasi-Zenith Satellite System system. */
     QZSS('J'),
