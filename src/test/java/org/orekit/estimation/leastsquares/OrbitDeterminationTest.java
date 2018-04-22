@@ -51,6 +51,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.LofOffset;
+import org.orekit.attitudes.NadirPointing;
+import org.orekit.attitudes.YawCompensation;
+import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -68,6 +74,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
@@ -92,6 +99,7 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.gnss.Frequency;
@@ -214,7 +222,7 @@ public class OrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 15.0;
+        final double distanceAccuracy = 16.0;
         final double velocityAccuracy = 5.0e-3;
 
         //test on the convergence
@@ -234,7 +242,7 @@ public class OrbitDeterminationTest {
 
         //test on statistic for the range residuals
         final long nbRange = 4347;
-        final double[] RefStatRange = { -9.339, 3.186, 0.0, 0.893 };
+        final double[] RefStatRange = { -9.336, 3.178, 0.0, 0.890 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -480,14 +488,15 @@ public class OrbitDeterminationTest {
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
-        final Map<String, StationData>   stations                 = createStationsData(parser, body);
-        final PVData                     pvData                   = createPVData(parser);
-        final Bias<Range>                satRangeBias             = createSatRangeBias(parser);
-        final Weights                    weights                  = createWeights(parser);
-        final OutlierFilter<Range>       rangeOutliersManager     = createRangeOutliersManager(parser);
-        final OutlierFilter<RangeRate>   rangeRateOutliersManager = createRangeRateOutliersManager(parser);
-        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser);
-        final OutlierFilter<PV>          pvOutliersManager        = createPVOutliersManager(parser);
+        final Map<String, StationData>    stations                 = createStationsData(parser, body);
+        final PVData                      pvData                   = createPVData(parser);
+        final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
+        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final Weights                     weights                  = createWeights(parser);
+        final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser);
+        final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser);
+        final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser);
+        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser);
 
         // measurements
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -497,12 +506,12 @@ public class OrbitDeterminationTest {
                 // the measurements come from a Rinex file
                 measurements.addAll(readRinex(new File(input.getParentFile(), fileName),
                                               parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
-                                              stations, satRangeBias, weights,
+                                              stations, satRangeBias, satAntennaRangeModifier, weights,
                                               rangeOutliersManager, rangeRateOutliersManager));
             } else {
                 // the measurements come from an Orekit custom file
                 measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
-                                                     stations, pvData, satRangeBias, weights,
+                                                     stations, pvData, satRangeBias, satAntennaRangeModifier, weights,
                                                      rangeOutliersManager,
                                                      rangeRateOutliersManager,
                                                      azElOutliersManager,
@@ -805,6 +814,15 @@ public class OrbitDeterminationTest {
             }
         }
 
+        // attitude mode
+        final AttitudeMode mode;
+        if (parser.containsKey(ParameterKey.ATTITUDE_MODE)) {
+            mode = AttitudeMode.valueOf(parser.getString(ParameterKey.ATTITUDE_MODE));
+        } else {
+            mode = AttitudeMode.NADIR_POINTING_WITH_YAW_COMPENSATION;
+        }
+        propagatorBuilder.setAttitudeProvider(mode.getProvider(orbit.getFrame(), body));
+
         return propagatorBuilder;
 
     }
@@ -953,7 +971,7 @@ public class OrbitDeterminationTest {
 
     /** Set up range bias due to transponder delay.
      * @param parser input file parser
-     * @param range bias (may be null if bias is fixed to zero)
+     * @RETURN range bias (may be null if bias is fixed to zero)
      * @exception OrekitException if bias initial value cannot be set
      */
     private Bias<Range> createSatRangeBias(final KeyValueFileParser<ParameterKey> parser)
@@ -1014,6 +1032,22 @@ public class OrbitDeterminationTest {
             return null;
         }
 
+    }
+
+    /** Set up range modifier taking on-board antenna offset.
+     * @param parser input file parser
+     * @return range modifier (may be null if antenna offset is zero or undefined)
+     */
+    public OnBoardAntennaRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
+        final Vector3D offset;
+        if (!parser.containsKey(ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_X)) {
+            offset = Vector3D.ZERO;
+        } else {
+            offset = parser.getVector(ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_X,
+                                      ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Y,
+                                      ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Z);
+        }
+        return offset.getNorm() > 0 ? new OnBoardAntennaRangeModifier(offset) : null;
     }
 
     /** Set up stations.
@@ -1354,6 +1388,7 @@ public class OrbitDeterminationTest {
      * @param satId satellite we are interested in
      * @param stations name to stations data map
      * @param satRangeBias range bias due to transponder delay
+     * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
      * @param rangeOutliersManager manager for range measurements outliers (null if none configured)
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
@@ -1362,6 +1397,7 @@ public class OrbitDeterminationTest {
     private List<ObservedMeasurement<?>> readRinex(final File file, final String satId,
                                                    final Map<String, StationData> stations,
                                                    final Bias<Range> satRangeBias,
+                                                   final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
                                                    final OutlierFilter<RangeRate> rangeRateOutliersManager)
@@ -1403,6 +1439,9 @@ public class OrbitDeterminationTest {
                                                         weights.rangeBaseWeight, false);
                                 range.addModifier(iono.getRangeModifier(od.getObservationType().getFrequency(system),
                                                                         observationDataSet.getDate()));
+                                if (satAntennaRangeModifier != null) {
+                                    range.addModifier(satAntennaRangeModifier);
+                                }
                                 if (stationData.rangeBias != null) {
                                     range.addModifier(stationData.rangeBias);
                                 }
@@ -1447,6 +1486,7 @@ public class OrbitDeterminationTest {
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satRangeBias range bias due to transponder delay
+     * @param satAntennaRangeModifier modifier for on-board antenna offset
      * @param weights base weights for measurements
      * @param rangeOutliersManager manager for range measurements outliers (null if none configured)
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
@@ -1458,6 +1498,7 @@ public class OrbitDeterminationTest {
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
                                                           final Bias<Range> satRangeBias,
+                                                          final OnBoardAntennaRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
                                                           final OutlierFilter<Range> rangeOutliersManager,
                                                           final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -1484,6 +1525,9 @@ public class OrbitDeterminationTest {
                             final Range range = new RangeParser().parseFields(fields, stations, pvData,
                                                                               satRangeBias, weights,
                                                                               line, lineNumber, file.getName());
+                            if (satAntennaRangeModifier != null) {
+                                range.addModifier(satAntennaRangeModifier);
+                            }
                             if (rangeOutliersManager != null) {
                                 range.addModifier(rangeOutliersManager);
                             }
@@ -2177,6 +2221,59 @@ public class OrbitDeterminationTest {
 
     }
 
+    /** Attitude modes. */
+    private static enum AttitudeMode {
+        NADIR_POINTING_WITH_YAW_COMPENSATION() {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                            throws OrekitException {
+                return new YawCompensation(inertialFrame, new NadirPointing(inertialFrame, body));
+            }
+        },
+        CENTER_POINTING_WITH_YAW_STEERING {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                            throws OrekitException {
+                return new YawSteering(inertialFrame,
+                                       new BodyCenterPointing(inertialFrame, body),
+                                       CelestialBodyFactory.getSun(),
+                                       Vector3D.PLUS_I);
+            }
+        },
+        LOF_ALIGNED_LVLH {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                            throws OrekitException {
+                return new LofOffset(inertialFrame, LOFType.LVLH);
+            }
+        },
+        LOF_ALIGNED_QSW {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                            throws OrekitException {
+                return new LofOffset(inertialFrame, LOFType.QSW);
+            }
+        },
+        LOF_ALIGNED_TNW {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                throws OrekitException {
+                return new LofOffset(inertialFrame, LOFType.TNW);
+            }
+        },
+        LOF_ALIGNED_VNC {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                throws OrekitException {
+                return new LofOffset(inertialFrame, LOFType.VNC);
+            }
+        },
+        LOF_ALIGNED_VVLH {
+            public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+                throws OrekitException {
+                return new LofOffset(inertialFrame, LOFType.VVLH);
+            }
+        };
+
+        public abstract AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
+            throws OrekitException;
+
+    }
+
     /** Input parameter keys. */
     private static enum ParameterKey {
         ORBIT_DATE,
@@ -2233,6 +2330,7 @@ public class OrbitDeterminationTest {
         SOLAR_RADIATION_PRESSURE_CR_ESTIMATED,
         SOLAR_RADIATION_PRESSURE_AREA,
         GENERAL_RELATIVITY,
+        ATTITUDE_MODE,
         POLYNOMIAL_ACCELERATION_NAME,
         POLYNOMIAL_ACCELERATION_DIRECTION_X,
         POLYNOMIAL_ACCELERATION_DIRECTION_Y,
@@ -2243,6 +2341,9 @@ public class OrbitDeterminationTest {
         TRANSPONDER_DELAY_BIAS_MIN,
         TRANSPONDER_DELAY_BIAS_MAX,
         TRANSPONDER_DELAY_BIAS_ESTIMATED,
+        ON_BOARD_ANTENNA_PHASE_CENTER_X,
+        ON_BOARD_ANTENNA_PHASE_CENTER_Y,
+        ON_BOARD_ANTENNA_PHASE_CENTER_Z,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,

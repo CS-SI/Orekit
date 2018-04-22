@@ -88,12 +88,22 @@ solar.radiation.pressure.area = 50
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = true
 
+## Attitude mode, from the following predefined list [NADIR_WITH_YAW_COMPENSATION]
+## NADIR_POINTING_WITH_YAW_COMPENSATION, CENTER_POINTING_WITH_YAW_STEERING,
+## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
+attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
+
 ## Transponder delay bias (m) [0.0]
 transponder.delay.bias     = 0.0
 transponder.delay.bias.min = 0.0
 transponder.delay.bias.max = 0.0
 ### Estimation flag for transponder delay (true/false) [false]
 transponder.delay.bias.estimated = false
+
+## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
+on.board.antenna.phase.center.x = 0.394
+on.board.antenna.phase.center.y = 0.0
+on.board.antenna.phase.center.z = 1.50180
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1
