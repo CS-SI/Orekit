@@ -65,9 +65,6 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
      * The index is s*/
     private FieldHansenZonalLinear<T>[] hansenObjects;
 
-    /** Factorial. */
-    //private final T[] fact;
-
     /** Highest power of the eccentricity to be used in mean elements computations. */
     private int maxEccPowMeanElements;
 
@@ -123,20 +120,14 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
         super(auxiliaryElements);
 
+        final Field<T> field = auxiliaryElements.getDate().getField();
+
         this.provider = provider;
         this.maxDegree = provider.getMaxDegree();
         this.maxOrder  = provider.getMaxOrder();
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
-
-        // Factorials computation
-        /*final int maxFact = 2 * maxDegree + 1;
-        this.fact = MathArrays.buildArray(field, maxFact);
-        fact[0] = zero.add(1.);
-        for (int i = 1; i < maxFact; i++) {
-            fact[i] = fact[i - 1].multiply(i);
-        }*/
 
         // &Chi; = 1 / B
         X = auxiliaryElements.getB().reciprocal();
@@ -164,13 +155,13 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
             maxEccPow = maxEccPowMeanElements;
             this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
             for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s);
+                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s, field);
             }
         } else {
             maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
             this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
             for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s);
+                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s, field);
             }
         }
 

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -51,6 +52,16 @@ class DSSTTesseralContext extends ForceModelContext {
      *  </p>
      */
     private static final int I = 1;
+
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in seconds.
+     */
+    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
+
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in satellite revolutions.
+     */
+    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
@@ -99,6 +110,9 @@ class DSSTTesseralContext extends ForceModelContext {
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
 
+    /** Maximal order to consider for harmonics potential. */
+    private final int maxOrder;
+
     /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
      * The indexes are s + maxDegree and j */
     private HansenTesseralLinear[][] hansenObjects;
@@ -109,6 +123,9 @@ class DSSTTesseralContext extends ForceModelContext {
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
+    /** List of resonant orders. */
+    private final List<Integer> resOrders;
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
@@ -117,7 +134,7 @@ class DSSTTesseralContext extends ForceModelContext {
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
-     * @param resOrders list of resonant orders
+     //* @param resOrders list of resonant orders
      * @param bodyPeriod central body rotation period (seconds)
      * @throws OrekitException if some specific error occurs
      */
@@ -126,7 +143,7 @@ class DSSTTesseralContext extends ForceModelContext {
                         final Frame centralBodyFrame,
                         final UnnormalizedSphericalHarmonicsProvider provider,
                         final int maxFrequencyShortPeriodics,
-                        final List<Integer> resOrders,
+                        //final List<Integer> resOrders,
                         final double bodyPeriod)
         throws OrekitException {
 
@@ -135,7 +152,9 @@ class DSSTTesseralContext extends ForceModelContext {
         this.maxEccPow = 0;
         this.maxHansen = 0;
         this.maxDegree = provider.getMaxDegree();
+        this.maxOrder = provider.getMaxOrder();
         this.factory = new DSFactory(1, 1);
+        this.resOrders = new ArrayList<Integer>();
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
@@ -196,6 +215,21 @@ class DSSTTesseralContext extends ForceModelContext {
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod / bodyPeriod;
 
+        // Compute natural resonant terms
+        final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
+                                                   MIN_PERIOD_IN_SECONDS / orbitPeriod);
+
+        // Search the resonant orders in the tesseral harmonic field
+        resOrders.clear();
+        for (int m = 1; m <= maxOrder; m++) {
+            final double resonance = ratio * m;
+            final int jComputedRes = (int) FastMath.round(resonance);
+            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance - jComputedRes) <= tolerance) {
+                // Store each resonant index and order
+                this.resOrders.add(m);
+            }
+        }
+
         //Allocate the two dimensional array
         final int rows     = 2 * maxDegree + 1;
         final int columns  = maxFrequencyShortPeriodics + 1;
@@ -255,6 +289,13 @@ class DSSTTesseralContext extends ForceModelContext {
      */
     public HansenTesseralLinear[][] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get the list of resonant orders.
+     * @return resOrders
+     */
+    public List<Integer> getResOrders() {
+        return resOrders;
     }
 
     /** Get ecc².

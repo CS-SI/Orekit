@@ -56,9 +56,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** Maximum power for eccentricity used in short periodic computation. */
     private static final int    MAX_ECCPOWER_SP = 4;
 
-    /** Factorial. */
-    //private final T[]         fact;
-
     /** Max power for a/R3 in the serie expansion. */
     private int    maxAR3Pow;
 
@@ -142,7 +139,9 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @throws OrekitException if some specific error occurs
      */
     @SuppressWarnings("unchecked")
-    public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements, final CelestialBody thirdBody) throws OrekitException {
+    public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                     final CelestialBody thirdBody)
+        throws OrekitException {
 
         super(auxiliaryElements);
 
@@ -153,15 +152,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         this.gm = thirdBody.getGM();
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
         this.factory = new FDSFactory<>(field, 1, 1);
-
-        // Factorials computation
-        /*final int dim = 2 * MAX_POWER;
-        this.fact = MathArrays.buildArray(field, dim);
-        fact[0] = zero.add(1.);
-        for (int i = 1; i < dim; i++) {
-            fact[i] = fact[i - 1].multiply(i);
-        }*/
-
 
         //Initialise the HansenCoefficient generator
         this.hansenObjects = new FieldHansenThirdBodyLinear[MAX_POWER + 1];
@@ -239,12 +229,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         int nsmd2 = 0;
 
         do {
-            // Upper bound for Tnm.
-            /*term =  xmuarn.multiply(
-                            fact[n + m].divide(fact[nsmd2].multiply(fact[nsmd2 + m]))).multiply(
-                            fact[n + m + 1].divide(fact[m].multiply(fact[n + 1]))).multiply(
-                            fact[n - m + 1].divide(fact[n + 1])).multiply(
-                            eccPwr[m]).multiply(UpperBounds.getDnl(XX, chiPwr[m], n + 2, m));*/
             term =  xmuarn.multiply((CombinatoricsUtils.factorialDouble(n + m) / (CombinatoricsUtils.factorialDouble(nsmd2) * CombinatoricsUtils.factorialDouble(nsmd2 + m))) *
                             (CombinatoricsUtils.factorialDouble(n + m + 1) / (CombinatoricsUtils.factorialDouble(m) * CombinatoricsUtils.factorialDouble(n + 1))) *
                             (CombinatoricsUtils.factorialDouble(n - m + 1) / CombinatoricsUtils.factorialDouble(n + 1))).

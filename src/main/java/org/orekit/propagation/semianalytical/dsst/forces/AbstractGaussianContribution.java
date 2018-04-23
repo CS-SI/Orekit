@@ -540,7 +540,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // dhx/dv
             deriv[3] = acc.dotProduct(getQoV(X));
             // dhy/dv
-            deriv[4] = acc.dotProduct(getPoV(X));
+            deriv[4] = acc.dotProduct(getPoV(Y));
             // dλ/dv
             deriv[5] = acc.dotProduct(getLoV(X, Y, Xdot, Ydot));
 
@@ -1439,11 +1439,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T[] nodePoint = MathArrays.buildArray(field, pointsLength);
             final T[] nodeWeight = MathArrays.buildArray(field, weightsLength);
 
-            for (int i = 0; i <= pointsLength; i++) {
+            for (int i = 0; i < pointsLength; i++) {
                 nodePoint[i] = zero.add(nodePoints[i]);
             }
 
-            for (int i = 0; i <= weightsLength; i++) {
+            for (int i = 0; i < weightsLength; i++) {
                 nodeWeight[i] = zero.add(nodeWeights[i]);
             }
 

@@ -16,13 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -54,7 +54,17 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      *  has been kept in the formulas.
      *  </p>
      */
-    private final int I = 1;
+    private static final int I = 1;
+
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in seconds.
+     */
+    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
+
+    /** Minimum period for analytically averaged high-order resonant
+     *  central body spherical harmonics in satellite revolutions.
+     */
+    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
@@ -103,6 +113,9 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
 
+    /** Maximal order to consider for harmonics potential. */
+    private final int maxOrder;
+
     /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
      * The indexes are s + maxDegree and j */
     private FieldHansenTesseralLinear<T>[][] hansenObjects;
@@ -113,6 +126,9 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     /** Factory for the DerivativeStructure instances. */
     private final FDSFactory<T> factory;
 
+    /** List of resonant orders. */
+    private final List<Integer> resOrders;
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
@@ -121,7 +137,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
-     * @param resOrders list of resonant orders
+     //* @param resOrders list of resonant orders
      * @param bodyPeriod central body rotation period (seconds)
      * @throws OrekitException if some specific error occurs
      */
@@ -131,18 +147,20 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
                                     final Frame centralBodyFrame,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final int maxFrequencyShortPeriodics,
-                                    final List<Integer> resOrders,
+                                    //final List<Integer> resOrders,
                                     final double bodyPeriod)
         throws OrekitException {
 
         super(auxiliaryElements);
 
         final Field<T> field = auxiliaryElements.getDate().getField();
+        final T zero = field.getZero();
 
         this.maxEccPow = 0;
         this.maxHansen = 0;
-
+        this.maxOrder = provider.getMaxOrder();
         this.maxDegree = provider.getMaxDegree();
+        this.resOrders = new ArrayList<Integer>();
 
         this.factory = new FDSFactory<>(field, 1, 1);
 
@@ -151,10 +169,10 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
         final FieldTransform<T> t = centralBodyFrame.getTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
-        final FieldVector3D<T> xB = t.transformVector(Vector3D.PLUS_I);
-        final FieldVector3D<T> yB = t.transformVector(Vector3D.PLUS_J);
-        theta = FastMath.atan2(((T) auxiliaryElements.getVectorF().dotProduct(yB).reciprocal()).add((T) auxiliaryElements.getVectorG().dotProduct(xB).multiply(I)),
-                               ((T) auxiliaryElements.getVectorF().dotProduct(xB)).add((T) auxiliaryElements.getVectorG().dotProduct(yB).multiply(I)));
+        final FieldVector3D<T> xB = t.transformVector(FieldVector3D.getPlusI(field));
+        final FieldVector3D<T> yB = t.transformVector(FieldVector3D.getPlusJ(field));
+        theta = FastMath.atan2(auxiliaryElements.getVectorF().dotProduct(yB).negate().add((auxiliaryElements.getVectorG().dotProduct(xB)).multiply(I)),
+                               auxiliaryElements.getVectorF().dotProduct(xB).add(auxiliaryElements.getVectorG().dotProduct(yB).multiply(I)));
 
         // Common factors from equinoctial coefficients
         // 2 * a / A
@@ -204,6 +222,21 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod.divide(bodyPeriod);
+
+        // Compute natural resonant terms
+        final T tolerance = FastMath.max(zero.add(MIN_PERIOD_IN_SAT_REV),
+                                                   orbitPeriod.divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
+
+        // Search the resonant orders in the tesseral harmonic field
+        resOrders.clear();
+        for (int m = 1; m <= maxOrder; m++) {
+            final T resonance = ratio.multiply(m);
+            final int jComputedRes = (int) FastMath.round(resonance);
+            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance.subtract(jComputedRes)).getReal() <= tolerance.getReal()) {
+                // Store each resonant index and order
+                this.resOrders.add(m);
+            }
+        }
 
         //Allocate the two dimensional array
         final int rows     = 2 * maxDegree + 1;
@@ -265,6 +298,13 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      */
     public FieldHansenTesseralLinear<T>[][] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get the list of resonant orders.
+     * @return resOrders
+     */
+    public List<Integer> getResOrders() {
+        return resOrders;
     }
 
     /** Get ecc².

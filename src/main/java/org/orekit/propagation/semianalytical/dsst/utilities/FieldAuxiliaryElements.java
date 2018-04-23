@@ -31,6 +31,9 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
 
+    /** \(2\pi\) . */
+    public static final double TWO_PI = 2 * FastMath.PI;
+
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
 
@@ -195,7 +198,7 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
      */
     public T normalizeAngle(final T a, final double center) {
-        return a.subtract(2 * FastMath.PI).multiply(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(2 * FastMath.PI)));
+        return a.subtract(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(TWO_PI)).multiply(TWO_PI));
     }
 
     /** Get the date of the orbit.

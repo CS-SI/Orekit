@@ -57,9 +57,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** Maximum power for eccentricity used in short periodic computation. */
     private static final int    MAX_ECCPOWER_SP = 4;
 
-    /** Factorial. */
-    //private final double[]         fact;
-
     /** Max power for a/R3 in the serie expansion. */
     private int    maxAR3Pow;
 
@@ -149,14 +146,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         this.gm = thirdBody.getGM();
         this.factory = new DSFactory(1, 1);
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
-
-        // Factorials computation
-        /*final int dim = 2 * MAX_POWER;
-        this.fact = new double[dim];
-        fact[0] = 1.;
-        for (int i = 1; i < dim; i++) {
-            fact[i] = i * fact[i - 1];
-        }*/
 
         //Initialise the HansenCoefficient generator
         this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];

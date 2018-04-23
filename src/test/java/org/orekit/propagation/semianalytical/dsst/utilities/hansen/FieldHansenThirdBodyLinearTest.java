@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class FieldHansenThirdBodyLinearTest {
+    
 
     private static <T extends RealFieldElement<T>> T hansen(int n, int s, T chi, final Field<T> field) {
         final T zero = field.getZero();
@@ -53,7 +54,7 @@ public class FieldHansenThirdBodyLinearTest {
     @Test
     public void testLinearVsRecursive01() {
         final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.1), zero.add(2.7e-13), Decimal64Field.getInstance());
+        doTestLinearVsRecursive(zero.add(0.1), zero.add(2.8e-13), Decimal64Field.getInstance());
     }
 
     @Test
@@ -65,7 +66,7 @@ public class FieldHansenThirdBodyLinearTest {
     @Test
     public void testLinearVsRecursive03() {
         final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.3), zero.add(5.6e-14), Decimal64Field.getInstance());
+        doTestLinearVsRecursive(zero.add(0.3), zero.add(6.0e-14), Decimal64Field.getInstance());
     }
 
     @Test
@@ -77,7 +78,7 @@ public class FieldHansenThirdBodyLinearTest {
     @Test
     public void testLinearVsRecursive05() {
         final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.5), zero.add(5.9e-15), Decimal64Field.getInstance());
+        doTestLinearVsRecursive(zero.add(0.5), zero.add(6.4e-15), Decimal64Field.getInstance());
     }
 
     @Test
@@ -95,21 +96,20 @@ public class FieldHansenThirdBodyLinearTest {
     @Test
     public void testLinearVsRecursive08() {
         final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.8), zero.add(9.5e-16), Decimal64Field.getInstance());
+        doTestLinearVsRecursive(zero.add(0.8), zero.add(1.6e-15), Decimal64Field.getInstance());
     }
 
     @Test
     public void testLinearVsRecursive09() {
         final Decimal64 zero = Decimal64Field.getInstance().getZero();
-        doTestLinearVsRecursive(zero.add(0.9), zero.add(8.3e-16), Decimal64Field.getInstance());
+        doTestLinearVsRecursive(zero.add(0.9), zero.add(8.9e-16), Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestLinearVsRecursive(final T ecc, final T tol, final Field<T> field) {
         final T zero = field.getZero();
         final int N = 22;
-
         final T chi = FastMath.sqrt(ecc.multiply(ecc.negate()).add(1.)).reciprocal();
-
+        
         @SuppressWarnings("unchecked")
         final FieldHansenThirdBodyLinear<T>[] htbl = new FieldHansenThirdBodyLinear[N + 1];
 
@@ -125,10 +125,11 @@ public class FieldHansenThirdBodyLinearTest {
                 final T hansenLin = htbl[s].getValue(n, chi.reciprocal());
                 final T relativeError = FastMath.abs((hansenLin.subtract(hansenRec)).divide(hansenRec));
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
-            }
+            } 
         }
         Assert.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
 
     }
 
+    
 }

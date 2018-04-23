@@ -49,25 +49,25 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
-     * @param fieldAuxiliaryElements auxiliary elements related to the current orbit
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      * @throws OrekitException if some specific error occurs
      */
-    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> fieldAuxiliaryElements) throws OrekitException {
+    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements) throws OrekitException {
 
-        super(fieldAuxiliaryElements);
+        super(auxiliaryElements);
 
         // 1 / A
-        ooA = fieldAuxiliaryElements.getA().reciprocal();
+        ooA = auxiliaryElements.getA().reciprocal();
         // 1 / AB
-        ooAB = ooA.divide(fieldAuxiliaryElements.getB());
+        ooAB = ooA.divide(auxiliaryElements.getB());
         // C / 2AB
-        co2AB = fieldAuxiliaryElements.getC().multiply(ooAB).divide(2.);
+        co2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.);
         // 1 / (1 + B)
-        ooBpo = fieldAuxiliaryElements.getB().add(1.).reciprocal();
+        ooBpo = auxiliaryElements.getB().add(1.).reciprocal();
         // 2 / (n² * a)
-        ton2a = (fieldAuxiliaryElements.getMeanMotion().multiply(fieldAuxiliaryElements.getMeanMotion()).multiply(fieldAuxiliaryElements.getSma())).divide(2.).reciprocal();
+        ton2a = (auxiliaryElements.getMeanMotion().multiply(auxiliaryElements.getMeanMotion()).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = 1 / fieldAuxiliaryElements.getMu();
+        ooMu  = 1 / auxiliaryElements.getMu();
 
     }
 

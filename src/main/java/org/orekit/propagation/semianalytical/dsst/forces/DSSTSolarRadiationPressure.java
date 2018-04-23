@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -291,7 +290,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         ll[1] = auxiliaryElements.normalizeAngle(state.getLv(), 0).add(FastMath.PI);
 
         // Direction cosines of the Sun in the equinoctial frame
-        final FieldVector3D<T> sunDir = new FieldVector3D<>(state.getDate().getField(), sun.getPVCoordinates(state.toSpacecraftState().getDate(), state.getFrame()).getPosition().normalize());
+        final FieldVector3D<T> sunDir = new FieldVector3D<>(field, sun.getPVCoordinates(state.getDate().toAbsoluteDate(), state.getFrame()).getPosition().normalize());
         final T alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
@@ -313,12 +312,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T[] a = MathArrays.buildArray(field, 5);
             a[0] = b2.multiply(4.).add(cc.multiply(cc));
             a[1] = bb.multiply(8.).multiply(m2).multiply(auxiliaryElements.getH()).add(cc.multiply(4.).multiply(m2).multiply(auxiliaryElements.getK()));
-            a[2] = b2.multiply(-4).add(m4.multiply(4.).multiply(h2)).subtract(cc.multiply(2.).multiply(dd)).add(m4.multiply(4.).multiply(k2));
-            a[3] = bb.multiply(-8).multiply(m2).multiply(auxiliaryElements.getH()).subtract(dd.multiply(4.).multiply(m2).multiply(auxiliaryElements.getK()));
-            a[4] = m4.multiply(h2).multiply(-4).add(dd.multiply(dd));
+            a[2] = m4.multiply(h2).multiply(4.).subtract(cc.multiply(dd).multiply(2.)).add(m4.multiply(k2).multiply(4.)).subtract(b2.multiply(4.));
+            a[3] = auxiliaryElements.getH().multiply(m2).multiply(bb).multiply(8.).add(auxiliaryElements.getK().multiply(m2).multiply(dd).multiply(4.)).negate();
+            a[4] = dd.multiply(dd).subtract(m4.multiply(h2).multiply(4.));
             // Compute the real roots of the quartic equation 3.5-2
             final T[] roots = MathArrays.buildArray(field, 4);
-            final int nbRoots = realQuarticRoots(a, roots, context);
+            final int nbRoots = realQuarticRoots(a, roots, field);
             if (nbRoots > 0) {
                 // Check for consistency
                 boolean entryFound = false;
@@ -334,19 +333,19 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                         // Is the angle on the shadow side of the central body (eq. 3.5-3) ?
                         if (cPhi.getReal() < 0.) {
                             final T range = cosL.multiply(auxiliaryElements.getK()).add(sinL.multiply(auxiliaryElements.getH())).add(1.);
-                            final T S  = ((m2.multiply(range).multiply(range)).negate()).add(1.).subtract(cPhi.multiply(cPhi));
+                            final T S  = (range.multiply(range).multiply(m2).add(cPhi.multiply(cPhi))).negate().add(1.);
                             // Is the shadow equation 3.5-1 satisfied ?
                             if (FastMath.abs(S).getReal() < S_ZERO) {
                                 // Is this the entry or exit angle ?
-                                final T dSdL = m2.multiply(range).multiply(sinL.multiply(auxiliaryElements.getK()).subtract(cosL.multiply(auxiliaryElements.getH()))).add(cPhi.multiply(alpha.multiply(sinL).subtract(beta.multiply(cosL))));
+                                final T dSdL = m2.multiply(range).multiply(auxiliaryElements.getK().multiply(sinL).subtract(auxiliaryElements.getH().multiply(cosL))).add(cPhi.multiply(alpha.multiply(sinL).subtract(beta.multiply(cosL))));
                                 if (dSdL.getReal() > 0.) {
                                     // Exit from shadow: 3.5-4
                                     exitFound = true;
-                                    ll[0] = sinL.divide(cosL).atan();
+                                    ll[0] = FastMath.atan2(sinL, cosL);
                                 } else {
                                     // Entry into shadow: 3.5-5
                                     entryFound = true;
-                                    ll[1] = sinL.divide(cosL).atan();
+                                    ll[1] = FastMath.atan2(sinL, cosL);
                                 }
                             }
                         }
@@ -355,7 +354,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 // Must be one entry and one exit or none
                 if (!(entryFound == exitFound)) {
                     // entry or exit found but not both ! In this case, consider there is no eclipse...
-                    ll[0] = zero.subtract(FastMath.PI);
+                    ll[0] = zero.add(-FastMath.PI);
                     ll[1] = zero.add(FastMath.PI);
                 }
                 // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
@@ -462,20 +461,19 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      *
      * @param a the 5 coefficients
      * @param y the real roots
-     * @param context container for attributes
+     * @param field field of elements
      * @return the number of real roots
      */
     private <T extends RealFieldElement<T>> int realQuarticRoots(final T[] a, final T[] y,
-                                                                 final FieldAbstractGaussianContributionContext<T> context) {
+                                                                 final Field<T> field) {
 
-        final Field<T> field = context.getFieldAuxiliaryElements().getDate().getField();
         final T zero = field.getZero();
 
         // Treat the degenerate quartic as cubic
         if (Precision.equals(a[0].getReal(), 0.)) {
             final T[] aa = MathArrays.buildArray(field, a.length - 1);
             System.arraycopy(a, 1, aa, 0, aa.length);
-            return realCubicRoots(aa, y, context);
+            return realCubicRoots(aa, y, field);
         }
 
         // Transform coefficients
@@ -491,8 +489,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         i[0] = zero.add(1.0);
         i[1] = c.negate();
         i[2] = b.multiply(d).subtract(e.multiply(4.0));
-        i[3] = e.multiply(c.multiply(4.).subtract(b.multiply(b))).subtract(b.multiply(b));
-        final int i3 = realCubicRoots(i, z3, context);
+        i[3] = e.multiply(c.multiply(4.).subtract(b.multiply(b))).subtract(d.multiply(d));
+        final int i3 = realCubicRoots(i, z3, field);
         if (i3 == 0) {
             return 0;
         }
@@ -515,11 +513,11 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         n[1] = bh.subtract(pp);
         n[2] = zh.subtract(qq);
         final int n1 = realQuadraticRoots(n, y1);
+        final T[] y2 = MathArrays.buildArray(field, 2);
         final T[] nn = MathArrays.buildArray(field, 3);
         nn[0] = zero.add(1.0);
         nn[1] = bh.add(pp);
         nn[2] = zh.add(qq);
-        final T[] y2 = MathArrays.buildArray(field, 2);
         final int n2 = realQuadraticRoots(nn, y2);
 
         if (n1 == 2) {
@@ -631,21 +629,21 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param <T> the type of the field elements
      * @param a the 4 coefficients
      * @param y the real roots sorted in descending order
-     * @param context container for attributes
+     * @param field field of elements
      * @return the number of real roots
      */
     private <T extends RealFieldElement<T>> int realCubicRoots(final T[] a, final T[] y,
-                                                               final FieldAbstractGaussianContributionContext<T> context) {
+                                                               final Field<T> field) {
 
         if (Precision.equals(a[0].getReal(), 0.)) {
             // Treat the degenerate cubic as quadratic
-            final T[] aa = MathArrays.buildArray(context.getFieldAuxiliaryElements().getDate().getField(), a.length - 1);
+            final T[] aa = MathArrays.buildArray(field, a.length - 1);
             System.arraycopy(a, 1, aa, 0, aa.length);
             return realQuadraticRoots(aa, y);
         }
 
         // Transform coefficients
-        final T b  =  (a[1].divide(a[0].multiply(3.))).negate();
+        final T b  =  a[1].divide(a[0].multiply(3.)).negate();
         final T c  =  a[2].divide(a[0]);
         final T d  =  a[3].divide(a[0]);
         final T b2 =  b.multiply(b);
@@ -657,12 +655,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
         if (disc.getReal() < 0.) {
             // One real root
-            final T alpha  = q.add(FastMath.copySign(FastMath.sqrt(disc.negate()), q));
+            final T alpha  = FastMath.copySign(FastMath.sqrt(disc.negate()), q).add(q);
             final T cbrtAl = FastMath.cbrt(alpha);
             final T cbrtBe = p.divide(cbrtAl);
 
-            if (p.getReal() < 0.) {
-                y[0] = b.add(q.divide(cbrtAl.multiply(cbrtAl).add(cbrtBe.multiply(cbrtBe)).subtract(p)).multiply(2.));
+            if (p .getReal() < 0.) {
+                y[0] = q.divide(cbrtAl.multiply(cbrtAl).add(cbrtBe.multiply(cbrtBe)).subtract(p)).multiply(2.).add(b);
             } else if (p.getReal() > 0.) {
                 y[0] = b.add(cbrtAl).add(cbrtBe);
             } else {
@@ -775,7 +773,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         }
 
         // Transform coefficients
-        final T b = a[1].divide(a[0]).multiply(-0.5);
+        final T b = a[1].divide(a[0]).multiply(0.5).negate();
         final T c =  a[2].divide(a[0]);
 
         // Compute discriminant

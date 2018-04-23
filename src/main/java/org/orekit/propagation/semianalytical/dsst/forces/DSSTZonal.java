@@ -72,9 +72,6 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private static final int I = 1;
 
-    /** Truncation tolerance. */
-    //private static final double TRUNCATION_TOLERANCE = 1e-4;
-
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
 
@@ -82,22 +79,7 @@ public class DSSTZonal implements DSSTForceModel {
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Maximal degree to consider for harmonics potential. */
-    //private final int maxDegree;
-
-    /** Maximal degree to consider for harmonics potential. */
     private final int maxDegreeShortPeriodics;
-
-    /** Maximal degree to consider for harmonics potential in short periodic computations. */
-    //private final int maxOrder;
-
-    /** Factorial. */
-    //private final double[] fact;
-
-    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
-    //private final TreeMap<NSKey, Double> Vns;
-
-    /** Highest power of the eccentricity to be used in mean elements computations. */
-    //private int maxEccPowMeanElements;
 
     /** Highest power of the eccentricity to be used in short periodic computations. */
     private final int maxEccPowShortPeriodics;
@@ -107,10 +89,6 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Short period terms. */
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
-
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s*/
-    //private HansenZonalLinear[] hansenObjects;
 
     /** h * k. */
     private double hk;
@@ -152,8 +130,6 @@ public class DSSTZonal implements DSSTForceModel {
         throws OrekitException {
 
         this.provider  = provider;
-        //this.maxDegree = provider.getMaxDegree();
-        //this.maxOrder  = provider.getMaxOrder();
 
         checkIndexRange(maxDegreeShortPeriodics, 2, provider.getMaxDegree());
         this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
@@ -163,20 +139,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         checkIndexRange(maxFrequencyShortPeriodics, 1, 2 * maxDegreeShortPeriodics + 1);
         this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
-
-        // Vns coefficients
-        //this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
-
-        // Factorials computation
-        /*final int maxFact = 2 * provider.getMaxDegree() + 1;
-        this.fact = new double[maxFact];
-        fact[0] = 1.;
-        for (int i = 1; i < maxFact; i++) {
-            fact[i] = i * fact[i - 1];
-        }*/
-
-        // Initialize default values
-        //this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
 
     }
 
@@ -214,22 +176,6 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly)
         throws OrekitException {
-
-        //computeMeanElementsTruncations(auxiliaryElements);
-
-        /*final int maxEccPow;
-        if (!meanOnly) {
-            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-        } else {
-            maxEccPow = maxEccPowMeanElements;
-        }
-
-        //Initialize the HansenCoefficient generator
-        this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
-
-        for (int s = 0; s <= maxEccPow; s++) {
-            this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
-        }*/
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxFrequencyShortPeriodics,
@@ -361,10 +307,10 @@ public class DSSTZonal implements DSSTForceModel {
 
         final T[] elements =  MathArrays.buildArray(field, 6);
         elements[0] = da;
-        elements[1] = dh;
-        elements[2] = dk;
-        elements[3] = dp;
-        elements[4] = dq;
+        elements[1] = dk;
+        elements[2] = dh;
+        elements[3] = dq;
+        elements[4] = dp;
         elements[5] = dM;
 
         return elements;
@@ -1072,7 +1018,6 @@ public class DSSTZonal implements DSSTForceModel {
             for (int s = 0; s <= sMax; s++) {
                 //Initialise the Hansen roots
                 context.computeHansenObjectsInitValues(s);
-                //hansenObjects[s].computeInitValues(context.getX());
             }
             generateCoefficients(date, context);
         }
@@ -1923,7 +1868,6 @@ public class DSSTZonal implements DSSTForceModel {
             for (int s = 0; s <= context.getMaxEccPowMeanElements(); s++) {
                 //Initialize the Hansen roots
                 context.computeHansenObjectsInitValues(s);
-                //hansenCoeff[s].computeInitValues(context.getX());
 
                 // Get the current Gs coefficient
                 final double gs = GsHs[0][s];
@@ -1952,8 +1896,8 @@ public class DSSTZonal implements DSSTForceModel {
                     if ((n - s) % 2 == 0) {
 
                         //Extract data from previous computation :
-                        final double kns   = context.getHansenObjects()[s].getValue(-n - 1, context.getX()); //hansenCoeff[s].getValue(-n - 1, context.getX());
-                        final double dkns  = context.getHansenObjects()[s].getDerivative(-n - 1, context.getX()); //hansenCoeff[s].getDerivative(-n - 1, context.getX());
+                        final double kns   = context.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                        final double dkns  = context.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
 
                         final double vns   = context.getVns().get(new NSKey(n, s));
                         final double coef0 = d0s * roaPow[n] * vns * -harmonics.getUnnormalizedCnm(n, 0);

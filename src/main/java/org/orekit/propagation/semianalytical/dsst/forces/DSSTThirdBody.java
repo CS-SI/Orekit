@@ -71,9 +71,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     private static final int    I = 1;
 
-    /** Max power for summation. */
-    //private static final int    MAX_POWER = 22;
-
     /** Number of points for interpolation. */
     private static final int    INTERPOLATION_POINTS = 3;
 
@@ -83,21 +80,9 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** The 3rd body to consider. */
     private final CelestialBody    body;
 
-    /** Factorial. */
-    //private final double[]         fact;
-
-    /** V<sub>ns</sub> coefficients. */
-    //private final TreeMap<NSKey, Double> Vns;
-
     /** Short period terms. */
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s */
-    //private final HansenThirdBodyLinear[] hansenObjects;
-
-    /** Factory for the DerivativeStructure instances. */
-    //private final DSFactory factory;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
@@ -105,25 +90,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     public DSSTThirdBody(final CelestialBody body) {
         this.body = body;
-
-        //this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
-
-        // Factorials computation
-        /*final int dim = 2 * MAX_POWER;
-        this.fact = new double[dim];
-        fact[0] = 1.;
-        for (int i = 1; i < dim; i++) {
-            fact[i] = i * fact[i - 1];
-        }*/
-
-        //Initialise the HansenCoefficient generator
-        //this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
-        //for (int s = 0; s <= MAX_POWER; s++) {
-            //this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
-        //}
-
-        //this.factory = new DSFactory(1, 1);
-
     }
 
     /** Get third body.
@@ -250,10 +216,10 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         final T[] elements = MathArrays.buildArray(field, 6);
         elements[0] = da;
-        elements[1] = dh;
-        elements[2] = dk;
-        elements[3] = dp;
-        elements[4] = dq;
+        elements[1] = dk;
+        elements[2] = dh;
+        elements[3] = dq;
+        elements[4] = dp;
         elements[5] = dM;
 
         return elements;
@@ -1368,8 +1334,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             // Access to potential U derivatives
             final UAnddU udu = new UAnddU(context);
-            // Compute potential U and derivatives
-            //final double[] dU  = computeUDerivatives(context);
 
             //Compute the C<sup>j</sup> coefficients
             for (int j = 1; j <= jMax; j++) {

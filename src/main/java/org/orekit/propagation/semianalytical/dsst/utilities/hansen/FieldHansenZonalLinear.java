@@ -89,9 +89,9 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
      *
      * @param nMax the maximum (absolute) value of n coefficient
      * @param s s coefficient
+     * @param field field of elements
      */
-    public FieldHansenZonalLinear(final int nMax, final int s) {
-        final Field<T> field = twosp1otwots.getField();
+    public FieldHansenZonalLinear(final int nMax, final int s, final Field<T> field) {
         final T zero = field.getZero();
         //Initialize fields
         this.offset = nMax + 1;
