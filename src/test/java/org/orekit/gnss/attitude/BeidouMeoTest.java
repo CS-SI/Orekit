@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -25,8 +26,9 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     protected GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
                                                   final AbsoluteDate validityEnd,
                                                   final PVCoordinatesProvider sun,
+                                                  final Frame inertialFrame,
                                                   final int prnNumber) {
-        return new BeidouMeo(validityStart, validityEnd, sun);
+        return new BeidouMeo(validityStart, validityEnd, sun, inertialFrame);
     }
 
     protected String getSuffix() {

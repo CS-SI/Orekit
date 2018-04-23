@@ -18,6 +18,7 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -59,10 +60,11 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
+     * @param inertialFrame inertial frame where velocity are computed
      */
     public Galileo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                   final PVCoordinatesProvider sun) {
-        super(validityStart, validityEnd, sun);
+                   final PVCoordinatesProvider sun, final Frame inertialFrame) {
+        super(validityStart, validityEnd, sun, inertialFrame);
     }
 
     /** {@inheritDoc} */

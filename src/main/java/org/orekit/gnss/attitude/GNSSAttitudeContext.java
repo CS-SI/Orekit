@@ -107,7 +107,7 @@ class GNSSAttitudeContext implements TimeStamped {
         throws OrekitException {
 
         this.towardsEclipse = -Vector3D.dotProduct(sunPV.getPosition(), svPV.getVelocity());
-        this.svPV    = svPV;
+        this.svPV           = svPV;
         final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(2);
         this.svPVDS  = svPV.toDerivativeStructurePV(2);
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
@@ -269,7 +269,7 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public DerivativeStructure inOrbitPlaneAngle(final DerivativeStructure angle) {
         // TODO: the Kouba model assumes planar right-angle triangle resolution, it should really be:
-        // return angle.cos().divide(beta.cos().acos();
+//        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
         return angle.multiply(angle).subtract(beta.multiply(beta)).sqrt();
     }
 
@@ -370,15 +370,15 @@ class GNSSAttitudeContext implements TimeStamped {
     }
 
     /** Compute Orbit Normal (ON) yaw.
-     * @return Orbit Normal yaw
+     * @return Orbit Normal yaw, using inertial frame as reference
      * @exception OrekitException if derivation order is too large (never happens with hard-coded order)
      */
     public TimeStampedAngularCoordinates orbitNormalYaw()
         throws OrekitException {
-        final PVCoordinates normal = new PVCoordinates(svPVDS.getMomentum()).normalize();
+        final PVCoordinates normal = new PVCoordinates(svPVDS.getMomentum());
         return new TimeStampedAngularCoordinates(svPV.getDate(),
                                                  MINUS_Z, svPV.normalize(),
-                                                 PLUS_Y, normal.normalize(),
+                                                 PLUS_Y, normal.negate(),
                                                  1.0e-9);
     }
 

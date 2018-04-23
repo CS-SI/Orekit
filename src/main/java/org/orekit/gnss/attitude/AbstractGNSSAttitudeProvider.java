@@ -48,17 +48,23 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Provider for Sun position. */
     private final PVCoordinatesProvider sun;
 
+    /** Inertial frame where velocity are computed. */
+    private final Frame inertialFrame;
+
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
+     * @param inertialFrame inertial frame where velocity are computed
      */
     protected AbstractGNSSAttitudeProvider(final AbsoluteDate validityStart,
                                            final AbsoluteDate validityEnd,
-                                           final PVCoordinatesProvider sun) {
+                                           final PVCoordinatesProvider sun,
+                                           final Frame inertialFrame) {
         this.validityStart = validityStart;
         this.validityEnd   = validityEnd;
         this.sun           = sun;
+        this.inertialFrame = inertialFrame;
     }
 
     /** {@inheritDoc} */
@@ -82,13 +88,13 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
-        final TimeStampedPVCoordinates sunPV = sun.getPVCoordinates(date, frame);
-        final TimeStampedPVCoordinates svPV  = pvProv.getPVCoordinates(date, frame);
+        final TimeStampedPVCoordinates sunPV = sun.getPVCoordinates(date, inertialFrame);
+        final TimeStampedPVCoordinates svPV  = pvProv.getPVCoordinates(date, inertialFrame);
 
         // compute yaw correction
         final TimeStampedAngularCoordinates corrected = correctedYaw(new GNSSAttitudeContext(sunPV, svPV));
 
-        return new Attitude(frame, corrected);
+        return new Attitude(inertialFrame, corrected).withReferenceFrame(frame);
 
     }
 
@@ -104,7 +110,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
 
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
-     * @return corrected yaw
+     * @return corrected yaw, using inertial frame as the reference
      * @exception OrekitException if yaw corrected attitude cannot be computed
      */
     protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context)

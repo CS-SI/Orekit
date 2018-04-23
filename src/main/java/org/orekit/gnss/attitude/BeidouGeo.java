@@ -17,6 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -35,10 +36,11 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
      * @param sun provider for Sun position
+     * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouGeo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                     final PVCoordinatesProvider sun) {
-        super(validityStart, validityEnd, sun);
+                     final PVCoordinatesProvider sun, final Frame inertialFrame) {
+        super(validityStart, validityEnd, sun, inertialFrame);
     }
 
     /** {@inheritDoc} */

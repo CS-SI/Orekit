@@ -55,6 +55,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     protected abstract GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
                                                            final AbsoluteDate validityEnd,
                                                            final PVCoordinatesProvider sun,
+                                                           final Frame inertialFrame,
                                                            final int prnNumber);
 
     protected abstract String getSuffix();
@@ -114,7 +115,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                                                   Vector3D.ZERO,
                                                                                   Vector3D.ZERO)));
                 final GNSSAttitudeProvider attitudeProvider =
-                                createProvider(validityStart, validityEnd, fakedSun, prnNumber);
+                                createProvider(validityStart, validityEnd, fakedSun, eme2000, prnNumber);
                 Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
                 Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
 
