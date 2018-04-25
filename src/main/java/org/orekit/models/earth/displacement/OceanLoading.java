@@ -427,7 +427,7 @@ public class OceanLoading implements StationDisplacement {
         }
 
         // convert to proper frame
-        final GeodeticPoint gp = earth.transform(referencePoint, earthFrame, null);
+        final GeodeticPoint gp = earth.transform(referencePoint, earthFrame, elements.getDate());
         return new Vector3D(dz, gp.getZenith(),
                             dw, gp.getWest(),
                             ds, gp.getSouth());
