@@ -114,6 +114,21 @@ transponder.delay.bias.max = 0.0
 ### Estimation flag for transponder delay (true/false) [false]
 transponder.delay.bias.estimated = false
 
+## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
+on.board.antenna.phase.center.x = 0.0
+on.board.antenna.phase.center.y = 0.0
+on.board.antenna.phase.center.z = 0.0
+
+## correction of ground stations displacements (true/false) [false, false, false]
+## if remove.permanent.deformation if true, the station coordinates are
+## considered *mean tide* and already include the permanent deformation, hence
+## it should be removed from the displacement to avoid considering it twice;
+## if false, the station coordinates are considered *conventional tide free*
+## so the permanent deformation must be included in the displacement
+solid.tides.displacement.correction                   = false
+solid.tides.displacement.remove.permanent.deformation = false
+ocean.loading.correction                              = false
+
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  YARL 
 ground.station.latitude                        [0] =  -29.046495 

@@ -97,6 +97,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -115,6 +116,10 @@ import org.orekit.models.earth.IonosphericModel;
 import org.orekit.models.earth.KlobucharIonoCoefficientsLoader;
 import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.models.earth.displacement.OceanLoading;
+import org.orekit.models.earth.displacement.OceanLoadingCoefficientsBLQFactory;
+import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -210,7 +215,7 @@ public class OrbitDeterminationTest {
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS01.in").toURI().getPath();
+        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
@@ -222,27 +227,27 @@ public class OrbitDeterminationTest {
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 16.0;
+        final double distanceAccuracy = 13.0;
         final double velocityAccuracy = 5.0e-3;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 8;
+        final int numberOfEval = 9;
 
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
-        //test on the estimated position and velocity (reference from IGS-MGEX file cod19936.eph)
+        //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
-        final Vector3D refPos = new Vector3D(6380365.719,  16424492.770, -19879865.986);
-        final Vector3D refVel = new Vector3D(   -2563.300830, 2579.037786, 1334.055882);
+        final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
+        final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 4347;
-        final double[] RefStatRange = { -9.336, 3.178, 0.0, 0.890 };
+        final long nbRange = 4009;
+        final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
@@ -488,7 +493,7 @@ public class OrbitDeterminationTest {
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
@@ -1052,12 +1057,14 @@ public class OrbitDeterminationTest {
 
     /** Set up stations.
      * @param parser input file parser
+     * @param conventions IERS conventions to use
      * @param body central body
      * @return name to station data map
      * @exception OrekitException if some frame transforms cannot be computed
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws OrekitException, NoSuchElementException {
 
@@ -1091,14 +1098,65 @@ public class OrbitDeterminationTest {
         final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
         //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
+        final TidalDisplacement tidalDisplacement;
+        if (parser.containsKey(ParameterKey.SOLID_TIDES_DISPLACEMENT_CORRECTION) &&
+            parser.getBoolean(ParameterKey.SOLID_TIDES_DISPLACEMENT_CORRECTION)) {
+            final boolean removePermanentDeformation =
+                            parser.containsKey(ParameterKey.SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION) &&
+                            parser.getBoolean(ParameterKey.SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION);
+            tidalDisplacement = new TidalDisplacement(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
+                                                      Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
+                                                      CelestialBodyFactory.getSun(),
+                                                      CelestialBodyFactory.getMoon(),
+                                                      conventions,
+                                                      removePermanentDeformation);
+        } else {
+            tidalDisplacement = null;
+        }
+
+        final OceanLoadingCoefficientsBLQFactory blqFactory;
+        if (parser.containsKey(ParameterKey.OCEAN_LOADING_CORRECTION) &&
+            parser.getBoolean(ParameterKey.OCEAN_LOADING_CORRECTION)) {
+            blqFactory = new OceanLoadingCoefficientsBLQFactory("^.*\\.blq$");
+        } else {
+            blqFactory = null;
+        }
+
+        final EOPHistory eopHistory = FramesFactory.findEOP(body.getBodyFrame());
         for (int i = 0; i < stationNames.length; ++i) {
+
+            // displacements
+            final StationDisplacement[] displacements;
+            final OceanLoading oceanLoading = (blqFactory == null) ?
+                                              null :
+                                              new OceanLoading(body, blqFactory.getCoefficients(stationNames[i]));
+            if (tidalDisplacement == null) {
+                if (oceanLoading == null) {
+                    displacements = new StationDisplacement[0];
+                } else {
+                    displacements = new StationDisplacement[] {
+                        oceanLoading
+                    };
+                }
+            } else {
+                if (oceanLoading == null) {
+                    displacements = new StationDisplacement[] {
+                        tidalDisplacement
+                    };
+                } else {
+                    displacements = new StationDisplacement[] {
+                        tidalDisplacement, oceanLoading
+                    };
+                }
+            }
 
             // the station itself
             final GeodeticPoint position = new GeodeticPoint(stationLatitudes[i],
                                                              stationLongitudes[i],
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
-            final GroundStation station = new GroundStation(topo);
+            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
@@ -2371,6 +2429,9 @@ public class OrbitDeterminationTest {
         GROUND_STATION_ELEVATION_REFRACTION_CORRECTION,
         GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION,
         GROUND_STATION_IONOSPHERIC_CORRECTION,
+        SOLID_TIDES_DISPLACEMENT_CORRECTION,
+        SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION,
+        OCEAN_LOADING_CORRECTION,
         RANGE_MEASUREMENTS_BASE_WEIGHT,
         RANGE_RATE_MEASUREMENTS_BASE_WEIGHT,
         AZIMUTH_MEASUREMENTS_BASE_WEIGHT,

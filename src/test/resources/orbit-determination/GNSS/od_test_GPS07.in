@@ -18,15 +18,15 @@
 
 ### Orbit definition
 ## date of the orbital parameters (UTC)
-orbit.date = 2016-02-13T00:15:00.000
+orbit.date = 2016-02-13T02:31:30.000
 
 ## Position & velocity along X, y, z in inertial frame (m)
-orbit.cartesian.px =   6380000.000
-orbit.cartesian.py =  16424000.000
-orbit.cartesian.pz = -19880000.000
-orbit.cartesian.vx =     -2565.000000
-orbit.cartesian.vy =      2580.000000
-orbit.cartesian.vz =      1335.000000
+orbit.cartesian.px =  -2747600.0
+orbit.cartesian.py =  22572100.0
+orbit.cartesian.pz =  13522760.0
+orbit.cartesian.vx =     -2729.5
+orbit.cartesian.vy =      1142.7
+orbit.cartesian.vz =     -2523.9
 
 ## Spacecraft mass (kg) [1000.]
 mass = 1630
@@ -79,7 +79,7 @@ drag.area = 0.28270
 ## Solar Radiation Pressure (true/false) [false]
 solar.radiation.pressure = true
 ## SRP coefficient
-solar.radiation.pressure.cr =  1.134
+solar.radiation.pressure.cr =  1.8
 ## Estimation flag for SRP coefficient (true/false) [false]
 solar.radiation.pressure.cr.estimated = true
 ## SRP area (m^2)
@@ -94,16 +94,26 @@ general.relativity = true
 attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
 
 ## Transponder delay bias (m) [0.0]
-transponder.delay.bias     = 0.0
-transponder.delay.bias.min = 0.0
-transponder.delay.bias.max = 0.0
+transponder.delay.bias     = -140870.0
+transponder.delay.bias.min = -1000000.0
+transponder.delay.bias.max = +1000000.0
 ### Estimation flag for transponder delay (true/false) [false]
 transponder.delay.bias.estimated = false
 
 ## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
-on.board.antenna.phase.center.x = 0.394
-on.board.antenna.phase.center.y = 0.0
-on.board.antenna.phase.center.z = 1.50180
+on.board.antenna.phase.center.x = -0.00040
+on.board.antenna.phase.center.y =  0.00500
+on.board.antenna.phase.center.z =  0.82240
+
+## correction of ground stations displacements (true/false) [false, false, false]
+## if remove.permanent.deformation if true, the station coordinates are
+## considered *mean tide* and already include the permanent deformation, hence
+## it should be removed from the displacement to avoid considering it twice;
+## if false, the station coordinates are considered *conventional tide free*
+## so the permanent deformation must be included in the displacement
+solid.tides.displacement.correction                   = true
+solid.tides.displacement.remove.permanent.deformation = false
+ocean.loading.correction                              = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1
@@ -111,10 +121,10 @@ ground.station.latitude                        [0] =   41.868362882
 ground.station.longitude                       [0] = -119.015669632
 ground.station.altitude                        [0] = 1458.088101
 ground.station.position.estimated              [0] = false
-ground.station.range.sigma                     [0] = 5.0
-ground.station.range.bias                      [0] = -3500.0
-ground.station.range.bias.min                  [0] = -10000.0
-ground.station.range.bias.max                  [0] = +10000.0
+ground.station.range.sigma                     [0] = 1.0
+ground.station.range.bias                      [0] =    +8.0
+ground.station.range.bias.min                  [0] = -1000.0
+ground.station.range.bias.max                  [0] = +1000.0
 ground.station.range.bias.estimated            [0] = true
 ground.station.range.rate.sigma                [0] = 0.001
 ground.station.range.rate.bias                 [0] =  0.0
@@ -138,10 +148,10 @@ ground.station.latitude                        [1] =   41.868362882
 ground.station.longitude                       [1] = -119.015669632
 ground.station.altitude                        [1] = 1458.088101
 ground.station.position.estimated              [1] = false
-ground.station.range.sigma                     [1] = 5.0
-ground.station.range.bias                      [1] = -3500.0
-ground.station.range.bias.min                  [1] = -10000.0
-ground.station.range.bias.max                  [1] = +10000.0
+ground.station.range.sigma                     [1] = 1.0
+ground.station.range.bias                      [1] =     0.0
+ground.station.range.bias.min                  [1] = -1000.0
+ground.station.range.bias.max                  [1] = +1000.0
 ground.station.range.bias.estimated            [1] = true
 ground.station.range.rate.sigma                [1] = 0.001
 ground.station.range.rate.bias                 [1] =  0.0
@@ -165,10 +175,10 @@ ground.station.latitude                        [2] =   41.868362882
 ground.station.longitude                       [2] = -119.015669632
 ground.station.altitude                        [2] = 1458.088101
 ground.station.position.estimated              [2] = false
-ground.station.range.sigma                     [2] = 5.0
-ground.station.range.bias                      [2] = -3500.0
-ground.station.range.bias.min                  [2] = -10000.0
-ground.station.range.bias.max                  [2] = +10000.0
+ground.station.range.sigma                     [2] = 1.0
+ground.station.range.bias                      [2] =    -5.0
+ground.station.range.bias.min                  [2] = -1000.0
+ground.station.range.bias.max                  [2] = +1000.0
 ground.station.range.bias.estimated            [2] = true
 ground.station.range.rate.sigma                [2] = 0.001
 ground.station.range.rate.bias                 [2] =  0.0
@@ -192,10 +202,10 @@ ground.station.latitude                        [3] =   47.653972656
 ground.station.longitude                       [3] = -122.309458826
 ground.station.altitude                        [3] =   44.666105
 ground.station.position.estimated              [3] = false
-ground.station.range.sigma                     [3] = 5.0
-ground.station.range.bias                      [3] = -3500.0
-ground.station.range.bias.min                  [3] = -10000.0
-ground.station.range.bias.max                  [3] = +10000.0
+ground.station.range.sigma                     [3] = 1.0
+ground.station.range.bias                      [3] =    +7.0
+ground.station.range.bias.min                  [3] = -1000.0
+ground.station.range.bias.max                  [3] = +1000.0
 ground.station.range.bias.estimated            [3] = true
 ground.station.range.rate.sigma                [3] = 0.001
 ground.station.range.rate.bias                 [3] =  0.0
@@ -219,10 +229,10 @@ ground.station.latitude                        [4] =   47.653972656
 ground.station.longitude                       [4] = -122.309458826
 ground.station.altitude                        [4] =   44.666105
 ground.station.position.estimated              [4] = false
-ground.station.range.sigma                     [4] = 5.0
-ground.station.range.bias                      [4] = -3500.0
-ground.station.range.bias.min                  [4] = -10000.0
-ground.station.range.bias.max                  [4] = +10000.0
+ground.station.range.sigma                     [4] = 1.0
+ground.station.range.bias                      [4] =     0.0
+ground.station.range.bias.min                  [4] = -1000.0
+ground.station.range.bias.max                  [4] = +1000.0
 ground.station.range.bias.estimated            [4] = true
 ground.station.range.rate.sigma                [4] = 0.001
 ground.station.range.rate.bias                 [4] =  0.0
@@ -246,10 +256,10 @@ ground.station.latitude                        [5] =   47.653972656
 ground.station.longitude                       [5] = -122.309458826
 ground.station.altitude                        [5] =   44.666105
 ground.station.position.estimated              [5] = false
-ground.station.range.sigma                     [5] = 5.0
-ground.station.range.bias                      [5] = -3500.0
-ground.station.range.bias.min                  [5] = -10000.0
-ground.station.range.bias.max                  [5] = +10000.0
+ground.station.range.sigma                     [5] = 1.0
+ground.station.range.bias                      [5] =    -7.0
+ground.station.range.bias.min                  [5] = -1000.0
+ground.station.range.bias.max                  [5] = +1000.0
 ground.station.range.bias.estimated            [5] = true
 ground.station.range.rate.sigma                [5] = 0.001
 ground.station.range.rate.bias                 [5] =  0.0
@@ -273,10 +283,10 @@ ground.station.latitude                        [6] =  29.868112727
 ground.station.longitude                       [6] = -89.673232869
 ground.station.altitude                        [6] = -14.853146
 ground.station.position.estimated              [6] = false
-ground.station.range.sigma                     [6] = 5.0
-ground.station.range.bias                      [6] = -3500.0
-ground.station.range.bias.min                  [6] = -10000.0
-ground.station.range.bias.max                  [6] = +10000.0
+ground.station.range.sigma                     [6] = 1.0
+ground.station.range.bias                      [6] =    +5.0
+ground.station.range.bias.min                  [6] = -1000.0
+ground.station.range.bias.max                  [6] = +1000.0
 ground.station.range.bias.estimated            [6] = true
 ground.station.range.rate.sigma                [6] = 0.001
 ground.station.range.rate.bias                 [6] =  0.0
@@ -300,10 +310,10 @@ ground.station.latitude                        [7] =  29.868112727
 ground.station.longitude                       [7] = -89.673232869
 ground.station.altitude                        [7] = -14.853146
 ground.station.position.estimated              [7] = false
-ground.station.range.sigma                     [7] = 5.0
-ground.station.range.bias                      [7] = -3500.0
-ground.station.range.bias.min                  [7] = -10000.0
-ground.station.range.bias.max                  [7] = +10000.0
+ground.station.range.sigma                     [7] = 1.0
+ground.station.range.bias                      [7] =    +7.0
+ground.station.range.bias.min                  [7] = -1000.0
+ground.station.range.bias.max                  [7] = +1000.0
 ground.station.range.bias.estimated            [7] = true
 ground.station.range.rate.sigma                [7] = 0.001
 ground.station.range.rate.bias                 [7] =  0.0
@@ -327,10 +337,10 @@ ground.station.latitude                        [8] =  29.868112727
 ground.station.longitude                       [8] = -89.673232869
 ground.station.altitude                        [8] = -14.853146
 ground.station.position.estimated              [8] = false
-ground.station.range.sigma                     [8] = 5.0
-ground.station.range.bias                      [8] = -3500.0
-ground.station.range.bias.min                  [8] = -10000.0
-ground.station.range.bias.max                  [8] = +10000.0
+ground.station.range.sigma                     [8] = 1.0
+ground.station.range.bias                      [8] =    +7.0
+ground.station.range.bias.min                  [8] = -1000.0
+ground.station.range.bias.max                  [8] = +1000.0
 ground.station.range.bias.estimated            [8] = true
 ground.station.range.rate.sigma                [8] = 0.001
 ground.station.range.rate.bias                 [8] =  0.0
@@ -354,10 +364,10 @@ ground.station.latitude                        [9] =  42.520093759
 ground.station.longitude                       [9] = -83.756648765
 ground.station.altitude                        [9] = 262.449442
 ground.station.position.estimated              [9] = false
-ground.station.range.sigma                     [9] = 5.0
-ground.station.range.bias                      [9] = -3500.0
-ground.station.range.bias.min                  [9] = -10000.0
-ground.station.range.bias.max                  [9] = +10000.0
+ground.station.range.sigma                     [9] = 1.0
+ground.station.range.bias                      [9] =    +6.0
+ground.station.range.bias.min                  [9] = -1000.0
+ground.station.range.bias.max                  [9] = +1000.0
 ground.station.range.bias.estimated            [9] = true
 ground.station.range.rate.sigma                [9] = 0.001
 ground.station.range.rate.bias                 [9] =  0.0
@@ -381,10 +391,10 @@ ground.station.latitude                        [10] =  42.520093759
 ground.station.longitude                       [10] = -83.756648765
 ground.station.altitude                        [10] = 262.449442
 ground.station.position.estimated              [10] = false
-ground.station.range.sigma                     [10] = 5.0
-ground.station.range.bias                      [10] = -3500.0
-ground.station.range.bias.min                  [10] = -10000.0
-ground.station.range.bias.max                  [10] = +10000.0
+ground.station.range.sigma                     [10] = 1.0
+ground.station.range.bias                      [10] =     0.0
+ground.station.range.bias.min                  [10] = -1000.0
+ground.station.range.bias.max                  [10] = +1000.0
 ground.station.range.bias.estimated            [10] = true
 ground.station.range.rate.sigma                [10] = 0.001
 ground.station.range.rate.bias                 [10] =  0.0
@@ -408,10 +418,10 @@ ground.station.latitude                        [11] =  42.520093759
 ground.station.longitude                       [11] = -83.756648765
 ground.station.altitude                        [11] = 262.449442
 ground.station.position.estimated              [11] = false
-ground.station.range.sigma                     [11] = 5.0
-ground.station.range.bias                      [11] = -3500.0
-ground.station.range.bias.min                  [11] = -10000.0
-ground.station.range.bias.max                  [11] = +10000.0
+ground.station.range.sigma                     [11] = 1.0
+ground.station.range.bias                      [11] =    -2.0
+ground.station.range.bias.min                  [11] = -1000.0
+ground.station.range.bias.max                  [11] = +1000.0
 ground.station.range.bias.estimated            [11] = true
 ground.station.range.rate.sigma                [11] = 0.001
 ground.station.range.rate.bias                 [11] =  0.0
@@ -435,10 +445,10 @@ ground.station.latitude                        [12] =   35.107490239
 ground.station.longitude                       [12] = -114.604973036
 ground.station.altitude                        [12] =  152.410214
 ground.station.position.estimated              [12] = false
-ground.station.range.sigma                     [12] = 5.0
-ground.station.range.bias                      [12] = -3500.0
-ground.station.range.bias.min                  [12] = -10000.0
-ground.station.range.bias.max                  [12] = +10000.0
+ground.station.range.sigma                     [12] = 1.0
+ground.station.range.bias                      [12] =    +7.0
+ground.station.range.bias.min                  [12] = -1000.0
+ground.station.range.bias.max                  [12] = +1000.0
 ground.station.range.bias.estimated            [12] = true
 ground.station.range.rate.sigma                [12] = 0.001
 ground.station.range.rate.bias                 [12] =  0.0
@@ -462,10 +472,10 @@ ground.station.latitude                        [13] =   35.107490239
 ground.station.longitude                       [13] = -114.604973036
 ground.station.altitude                        [13] =  152.410214
 ground.station.position.estimated              [13] = false
-ground.station.range.sigma                     [13] = 5.0
-ground.station.range.bias                      [13] = -3500.0
-ground.station.range.bias.min                  [13] = -10000.0
-ground.station.range.bias.max                  [13] = +10000.0
+ground.station.range.sigma                     [13] = 1.0
+ground.station.range.bias                      [13] =    0.0
+ground.station.range.bias.min                  [13] = -1000.0
+ground.station.range.bias.max                  [13] = +1000.0
 ground.station.range.bias.estimated            [13] = true
 ground.station.range.rate.sigma                [13] = 0.001
 ground.station.range.rate.bias                 [13] =  0.0
@@ -489,10 +499,10 @@ ground.station.latitude                        [14] =   35.107490239
 ground.station.longitude                       [14] = -114.604973036
 ground.station.altitude                        [14] =  152.410214
 ground.station.position.estimated              [14] = false
-ground.station.range.sigma                     [14] = 5.0
-ground.station.range.bias                      [14] = -3500.0
-ground.station.range.bias.min                  [14] = -10000.0
-ground.station.range.bias.max                  [14] = +10000.0
+ground.station.range.sigma                     [14] = 1.0
+ground.station.range.bias                      [14] =    +5.0
+ground.station.range.bias.min                  [14] = -1000.0
+ground.station.range.bias.max                  [14] = +1000.0
 ground.station.range.bias.estimated            [14] = true
 ground.station.range.rate.sigma                [14] = 0.001
 ground.station.range.rate.bias                 [14] =  0.0
@@ -535,7 +545,7 @@ PV.measurements.velocity.sigma                  = 0.01
 # parameter x and sx is the associated scale factor
 # scaling factor for orbital parameters normalization (m)
 # if not specified, the value set for propagator.position.error will be copied
-estimator.orbital.parameters.position.scale     = 10.0
+estimator.orbital.parameters.position.scale     = 1.0e6
 
 # we can use either a Levenberg-Marquardt or a Gauss-Newton
 # optimization engine. Default is Levenberg-Marquardt
@@ -547,7 +557,7 @@ estimator.optimization.engine = Levenberg-Marquardt
 # divided by estimator.orbital.parameters.position.scale. So if the initial guess
 # is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
 # the initial step bound factor should be of the order of magnitude of 1.0e6
-estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 100
 
 # convergence is reached when max|p(k+1) - p(k)| < ε for each
 # normalized estimated parameters p and iterations k and k+1
@@ -562,11 +572,11 @@ estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
 # for example), then the threshold should not be too small. A value
 # of 10⁻³ is often quite accurate.
 estimator.normalized.parameters.convergence.threshold   = 1.0e-3
-estimator.max.iterations                                = 25
-estimator.max.evaluations                               = 35
+estimator.max.iterations                                = 20
+estimator.max.evaluations                               = 25
 
 # id of satellite in the Rinex files (only used if some measurements.files are Rinex 2 or 3)
-satellite.id.in.rinex.files = G01
+satellite.id.in.rinex.files = G07
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = shld0440.16o, seat0440.16o, sbch0440.16o, brig0440.16o, azbh0440.16o
