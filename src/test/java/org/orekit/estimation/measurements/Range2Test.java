@@ -440,10 +440,6 @@ public class Range2Test {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
         
-        System.out.format(Locale.US, "Relative errors dR/dP -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                          errorsPMedian, errorsPMean, errorsPMax);
-        System.out.format(Locale.US, "Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
-                          errorsVMedian, errorsVMean, errorsVMax);
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);
