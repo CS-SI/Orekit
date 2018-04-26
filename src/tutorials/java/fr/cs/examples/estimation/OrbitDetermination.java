@@ -847,32 +847,32 @@ public class OrbitDetermination {
 
         // transponder delay
         final double transponderDelayBias;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS)) {
             transponderDelayBias = 0;
         } else {
-            transponderDelayBias = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS);
+            transponderDelayBias = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS);
         }
 
         final double transponderDelayBiasMin;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_MIN)) {
             transponderDelayBiasMin = Double.NEGATIVE_INFINITY;
         } else {
-            transponderDelayBiasMin = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN);
+            transponderDelayBiasMin = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS_MIN);
         }
 
         final double transponderDelayBiasMax;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_MAX)) {
             transponderDelayBiasMax = Double.NEGATIVE_INFINITY;
         } else {
-            transponderDelayBiasMax = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX);
+            transponderDelayBiasMax = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS_MAX);
         }
 
         // bias estimation flag
         final boolean transponderDelayBiasEstimated;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_ESTIMATED)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_ESTIMATED)) {
             transponderDelayBiasEstimated = false;
         } else {
-            transponderDelayBiasEstimated = parser.getBoolean(ParameterKey.TRANSPONDER_DELAY_BIAS_ESTIMATED);
+            transponderDelayBiasEstimated = parser.getBoolean(ParameterKey.ONBOARD_RANGE_BIAS_ESTIMATED);
         }
 
         if (FastMath.abs(transponderDelayBias) >= Precision.SAFE_MIN || transponderDelayBiasEstimated) {
@@ -2455,10 +2455,10 @@ public class OrbitDetermination {
         POLYNOMIAL_ACCELERATION_DIRECTION_Z,
         POLYNOMIAL_ACCELERATION_COEFFICIENTS,
         POLYNOMIAL_ACCELERATION_ESTIMATED,
-        TRANSPONDER_DELAY_BIAS,
-        TRANSPONDER_DELAY_BIAS_MIN,
-        TRANSPONDER_DELAY_BIAS_MAX,
-        TRANSPONDER_DELAY_BIAS_ESTIMATED,
+        ONBOARD_RANGE_BIAS,
+        ONBOARD_RANGE_BIAS_MIN,
+        ONBOARD_RANGE_BIAS_MAX,
+        ONBOARD_RANGE_BIAS_ESTIMATED,
         ON_BOARD_ANTENNA_PHASE_CENTER_X,
         ON_BOARD_ANTENNA_PHASE_CENTER_Y,
         ON_BOARD_ANTENNA_PHASE_CENTER_Z,

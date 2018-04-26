@@ -163,12 +163,13 @@ polynomial.acceleration.direction.Z  [2] = 1.0
 polynomial.acceleration.coefficients [2] = 0.0, 0.0
 polynomial.acceleration.estimated    [2] = true
 
-## Transponder delay bias (m) [0.0]
-transponder.delay.bias     =   5969.0
-transponder.delay.bias.min = -50000.0
-transponder.delay.bias.max = +50000.0
-### Estimation flag for transponder delay (true/false) [false]
-transponder.delay.bias.estimated = false
+## On-board range bias (m) [0.0]
+onboard.range.bias     =   5969.0
+onboard.range.bias.min = -50000.0
+onboard.range.bias.max = +50000.0
+
+### Estimation flag for on-board range (true/false) [false]
+onboard.range.bias.estimated = false
 
 ## On-board antenna phase center in spacecraft frame (m) [0.0, 0.0, 0.0]
 on.board.antenna.phase.center.x = 0.0
