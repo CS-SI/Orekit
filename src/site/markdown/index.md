@@ -226,6 +226,7 @@
     * loading from network (even through internet proxies)
     * support for zip archives
     * support from gzip compressed files
+    * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
 
   * Localized in several languages
