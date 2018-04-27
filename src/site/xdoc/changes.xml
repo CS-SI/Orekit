@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Added a provider for time-dependent process noise in Kalman estimator.
+        This providers allow users to set up realistic models where the process
+        noise increases in the along track direction.
+        Fixes issue #403.
+      </action>
       <action dev="maxime" type="add">
         Increased visibility of attributes in ConstantThrustManeuver class.
         Added getters for all attributes. Also added an attribute name that
