@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Allow direct retrieval of rotation part without derivatives from
+        LOFType without computing the full transform from inertial frame.
+      </action>
       <action dev="maxime" type="fix">
         Added a provider for time-dependent process noise in Kalman estimator.
         This providers allow users to set up realistic models where the process
