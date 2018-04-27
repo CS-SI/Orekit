@@ -168,6 +168,16 @@
   
     * batch least squares fitting
 
+      * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
+      * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+      * choice between forming normal equations or not
+
+    *  Kalman filtering
+
+      * customizable process noise matrices providers
+
+    * parameters estimation
+
       * orbital parameters estimation (or only a subset if desired)
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)

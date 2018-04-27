@@ -188,6 +188,18 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>batch least squares fitting
         <ul>
+          <li>optimizers choice (Levenberg-Marquardt or Gauss-Newton)</li>
+          <li>decomposition algorithms choice (QR, LU, SVD, Cholesky)</li>
+          <li>choice between forming normal equations or not</li>
+        </ul>
+      </li>
+      <li>Kalman filtering
+        <ul>
+          <li>customizable process noise matrices providers</li>
+        </ul>
+      </li>
+      <li>parameters estimation
+        <ul>
           <li>orbital parameters estimation (or only a subset if desired)</li>
           <li>force model parameters estimation (drag coefficients, radiation pressure coefficients,
               central attraction, maneuver thrust or flow rate)</li>
