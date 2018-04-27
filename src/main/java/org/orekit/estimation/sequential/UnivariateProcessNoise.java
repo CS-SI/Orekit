@@ -36,11 +36,24 @@ import org.orekit.propagation.SpacecraftState;
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>
- * The time-dependent process noise matrix output is diagonal.
- * Each diagonal element is a function that represents the temporal evolution of (the standard deviation of) the process noise model.
- * The orbital parameters evolution is given in LOF frame and represents the model error
- * for the position and velocity in LOF (always 6 parameters).
- * The propagation parameters are not associated to a specific frame.
+ * The time-dependent functions define a process noise matrix that is diagonal
+ * <em>in the Local Orbital Frame</em>, corresponds to Cartesian elements, abd represents
+ * the temporal evolution of (the standard deviation of) the process noise model. The
+ * first function is therefore the standard deviation along the LOF X axis, the second
+ * function represents the standard deviation along the LOF Y axis...
+ * This allows to set up simply a process noise representing an uncertainty that grows
+ * mainly along the track. The 6x6 upper left part of output matrix will however not be
+ * diagonal as it will be converted to the same inertial frame and orbit type as the
+ * {@link SpacecraftState state} used by the {@link KalmanEstimator Kalman estimator}.
+ * </p>
+ * <p>
+ * The propagation parameters are not associated to a specific frame and are appended as
+ * is in the lower right part diagonal of the output matrix. This implies this simplified
+ * model does not include correlation between the parameters and the orbit, but only
+ * evolution of the parameters themselves. If such correlations are needed, users must
+ * set up a custom {@link CovarianceMatrixProvider covariance matrix provider}. In most
+ * cases, the parameters are constant and their evolution noise is always 0, so the
+ * functions can be set to {@code x -> 0}.
  * </p>
  * <p>
  * This class always provides one initial noise matrix or initial covariance matrix and one process noise matrix.
@@ -72,10 +85,10 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @throws OrekitException if lofOrbitalParametersEvolution array size is different from 6
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
-                                     final LOFType lofType,
-                                     final PositionAngle positionAngle,
-                                     final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
-                                     final UnivariateFunction[] propagationParametersEvolution)
+                                  final LOFType lofType,
+                                  final PositionAngle positionAngle,
+                                  final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
+                                  final UnivariateFunction[] propagationParametersEvolution)
         throws OrekitException {
         super(initialCovarianceMatrix);
         this.lofType = lofType;
@@ -147,10 +160,8 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         final RealMatrix lofCartesianProcessNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(lofOrbitalProcessNoiseValues);
 
         // Get the rotation matrix from LOF to inertial frame
-        final double[][] lofToInertialRotation =
-                        lofType.transformFromInertial(current.getDate(), current.getPVCoordinates()).
-                        getInverse().getRotation().getMatrix();
-        // FIXME: Check the order of the rotation (transpose or not ??)
+        final double[][] lofToInertialRotation = lofType.rotationFromInertial(current.getPVCoordinates()).
+                                                 revert().getMatrix();
 
         // Jacobian from LOF to inertial frame
         final RealMatrix jacLofToInertial = MatrixUtils.createRealMatrix(6, 6);
