@@ -22,6 +22,12 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a customizable filtering capability in data loading.
+        This allows users to insert layers providing features like
+        custom decompression algorithms, deciphering, monitoring...
+        Fixes issue #406.
+      </action>
+      <action dev="luc" type="add">
         Allow direct retrieval of rotation part without derivatives from
         LOFType without computing the full transform from inertial frame.
       </action>
