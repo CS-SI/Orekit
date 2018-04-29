@@ -463,3 +463,11 @@ NO_PROPAGATOR_CONFIGURED = <MISSING TRANSLATION>
 # dimension {0} is inconsistent with parameters list: {1}
 DIMENSION_INCONSISTENT_WITH_PARAMETERS = <MISSING TRANSLATION>
 
+# file {0} is not a supported Unix-compressed file
+NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = <MISSING TRANSLATION>
+
+# unexpected end of file {0}
+UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# file {0} is corrupted
+CORRUPTED_FILE = <MISSING TRANSLATION>

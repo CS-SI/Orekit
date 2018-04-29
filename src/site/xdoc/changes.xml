@@ -22,10 +22,16 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added support for loading Unix-compressed files (ending in .Z).
+        This file compression algorithm is still widely used in the GNSS
+        community (SP3 files, clock files, Klobuchar coefficients...)
+        Fixes issue #447.
+      </action>
+      <action dev="luc" type="add">
         Added a customizable filtering capability in data loading.
         This allows users to insert layers providing features like
         custom decompression algorithms, deciphering, monitoring...
-        Fixes issue #406.
+        Fixes issue #446.
       </action>
       <action dev="luc" type="add">
         Allow direct retrieval of rotation part without derivatives from

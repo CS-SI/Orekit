@@ -19,6 +19,8 @@ package org.orekit.data;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.orekit.errors.OrekitException;
+
 /** Container for holding named data that can be {@link DataFilter filtered}.
  * <p>
  * This class is a simple container without any processing methods.
@@ -63,8 +65,9 @@ public class NamedData {
         /** Open the stream.
          * @return opened stream
          * @exception IOException if stream cannot be opened
+         * @exception OrekitException if some format error is detected
          */
-        InputStream openStream() throws IOException;
+        InputStream openStream() throws IOException, OrekitException;
 
     }
 

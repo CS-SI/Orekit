@@ -60,7 +60,8 @@ import org.orekit.errors.OrekitMessages;
  *
  * <p>
  * The default configuration uses a predefined set of {@link DataFilter data filters}
- * that already handled gzip-compressed files (recognized by the {@code .gz} suffix).
+ * that already handled gzip-compressed files (recognized by the {@code .gz} suffix)
+ * and Unix-compressed files (recognized by the {@code .Z} suffix).
  * Users can {@link #addFilter(DataFilter) add} custom filters for handling specific
  * types of filters (decompression, deciphering...).
  * </p>
@@ -100,6 +101,7 @@ public class DataProvidersManager {
 
         // set up predefined filters
         addFilter(new GzipFilter());
+        addFilter(new UnixCompressFilter());
 
         predefinedFilters = filters.size();
 
