@@ -23,9 +23,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -133,24 +131,17 @@ public class ClasspathCrawler implements DataProvider {
 
                         } else {
 
-                            // remove suffix from gzip files
-                            final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(name);
-                            final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : name;
+                            // apply all registered filters
+                            NamedData data = new NamedData(name, () -> classLoader.getResourceAsStream(name));
+                            data = DataProvidersManager.getInstance().applyAllFilters(data);
 
-                            if (supported.matcher(baseName).matches()) {
-
-                                final InputStream stream      = classLoader.getResourceAsStream(name);
-                                final URI uri                 = classLoader.getResource(name).toURI();
-
+                            if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                if (gzipMatcher.matches()) {
-                                    visitor.loadData(new GZIPInputStream(stream), uri.toString());
-                                } else {
-                                    visitor.loadData(stream, uri.toString());
+                                try (InputStream input = data.getStreamOpener().openStream()) {
+                                    final URI uri = classLoader.getResource(name).toURI();
+                                    visitor.loadData(input, uri.toString());
+                                    loaded = true;
                                 }
-
-                                stream.close();
-                                loaded = true;
 
                             }
 

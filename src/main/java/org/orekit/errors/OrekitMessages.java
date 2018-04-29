@@ -215,7 +215,10 @@ public enum OrekitMessages implements Localizable {
     INCONSISTENT_NUMBER_OF_SATS("inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}"),
     INCONSISTENT_SATELLITE_SYSTEM("the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header"),
     NO_PROPAGATOR_CONFIGURED("no propagator configured"),
-    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}");
+    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}"),
+    NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
+    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
+    CORRUPTED_FILE("file {0} is corrupted");
 
 
     // CHECKSTYLE: resume JavadocVariable check

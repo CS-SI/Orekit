@@ -168,6 +168,16 @@
   
     * batch least squares fitting
 
+      * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
+      * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+      * choice between forming normal equations or not
+
+    *  Kalman filtering
+
+      * customizable process noise matrices providers
+
+    * parameters estimation
+
       * orbital parameters estimation (or only a subset if desired)
       * force model parameters estimation (drag coefficients, radiation pressure coefficients,
         central attraction, maneuver thrust or flow rate)
@@ -231,7 +241,9 @@
     * loading from classpath
     * loading from network (even through internet proxies)
     * support for zip archives
-    * support from gzip compressed files
+    * automatic decompression of gzip compressed (.gz) files upon loading
+    * automatic decompression of Unix compressed (.Z) files upon loading
+    * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
 
   * Localized in several languages

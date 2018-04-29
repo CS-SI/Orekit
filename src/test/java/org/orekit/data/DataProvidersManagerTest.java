@@ -20,12 +20,16 @@ package org.orekit.data;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class DataProvidersManagerTest {
@@ -179,6 +183,30 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(6, crawler.getCount());
     }
 
+    @Test
+    public void testSimpleFilter() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        CountingFilter filter = new CountingFilter();
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(22, crawler.getCount());
+        Assert.assertEquals(22, filter.getFilteredCount());
+        Assert.assertEquals(22, filter.getOpenedCount());
+    }
+
+    @Test
+    public void testMultiLayerFilter() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final int layers = 10;
+        MultiLayerFilter filter = new MultiLayerFilter(layers);
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(22, crawler.getCount());
+        Assert.assertEquals(22 * layers, filter.getOpenedCount());
+    }
+
     private static class CountingLoader implements DataLoader {
         private boolean shouldFail;
         private int count;
@@ -198,6 +226,68 @@ public class DataProvidersManagerTest {
         }
         public int getCount() {
             return count;
+        }
+    }
+
+    private static class CountingFilter implements DataFilter {
+        private Map<NamedData, NamedData> filtered;
+        private int opened;
+        public CountingFilter() {
+            filtered = new IdentityHashMap<>();
+            opened   = 0;
+        }
+        public NamedData filter(NamedData original) {
+            if (filtered.containsKey(original)) {
+                return original;
+            } else {
+                NamedData f = new NamedData(original.getName(),
+                                            () -> {
+                                                ++opened;
+                                                return original.getStreamOpener().openStream();
+                                            });
+                filtered.put(f, f);
+                return f;
+            }
+        }
+        public int getFilteredCount() {
+            return filtered.size();
+        }
+        public int getOpenedCount() {
+            return opened;
+        }
+    }
+
+    private static class MultiLayerFilter implements DataFilter {
+        private static final String  PREFIX  = "multilayer-";
+        private static final Pattern PATTERN = Pattern.compile(PREFIX + "(\\d+)-(.*)");
+        private final int layers;
+        private int opened;
+        public MultiLayerFilter(final int layers) {
+            this.layers = layers;
+            this.opened = 0;
+        }
+        public NamedData filter(final NamedData original) {
+            Matcher matcher = PATTERN.matcher(original.getName());
+            int level = 0;
+            String baseName = original.getName();
+            if (matcher.matches()) {
+                level = Integer.parseInt(matcher.group(1));
+                baseName = matcher.group(2);
+            }
+            if (level++ < layers) {
+                // add one filtering layer
+                return new NamedData(PREFIX + level + "-" + baseName,
+                                     () -> {
+                                         ++opened;
+                                         return original.getStreamOpener().openStream();
+                                     });
+            } else {
+                // final layer, don't filter anymore
+                return original;
+            }
+        }
+        public int getOpenedCount() {
+            return opened;
         }
     }
 

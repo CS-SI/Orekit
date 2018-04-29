@@ -42,7 +42,10 @@ import org.orekit.errors.OrekitException;
  */
 public interface DataProvider {
 
-    /** Pattern for name of gzip files. */
+    /** Pattern for name of gzip files.
+     * @deprecated as of 9.2, replaced with {@link GzipFilter}
+     */
+    @Deprecated
     Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
 
     /** Pattern for name of zip/jar archives. */

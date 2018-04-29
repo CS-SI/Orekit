@@ -30,6 +30,28 @@
       <action dev="luc" type="add" due-to="Albert Alcarraz García">
         Added loading of RINEX observation files (versions 2 and 3)
       </action>
+      <action dev="luc" type="add">
+        Added support for loading Unix-compressed files (ending in .Z).
+        This file compression algorithm is still widely used in the GNSS
+        community (SP3 files, clock files, Klobuchar coefficients...)
+        Fixes issue #447.
+      </action>
+      <action dev="luc" type="add">
+        Added a customizable filtering capability in data loading.
+        This allows users to insert layers providing features like
+        custom decompression algorithms, deciphering, monitoring...
+        Fixes issue #446.
+      </action>
+      <action dev="luc" type="add">
+        Allow direct retrieval of rotation part without derivatives from
+        LOFType without computing the full transform from inertial frame.
+      </action>
+      <action dev="maxime" type="fix">
+        Added a provider for time-dependent process noise in Kalman estimator.
+        This providers allow users to set up realistic models where the process
+        noise increases in the along track direction.
+        Fixes issue #403.
+      </action>
       <action dev="maxime" type="add">
         Increased visibility of attributes in ConstantThrustManeuver class.
         Added getters for all attributes. Also added an attribute name that
