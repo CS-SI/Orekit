@@ -22,9 +22,9 @@ import java.util.zip.GZIPInputStream;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class GzipFilter implements DataFilter {
+class GzipFilter implements DataFilter {
 
-    /** Suffix fo gzip compressed files. */
+    /** Suffix for gzip compressed files. */
     private static final String SUFFIX = ".gz";
 
     /** {@inheritDoc} */

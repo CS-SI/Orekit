@@ -205,7 +205,10 @@ public enum OrekitMessages implements Localizable {
     NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
     STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
     NO_PROPAGATOR_CONFIGURED("no propagator configured"),
-    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}");
+    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}"),
+    NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
+    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
+    CORRUPTED_FILE("file {0} is corrupted");
 
 
     // CHECKSTYLE: resume JavadocVariable check
