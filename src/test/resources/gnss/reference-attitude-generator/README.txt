@@ -6,7 +6,7 @@ The data files for attitude reference were created as follows:
    and correspond to data from week 1800 to week 1988, except for about
    30 files missing in the archive
    
-2) ran the GeneratedBaseSample java program to pick up 5 subsets of
+2) ran the GenerateBaseSample java program to pick up 5 subsets of
    alignment events:
      - one subset where the beta angle is around -19°
      - one subset where the beta angle is around -1.5°
