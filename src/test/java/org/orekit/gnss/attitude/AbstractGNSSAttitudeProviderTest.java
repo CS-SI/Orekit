@@ -128,8 +128,6 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             }
         }
 
-        Assert.fail("TODO");
-
     }
 
     private List<List<ParsedLine>> parseFile(final String fileName, final Frame eme2000, final Frame itrf)
