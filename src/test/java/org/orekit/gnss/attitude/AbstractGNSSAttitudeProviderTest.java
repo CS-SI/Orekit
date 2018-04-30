@@ -120,9 +120,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
 
                 for (final ParsedLine parsedLine : dataBlock) {
-                    final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, itrf);
+                    final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
                     final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-                    Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 1.0e-15);
+                    Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 4.0e-14);
                 }
 
             }

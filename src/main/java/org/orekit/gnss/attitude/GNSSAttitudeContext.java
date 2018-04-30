@@ -121,7 +121,7 @@ class GNSSAttitudeContext implements TimeStamped {
         this.nominalYaw =
                         new TimeStampedAngularCoordinates(svPV.getDate(),
                                                           svPV.normalize(),
-                                                          PVCoordinates.crossProduct(svPV, sunPV).normalize(),
+                                                          PVCoordinates.crossProduct(sunPV, svPV).normalize(),
                                                           MINUS_Z,
                                                           PLUS_Y,
                                                           1.0e-9);
