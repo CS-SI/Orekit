@@ -86,11 +86,13 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public AbsoluteDate getReferenceDate() {
         return provider.getReferenceDate();
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public double getOffset(final AbsoluteDate date) {
         return provider.getOffset(date);
     }

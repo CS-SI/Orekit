@@ -67,7 +67,7 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
     /**
      * Get the un-normalized spherical harmonic coefficients at a specific instance in time.
      *
-     * @param date of evaluation
+     * @param date of evaluation (may be null if model is not time-dependent)
      * @return un-normalized coefficients on {@code date}.
      * @throws OrekitException on error
      * @since 6.1

@@ -36,7 +36,7 @@ public class SHMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
-        UnnormalizedSphericalHarmonics harmonics = provider.onDate(provider.getReferenceDate());
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(1997, 1, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
         try {
             harmonics.getUnnormalizedCnm(3, 3);
             Assert.fail("an exception should have been thrown");
@@ -58,6 +58,18 @@ public class SHMFormatReaderTest {
         Assert.assertEquals(2, provider.getMaxOrder());
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecated() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
+        Assert.assertEquals(refDate, provider.getReferenceDate());
+        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
+        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+    }
+
     @Test
     public void testRegular03cNormalized() throws OrekitException {
         Utils.setDataRoot("potential");
@@ -66,9 +78,7 @@ public class SHMFormatReaderTest {
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         NormalizedSphericalHarmonics harmonics = provider.onDate(date);
         double offset     = date.durationFrom(refDate);
@@ -90,10 +100,7 @@ public class SHMFormatReaderTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
@@ -117,10 +124,7 @@ public class SHMFormatReaderTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;

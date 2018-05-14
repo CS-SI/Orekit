@@ -235,10 +235,12 @@ class ReferenceFieldModel {
             return provider.getAe();
         }
 
+        @Deprecated
         public AbsoluteDate getReferenceDate() {
             return provider.getReferenceDate();
         }
 
+        @Deprecated
         public double getOffset(AbsoluteDate date) {
             return provider.getOffset(date);
         }

@@ -82,7 +82,7 @@ public class GeoidTest {
                 new EGMFormatReader("egm96", false));
         potential = GravityFieldFactory.getConstantNormalizedProvider(
                 maxDegree, maxOrder);
-        date = potential.getReferenceDate();
+        date = null;
     }
 
     /** {lat, lon, expectedValue} points to evaluate the undulation */

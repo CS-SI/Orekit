@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 public class GravityFieldFactoryTest {
 
@@ -150,28 +151,38 @@ public class GravityFieldFactoryTest {
         GravityFieldFactory.getUnnormalizationFactors(393, 64);
     }
 
+    @Deprecated
     @Test
-    public void testUnnormalizer() throws OrekitException {
+    public void testDeprecated() throws OrekitException {
         Utils.setDataRoot("potential/icgem-format");
-        final double shift = 1.23456e8;
         UnnormalizedSphericalHarmonicsProvider ref =
                 GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        UnnormalizedSphericalHarmonics refHarmonics =
-                ref.onDate(ref.getReferenceDate().shiftedBy(shift));
         NormalizedSphericalHarmonicsProvider normalized =
                 GravityFieldFactory.getNormalizedProvider(5, 5);
         UnnormalizedSphericalHarmonicsProvider unnormalized =
                 GravityFieldFactory.getUnnormalizedProvider(normalized);
-        UnnormalizedSphericalHarmonics unnormalizedHarmonics =
-                unnormalized.onDate(unnormalized.getReferenceDate().shiftedBy(shift));
-        Assert.assertEquals(ref.getMaxDegree(), unnormalized.getMaxDegree());
-        Assert.assertEquals(ref.getMaxOrder(), unnormalized.getMaxOrder());
-        Assert.assertEquals(ref.getReferenceDate(), unnormalized.getReferenceDate());
-        Assert.assertEquals(ref.getAe(), unnormalized.getAe(), FastMath.ulp(ref.getAe()));
-        Assert.assertEquals(ref.getMu(), unnormalized.getMu(), FastMath.ulp(ref.getMu()));
         Assert.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
                             unnormalized.getOffset(AbsoluteDate.GPS_EPOCH),
                             FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
+    }
+
+    @Test
+    public void testUnnormalizer() throws OrekitException {
+        Utils.setDataRoot("potential/icgem-format");
+        final AbsoluteDate refDate = new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT());
+        final double shift = 1.23456e8;
+        UnnormalizedSphericalHarmonicsProvider ref =
+                GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        UnnormalizedSphericalHarmonics refHarmonics = ref.onDate(refDate.shiftedBy(shift));
+        NormalizedSphericalHarmonicsProvider normalized =
+                GravityFieldFactory.getNormalizedProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider unnormalized =
+                GravityFieldFactory.getUnnormalizedProvider(normalized);
+        UnnormalizedSphericalHarmonics unnormalizedHarmonics = unnormalized.onDate(refDate.shiftedBy(shift));
+        Assert.assertEquals(ref.getMaxDegree(), unnormalized.getMaxDegree());
+        Assert.assertEquals(ref.getMaxOrder(), unnormalized.getMaxOrder());
+        Assert.assertEquals(ref.getAe(), unnormalized.getAe(), FastMath.ulp(ref.getAe()));
+        Assert.assertEquals(ref.getMu(), unnormalized.getMu(), FastMath.ulp(ref.getMu()));
         for (int i = 0; i <= 5; ++i) {
             for (int j = 0; j <= i; ++j) {
                 double cRef  = refHarmonics.getUnnormalizedCnm(i, j);
@@ -187,25 +198,20 @@ public class GravityFieldFactoryTest {
     @Test
     public void testNormalizer() throws OrekitException {
         Utils.setDataRoot("potential/icgem-format");
+        final AbsoluteDate refDate = new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT());
         final double shift = 1.23456e8;
         NormalizedSphericalHarmonicsProvider ref =
                 GravityFieldFactory.getNormalizedProvider(5, 5);
-        NormalizedSphericalHarmonics refHarmonics =
-                ref.onDate(ref.getReferenceDate().shiftedBy(shift));
+        NormalizedSphericalHarmonics refHarmonics = ref.onDate(refDate.shiftedBy(shift));
         UnnormalizedSphericalHarmonicsProvider unnormalized =
                 GravityFieldFactory.getUnnormalizedProvider(5, 5);
         NormalizedSphericalHarmonicsProvider normalized =
                 GravityFieldFactory.getNormalizedProvider(unnormalized);
-        NormalizedSphericalHarmonics normalizedHarmonics =
-                normalized.onDate(normalized.getReferenceDate().shiftedBy(shift));
+        NormalizedSphericalHarmonics normalizedHarmonics = normalized.onDate(refDate.shiftedBy(shift));
         Assert.assertEquals(ref.getMaxDegree(), normalized.getMaxDegree());
         Assert.assertEquals(ref.getMaxOrder(), normalized.getMaxOrder());
-        Assert.assertEquals(ref.getReferenceDate(), normalized.getReferenceDate());
         Assert.assertEquals(ref.getAe(), normalized.getAe(), FastMath.ulp(ref.getAe()));
         Assert.assertEquals(ref.getMu(), normalized.getMu(), FastMath.ulp(ref.getMu()));
-        Assert.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
-                            normalized.getOffset(AbsoluteDate.GPS_EPOCH),
-                            FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
         for (int i = 0; i <= 5; ++i) {
             for (int j = 0; j <= i; ++j) {
                 double cRef  = refHarmonics.getNormalizedCnm(i, j);

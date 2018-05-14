@@ -104,12 +104,14 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     @Override
     public AbsoluteDate getReferenceDate() {
         return rawProvider.getReferenceDate();
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     @Override
     public double getOffset(final AbsoluteDate date) {
         return rawProvider.getOffset(date);

@@ -62,8 +62,11 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
     double getAe();
 
     /** Get the reference date for the harmonics.
-     * @return reference date for the harmonics
+     * @return reference date for the harmonics (may be null if no reference date is defined)
+     * @deprecated as of 9.2, this method is deprecated as newer gravity fields are piecewise
+     * and therefore may have more than one reference date, which is used only internally
      */
+    @Deprecated
     AbsoluteDate getReferenceDate();
 
     /** Get the offset from {@link #getReferenceDate reference date} for the harmonics.
@@ -71,7 +74,10 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
      * @return offset between current date and reference date if there is a reference
      * date, or 0.0 if there are no reference dates (i.e. if {@link #getReferenceDate}
      * returns null)
+     * @deprecated as of 9.2, this method is deprecated as newer gravity fields are piecewise
+     * and therefore may have more than one reference date, which is used only internally
      */
+    @Deprecated
     double getOffset(AbsoluteDate date);
 
 }
