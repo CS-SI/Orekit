@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.semianalytical.dsst;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
-import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractDSConverter;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -42,7 +43,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 9.0
  */
-class DSConverter extends AbstractDSConverter {
+class DSSTDSConverter extends AbstractDSConverter {
 
     /** Dimension of the state. */
     private final int freeStateParameters;
@@ -53,44 +54,32 @@ class DSConverter extends AbstractDSConverter {
     /** Simple constructor.
      * @param state
      * @param state regular state
-     * @param freeStateParameters number of free parameters, either 3 (position),
-     * 6 (position-velocity) or 7 (position-velocity-mass)
+     * @param freeStateParameters number of free parameters, either
+     * 6 (6 equinoctial parameters (EP)) or 7 (EP and mass)
      * @param provider provider to use if attitude needs to be recomputed
      * @exception OrekitException if attitude cannot be computed
      */
-    DSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider)
+    DSSTDSConverter(final SpacecraftState state, final int freeStateParameters,
+                    final AttitudeProvider provider)
         throws OrekitException {
 
         super(freeStateParameters);
+
         this.freeStateParameters = freeStateParameters;
 
-        // prepare derivation variables, position, optionally velocity and mass
+        // prepare derivation variables, position, optionally mass
         final DSFactory factory = new DSFactory(freeStateParameters, 1);
 
-        // position always has derivatives
-        final Vector3D pos = state.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> posDS = new FieldVector3D<>(factory.variable(0, pos.getX()),
-                        factory.variable(1, pos.getY()),
-                        factory.variable(2, pos.getZ()));
+        final DerivativeStructure sma = factory.variable(0, state.getA());
+        final DerivativeStructure ex = factory.variable(1, state.getEquinoctialEx());
+        final DerivativeStructure ey = factory.variable(2, state.getEquinoctialEy());
+        final DerivativeStructure hx = factory.variable(3, state.getHx());
+        final DerivativeStructure hy = factory.variable(4, state.getHy());
+        final DerivativeStructure l = factory.variable(5, state.getLv());
 
-        // velocity may have derivatives or not
-        final Vector3D vel = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> velDS;
-        if (freeStateParameters > 3) {
-            velDS = new FieldVector3D<>(factory.variable(3, vel.getX()),
-                            factory.variable(4, vel.getY()),
-                            factory.variable(5, vel.getZ()));
-        } else {
-            velDS = new FieldVector3D<>(factory.constant(vel.getX()),
-                            factory.constant(vel.getY()),
-                            factory.constant(vel.getZ()));
-        }
-
-        // acceleration never has derivatives
-        final Vector3D acc = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<DerivativeStructure> accDS = new FieldVector3D<>(factory.constant(acc.getX()),
-                        factory.constant(acc.getY()),
-                        factory.constant(acc.getZ()));
+        // date
+        final AbsoluteDate date = state.getDate();
+        final FieldAbsoluteDate<DerivativeStructure> dateField = new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
 
         // mass may have derivatives or not
         final DerivativeStructure dsM = (freeStateParameters > 6) ?
@@ -98,19 +87,14 @@ class DSConverter extends AbstractDSConverter {
                                                                        factory.constant(state.getMass());
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
-                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                        state.getFrame(), state.getMu());
+                        new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, l, PositionAngle.TRUE,
+                                        state.getFrame(), dateField, state.getMu());
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
-        if (freeStateParameters > 3) {
-            // compute attitude partial derivatives with respect to position/velocity
-            dsAttitude = provider.getAttitude(dsOrbit, dsOrbit.getDate(), dsOrbit.getFrame());
-        } else {
-            // force model does not depend on attitude, don't bother recomputing it
-            dsAttitude = new FieldAttitude<>(factory.getDerivativeField(), state.getAttitude());
-        }
+        // compute attitude partial derivatives with respect to position/velocity
+        dsAttitude = provider.getAttitude(dsOrbit, dsOrbit.getDate(), dsOrbit.getFrame());
 
-        // initialize the list with the state having 0 formce model parameters
+        // initialize the list with the state having 0 force model parameters
         dsStates = new ArrayList<>();
         dsStates.add(new FieldSpacecraftState<>(dsOrbit, dsAttitude, dsM));
 
@@ -120,7 +104,7 @@ class DSConverter extends AbstractDSConverter {
      * @param forceModel force model
      * @return state with the number of parameters consistent with force model
      */
-    public FieldSpacecraftState<DerivativeStructure> getState(final ForceModel forceModel) {
+    public FieldSpacecraftState<DerivativeStructure> getState(final DSSTForceModel forceModel) {
 
         // count the required number of parameters
         int nbParams = 0;
@@ -144,7 +128,7 @@ class DSConverter extends AbstractDSConverter {
             // orbit
             final FieldPVCoordinates<DerivativeStructure> pv0 = s0.getPVCoordinates();
             final FieldOrbit<DerivativeStructure> dsOrbit =
-                            new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(s0.getDate().toAbsoluteDate(),
+                            new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(s0.getDate().toAbsoluteDate(),
                                                                                           extend(pv0.getPosition(),     factory),
                                                                                           extend(pv0.getVelocity(),     factory),
                                                                                           extend(pv0.getAcceleration(), factory)),
@@ -171,13 +155,13 @@ class DSConverter extends AbstractDSConverter {
     }
 
     /** Get the force model parameters.
-     * @param state state as returned by {@link #getState(ForceModel)}
+     * @param state state as returned by {@link #getState(DSSTForceModel)}
      * @param forceModel force model associated with the parameters
      * @return force model parameters
      * @since 9.0
      */
     public DerivativeStructure[] getParameters(final FieldSpacecraftState<DerivativeStructure> state,
-                                               final ForceModel forceModel) {
+                                               final DSSTForceModel forceModel) {
         final DSFactory factory = state.getMass().getFactory();
         final ParameterDriver[] drivers = forceModel.getParametersDrivers();
         final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];

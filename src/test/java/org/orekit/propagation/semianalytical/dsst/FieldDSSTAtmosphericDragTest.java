@@ -126,7 +126,7 @@ public class FieldDSSTAtmosphericDragTest {
         Assert.assertEquals(-9.303357008691404E-13, elements[2].getReal(), 0.7e-27);
         Assert.assertEquals(-7.052316604063199E-14, elements[3].getReal(), 1.e-28);
         Assert.assertEquals(-6.793277250493389E-14, elements[4].getReal(), 3.e-29);
-        Assert.assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 1.e-27);
+        Assert.assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 1.e-28);
     
     }
     

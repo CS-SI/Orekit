@@ -39,6 +39,8 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
@@ -60,6 +62,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenTe
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Tesseral contribution to the central body gravitational perturbation.
@@ -150,6 +153,9 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Short period terms. */
     private TesseralShortPeriodicCoefficients shortPeriodTerms;
 
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
+
     /** Simple constructor.
      * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -181,6 +187,15 @@ public class DSSTTesseral implements DSSTForceModel {
                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP,
                         final int maxEccPowMdailyTesseralSP)
         throws OrekitException {
+
+        try {
+            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    provider.getMu(), FastMath.scalb(1.0, 32),
+                                                    0.0, Double.POSITIVE_INFINITY);
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        }
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -412,6 +427,13 @@ public class DSSTTesseral implements DSSTForceModel {
 
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
     /** Build a set of coefficients.

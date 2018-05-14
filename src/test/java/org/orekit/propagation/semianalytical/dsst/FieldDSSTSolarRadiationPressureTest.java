@@ -118,7 +118,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        
+
         Assert.assertEquals(6.843966348263062E-8, elements[0].getReal(), 1.1e-11);
         Assert.assertEquals(-2.990913371084091E-11, elements[1].getReal(), 2.2e-19);
         Assert.assertEquals(-2.538374405334012E-10, elements[2].getReal(), 8.e-19);

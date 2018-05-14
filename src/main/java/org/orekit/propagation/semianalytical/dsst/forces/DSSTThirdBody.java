@@ -34,6 +34,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -46,6 +47,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Third body attraction perturbation to the
@@ -83,12 +85,23 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Short period terms. */
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
+    /** Drivers for third body attraction coefficient. */
+    private final ParameterDriver gmParameterDriver;
+
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body) {
+        try {
+            gmParameterDriver = new ParameterDriver(body.getName() + " attraction coefficient",
+                                                    body.getGM(), FastMath.scalb(1.0, 32),
+                                                    0.0, Double.POSITIVE_INFINITY);
+        } catch (OrekitException e) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(e);
+        }
         this.body = body;
     }
 
@@ -321,6 +334,14 @@ public class DSSTThirdBody implements DSSTForceModel {
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
     /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)

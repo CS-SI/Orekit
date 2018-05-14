@@ -34,6 +34,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 /** Solar radiation pressure contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -182,6 +183,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return spacecraft.getRadiationParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
 
         // AuxiliaryElements auxiliary elements related to the current orbit
@@ -308,7 +315,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T bb = alpha.multiply(beta).add(m2.multiply(auxiliaryElements.getH()).multiply(auxiliaryElements.getK()));
             final T b2 = bb.multiply(bb);
             final T cc = alpha.multiply(alpha).subtract(bet2).add(m2.multiply(k2.subtract(h2)));
-            final T dd = m2.multiply(h2.add(1.)).add(bet2).negate().add(1.);
+            final T dd = bet2.add(m2.multiply(h2.add(1.))).negate().add(1.);
             final T[] a = MathArrays.buildArray(field, 5);
             a[0] = b2.multiply(4.).add(cc.multiply(cc));
             a[1] = bb.multiply(8.).multiply(m2).multiply(auxiliaryElements.getH()).add(cc.multiply(4.).multiply(m2).multiply(auxiliaryElements.getK()));

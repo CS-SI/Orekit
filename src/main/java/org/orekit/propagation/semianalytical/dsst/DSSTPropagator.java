@@ -310,6 +310,30 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         forceModels.clear();
     }
 
+    /** Get all the force models, perturbing forces and Newtonian attraction included.
+     * @return list of perturbing force models, with Newtonian attraction being the
+     * last one
+     * @see #addForceModel(DSSTForceModel)
+     * @see #setMu(double)
+     */
+    public List<DSSTForceModel> getAllForceModels() {
+        return Collections.unmodifiableList(forceModels);
+    }
+
+    /** Get propagation parameter type.
+     * @return orbit type used for propagation
+     */
+    public OrbitType getOrbitType() {
+        return super.getOrbitType();
+    }
+
+    /** Get propagation parameter type.
+     * @return angle type to use for propagation
+     */
+    public PositionAngle getPositionAngleType() {
+        return super.getPositionAngleType();
+    }
+
     /** Conversion from mean to osculating orbit.
      * <p>
      * Compute osculating state <b>in a DSST sense</b>, corresponding to the

@@ -32,6 +32,8 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.Orbit;
@@ -48,6 +50,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.LnsCoefficients;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Zonal contribution to the central body gravitational perturbation.
@@ -111,6 +114,9 @@ public class DSSTZonal implements DSSTForceModel {
     /** B * B.*/
     private double BB;
 
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
+
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
@@ -128,6 +134,15 @@ public class DSSTZonal implements DSSTForceModel {
                      final int maxEccPowShortPeriodics,
                      final int maxFrequencyShortPeriodics)
         throws OrekitException {
+
+        try {
+            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    provider.getMu(), FastMath.scalb(1.0, 32),
+                                                    0.0, Double.POSITIVE_INFINITY);
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        }
 
         this.provider  = provider;
 
@@ -381,6 +396,13 @@ public class DSSTZonal implements DSSTForceModel {
             computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context);
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            gmParameterDriver
+        };
     }
 
     /** Generate the values for the D<sub>i</sub> coefficients.

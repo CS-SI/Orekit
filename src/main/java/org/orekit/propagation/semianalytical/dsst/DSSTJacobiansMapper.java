@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.semianalytical.dsst;
 
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -30,12 +30,12 @@ import org.orekit.utils.ParameterDriversList;
  * to be immutable.
  * </p>
  * @author Luc Maisonobe
- * @see org.orekit.propagation.numerical.PartialDerivativesEquations
- * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @see org.orekit.propagation.semianalytical.DSSTPartialDerivativesEquations
+ * @see org.orekit.propagation.semianalytical.DSSTPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
-public class JacobiansMapper extends AbstractJacobiansMapper {
+public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     /** State dimension, fixed to 6.
      * @since 9.0
@@ -54,20 +54,12 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final ParameterDriversList parameters,
+    DSSTJacobiansMapper(final String name, final ParameterDriversList parameters,
                     final OrbitType orbitType, final PositionAngle angleType) {
+
         super(name, parameters);
         this.orbitType  = orbitType;
         this.angleType  = angleType;
-    }
-
-    /** Get the state vector dimension.
-     * @return state vector dimension
-     * @deprecated as of 9.0, replaced with {@link #STATE_DIMENSION}
-     */
-    @Deprecated
-    public int getStateDimension() {
-        return STATE_DIMENSION;
     }
 
     /** Get the conversion Jacobian between state parameters and Cartesian parameters.

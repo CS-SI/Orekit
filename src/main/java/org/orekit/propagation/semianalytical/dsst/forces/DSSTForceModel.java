@@ -26,6 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -116,5 +117,10 @@ public interface DSSTForceModel {
      */
     void updateShortPeriodTerms(SpacecraftState... meanStates)
         throws OrekitException;
+
+    /** Get the drivers for force model parameters.
+     * @return drivers for force model parameters
+     */
+    ParameterDriver[] getParametersDrivers();
 
 }

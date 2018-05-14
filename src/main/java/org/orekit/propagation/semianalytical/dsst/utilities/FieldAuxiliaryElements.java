@@ -160,8 +160,8 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         final T p2 = p.multiply(p);
 
         // A, B, C parameters [Eq. 2.1.6-(1)]
-        A = sma.multiply(mu).sqrt();
-        B = k2.add(h2).negate().add(1.).sqrt();
+        A = FastMath.sqrt(sma.multiply(mu));
+        B = FastMath.sqrt(k2.add(h2).negate().add(1.));
         C = q2.add(p2).add(1);
 
         // Equinoctial reference frame [Eq. 2.1.4-(1)]
