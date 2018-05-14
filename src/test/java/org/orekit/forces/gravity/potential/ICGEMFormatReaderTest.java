@@ -37,7 +37,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
-        UnnormalizedSphericalHarmonics harmonics = provider.onDate(provider.getReferenceDate());
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         try {
             harmonics.getUnnormalizedCnm(3, 3);
@@ -67,10 +67,8 @@ public class ICGEMFormatReaderTest {
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         NormalizedSphericalHarmonics harmonics = provider.onDate(date);
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
 
         double offset     = date.durationFrom(refDate);
         double offsetYear = offset / Constants.JULIAN_YEAR;
@@ -81,6 +79,19 @@ public class ICGEMFormatReaderTest {
         Assert.assertEquals( 0.308816581016e-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
         Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
         Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecated() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
+        Assert.assertEquals(refDate, provider.getReferenceDate());
+        AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
+        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
     }
 
     @Test
@@ -119,10 +130,7 @@ public class ICGEMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
         checkValue(harmonics.getUnnormalizedCnm(3, 0),
@@ -147,10 +155,35 @@ public class ICGEMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        AbsoluteDate refDate = new AbsoluteDate("2005-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
-        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
+        int maxUlps = 2;
+        checkValue(harmonics.getUnnormalizedCnm(3, 0),
+                   date, 3, 0, 2005, 1, 1, 9.57211326674e-07, -8.37191630994e-12,
+                   -1.76087178236e-11, 9.47617140143e-11, 1.06252954726e-11, -9.12524501214e-12,
+                   maxUlps);
+        checkValue(harmonics.getUnnormalizedCnm(5, 5),
+                   date, 5, 5, 2005, 1, 1, 1.74807033099e-07, -1.33498578664e-12,
+                   -2.76043013690e-12, -8.28591865697e-12, 1.57898939101e-12, 2.90931436419e-12,
+                   maxUlps);
+        checkValue(harmonics.getUnnormalizedSnm(4, 0),
+                   date, 4, 0, 2005, 1, 1, 0, 0, 0, 0, 0, 0,
+                   maxUlps);
+        checkValue(harmonics.getUnnormalizedSnm(4, 4),
+                   date, 4, 4, 2005, 1, 1, 3.08820169866e-07, 4.35447782358e-13,
+                   -1.21823769110e-11, 3.89722186321e-11, 7.28153817742e-12, -7.64506592459e-12,
+                   maxUlps);
+        Assert.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
+        Assert.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
+    }
+
+    @Test
+    public void testEigen06S4() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("EIGEN-6S4-v2-truncated", false));
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 3);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         int maxUlps = 2;
         checkValue(harmonics.getUnnormalizedCnm(3, 0),
@@ -184,6 +217,20 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-2-g007_eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testInvalidFormat() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_format_icgem", false));
+        GravityFieldFactory.getUnnormalizedProvider(3, 3);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testUnsupportedFormat() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unsupported_format_icgem", false));
+        GravityFieldFactory.getUnnormalizedProvider(3, 3);
     }
 
     @Test(expected=OrekitException.class)

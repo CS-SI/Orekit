@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -42,39 +44,19 @@ import org.orekit.utils.Constants;
  * The 2006-02-28 version of this paper can be found <a
  * href="http://op.gfz-potsdam.de/grace/results/grav/g005_ICGEM-Format.pdf">here</a>
  * and the 2011-06-07 version of this paper can be found <a
- * href="http://icgem.gfz-potsdam.de/ICGEM/documents/ICGEM-Format-2011.pdf">here</a>.
+ * href="http://icgem.gfz-potsdam.de/ICGEM-Format-2011.pdf">here</a>.
  * These versions differ in time-dependent coefficients, which are linear-only prior
  * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
- * (starting with eigen-6 model). Both versions are supported by the class.</p>
+ * (starting with eigen-6 model). A third (undocumented as of 2018-05-14) version
+ * of the file format also adds a time-span for time-dependent coefficients, allowing
+ * fo piecewise models. All three versions are supported by the class.</p>
  * <p>
  * This reader uses relaxed check on the gravity constant key so any key ending
  * in gravity_constant is accepted and not only earth_gravity_constant as specified
  * in the previous documents. This allows to read also non Earth gravity fields
- * as found in <a href="http://icgem.gfz-potsdam.de/ICGEM/ModelstabBodies.html">ICGEM
+ * as found in <a href="http://icgem.gfz-potsdam.de/tom_celestial">ICGEM
  * - Gravity Field Models of other Celestial Bodies</a> page to be read.
  * </p>
- * <p>
- * In order to simplify implementation, some design choices have been made: the
- * reference date and the periods of harmonic pulsations are stored globally and
- * not on a per-coefficient basis. This has the following implications:
- * </p>
- * <ul>
- *   <li>
- *     all time-stamped coefficients must share the same reference date, otherwise
- *     an error will be triggered during parsing,
- *   </li>
- *   <li>
- *     in order to avoid too large memory and CPU consumption, only a few different
- *     periods should appear in the file,
- *   </li>
- *   <li>
- *     only one occurrence of each coefficient may appear in the file, otherwise
- *     an error will be triggered during parsing. Multiple occurrences with different
- *     time stamps are forbidden (both because they correspond to a duplicated entry
- *     and because they define two different reference dates as per previous design
- *     choice).
- *   </li>
- * </ul>
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected gravity field file.</p>
@@ -83,6 +65,15 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  */
 public class ICGEMFormatReader extends PotentialCoefficientsReader {
+
+    /** Format. */
+    private static final String FORMAT                  = "format";
+
+    /** Supported formats. */
+    private static final String SUPPORTED_FORMAT        = "icgem(\\d+\\.\\d+)";
+
+    /** Maximum supported formats. */
+    private static final double MAX_FORMAT              = 2.0;
 
     /** Product type. */
     private static final String PRODUCT_TYPE            = "product_type";
@@ -216,11 +207,12 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 }
                 final String[] tab = line.split("\\s+");
                 if (inHeader) {
-                    if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
-                        if (!GRAVITY_FIELD.equals(tab[1])) {
-                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
-                        }
+                    boolean parseError = false;
+                    if ((tab.length == 2) && FORMAT.equals(tab[0])) {
+                        final Matcher matcher = Pattern.compile(SUPPORTED_FORMAT).matcher(tab[1]);
+                        parseError = !matcher.matches() || Double.parseDouble(matcher.group(1)) > MAX_FORMAT;
+                    } else if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
+                        parseError = !GRAVITY_FIELD.equals(tab[1]);
                     } else if ((tab.length == 2) && tab[0].endsWith(GRAVITY_CONSTANT)) {
                         setMu(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
@@ -240,8 +232,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else if (TIDE_UNKNOWN.equals(tab[1])) {
                             tideSystem = TideSystem.UNKNOWN;
                         } else {
-                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
+                            parseError = true;
                         }
                     } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (NORMALIZED.equals(tab[1])) {
@@ -249,11 +240,14 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else if (UNNORMALIZED.equals(tab[1])) {
                             normalized = false;
                         } else {
-                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
+                            parseError = true;
                         }
                     } else if ((tab.length == 2) && END_OF_HEADER.equals(tab[0])) {
                         inHeader = false;
+                    }
+                    if (parseError) {
+                        throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                       lineNumber, name, line);
                     }
                 } else {
                     if ((tab.length == 7 && GFC.equals(tab[0])) || (tab.length == 8 && GFCT.equals(tab[0]))) {

@@ -6,7 +6,7 @@ radius                        0.6378136460E+07
 max_degree                    3
 errors                        calibrated
 norm                          invalid
-tide_system                   fully_normalized
+tide_system                   zero_tide
  
  
  
