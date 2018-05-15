@@ -449,8 +449,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             integrator.clearEventHandlers();
 
-            // set up events added by user
-            setUpUserEventDetectors();
+            // set up events added by user, only if handlers are activated
+            if (activateHandlers) {
+                setUpUserEventDetectors();
+            }
 
             // convert space flight dynamics API to math API
             final ODEState mathInitialState = createInitialState(getInitialIntegrationState());

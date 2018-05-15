@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed de-activation of event detection.
+        In the propagate(startDate, endDate) function of class "AbstractIntegratedPropagator",
+        for dates out of the time interval defined by ]startDate, endDate].
+        Fixes issue #449.
+      </action>
       <action dev="luc" type="add">
         Added support for loading Unix-compressed files (ending in .Z).
         This file compression algorithm is still widely used in the GNSS
