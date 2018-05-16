@@ -105,8 +105,8 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public Range(final GroundStation station, final AbsoluteDate date, final double range,
                  final double sigma, final double baseWeight, final boolean twoWay)
-         throws OrekitException {
-         this(station, twoWay, date, range, sigma, baseWeight, 0);
+        throws OrekitException {
+        this(station, twoWay, date, range, sigma, baseWeight, 0);
     }
 
     /** Simple constructor.
