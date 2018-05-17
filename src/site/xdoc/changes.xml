@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed compression table reset problem in .Z files
+        Fixes issue #450.
+      </action>
       <action dev="maxime" type="fix">
         Fixed de-activation of event detection.
         In the propagate(startDate, endDate) function of class "AbstractIntegratedPropagator",
