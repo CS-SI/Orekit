@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed compression table reset problem in .Z files
+        Fixes issue #450.
+      </action>
       <action dev="luc" type="add">
         Added support for loading Unix-compressed files (ending in .Z).
         This file compression algorithm is still widely used in the GNSS
