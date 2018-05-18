@@ -27,6 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.NamedData;
+import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
@@ -310,6 +312,34 @@ public class SP3ParserTest {
         checkPVEntry(
                 propagator.propagate(propagator.getMaxDate()).getPVCoordinates(frame),
                 expected);
+    }
+
+    @Test
+    public void testSP3Compressed() throws OrekitException, IOException {
+        final String ex = "/sp3/gbm18432.sp3.Z";
+
+        final SP3Parser parser = new SP3Parser();
+        final NamedData compressed = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3File file = parser.parse(new UnixCompressFilter().filter(compressed).getStreamOpener().openStream());
+
+        Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
+        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+
+        Assert.assertEquals(71, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("R13").getCoordinates();
+        Assert.assertEquals(288, coords.size());
+
+        final SP3Coordinate coord = coords.get(228);
+
+        
+        Assert.assertEquals(new AbsoluteDate(2015, 5, 5, 19, 0, 0,
+                TimeScalesFactory.getGPS()), coord.getDate());
+
+        // PR13  25330.290321   -411.728000   2953.331527   -482.447619
+        checkPVEntry(new PVCoordinates(new Vector3D(25330290.321, -411728.000, 2953331.527),
+                                       Vector3D.ZERO),
+                     coord);
     }
 
     private void checkPVEntry(final PVCoordinates expected, final PVCoordinates actual) {

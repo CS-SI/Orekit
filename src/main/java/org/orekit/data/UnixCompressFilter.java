@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 9.2
  */
-class UnixCompressFilter implements DataFilter {
+public class UnixCompressFilter implements DataFilter {
 
     /** Suffix for Unix compressed files. */
     private static final String SUFFIX = ".Z";
@@ -93,6 +93,9 @@ class UnixCompressFilter implements DataFilter {
         /** Maximum key that can be encoded with current width. */
         private int currentMaxKey;
 
+        /** Number of bits read since last reset. */
+        private int bitsRead;
+
         /** Lookahead byte, already read but not yet used. */
         private int lookAhead;
 
@@ -135,9 +138,17 @@ class UnixCompressFilter implements DataFilter {
             for (int i = 0; i < FIRST; ++i) {
                 table[i] = new UncompressedSequence(null, (byte) i);
             }
-            this.available = FIRST;
 
             // initialize decompression state
+            initialize();
+
+        }
+
+        /** Initialize compression state.
+         */
+        private void initialize() {
+            this.available        = FIRST;
+            this.bitsRead         = 0;
             this.lookAhead        = 0;
             this.lookAheadWidth   = 0;
             this.currentWidth     = INIT_WIDTH;
@@ -145,7 +156,6 @@ class UnixCompressFilter implements DataFilter {
             this.previousSequence = null;
             this.currentSequence  = null;
             this.alreadyOutput    = 0;
-
         }
 
         /** Read next input key.
@@ -154,7 +164,7 @@ class UnixCompressFilter implements DataFilter {
          */
         private int nextKey() throws IOException {
 
-            final int keyMask = (1 << currentWidth) - 1;
+            int keyMask = (1 << currentWidth) - 1;
 
             while (true) {
                 // initialize key with the last bits remaining from previous read
@@ -181,10 +191,24 @@ class UnixCompressFilter implements DataFilter {
                 lookAheadWidth -= currentWidth;
                 lookAhead       = lookAhead >>> (BYTE_WIDTH - lookAheadWidth);
 
+                bitsRead += currentWidth;
+
                 if (blockMode && key == RESET_TABLE) {
+
+                    // skip the padding bits inserted when compressor flushed its buffer
+                    final int superSize = currentWidth * 8;
+                    int padding = (superSize - 1 - (bitsRead + superSize - 1) % superSize) / 8;
+                    while (padding-- > 0) {
+                        input.read();
+                    }
+
                     // reset the table to handle a new block and read again next key
                     Arrays.fill(table, FIRST, table.length, null);
-                    this.available = FIRST;
+                    initialize();
+
+                    // reset the lookahead mask as the current width has changed
+                    keyMask = (1 << currentWidth) - 1;
+
                 } else {
                     // return key at current width
                     return key;
