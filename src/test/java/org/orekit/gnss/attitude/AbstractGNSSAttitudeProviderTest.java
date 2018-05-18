@@ -121,7 +121,11 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
                 for (final ParsedLine parsedLine : dataBlock) {
                     final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
+                    if (attitude.getOrientation() == null) {
+                        final Attitude attitude2 = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
+                    }
                     final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
+                    System.out.println(parsedLine.date + " " + FastMath.toDegrees(Vector3D.angle(xSat, parsedLine.eclipsX)));
                     Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 4.0e-14);
                 }
 

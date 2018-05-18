@@ -35,6 +35,8 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
+import org.orekit.data.NamedData;
+import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sp3.SP3File;
@@ -123,10 +125,11 @@ public class GenerateBaseSample {
             final AntexLoader loader = new AntexLoader(antexName);
             final CelestialBody sun = CelestialBodyFactory.getSun();
 
-            // find the available sp3 files in lexicographic order (which is here chronological order too)
+            // find the available Unix-compressed sp3 files in lexicographic order
+            // (which is here chronological order too)
             final List<String> sp3Names = Arrays.asList(sp3Dir.list()).
                                                  stream().
-                                                 filter(name -> name.endsWith(".sp3")).
+                                                 filter(name -> name.endsWith(".sp3.Z")).
                                                  collect(Collectors.toList());
             Collections.sort(sp3Names);
 
@@ -135,12 +138,12 @@ public class GenerateBaseSample {
                  PrintStream outCrossing = new PrintStream(new File(outputDir, "beta-crossing.txt"));
                  PrintStream outSmallPos = new PrintStream(new File(outputDir, "beta-small-positive.txt"));
                  PrintStream outLargePos = new PrintStream(new File(outputDir, "beta-large-positive.txt"));) {
-                final String header = "# GPS date week  milliseconds" +
-                                " Id    type     satCode" +
-                                "   PxSat (m)      PySat (m)      PzSat (m)    VxSat (m/s)    VySat (m/s)    VZsat (m/s)" +
-                                "     PxSun (m)        PySun (m)        PzSun (m)      β (deg)    Δ (deg)" +
-                                "     xsatX (nominal)     ysatX (nominal)     zsatX (nominal)     ψ nom. (deg)" +
-                                "    xsatX (eclips)      ysatX (eclips)      zsatX (eclips)      ψ ecl. (deg)%n";
+                final String header = "# GPS date week   milliseconds" +
+                                "   Id    type     satCode" +
+                                "    PxSat (m)         PySat (m)         PzSat (m)       VxSat (m/s)       VySat (m/s)       VZsat (m/s)" +
+                                "        PxSun (m)         PySun (m)         PzSun (m)         β (deg)        Δ (deg)" +
+                                "        xsatX (nominal)     ysatX (nominal)     zsatX (nominal)     ψ nom. (deg)" +
+                                "      xsatX (eclips)      ysatX (eclips)      zsatX (eclips)      ψ ecl. (deg)%n";
                 outLargeNeg.format(Locale.US, header);            
                 outSmallNeg.format(Locale.US, header);             
                 outCrossing.format(Locale.US, header);            
@@ -148,8 +151,10 @@ public class GenerateBaseSample {
                 outLargePos.format(Locale.US, header);            
                 for (String sp3Name : sp3Names) {
                     System.out.println("     " + sp3Name);
+                    final File f = new File(sp3Dir, sp3Name);
+                    final NamedData compressed = new NamedData(sp3Name, ()-> new FileInputStream(f));
 
-                    try (InputStream is = new FileInputStream(new File(sp3Dir, sp3Name))) {
+                    try (InputStream is = new UnixCompressFilter().filter(compressed).getStreamOpener().openStream()) {
                         final SP3File sp3 = new SP3Parser().parse(is);
                         for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
                             try {
@@ -207,7 +212,7 @@ public class GenerateBaseSample {
             throws OrekitException {
             if (FastMath.abs(beta(s) - betaRef) < 0.5 &&
                 (beta(s.shiftedBy(-1800)) - betaRef) * (beta(s.shiftedBy(+1800)) - betaRef) < 0) {
-                for (int dt = -41; dt <= 41; dt += 2) {
+                for (int dt = -39; dt <= 39; dt += 6) {
                     display(s.shiftedBy(dt * 60.0));
                 }
             }
@@ -224,10 +229,10 @@ public class GenerateBaseSample {
             Vector3D vSat = t.transformVector(pvSatInert.getVelocity());
             Vector3D pSun = t.transformPosition(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition());
             out.format(Locale.US,
-                       "%s %4d %13.3f %3s %-11s  %-4s" +
-                       " %13.3f  %13.3f  %13.3f %13.6f  %13.6f  %13.6f" +
-                       "  %15.1f  %15.1f  %15.1f" +
-                       " %10.6f %10.6f%n",
+                       "%s %4d %16.6f %3s %-11s  %-4s" +
+                       " %16.6f  %16.6f  %16.6f %16.9f  %16.9f  %16.9f" +
+                       "  %16.2f  %16.2f  %16.2f" +
+                       " %15.11f %15.11f%n",
                        s.getDate().getComponents(gps).getDate(), week, milli,
                        sat, antenna.getType().replaceAll(" ", "-"), sat.substring(0, 1) + antenna.getSatelliteCode(),
                        pSat.getX(), pSat.getY(), pSat.getZ(), vSat.getX(), vSat.getY(), vSat.getZ(),

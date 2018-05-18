@@ -28,9 +28,9 @@ C
       nan    = -1.0
       nan    = sqrt(nan)
       preprn = -1
- 9000 format (i4, x, i2, x, i2, x, i4, x, f13.3, x, a3, x, a11, 2x,
-     &        a4, x, f13.3, 2x, f13.3, 2x, f13.3, x,
-     &        f13.6, 2x, f13.6, 2x, f13.6, 3(2x, f15.1), 2(x, f10.6))
+ 9000 format (i4, x, i2, x, i2, x, i4, x, f16.6, x, a3, x, a11, 2x,
+     &        a4, x, f16.6, 2x, f16.6, 2x, f16.6, x,
+     &        f16.9, 2x, f16.9, 2x, f16.9, 3(2x, f16.2), 2(x, f15.11))
  10   continue
       read  (uin, '(a)', end = 20) line
       if (line(1:1) .eq. '#') then
@@ -142,10 +142,10 @@ C        data line
      &       rawbet, delta,
      &       santxyz(1), santxyz(2), santxyz(3), phi1,
      &       out(1), out(2), out(3), phi2
- 9010   format (i4, '-', i2.2, '-', i2.2, x, i4, x, f13.3, x, a3, x,
-     &          a11, 2x, a4, x, f13.3, 2x, f13.3, 2x, f13.3, x,
-     &          f13.6, 2x, f13.6, 2x, f13.6, 3(2x, f15.1), 2(x, f10.6),
-     &          2(3(2x, f18.15), 2x, f14.9))
+ 9010   format (i4, '-', i2.2, '-', i2.2, x, i4, x, f16.6, x, a3, x,
+     &          a11, 2x, a4, x, f16.6, 2x, f16.6, 2x, f16.6, x,
+     &          f16.9, 2x, f16.9, 2x, f16.9, 3(2x, f16.2), 2(x, f15.11),
+     &          2(3(2x, f18.15), 2x, f15.10))
       endif
       goto 10
  20   continue

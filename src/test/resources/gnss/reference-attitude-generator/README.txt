@@ -3,8 +3,15 @@ The data files for attitude reference were created as follows:
 1) retrieved SP3 files for several different constellations from IGS MGEX
    data analysis at <ftp://cddis.gsfc.nasa.gov/pub/gps/products/mgex/>.
    The files selected came from GFZ (GeoForschungsZentrum Potsdam)
-   and correspond to data from week 1800 to week 1988, except for about
-   30 files missing in the archive
+   and correspond to data from week 1800 to week 1999, except for 2 files
+   missing in the archive at time of retrieval
+
+   baseurl=ftp://cddis.gsfc.nasa.gov/pub/gps/products/mgex
+   for week in $(seq 1800 1999) ; do
+     for day in $(seq 0 6) ; do
+       curl $baseurl/$week/gbm$week$day.sp3.Z > gbm$week$day.sp3.Z
+     done
+   done
    
 2) ran the GenerateBaseSample java program to pick up 5 subsets of
    alignment events:
@@ -16,8 +23,8 @@ The data files for attitude reference were created as follows:
    the beta angle have been selected so we get sample in each category for
    all spacecraft types so we can exercise various cases of the attitude models
    for each detected event in the subsets, we sampled input data that will be needed
-   for Kouba reference eclips routine and for Orekit models, from 41 minutes
-   before the event to 41 minutes after the event.
+   for Kouba reference eclips routine and for Orekit models, from 39 minutes
+   before the event to 39 minutes after the event.
 
    the base sample generator is configured to use ITRF using IERS 2010 conventions
    and complete EOP including tides, parse an ANTEX file to retrieve the time-dependent
@@ -48,8 +55,8 @@ The data files for attitude reference were created as follows:
    (http://acc.igs.org/orbits). The patch eclips-01-max.patch addresses the first issue
    whereas the patch eclips-02-normalization.patch addresses the second and third issues.
    In fact, as an additional precaution, we took care in the base sample generator program
-   to avoid extracting sample points exactly at alignment (we extracted points at -41min,
-   -39min, ..., -1min, +1min, ..., +39min, +41min), so the first patch could have been safely
+   to avoid extracting sample points exactly at alignment (we extracted points at -39min,
+   -33min, ..., -3min, +3min, ..., +33min, +39min), so the first patch could have been safely
    ignored with these specific samples (but it was mandatory in our first tests as we used
    the perfectly aligned points provided by Orekit alignment detector)
 
