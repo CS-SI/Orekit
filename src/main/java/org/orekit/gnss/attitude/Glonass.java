@@ -17,6 +17,7 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -62,7 +63,8 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
+        throws OrekitException {
 
         // noon beta angle limit from yaw rate
         final double realBeta = context.getBeta();
@@ -93,24 +95,26 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
-                final double phi;
 
                 if (context.inSunSide()) {
                     // noon turn
-                    final double linearPhi = phiStart - FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    final double phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                    final double linearPhi = phiStart + phiDot * dtStart;
                     // TODO: there is no protection against overshooting phiEnd
                     // there should probably be some protection
-                    phi = linearPhi;
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
                 } else {
                     // midnight turn
-                    final double linearPhi = phiStart + FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    final double phiDot    = FastMath.copySign(YAW_RATE, beta);
+                    final double linearPhi = phiStart + phiDot * dtStart;
                     final double phiEnd    = context.getYawEnd(beta);
                     // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
-                    phi = (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) ? phiEnd : linearPhi;
+                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
+                        return context.turnCorrectedAttitude(phiEnd, 0.0);
+                    } else {
+                        return context.turnCorrectedAttitude(linearPhi, phiDot);
+                    }
                 }
-
-                // TODO
-                return null;
 
             }
 
