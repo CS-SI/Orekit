@@ -54,7 +54,7 @@ class DSConverter extends AbstractDSConverter {
      * @param state
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position),
-     * 6 (position-velocity) or 7 (position-velocity-mass)
+     * 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
      * @exception OrekitException if attitude cannot be computed
      */
@@ -92,10 +92,8 @@ class DSConverter extends AbstractDSConverter {
                         factory.constant(acc.getY()),
                         factory.constant(acc.getZ()));
 
-        // mass may have derivatives or not
-        final DerivativeStructure dsM = (freeStateParameters > 6) ?
-                                                                   factory.variable(6, state.getMass()) :
-                                                                       factory.constant(state.getMass());
+        // mass never has derivatives
+        final DerivativeStructure dsM = factory.constant(state.getMass());
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),

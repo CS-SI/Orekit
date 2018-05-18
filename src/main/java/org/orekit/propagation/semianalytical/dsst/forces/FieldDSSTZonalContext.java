@@ -109,46 +109,51 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
      * @param meanOnly create only the objects required for the mean contribution
      * @param provider provider for spherical harmonics
      * @param maxEccPowShortPeriodics highest power of the eccentricity to be used in short periodic computations.
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
     @SuppressWarnings("unchecked")
     public FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                  final boolean meanOnly,
                                  final UnnormalizedSphericalHarmonicsProvider provider,
-                                 final int maxEccPowShortPeriodics)
+                                 final int maxEccPowShortPeriodics,
+                                 final T[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
 
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        this.provider = provider;
-        this.maxDegree = provider.getMaxDegree();
-        this.maxOrder  = provider.getMaxOrder();
+        this.provider              = provider;
+        this.maxDegree             = provider.getMaxDegree();
+        this.maxOrder              = provider.getMaxOrder();
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
+        final T mu = parameters[0];
+
         // &Chi; = 1 / B
-        X = auxiliaryElements.getB().reciprocal();
-        XX = X.multiply(X);
+        X   = auxiliaryElements.getB().reciprocal();
+        XX  = X.multiply(X);
         XXX = X.multiply(XX);
+
         // 1 / AB
-        ooAB = (auxiliaryElements.getA().multiply(auxiliaryElements.getB())).reciprocal();
+        ooAB   = (auxiliaryElements.getA().multiply(auxiliaryElements.getB())).reciprocal();
         // B / A
-        BoA = auxiliaryElements.getB().divide(auxiliaryElements.getA());
+        BoA    = auxiliaryElements.getB().divide(auxiliaryElements.getA());
         // -C / 2AB
         mCo2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
         // B / A(1 + B)
         BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
         // -2 * a / A
-        m2aoA = auxiliaryElements.getSma().divide(auxiliaryElements.getA()).multiply(-2.);
+        m2aoA  = auxiliaryElements.getSma().divide(auxiliaryElements.getA()).multiply(-2.);
         // μ / a
-        muoa = auxiliaryElements.getSma().divide(provider.getMu()).reciprocal();
+        muoa   = mu.divide(auxiliaryElements.getSma());
         // R / a
-        roa = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
+        roa    = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
 
-        computeMeanElementsTruncations(auxiliaryElements);
+        computeMeanElementsTruncations(auxiliaryElements, parameters);
 
         final int maxEccPow;
         if (meanOnly) {
@@ -275,9 +280,12 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
+     * @param parameters values of the force model parameters
      * @throws OrekitException if an error occurs
      */
-    private void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements) throws OrekitException {
+    private void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters)
+        throws OrekitException {
+
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
         //Compute the max eccentricity power for the mean element rate expansion
@@ -289,7 +297,7 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
             // Utilities for truncation
             final T ax2or = auxiliaryElements.getSma().multiply(2.).divide(provider.getAe());
-            T xmuran = auxiliaryElements.getSma().divide(provider.getMu()).reciprocal();
+            T xmuran = parameters[0].divide(auxiliaryElements.getSma());
             // Set a lower bound for eccentricity
             final T eo2  = FastMath.max(zero.add(0.0025), auxiliaryElements.getEcc().divide(2.));
             final T x2o2 = XX.divide(2.);

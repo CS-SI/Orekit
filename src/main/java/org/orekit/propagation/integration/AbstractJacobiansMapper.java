@@ -16,12 +16,10 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.DecompositionSolver;
-import org.hipparchus.linear.QRDecomposition;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
@@ -75,17 +73,22 @@ public abstract class AbstractJacobiansMapper {
         return parameters.getNbParams();
     }
 
-    /** Get the conversion Jacobian.
+    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
+     * <p>
+     * For {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same, so the Jocabian
+     * is simply the identity.
+     * </p>
+     * <p>
+     * For {@link NumericalPropagator Numerical propagator}, parameters used for derivatives are cartesian
+     * and they can be different from state parameters because the numerical propagator can accept different type
+     * of orbits.
+     * </p>
      * @param state spacecraft state
      * @return conversion Jacobian
      */
     protected abstract double[][] getJacobianConversion(SpacecraftState state);
 
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
-     * <p>
-     * This method converts the Jacobians to Cartesian parameters and put the converted data
-     * in the one-dimensional {@code p} array.
-     * </p>
      * @param state spacecraft state
      * @param dY1dY0 Jacobian of current state at time t₁
      * with respect to state at some previous time t₀
@@ -94,37 +97,7 @@ public abstract class AbstractJacobiansMapper {
      * @param p placeholder where to put the one-dimensional additional state
      * @see #getStateJacobian(SpacecraftState, double[][])
      */
-    public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
-
-        // set up a converter
-        final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getJacobianConversion(state), false);
-        final DecompositionSolver solver = new QRDecomposition(dY1dC1).getSolver();
-
-        // convert the provided state Jacobian
-        final RealMatrix dC1dY0 = solver.solve(new Array2DRowRealMatrix(dY1dY0, false));
-
-        // map the converted state Jacobian to one-dimensional array
-        int index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                p[index++] = dC1dY0.getEntry(i, j);
-            }
-        }
-
-        if (parameters.getNbParams() != 0) {
-            // convert the provided state Jacobian
-            final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
-
-            // map the converted parameters Jacobian to one-dimensional array
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
-                    p[index++] = dC1dP.getEntry(i, j);
-                }
-            }
-        }
-
-    }
+    public abstract void setInitialJacobians(SpacecraftState state, double[][] dY1dY0, double[][] dY1dP, double[] p);
 
     /** Get the Jacobian with respect to state from a one-dimensional additional state array.
      * <p>
@@ -136,33 +109,9 @@ public abstract class AbstractJacobiansMapper {
      * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
-        throws OrekitException {
+    public abstract void getStateJacobian(SpacecraftState state,  double[][] dYdY0) throws OrekitException;
 
-        // get the conversion Jacobian
-        final double[][] dYdC = getJacobianConversion(state);
-
-        // extract the additional state
-        final double[] p = state.getAdditionalState(name);
-
-        // compute dYdY0 = dYdC * dCdY0, without allocating new arrays
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            final double[] rowC = dYdC[i];
-            final double[] rowD = dYdY0[i];
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                double sum = 0;
-                int pIndex = j;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
-                    sum += rowC[k] * p[pIndex];
-                    pIndex += STATE_DIMENSION;
-                }
-                rowD[j] = sum;
-            }
-        }
-
-    }
-
-    /** Get theJacobian with respect to parameters from a one-dimensional additional state array.
+    /** Get the Jacobian with respect to parameters from a one-dimensional additional state array.
      * <p>
      * This method extract the data from the {@code state} and put it in the
      * {@code dYdP} array.
@@ -176,34 +125,6 @@ public abstract class AbstractJacobiansMapper {
      * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getStateJacobian(SpacecraftState, double[][])
      */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        throws OrekitException {
-
-        if (parameters.getNbParams() != 0) {
-
-            // get the conversion Jacobian
-            final double[][] dYdC = getJacobianConversion(state);
-
-            // extract the additional state
-            final double[] p = state.getAdditionalState(name);
-
-            // compute dYdP = dYdC * dCdP, without allocating new arrays
-            for (int i = 0; i < STATE_DIMENSION; i++) {
-                final double[] rowC = dYdC[i];
-                final double[] rowD = dYdP[i];
-                for (int j = 0; j < parameters.getNbParams(); ++j) {
-                    double sum = 0;
-                    int pIndex = j + STATE_DIMENSION * STATE_DIMENSION;
-                    for (int k = 0; k < STATE_DIMENSION; ++k) {
-                        sum += rowC[k] * p[pIndex];
-                        pIndex += parameters.getNbParams();
-                    }
-                    rowD[j] = sum;
-                }
-            }
-
-        }
-
-    }
+    public abstract void getParametersJacobian(SpacecraftState state, double[][] dYdP) throws OrekitException;
 
 }

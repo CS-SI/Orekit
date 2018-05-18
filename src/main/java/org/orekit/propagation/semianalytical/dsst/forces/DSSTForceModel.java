@@ -18,7 +18,9 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -65,30 +67,62 @@ public interface DSSTForceModel {
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements are used during the propagation
+     *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly)
+    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly, double[] parameters)
         throws OrekitException;
+
+    /** Get force model parameters.
+     * @return force model parameters
+     * @since 9.0
+     */
+    default double[] getParameters() {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.length];
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].getValue();
+        }
+        return parameters;
+    }
+
+    /** Get force model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return force model parameters
+     * @since 9.0
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
      *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
      *  @return the mean element rates dai/dt
      *  @throws OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliaryElements) throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliaryElements, double[] parameters)
+         throws OrekitException;
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *  @param <T> type of the elements
     *  @param state current state information: date, kinematics, attitude
     *  @param auxiliaryElements auxiliary elements related to the current orbit
+    *  @param parameters values of the force model parameters
     *  @return the mean element rates dai/dt
     *  @throws OrekitException if some specific error occurs
     */
-    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state, FieldAuxiliaryElements<T> auxiliaryElements)
+    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state, FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters)
         throws OrekitException;
 
 
@@ -112,10 +146,11 @@ public interface DSSTForceModel {
      * are the ones that were returned during the call to {@link
      * #initialize(AuxiliaryElements, boolean)}.
      * </p>
+     * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(SpacecraftState... meanStates)
+    void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
         throws OrekitException;
 
     /** Get the drivers for force model parameters.

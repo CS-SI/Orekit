@@ -86,7 +86,7 @@ public class FieldDSSTThirdBodyTest {
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = moon.getMeanElementRate(state, auxiliaryElements);
+        final T[] daidt = moon.getMeanElementRate(state, auxiliaryElements, moon.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

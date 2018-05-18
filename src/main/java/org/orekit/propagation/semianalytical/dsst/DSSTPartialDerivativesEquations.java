@@ -243,9 +243,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new DSSTJacobiansMapper(name, selected,
-                                   propagator.getOrbitType(),
-                                   propagator.getPositionAngleType());
+        return new DSSTJacobiansMapper(name, selected);
     }
 
     /** Get the selected parameters, in Jacobian matrix column order.
@@ -273,44 +271,45 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();
         final int dim = 6;
-        final double[][] dMeanElementsdParam = new double[dim][paramDim];
-        final double[][] dMeanElementsdElement = new double[dim][dim];
+        final double[][] dMeanElementRatedParam = new double[dim][paramDim];
+        final double[][] dMeanElementRatedElement = new double[dim][dim];
 
-        final DSSTDSConverter converter = new DSSTDSConverter(s, 6, propagator.getAttitudeProvider());
+        final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
 
         // Compute Jacobian
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
             final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
             final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
+            final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
 
-            final DerivativeStructure[] meanElements = forceModel.getMeanElementRate(dsState, auxiliaryElements);
-            final double[] derivativesA  = meanElements[0].getAllDerivatives();
-            final double[] derivativesEx = meanElements[1].getAllDerivatives();
-            final double[] derivativesEy = meanElements[2].getAllDerivatives();
-            final double[] derivativesHx = meanElements[3].getAllDerivatives();
-            final double[] derivativesHy = meanElements[4].getAllDerivatives();
-            final double[] derivativesL  = meanElements[5].getAllDerivatives();
+            final DerivativeStructure[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
+            final double[] derivativesA  = meanElementRate[0].getAllDerivatives();
+            final double[] derivativesEx = meanElementRate[1].getAllDerivatives();
+            final double[] derivativesEy = meanElementRate[2].getAllDerivatives();
+            final double[] derivativesHx = meanElementRate[3].getAllDerivatives();
+            final double[] derivativesHy = meanElementRate[4].getAllDerivatives();
+            final double[] derivativesL  = meanElementRate[5].getAllDerivatives();
 
             // update Jacobian with respect to state
-            addToRow(derivativesA,  0, dMeanElementsdElement);
-            addToRow(derivativesEx, 1, dMeanElementsdElement);
-            addToRow(derivativesEy, 2, dMeanElementsdElement);
-            addToRow(derivativesHx, 3, dMeanElementsdElement);
-            addToRow(derivativesHy, 4, dMeanElementsdElement);
-            addToRow(derivativesL,  5, dMeanElementsdElement);
+            addToRow(derivativesA,  0, dMeanElementRatedElement);
+            addToRow(derivativesEx, 1, dMeanElementRatedElement);
+            addToRow(derivativesEy, 2, dMeanElementRatedElement);
+            addToRow(derivativesHx, 3, dMeanElementRatedElement);
+            addToRow(derivativesHy, 4, dMeanElementRatedElement);
+            addToRow(derivativesL,  5, dMeanElementRatedElement);
 
             int index = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
                     final int parameterIndex = map.get(driver);
                     ++index;
-                    dMeanElementsdParam[0][parameterIndex] += derivativesA[index];
-                    dMeanElementsdParam[1][parameterIndex] += derivativesEx[index];
-                    dMeanElementsdParam[2][parameterIndex] += derivativesEy[index];
-                    dMeanElementsdParam[3][parameterIndex] += derivativesHx[index];
-                    dMeanElementsdParam[4][parameterIndex] += derivativesHy[index];
-                    dMeanElementsdParam[5][parameterIndex] += derivativesL[index];
+                    dMeanElementRatedParam[0][parameterIndex] += derivativesA[index];
+                    dMeanElementRatedParam[1][parameterIndex] += derivativesEx[index];
+                    dMeanElementRatedParam[2][parameterIndex] += derivativesEy[index];
+                    dMeanElementRatedParam[3][parameterIndex] += derivativesHx[index];
+                    dMeanElementRatedParam[4][parameterIndex] += derivativesHy[index];
+                    dMeanElementRatedParam[5][parameterIndex] += derivativesL[index];
                 }
             }
 
@@ -318,7 +317,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
 
         // The variational equations of the complete state Jacobian matrix have the following form:
 
-        //                     [ Adot ] = [ dMeanElementsdElement ] * [ A ]
+        //                     [ Adot ] = [ dMeanElementRatedElement ] * [ A ]
 
         // The A matrix and its derivative (Adot) are 6 * 6 matrices
 
@@ -329,19 +328,20 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         final double[] p = s.getAdditionalState(getName());
 
         for (int i = 0; i < dim; i++) {
-            final double[] dMeanElementsdElementi = dMeanElementsdElement[i];
+            final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
             for (int j = 0; j < dim; j++) {
                 pDot[j + dim * i] =
-                    dMeanElementsdElementi[0] * p[j]           + dMeanElementsdElementi[1] * p[j +     dim] + dMeanElementsdElementi[2] * p[j + 2 * dim] +
-                    dMeanElementsdElementi[3] * p[j + 3 * dim] + dMeanElementsdElementi[4] * p[j + 4 * dim] + dMeanElementsdElementi[5] * p[j + 5 * dim];
+                    dMeanElementRatedElementi[0] * p[j]           + dMeanElementRatedElementi[1] * p[j +     dim] + dMeanElementRatedElementi[2] * p[j + 2 * dim] +
+                    dMeanElementRatedElementi[3] * p[j + 3 * dim] + dMeanElementRatedElementi[4] * p[j + 4 * dim] + dMeanElementRatedElementi[5] * p[j + 5 * dim];
             }
         }
 
+        final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
 
-            //             [ Bdot ] = [ dMeanElementsdElement ] * [ B ] + [ dMeanElementsdParam ]
+            //             [ Bdot ] = [ dMeanElementRatedElement ] * [ B ] + [ dMeanElementsdParam ]
 
             // The B sub-columns and its derivative (Bdot) are 6 elements columns.
 
@@ -349,14 +349,12 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             // B columns into the single dimension array p and of the mapping of the
             // Bdot columns into the single dimension array pDot.
 
-            final int columnTop = dim * dim;
-
             for (int i = 0; i < dim; ++i) {
-                final double[] dMeanElementsdElementi = dMeanElementsdElement[i];
+                final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
                 pDot[columnTop + (i + dim * k)] =
-                    dMeanElementsdParam[i][k] +
-                    dMeanElementsdElementi[0] * p[columnTop + k]                + dMeanElementsdElementi[1] * p[columnTop + k +     paramDim] + dMeanElementsdElementi[2] * p[columnTop + k + 2 * paramDim] +
-                    dMeanElementsdElementi[3] * p[columnTop + k + 3 * paramDim] + dMeanElementsdElementi[4] * p[columnTop + k + 4 * paramDim] + dMeanElementsdElementi[5] * p[columnTop + k + 5 * paramDim];
+                    dMeanElementRatedParam[i][k] +
+                    dMeanElementRatedElementi[0] * p[columnTop + k]                + dMeanElementRatedElementi[1] * p[columnTop + k +     paramDim] + dMeanElementRatedElementi[2] * p[columnTop + k + 2 * paramDim] +
+                    dMeanElementRatedElementi[3] * p[columnTop + k + 3 * paramDim] + dMeanElementRatedElementi[4] * p[columnTop + k + 4 * paramDim] + dMeanElementRatedElementi[5] * p[columnTop + k + 5 * paramDim];
             }
         }
 
@@ -368,14 +366,13 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
      * @param index component index (0 for a, 1 for ex, 2 for ey, 3 for hx, 4 for hy, 5 for l)
-     * 6 (equinoctial parameters (EP)) or 7 (EP and mass)
-     * @param dMeanElementsdElement Jacobian of mean elements rate with respect to spacecraft position
+     * @param dMeanElementRatedElement Jacobian of mean elements rate with respect to mean elements
      */
     private void addToRow(final double[] derivatives, final int index,
-                          final double[][] dMeanElementsdElement) {
+                          final double[][] dMeanElementRatedElement) {
 
         for (int i = 0; i < 6; i++) {
-            dMeanElementsdElement[index][i] += derivatives[i + 1];
+            dMeanElementRatedElement[index][i] += derivatives[i + 1];
         }
 
     }

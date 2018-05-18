@@ -137,13 +137,15 @@ class DSSTThirdBodyContext extends ForceModelContext {
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    DSSTThirdBodyContext(final AuxiliaryElements auxiliaryElements, final CelestialBody thirdBody) throws OrekitException {
+    DSSTThirdBodyContext(final AuxiliaryElements auxiliaryElements, final CelestialBody thirdBody, final double[] parameters)
+        throws OrekitException {
 
         super(auxiliaryElements);
 
-        this.gm = thirdBody.getGM();
+        this.gm = parameters[0];
         this.factory = new DSFactory(1, 1);
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
 

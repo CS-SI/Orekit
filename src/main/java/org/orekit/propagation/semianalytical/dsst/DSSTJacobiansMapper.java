@@ -16,9 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
@@ -42,41 +40,95 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
      */
     public static final int STATE_DIMENSION = 6;
 
-    /** Orbit type. */
-    private final OrbitType orbitType;
+    /** Name. */
+    private String name;
 
-    /** Position angle type. */
-    private final PositionAngle angleType;
+    /** Selected parameters for Jacobian computation. */
+    private final ParameterDriversList parameters;
 
     /** Simple constructor.
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
-     * @param orbitType orbit type
-     * @param angleType position angle type
      */
-    DSSTJacobiansMapper(final String name, final ParameterDriversList parameters,
-                    final OrbitType orbitType, final PositionAngle angleType) {
+    DSSTJacobiansMapper(final String name, final ParameterDriversList parameters) {
 
         super(name, parameters);
-        this.orbitType  = orbitType;
-        this.angleType  = angleType;
+        this.parameters = parameters;
+        this.name = name;
     }
 
-    /** Get the conversion Jacobian between state parameters and Cartesian parameters.
-     * @param state spacecraft state
-     * @return conversion Jacobian
-     */
+    /** {@inheritDoc} */
     protected double[][] getJacobianConversion(final SpacecraftState state) {
 
-        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final double[][] identity = new double[STATE_DIMENSION][STATE_DIMENSION];
 
-        // make sure the state is in the desired orbit type
-        final Orbit orbit = orbitType.convertType(state.getOrbit());
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            identity[i][i] = 1.0;
+        }
 
-        // compute the Jacobian, taking the position angle type into account
-        orbit.getJacobianWrtCartesian(angleType, dYdC);
+        return identity;
 
-        return dYdC;
+    }
+
+    /** {@inheritDoc} */
+    public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
+                             final double[][] dY1dP, final double[] p) {
+
+        // map the converted state Jacobian to one-dimensional array
+        int index = 0;
+        for (int i = 0; i < STATE_DIMENSION; ++i) {
+            for (int j = 0; j < STATE_DIMENSION; ++j) {
+                p[index++] = (i == j) ? 1.0 : 0.0;
+            }
+        }
+
+        if (parameters.getNbParams() != 0) {
+
+            // map the converted parameters Jacobian to one-dimensional array
+            for (int i = 0; i < STATE_DIMENSION; ++i) {
+                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                    p[index++] = dY1dP[i][j];
+                }
+            }
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) throws OrekitException {
+
+        // extract additional state
+        final double[] p = state.getAdditionalState(name);
+
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            int pIndex = i * STATE_DIMENSION;
+            final double[] row = dYdY0[i];
+            for (int j = 0; j < STATE_DIMENSION; j++) {
+                row[j] = p[pIndex];
+                pIndex += j + 1;
+            }
+        }
+    }
+
+
+    /** {@inheritDoc} */
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) throws OrekitException {
+
+        if (parameters.getNbParams() != 0) {
+
+            // extract the additional state
+            final double[] p = state.getAdditionalState(name);
+
+            for (int i = 0; i < STATE_DIMENSION; i++) {
+                int pIndex = STATE_DIMENSION * STATE_DIMENSION + i + parameters.getNbParams();
+                final double[] row = dYdP[i];
+                for (int j = 0; j < parameters.getNbParams(); j++) {
+                    row[j] = p[pIndex];
+                    pIndex += j + 1;
+                }
+            }
+
+        }
 
     }
 

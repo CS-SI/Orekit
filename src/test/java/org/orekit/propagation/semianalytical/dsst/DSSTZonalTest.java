@@ -77,7 +77,7 @@ public class DSSTZonalTest {
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         
-        final double[] daidt = zonal.getMeanElementRate(state, auxiliaryElements);
+        final double[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

@@ -149,7 +149,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly) throws OrekitException {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+        throws OrekitException {
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         gaussianSPCoefs = new GaussianShortPeriodicCoefficients(coefficientsKeyPrefix,
@@ -165,12 +166,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements)
+    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
         throws OrekitException {
-        return new AbstractGaussianContributionContext(auxiliaryElements);
+        return new AbstractGaussianContributionContext(auxiliaryElements, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -179,30 +181,33 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
+    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                                       final T[] parameters)
         throws OrekitException {
-        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState state, final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
 
         // Container for attributes
-        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
+        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
         final double[] ll = getLLimits(state, context);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0] < ll[1]) {
-            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context);
+            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context, parameters);
             if (isDirty) {
                 boolean next = true;
                 for (int i = 0; i < MAX_ORDER_RANK && next; i++) {
-                    final double[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1], context);
+                    final double[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1], context, parameters);
                     if (getRatesDiff(meanElementRate, meanRates, context) < threshold) {
                         integrator = new GaussQuadrature(GAUSS_ORDER[i]);
                         next = false;
@@ -217,11 +222,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
-                                                                  final FieldAuxiliaryElements<T> auxiliaryElements)
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                  final T[] parameters)
         throws OrekitException {
 
         // Container for attributes
-        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements);
+        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
         final Field<T> field = state.getDate().getField();
 
         T[] meanElementRate = MathArrays.buildArray(field, 6);
@@ -229,11 +235,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final T[] ll = getLLimits(state, context);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0].getReal() < ll[1].getReal()) {
-            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context);
+            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1], context, parameters);
             if (isDirty) {
                 boolean next = true;
                 for (int i = 0; i < MAX_ORDER_RANK && next; i++) {
-                    final T[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1], context);
+                    final T[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1], context, parameters);
                     if (getRatesDiff(meanElementRate, meanRates, context).getReal() < threshold) {
                         integrator = new GaussQuadrature(GAUSS_ORDER[i]);
                         next = false;
@@ -272,6 +278,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     *  @param low lower bound of the integral interval
     *  @param high upper bound of the integral interval
     *  @param context container for attributes
+    *  @param parameters values of the force model parameters
     *  @return the mean element rates
     *  @throws OrekitException if some specific error occurs
     */
@@ -279,12 +286,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
            final GaussQuadrature gauss,
            final double low,
            final double high,
-           final AbstractGaussianContributionContext context) throws OrekitException {
+           final AbstractGaussianContributionContext context,
+           final double[] parameters) throws OrekitException {
 
         // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
-        final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0), low, high);
+        final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0, parameters), low, high);
         // Constant multiplier for integral
         final double coef = 1. / (2. * FastMath.PI * auxiliaryElements.getB());
         // Corrects mean element rates
@@ -302,6 +310,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     *  @param low lower bound of the integral interval
     *  @param high upper bound of the integral interval
     *  @param context container for attributes
+    *  @param parameters values of the force model parameters
     *  @return the mean element rates
     *  @throws OrekitException if some specific error occurs
     */
@@ -309,12 +318,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
            final GaussQuadrature gauss,
            final T low,
            final T high,
-           final FieldAbstractGaussianContributionContext<T> context) throws OrekitException {
+           final FieldAbstractGaussianContributionContext<T> context,
+           final T[] parameters) throws OrekitException {
 
         // Auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> fieldAuxiliaryElements = context.getFieldAuxiliaryElements();
 
-        final T[] meanElementRate = gauss.integrate(new FieldIntegrableFunction<T>(state, true, 0), low, high, context);
+        final T[] meanElementRate = gauss.integrate(new FieldIntegrableFunction<T>(state, true, 0, parameters), low, high, context);
         // Constant multiplier for integral
         final T coef = fieldAuxiliaryElements.getB().multiply(FastMath.PI).multiply(2.).reciprocal();
         // Corrects mean element rates
@@ -375,7 +385,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
         throws OrekitException {
 
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
@@ -383,10 +393,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
 
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
-            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context);
+            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context, parameters);
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
             gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, auxiliaryElements.getMeanMotion(), auxiliaryElements.getSma());
         }
@@ -451,9 +461,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param meanMode if true return the value associated to the mean elements variation,
          *                  if false return the values associated to the short periodic elements variation
          *  @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
+         *  @param parameters values of the force model parameters
          *  @throws OrekitException if some specific error occurs
          */
-        FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j) throws OrekitException {
+        FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j, final T[] parameters)
+            throws OrekitException {
 
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
@@ -466,7 +478,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.meanMode = meanMode;
             this.j = j;
             this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
         }
 
         /** {@inheritDoc} */
@@ -691,9 +703,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param meanMode if true return the value associated to the mean elements variation,
          *                  if false return the values associated to the short periodic elements variation
          *  @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
+         *  @param parameters values of the force model parameters
          *  @throws OrekitException if some specific error occurs
          */
-        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) throws OrekitException {
+        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j, final double[] parameters)
+            throws OrekitException {
 
             // remove derivatives from state
             final double[] stateVector = new double[6];
@@ -706,14 +720,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.meanMode = meanMode;
             this.j = j;
             this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-            this.context = new AbstractGaussianContributionContext(auxiliaryElements);
+            this.context = new AbstractGaussianContributionContext(auxiliaryElements, parameters);
         }
 
         /** {@inheritDoc} */
         @Override
         public double[] value(final double x) {
-
-            //final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             //Compute the time difference from the true longitude difference
             final double shiftedLm = trueToMean(x);
@@ -1619,9 +1631,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param state the current state
          * @param jMax maximum value for j
          * @param context container for attributes
+         * @param parameters values of the force model parameters
          * @throws OrekitException in case of an error
          */
-        FourierCjSjCoefficients(final SpacecraftState state, final int jMax, final AbstractGaussianContributionContext context)
+        FourierCjSjCoefficients(final SpacecraftState state, final int jMax,
+                                final AbstractGaussianContributionContext context, final double[] parameters)
             throws OrekitException {
             //Initialise the fields
             this.jMax = jMax;
@@ -1632,7 +1646,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             sCoef = new double[rows][6];
 
             //Compute the coefficients
-            computeCoefficients(state, context);
+            computeCoefficients(state, context, parameters);
         }
 
         /**
@@ -1643,9 +1657,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * </p>
          * @param state the current state
          * @param context container for attributes
+         * @param parameters values of the force model parameters
          * @throws OrekitException in case of an error
          */
-        private void computeCoefficients(final SpacecraftState state, final AbstractGaussianContributionContext context)
+        private void computeCoefficients(final SpacecraftState state, final AbstractGaussianContributionContext context, final double[] parameters)
             throws OrekitException {
             // Computes the limits for the integral
             final double[] ll = getLLimits(state, context);
@@ -1657,7 +1672,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 // loop through all values of j
                 for (int j = 0; j <= jMax; j++) {
                     final double[] curentCoefficients =
-                            integrator.integrate(new IntegrableFunction(state, false, j), ll[0], ll[1]);
+                            integrator.integrate(new IntegrableFunction(state, false, j, parameters), ll[0], ll[1]);
 
                     //divide by PI and set the values for the coefficients
                     for (int i = 0; i < 6; i++) {

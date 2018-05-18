@@ -91,9 +91,7 @@ public class HansenThirdBodyLinearTest {
 
     private void doTestLinearVsRecursive(final double ecc, final double tol) {
         final int N = 22;
-        System.out.println(" ");
         final double chi = 1.0 / FastMath.sqrt(1 - ecc * ecc);
-        System.out.println(chi);
         final HansenThirdBodyLinear[] htbl = new HansenThirdBodyLinear[N + 1];
 
         for (int s = 0; s <= N; s++) {

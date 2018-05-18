@@ -89,7 +89,7 @@ public class FieldDSSTZonalTest {
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = zonal.getMeanElementRate(state, auxiliaryElements);
+        final T[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

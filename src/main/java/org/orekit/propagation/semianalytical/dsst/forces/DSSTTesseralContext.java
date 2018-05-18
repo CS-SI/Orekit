@@ -134,8 +134,8 @@ class DSSTTesseralContext extends ForceModelContext {
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
-     //* @param resOrders list of resonant orders
      * @param bodyPeriod central body rotation period (seconds)
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
     DSSTTesseralContext(final AuxiliaryElements auxiliaryElements,
@@ -143,8 +143,8 @@ class DSSTTesseralContext extends ForceModelContext {
                         final Frame centralBodyFrame,
                         final UnnormalizedSphericalHarmonicsProvider provider,
                         final int maxFrequencyShortPeriodics,
-                        //final List<Integer> resOrders,
-                        final double bodyPeriod)
+                        final double bodyPeriod,
+                        final double[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
@@ -152,9 +152,11 @@ class DSSTTesseralContext extends ForceModelContext {
         this.maxEccPow = 0;
         this.maxHansen = 0;
         this.maxDegree = provider.getMaxDegree();
-        this.maxOrder = provider.getMaxOrder();
-        this.factory = new DSFactory(1, 1);
+        this.maxOrder  = provider.getMaxOrder();
+        this.factory   = new DSFactory(1, 1);
         this.resOrders = new ArrayList<Integer>();
+
+        final double mu = parameters[0];
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
@@ -170,20 +172,20 @@ class DSSTTesseralContext extends ForceModelContext {
         // 2 * a / A
         ax2oA  = 2. * auxiliaryElements.getSma() / auxiliaryElements.getA();
         // B / A
-        BoA  = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA    = auxiliaryElements.getB() / auxiliaryElements.getA();
         // 1 / AB
-        ooAB = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB   = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
         // C / 2AB
-        Co2AB = auxiliaryElements.getC() * ooAB / 2.;
+        Co2AB  = auxiliaryElements.getC() * ooAB / 2.;
         // B / (A * (1 + B))
         BoABpo = BoA / (1. + auxiliaryElements.getB());
         // &mu / a
-        moa = provider.getMu() / auxiliaryElements.getSma();
+        moa    = mu / auxiliaryElements.getSma();
         // R / a
-        roa = provider.getAe() / auxiliaryElements.getSma();
+        roa    = provider.getAe() / auxiliaryElements.getSma();
 
         // &Chi; = 1 / B
-        chi = 1. / auxiliaryElements.getB();
+        chi  = 1. / auxiliaryElements.getB();
         chi2 = chi * chi;
 
         // Set the highest power of the eccentricity in the analytical power

@@ -138,14 +138,15 @@ public class DSSTPartialDerivativesEquationsTest {
         public DerivativeStructure l;
 
         @Override
-        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly)
+        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly, double[] parameters)
             throws OrekitException {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
         public double[] getMeanElementRate(SpacecraftState state,
-                                           AuxiliaryElements auxiliaryElements)
+                                           AuxiliaryElements auxiliaryElements,
+                                           double[] parameters)
             throws OrekitException {
             return new double[] {state.getA(),
                                  state.getEquinoctialEx(),
@@ -157,7 +158,8 @@ public class DSSTPartialDerivativesEquationsTest {
 
         @Override
         public <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
-                                                                      FieldAuxiliaryElements<T> auxiliaryElements)
+                                                                      FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                      T[] parameters)
             throws OrekitException {
             
             final Field<T> field = state.getDate().getField();
@@ -191,7 +193,7 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public void updateShortPeriodTerms(SpacecraftState... meanStates)
+        public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
             throws OrekitException {           
         }
 

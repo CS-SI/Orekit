@@ -72,10 +72,10 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     private int    maxFreqF;
 
     /** Qns coefficients. */
-    private T[][] Qns;
+    private T[][]  Qns;
 
     /** Standard gravitational parameter μ for the body in m³/s². */
-    private final double           gm;
+    private final T gm;
 
     /** Distance from center of mass of the central body to the 3rd body. */
     private T R3;
@@ -136,11 +136,13 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param thirdBody body the 3rd body to consider
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
     @SuppressWarnings("unchecked")
     public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                     final CelestialBody thirdBody)
+                                     final CelestialBody thirdBody,
+                                     final T[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
@@ -149,7 +151,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
 
-        this.gm = thirdBody.getGM();
+        this.gm = parameters[0];
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
         this.factory = new FDSFactory<>(field, 1, 1);
 
@@ -416,7 +418,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** Get standard gravitational parameter μ for the body in m³/s².
      *  @return gm
      */
-    public double getGM() {
+    public T getGM() {
         return gm;
     }
 

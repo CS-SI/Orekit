@@ -77,7 +77,7 @@ public class FieldDSSTTesseralTest {
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements);
+        final T[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

@@ -105,42 +105,47 @@ class DSSTZonalContext extends ForceModelContext {
      * @param meanOnly create only the objects required for the mean contribution
      * @param provider provider for spherical harmonics
      * @param maxEccPowShortPeriodics highest power of the eccentricity to be used in short periodic computations.
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements, final boolean meanOnly,
                      final UnnormalizedSphericalHarmonicsProvider provider,
-                     final int maxEccPowShortPeriodics)
+                     final int maxEccPowShortPeriodics,
+                     final double[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
 
-        this.provider = provider;
-        this.maxDegree = provider.getMaxDegree();
-        this.maxOrder  = provider.getMaxOrder();
+        this.provider              = provider;
+        this.maxDegree             = provider.getMaxDegree();
+        this.maxOrder              = provider.getMaxOrder();
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
+        final double mu = parameters[0];
+
         // &Chi; = 1 / B
-        X = 1. / auxiliaryElements.getB();
-        XX = X * X;
+        X   = 1. / auxiliaryElements.getB();
+        XX  = X * X;
         XXX = X * XX;
+
         // 1 / AB
-        ooAB = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB   = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
         // B / A
-        BoA = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA    = auxiliaryElements.getB() / auxiliaryElements.getA();
         // -C / 2AB
         mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
         // B / A(1 + B)
         BoABpo = BoA / (1. + auxiliaryElements.getB());
         // -2 * a / A
-        m2aoA = -2 * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        m2aoA  = -2 * auxiliaryElements.getSma() / auxiliaryElements.getA();
         // μ / a
-        muoa = provider.getMu() / auxiliaryElements.getSma();
+        muoa   = mu / auxiliaryElements.getSma();
         // R / a
-        roa = provider.getAe() / auxiliaryElements.getSma();
+        roa    = provider.getAe() / auxiliaryElements.getSma();
 
-        computeMeanElementsTruncations(auxiliaryElements);
+        computeMeanElementsTruncations(auxiliaryElements, parameters);
 
         final int maxEccPow;
         if (meanOnly) {
@@ -266,9 +271,11 @@ class DSSTZonalContext extends ForceModelContext {
 
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
+     * @param parameters values of the force model parameters
      * @throws OrekitException if an error occurs
      */
-    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
 
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
@@ -279,7 +286,7 @@ class DSSTZonalContext extends ForceModelContext {
 
             // Utilities for truncation
             final double ax2or = 2. * auxiliaryElements.getSma() / provider.getAe();
-            double xmuran = provider.getMu() / auxiliaryElements.getSma();
+            double xmuran = parameters[0] / auxiliaryElements.getSma();
             // Set a lower bound for eccentricity
             final double eo2  = FastMath.max(0.0025, auxiliaryElements.getEcc() / 2.);
             final double x2o2 = XX / 2.;

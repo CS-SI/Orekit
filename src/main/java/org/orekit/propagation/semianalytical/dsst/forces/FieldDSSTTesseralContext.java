@@ -137,8 +137,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
-     //* @param resOrders list of resonant orders
      * @param bodyPeriod central body rotation period (seconds)
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
     @SuppressWarnings("unchecked")
@@ -147,8 +147,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
                                     final Frame centralBodyFrame,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final int maxFrequencyShortPeriodics,
-                                    //final List<Integer> resOrders,
-                                    final double bodyPeriod)
+                                    final double bodyPeriod,
+                                    final T[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
@@ -158,11 +158,13 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         this.maxEccPow = 0;
         this.maxHansen = 0;
-        this.maxOrder = provider.getMaxOrder();
+        this.maxOrder  = provider.getMaxOrder();
         this.maxDegree = provider.getMaxDegree();
         this.resOrders = new ArrayList<Integer>();
 
         this.factory = new FDSFactory<>(field, 1, 1);
+
+        final T mu = parameters[0];
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
@@ -178,20 +180,20 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         // 2 * a / A
         ax2oA  = auxiliaryElements.getSma().divide(auxiliaryElements.getA()).multiply(2.);
         // B / A
-        BoA  = auxiliaryElements.getB().divide(auxiliaryElements.getA());
+        BoA    = auxiliaryElements.getB().divide(auxiliaryElements.getA());
         // 1 / AB
-        ooAB = auxiliaryElements.getA().multiply(auxiliaryElements.getB()).reciprocal();
+        ooAB   = auxiliaryElements.getA().multiply(auxiliaryElements.getB()).reciprocal();
         // C / 2AB
-        Co2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.);
+        Co2AB  = auxiliaryElements.getC().multiply(ooAB).divide(2.);
         // B / (A * (1 + B))
         BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
         // &mu / a
-        moa = auxiliaryElements.getSma().divide(provider.getMu()).reciprocal();
+        moa    = mu.divide(auxiliaryElements.getSma());
         // R / a
-        roa = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
+        roa    = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
 
         // &Chi; = 1 / B
-        chi = auxiliaryElements.getB().reciprocal();
+        chi  = auxiliaryElements.getB().reciprocal();
         chi2 = chi.multiply(chi);
 
         // Set the highest power of the eccentricity in the analytical power

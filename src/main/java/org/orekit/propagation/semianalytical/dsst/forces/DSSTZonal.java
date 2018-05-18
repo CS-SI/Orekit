@@ -189,7 +189,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
         throws OrekitException {
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -208,11 +208,13 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param meanOnly create only the objects required for the mean contribution
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final boolean meanOnly) throws OrekitException {
-        return new DSSTZonalContext(auxiliaryElements, meanOnly, provider, maxEccPowShortPeriodics);
+    private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+        throws OrekitException {
+        return new DSSTZonalContext(auxiliaryElements, meanOnly, provider, maxEccPowShortPeriodics, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -222,28 +224,32 @@ public class DSSTZonal implements DSSTForceModel {
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param meanOnly create only the objects required for the mean contribution
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                    final boolean meanOnly)
+                                                                                    final boolean meanOnly,
+                                                                                    final T[] parameters)
         throws OrekitException {
-        return new FieldDSSTZonalContext<>(auxiliaryElements, meanOnly, provider, maxEccPowShortPeriodics);
+        return new FieldDSSTZonalContext<>(auxiliaryElements, meanOnly, provider, maxEccPowShortPeriodics, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements) throws OrekitException {
-        final DSSTZonalContext context = initializeStep(auxiliaryElements, true);
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
+        final DSSTZonalContext context = initializeStep(auxiliaryElements, true, parameters);
         return computeMeanElementRates(spacecraftState.getDate(), context);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
-                                                                  final FieldAuxiliaryElements<T> auxiliaryElements)
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                  final T[] parameters)
         throws OrekitException {
-        final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, true);
+        final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, true, parameters);
         return computeMeanElementRates(spacecraftState.getDate(), context);
     }
 
@@ -350,7 +356,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
         throws OrekitException {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
@@ -358,7 +364,7 @@ public class DSSTZonal implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final DSSTZonalContext context = initializeStep(auxiliaryElements, false);
+            final DSSTZonalContext context = initializeStep(auxiliaryElements, false, parameters);
 
             // h * k.
             this.hk = auxiliaryElements.getH() * auxiliaryElements.getK();

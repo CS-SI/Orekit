@@ -363,8 +363,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, false));
-            force.updateShortPeriodTerms(mean);
+            shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+            force.updateShortPeriodTerms(force.getParameters(), mean);
         }
 
         final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
@@ -454,7 +454,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, meanOnly));
+            shortPeriodTerms.addAll(force.initialize(aux, meanOnly, force.getParameters()));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -543,8 +543,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
-                shortPeriodTerms.addAll(force.initialize(aux, false));
-                force.updateShortPeriodTerms(meanState);
+                shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+                force.updateShortPeriodTerms(force.getParameters(), meanState);
             }
 
             // recompute the osculating parameters from the current mean parameters
@@ -920,19 +920,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             return yDot.clone();
         }
 
-        /** This method allows to compute the mean equinoctial elements rates dai / dt
+        /** This method allows to compute the mean equinoctial elements rates da<sub>i</sub> / dt
          *  for a specific for model.
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
-         *  @return the mean equinoctial elements rates dai / dt
+         *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          *  @throws OrekitException if some specific error occurs
          */
         private double[] elementRates(final DSSTForceModel forceModel,
-                                                             final SpacecraftState state,
-                                                             final AuxiliaryElements auxiliaryElements)
+                                      final SpacecraftState state,
+                                      final AuxiliaryElements auxiliaryElements)
             throws OrekitException {
-            return forceModel.getMeanElementRate(state, auxiliaryElements);
+            return forceModel.getMeanElementRate(state, auxiliaryElements, forceModel.getParameters());
         }
 
     }
@@ -1012,7 +1012,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
                 // Computate short periodic coefficients for this step
                 for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(meanStates);
+                    forceModel.updateShortPeriodTerms(forceModel.getParameters(), meanStates);
                 }
 
             } catch (OrekitException oe) {

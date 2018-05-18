@@ -114,7 +114,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         // Compute the mean element rate
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
-        final T[] daidt = srp.getMeanElementRate(state, auxiliaryElements);
+        final T[] daidt = srp.getMeanElementRate(state, auxiliaryElements, srp.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

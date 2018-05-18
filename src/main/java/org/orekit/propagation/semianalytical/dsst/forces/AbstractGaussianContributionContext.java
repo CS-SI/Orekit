@@ -48,9 +48,11 @@ class AbstractGaussianContributionContext extends ForceModelContext {
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
 
         super(auxiliaryElements);
 

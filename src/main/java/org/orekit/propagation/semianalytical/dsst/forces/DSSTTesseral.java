@@ -253,11 +253,11 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
         throws OrekitException {
 
         // Initializes specific parameters.
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, meanOnly);
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, meanOnly, parameters);
 
         // Compute the non resonant tesseral harmonic terms if not set by the user
         getNonResonantTerms(meanOnly, context);
@@ -283,11 +283,13 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param meanOnly create only the objects required for the mean contribution
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final boolean meanOnly) throws OrekitException {
-        return new DSSTTesseralContext(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod);
+    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+        throws OrekitException {
+        return new DSSTTesseralContext(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -297,21 +299,24 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param meanOnly create only the objects required for the mean contribution
+     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                       final boolean meanOnly)
+                                                                                       final boolean meanOnly,
+                                                                                       final T[] parameters)
         throws OrekitException {
-        return new FieldDSSTTesseralContext<>(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod);
+        return new FieldDSSTTesseralContext<>(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
 
         // Container for attributes
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, true);
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, true, parameters);
 
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context);
@@ -337,11 +342,12 @@ public class DSSTTesseral implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
-                                                                  final FieldAuxiliaryElements<T> auxiliaryElements)
+                                                                  final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                  final T[] parameters)
         throws OrekitException {
 
         // Container for attributes
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, true);
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, true, parameters);
 
         // Access to potential U derivatives
         final FieldUAnddU<T> udu = new FieldUAnddU<>(spacecraftState.getDate(), context);
@@ -375,7 +381,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
         throws OrekitException {
 
         final Slot slot = shortPeriodTerms.createSlot(meanStates);
@@ -384,7 +390,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final DSSTTesseralContext context = initializeStep(auxiliaryElements, false);
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements, false, parameters);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {

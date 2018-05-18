@@ -117,7 +117,7 @@ public class FieldDSSTAtmosphericDragTest {
         // Compute the mean element rate
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
-        final T[] daidt = drag.getMeanElementRate(state, auxiliaryElements);
+        final T[] daidt = drag.getMeanElementRate(state, auxiliaryElements, drag.getParameters(field));
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

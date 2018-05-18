@@ -50,9 +50,11 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements) throws OrekitException {
+    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters)
+        throws OrekitException {
 
         super(auxiliaryElements);
 
@@ -67,7 +69,7 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
         // 2 / (n² * a)
         ton2a = (auxiliaryElements.getMeanMotion().multiply(auxiliaryElements.getMeanMotion()).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = 1 / auxiliaryElements.getMu();
+        ooMu  = 1. / auxiliaryElements.getMu();
 
     }
 
