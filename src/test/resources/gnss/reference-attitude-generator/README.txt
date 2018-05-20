@@ -46,11 +46,13 @@ The data files for attitude reference were created as follows:
      rm $f
    done
 
-4) applied two patches to Kouba reference eclips routine from May 2017 to fix issues detected
+4) applied three patches to Kouba reference eclips routine from May 2017 to fix issues detected
    during validation:
      - prevent NaNs appearing due to numerical noise at exact alignment
      - fix rotated X vector normalization problem when orbit is not perfectly circular
      - fix rotated X vector division by zero at orbit node
+     - missing declaration for math functions leading to them being used as simple precision
+       instead of double precision
    The Kouba reference routine can be found at the IGS Analysis Center Coordinator site
    (http://acc.igs.org/orbits). The patch eclips-01-max.patch addresses the first issue
    whereas the patch eclips-02-normalization.patch addresses the second and third issues.

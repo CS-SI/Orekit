@@ -24,8 +24,8 @@ C
       call getarg(2, output)
       open (unit = uin,  file = input)
       open (unit = uout, file = output)
-      pi     = 3.1415926535897932385
-      nan    = -1.0
+      pi     = 3.1415926535897932385d0
+      nan    = -1.0d0
       nan    = sqrt(nan)
       preprn = -1
  9000 format (i4, x, i2, x, i2, x, i4, x, f16.6, x, a3, x, a11, 2x,
@@ -44,41 +44,46 @@ C        data line
      &        rawbet, delta
         read (id1, '(a, i2)') system, isat 
         read (id2, '(a, i3)') system, code
-        if (type .eq. 'BEIDOU-2I  ') then
+        if (type .eq. 'BEIDOU-2G  ') then
+           iprn       = 100 + isat
+           iblk(iprn) = 23
+           anoon      = nan
+           anight     = 180.0d0 + 2.0d0
+        else if (type .eq. 'BEIDOU-2I  ') then
            iprn       = 100 + isat
            iblk(iprn) = 22
            anoon      = nan
-           anight     = 180.0 + 2.0
+           anight     = 180.0d0 + 2.0d0
         else if (type .eq. 'BEIDOU-2M  ') then
            iprn       = 100 + isat
            iblk(iprn) = 21
            anoon      = nan
-           anight     = 180.0 + 2.0
+           anight     = 180.0d0 + 2.0d0
         else if (type .eq. 'BLOCK-IIA  ') then
            iprn       = isat
            iblk(iprn) = 3
            anoon      = nan
-           anight     = 180.0 + 13.25
+           anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'BLOCK-IIF  ') then
            iprn       = isat
            iblk(iprn) = 6
            anoon      = nan
-           anight     = 180.0 + 13.25
+           anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'BLOCK-IIR-A') then
            iprn       = isat
            iblk(iprn) = 4
            anoon      = nan
-           anight     = 180.0 + 13.25
+           anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'BLOCK-IIR-B') then
            iprn       = isat
            iblk(iprn) = 4
            anoon      = nan
-           anight     = 180.0 + 13.25
+           anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'BLOCK-IIR-M') then
            iprn       = isat
            iblk(iprn) = 5
            anoon      = nan
-           anight     = 180.0 + 13.25
+           anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'GALILEO-1  ') then
            iprn       = isat + 100
            iblk(iprn) = -1
@@ -87,18 +92,18 @@ C        data line
         else if (type .eq. 'GALILEO-2  ') then
            iprn       = isat + 100
            iblk(iprn) = -1
-           anoon      = 15.0 * pi / 180.0
+           anoon      = 15.0d0 * pi / 180.0d0
            anight     = nan
         else if (type .eq. 'GLONASS-M  ') then
            iprn       = isat + 32
            iblk(iprn) = -1
            anoon      = nan
-           anight     = 180.0 + 14.2
+           anight     = 180.0d0 + 14.2d0
         endif
         idir = 1
-        ttag = milli / 1000.0
-        svbcos = cos(delta * pi / 180.0)
-        beta   = (90.0 + rawbet) * pi / 180.0
+        ttag = milli / 1000.0d0
+        svbcos = cos(delta * pi / 180.0d0)
+        beta   = (90.0d0 + rawbet) * pi / 180.0d0
         sp = xsv(1) * sun(1) + xsv(2) * sun(2) + xsv(3) * sun(3)
         p2 = xsv(1) * xsv(1) + xsv(2) * xsv(2) + xsv(3) * xsv(3)
         v2 = vsvc(1) * vsvc(1) + vsvc(2) * vsvc(2) + vsvc(3) * vsvc(3)
@@ -115,8 +120,8 @@ C        data line
         out(2) = santxyz(2)
         out(3) = santxyz(3)
         if (iprn .ne. preprn) then
-            betaini(iprn) = 0.0
-            neclips(iprn) = 0
+            betaini(iprn)   = 0.0d0
+            neclips(iprn)   = 0
             eclstm(iprn, 1) = 0
             ecletm(iprn, 1) = 0
         endif
@@ -127,11 +132,11 @@ C        data line
         phi1 = acos(min(1.0,(vsvc(1) * santxyz(1) +
      &                       vsvc(2) * santxyz(2) +
      &                       vsvc(3) * santxyz(3)) / sqrt(v2)))
-     &                       * 180 / pi
+     &                       * 180d0 / pi
         phi2 = acos(min(1.0,(vsvc(1) * out(1) +
      &                       vsvc(2) * out(2) +
      &                       vsvc(3) * out(3)) / sqrt(v2)))
-     &                       * 180 / pi
+     &                       * 180d0 / pi
         if (rawbet .gt. 0) then
            phi1 = -phi1
            phi2 = -phi2
