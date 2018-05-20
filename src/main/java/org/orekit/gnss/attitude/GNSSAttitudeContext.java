@@ -344,28 +344,19 @@ class GNSSAttitudeContext implements TimeStamped {
     public TimeStampedAngularCoordinates turnCorrectedAttitude(final double yaw, final double yawDot)
         throws OrekitException {
 
-        // zero yaw attitude
-        final Vector3D p  = svPV.getPosition();
-        final Vector3D v  = svPV.getVelocity();
-        final Vector3D a  = svPV.getAcceleration();
-        final double   r2 = p.getNormSq();
-        final double   r  = FastMath.sqrt(r2);
-        final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
-        final PVCoordinates momentum = PVCoordinates.crossProduct(svPV, new PVCoordinates(v, a, keplerianJerk));
-        final TimeStampedAngularCoordinates zeroYaw =
-                        new TimeStampedAngularCoordinates(svPV.getDate(),
-                                                          svPV.normalize(), momentum.normalize(),
-                                                          MINUS_Z, PLUS_Y,
-                                                          1.0e-9);
-
-        // compute a linear yaw model
+        // compute a linear yaw correction model
         final AngularCoordinates correction =
-                        new AngularCoordinates(new Rotation(Vector3D.PLUS_K, yaw,
+                        new AngularCoordinates(new Rotation(Vector3D.PLUS_K, -yaw + yawAngle(),
                                                             RotationConvention.FRAME_TRANSFORM),
-                                               new Vector3D(yawDot, Vector3D.PLUS_K));
+                                               new Vector3D(-yawDot, Vector3D.PLUS_K));
 
         // combine the two parts of the attitude
-        return zeroYaw.addOffset(correction);
+        final AngularCoordinates corrected = correction.addOffset(getNominalYaw());
+
+        return new TimeStampedAngularCoordinates(getNominalYaw().getDate(),
+                                                 corrected.getRotation(),
+                                                 corrected.getRotationRate(),
+                                                 corrected.getRotationAcceleration());
 
     }
 
