@@ -17,15 +17,14 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -59,6 +58,9 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
 
+    /** Derivation order. */
+    private static final int ORDER = 2;
+
     /** Indicator for half orbit from orbital noon to orbital midnight or the other way round. */
     private final double towardsEclipse;
 
@@ -76,6 +78,9 @@ class GNSSAttitudeContext implements TimeStamped {
 
     /** Nominal yaw. */
     private final TimeStampedAngularCoordinates nominalYaw;
+
+    /** Nominal yaw. */
+    private final FieldRotation<DerivativeStructure> nominalYawDS;
 
     /** Spacecraft angular velocity. */
     private double muRate;
@@ -108,8 +113,8 @@ class GNSSAttitudeContext implements TimeStamped {
 
         this.towardsEclipse = -Vector3D.dotProduct(sunPV.getPosition(), svPV.getVelocity());
         this.svPV           = svPV;
-        final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(2);
-        this.svPVDS  = svPV.toDerivativeStructurePV(2);
+        final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
+        this.svPVDS  = svPV.toDerivativeStructurePV(ORDER);
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().
                               multiply(svPVDS.getPosition().getNorm()));
@@ -125,6 +130,7 @@ class GNSSAttitudeContext implements TimeStamped {
                                                           MINUS_Z,
                                                           PLUS_Y,
                                                           1.0e-9);
+        this.nominalYawDS = nominalYaw.toDerivativeStructureRotation(ORDER);
 
         // TODO: the Kouba model assumes perfectly circular orbit, it should really be:
         // this.muRate = svPV.getAngularVelocity();
@@ -181,6 +187,14 @@ class GNSSAttitudeContext implements TimeStamped {
     public double yawAngle() {
         final Vector3D xSat = nominalYaw.getRotation().revert().applyTo(Vector3D.PLUS_I);
         return FastMath.copySign(Vector3D.angle(svPV.getVelocity(), xSat), -beta.getReal());
+    }
+
+    /** Compute nominal yaw angle.
+     * @return nominal yaw angle
+     */
+    public DerivativeStructure yawAngleDS() {
+        final FieldVector3D<DerivativeStructure> xSat = nominalYawDS.revert().applyTo(Vector3D.PLUS_I);
+        return FastMath.copySign(FieldVector3D.angle(svPV.getVelocity(), xSat), -beta.getReal());
     }
 
     /** Set up the midnight/noon turn region.
@@ -345,18 +359,16 @@ class GNSSAttitudeContext implements TimeStamped {
         throws OrekitException {
 
         // compute a linear yaw correction model
-        final AngularCoordinates correction =
-                        new AngularCoordinates(new Rotation(Vector3D.PLUS_K, -yaw + yawAngle(),
-                                                            RotationConvention.FRAME_TRANSFORM),
-                                               new Vector3D(-yawDot, Vector3D.PLUS_K));
+        final DerivativeStructure nominalAngle   = yawAngleDS();
+        final DerivativeStructure correctedAngle = nominalAngle.getFactory().build(yaw, yawDot, 0.0);
+        final TimeStampedAngularCoordinates correction =
+                        new TimeStampedAngularCoordinates(nominalYaw.getDate(),
+                                                          new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
+                                                                              nominalAngle.subtract(correctedAngle),
+                                                                              RotationConvention.FRAME_TRANSFORM));
 
         // combine the two parts of the attitude
-        final AngularCoordinates corrected = correction.addOffset(getNominalYaw());
-
-        return new TimeStampedAngularCoordinates(getNominalYaw().getDate(),
-                                                 corrected.getRotation(),
-                                                 corrected.getRotationRate(),
-                                                 corrected.getRotationAcceleration());
+        return correction.addOffset(getNominalYaw());
 
     }
 
