@@ -364,8 +364,8 @@ class GNSSAttitudeContext implements TimeStamped {
         final TimeStampedAngularCoordinates correction =
                         new TimeStampedAngularCoordinates(nominalYaw.getDate(),
                                                           new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
-                                                                              nominalAngle.subtract(correctedAngle),
-                                                                              RotationConvention.FRAME_TRANSFORM));
+                                                                              correctedAngle.subtract(nominalAngle),
+                                                                              RotationConvention.VECTOR_OPERATOR));
 
         // combine the two parts of the attitude
         return correction.addOffset(getNominalYaw());
