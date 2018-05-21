@@ -60,7 +60,7 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
     protected final TLE tle;
@@ -154,7 +154,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** 3/2 * C1. */
     protected double t2cof;
 
-    // CHECKSTYLE: resume VisibilityModifierCheck
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /** TLE frame. */
     private final Frame teme;

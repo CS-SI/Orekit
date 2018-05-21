@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added natural order for observed measurements primarily based on
+        chronological order, but with also value comparisons if measurements
+        are simultaneous (which occurs a lot in GNSS), and ensuring no
+        measurements are lost if stored in SortedSet
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added loading of RINEX observation files (versions 2 and 3)
+      </action>
       <action dev="luc" type="fix">
         Fixed compression table reset problem in .Z files
         Fixes issue #450.
@@ -115,14 +124,17 @@
         Add FunctionalDetector.
       </action>
       <action dev="luc" type="add">
-        Added support for version d of SP3 files.
+        Added handling of IGS ANTEX GNSS antenna models file.
+      </action>
+      <action dev="luc" type="add">
+        Added support for SP3-d files.
       </action>
       <action dev="luc" type="fix">
         Improved SP3 files parsing.
         Some files already operationally produced by IGS Multi-GNSS Experiment (MGEX)
         exceed the maximum number of satellites supported by the regular SP3-c file
-        format (which is 85) and extended the header. The parser now supports this
-        extension.
+        format (which is 85 satellites) and extended the header, without updating the
+        format version to SP3-d, which specifically raises the 85 satellites limitation.
         Fixes issue #376.
       </action>
       <action dev="maxime" type="add">
