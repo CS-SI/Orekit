@@ -126,6 +126,9 @@ C        data line
             ecletm(iprn, 1) = 0
         endif
         preprn = iprn
+        neclips(iprn)  = 0
+        eclstm(iprn,1) = 0.0d0
+        ecletm(iprn,1) = 0.0d0
         call eclips(idir, iprn, ttag, svbcos, anoon, anight,
      &              neclips, eclstm, ecletm, ieclips, pi,
      &              xsv, out, vsvc, beta, iblk, betaini)
