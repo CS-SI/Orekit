@@ -35,28 +35,27 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testLargeNegativeBeta() throws OrekitException {
-        doTest("beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
+        doTestAxes("beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
     }
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        doTest("beta-small-negative-GLONASS.txt", 4.7e-13, 4.7e-13, 5.7e-16);
+        doTestAxes("beta-small-negative-GLONASS.txt", 4.7e-13, 4.7e-13, 5.7e-16);
     }
 
     @Test
     public void testCrossingBeta() throws OrekitException {
-        // TODO check test
-        doTest("beta-crossing-GLONASS.txt", 0.0015, 0.0015, 6.7e-16);
+        doTestAxes("beta-crossing-GLONASS.txt", 0.0017, 0.0017, 6.7e-16);
     }
 
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
-        doTest("beta-small-positive-GLONASS.txt", 2.4e-12, 2.4e-12, 3.9e-16);
+        doTestAxes("beta-small-positive-GLONASS.txt", 2.4e-12, 2.4e-12, 3.9e-16);
     }
 
     @Test
     public void testLargePositiveBeta() throws OrekitException {
-        doTest("beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
+        doTestAxes("beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
     }
 
 }

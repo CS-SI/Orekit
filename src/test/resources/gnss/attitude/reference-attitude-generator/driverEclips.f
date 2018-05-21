@@ -14,6 +14,8 @@ C
       character line*512, type*11, id1*3, id2*4, system*1
       character input*512, output*512
 C
+      double precision min, sqrt, cos, acos
+C
       if (iargc() .ne.2) then
          write (0, *) 'usage: driverEclips input-file output-file'
          stop
@@ -126,9 +128,11 @@ C        data line
             ecletm(iprn, 1) = 0
         endif
         preprn = iprn
-        neclips(iprn)  = 0
-        eclstm(iprn,1) = 0.0d0
-        ecletm(iprn,1) = 0.0d0
+        if (abs(rawbet) .gt. 0.7d0) then
+            neclips(iprn)  = 0
+            eclstm(iprn,1) = 0.0d0
+            ecletm(iprn,1) = 0.0d0
+        endif
         call eclips(idir, iprn, ttag, svbcos, anoon, anight,
      &              neclips, eclstm, ecletm, ieclips, pi,
      &              xsv, out, vsvc, beta, iblk, betaini)

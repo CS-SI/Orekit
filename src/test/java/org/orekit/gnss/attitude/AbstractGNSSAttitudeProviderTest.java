@@ -80,7 +80,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     }
 
-    protected void doTest(final String fileName, final double tolX, double tolY, double tolZ)
+    protected void doTestAxes(final String fileName, final double tolX, double tolY, double tolZ)
         throws OrekitException {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
@@ -130,8 +130,6 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 maxErrorY = FastMath.max(maxErrorY, errorY);
                 final double errorZ = CheckAxis.Z_AXIS.error(attitude, x, z);
                 maxErrorZ = FastMath.max(maxErrorZ, errorZ);
-                System.out.println(parsedLine.date + " " + FastMath.toDegrees(errorX) + " " +
-                                   FastMath.toDegrees(errorY) + " " + FastMath.toDegrees(errorZ));
             }
 
         }

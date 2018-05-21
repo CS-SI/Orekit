@@ -35,7 +35,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testLargeNegativeBeta() throws OrekitException {
-        doTest("beta-large-negative-BEIDOU-2M.txt", 1.1e-15, 1.1e-15, 5.6e-16);
+        doTestAxes("beta-large-negative-BEIDOU-2M.txt", 1.1e-15, 1.1e-15, 5.6e-16);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-negative-BEIDOU-2M.txt", 0.0014, 8.9e-16, 4.8e-16);
+        doTestAxes("beta-small-negative-BEIDOU-2M.txt", 0.0014, 8.9e-16, 4.8e-16);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-crossing-BEIDOU-2M.txt", 0.0018, 6.2e-16, 3.7e-16);
+        doTestAxes("beta-crossing-BEIDOU-2M.txt", 0.0018, 6.2e-16, 3.7e-16);
     }
 
     @Test
@@ -65,12 +65,12 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-positive-BEIDOU-2M.txt", 0.0013, 7.2e-16, 4.1e-16);
+        doTestAxes("beta-small-positive-BEIDOU-2M.txt", 0.0013, 7.2e-16, 4.1e-16);
     }
 
     @Test
     public void testLargePositiveBeta() throws OrekitException {
-        doTest("beta-large-positive-BEIDOU-2M.txt", 9.0e-16, 8.6e-16, 3.1e-16);
+        doTestAxes("beta-large-positive-BEIDOU-2M.txt", 9.0e-16, 8.6e-16, 3.1e-16);
     }
 
 }

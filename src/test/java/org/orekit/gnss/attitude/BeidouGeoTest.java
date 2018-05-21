@@ -40,7 +40,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-large-negative-BEIDOU-2G.txt", 7.1e-4, 5.4e-16, 3.4e-16);
+        doTestAxes("beta-large-negative-BEIDOU-2G.txt", 7.1e-4, 5.4e-16, 3.4e-16);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-negative-BEIDOU-2G.txt", 3.1e-4, 7.6e-16, 4.0e-16);
+        doTestAxes("beta-small-negative-BEIDOU-2G.txt", 3.1e-4, 7.6e-16, 4.0e-16);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-crossing-BEIDOU-2G.txt", 5.3e-4, 7.4e-16, 4.6e-16);
+        doTestAxes("beta-crossing-BEIDOU-2G.txt", 5.3e-4, 7.4e-16, 4.6e-16);
     }
 
     @Test
@@ -70,7 +70,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-positive-BEIDOU-2G.txt", 5.8e-4, 5.7e-16, 4.3e-16);
+        doTestAxes("beta-small-positive-BEIDOU-2G.txt", 5.8e-4, 5.7e-16, 4.3e-16);
     }
 
 }

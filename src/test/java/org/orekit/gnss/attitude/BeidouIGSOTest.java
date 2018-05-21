@@ -40,7 +40,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-large-negative-BEIDOU-2I.txt", 1.4e-15, 1.4e-15, 4.8e-16);
+        doTestAxes("beta-large-negative-BEIDOU-2I.txt", 1.4e-15, 1.4e-15, 4.8e-16);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-negative-BEIDOU-2I.txt", 0.0033, 7.6e-16, 4.6e-16);
+        doTestAxes("beta-small-negative-BEIDOU-2I.txt", 0.0033, 7.6e-16, 4.6e-16);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-crossing-BEIDOU-2I.txt", 0.0032, 7.6e-16, 3.7e-16);
+        doTestAxes("beta-crossing-BEIDOU-2I.txt", 0.0032, 7.6e-16, 3.7e-16);
     }
 
     @Test
@@ -70,7 +70,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-small-positive-BEIDOU-2I.txt", 0.0032, 6.8e-16, 7.5e-16);
+        doTestAxes("beta-small-positive-BEIDOU-2I.txt", 0.0032, 6.8e-16, 7.5e-16);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
         // whereas Orekit takes the non-orthogonality of position and velocity into account
         // this can be seen as the Y and Z axes are almost perfect, hence the reference X
         // does not really correspond to an orthogonal frame
-        doTest("beta-large-positive-BEIDOU-2I.txt", 9.2e-16, 7.8e-16, 4.8e-16);
+        doTestAxes("beta-large-positive-BEIDOU-2I.txt", 9.2e-16, 7.8e-16, 4.8e-16);
     }
 
 }
