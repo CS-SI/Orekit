@@ -83,7 +83,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     protected void doTest(final String fileName, final double tolX, double tolY, double tolZ)
         throws OrekitException {
 
-        if (getClass().getResource("/gnss/" + fileName) == null) {
+        if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
             Assert.fail("file not found: " + fileName);
         }
 
@@ -145,7 +145,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     private List<List<ParsedLine>> parseFile(final String fileName, final Frame eme2000, final Frame itrf)
         throws OrekitException {
         final List<List<ParsedLine>> dataBlocks = new ArrayList<>();
-        try (InputStream is = getClass().getResourceAsStream("/gnss/" + fileName);
+        try (InputStream is = getClass().getResourceAsStream("/gnss/attitude/" + fileName);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader)) {
 
