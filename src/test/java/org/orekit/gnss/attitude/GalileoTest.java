@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -31,8 +33,29 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
         return new Galileo(validityStart, validityEnd, sun, inertialFrame);
     }
 
-    protected String getSuffix() {
-        return "GALILEO";
+    @Test
+    public void testLargeNegativeBeta() throws OrekitException {
+        doTest("beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
+    }
+
+    @Test
+    public void testSmallNegativeBeta() throws OrekitException {
+        doTest("beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 4.0e-16);
+    }
+
+    @Test
+    public void testCrossingBeta() throws OrekitException {
+        doTest("beta-crossing-GALILEO.txt", 1.0e-100, 1.0e-100, 1.0e-100);
+    }
+
+    @Test
+    public void testSmallPositiveBeta() throws OrekitException {
+        doTest("beta-small-positive-GALILEO.txt", 3.9e-12, 3.9e-12, 7.8e-16);
+    }
+
+    @Test
+    public void testLargePositiveBeta() throws OrekitException {
+        doTest("beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
     }
 
 }

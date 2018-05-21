@@ -21,15 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
@@ -58,76 +58,87 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                            final Frame inertialFrame,
                                                            final int prnNumber);
 
-    protected abstract String getSuffix();
+    protected enum CheckAxis {
 
-    @Test
-    public void testLargeNegativeBeta() throws OrekitException {
-        doTest("beta-large-negative-" + getSuffix() + ".txt");
-    }
+        X_AXIS(Vector3D.PLUS_I, (x, z) -> x),
+        Y_AXIS(Vector3D.PLUS_J, (x, z) -> Vector3D.crossProduct(z, x)),
+        Z_AXIS(Vector3D.PLUS_K, (x, z) -> z);
 
-    @Test
-    public void testSmallNegativeBeta() throws OrekitException {
-        doTest("beta-small-negative-" + getSuffix() + ".txt");
-    }
+        final Vector3D canonical;
+        final BiFunction<Vector3D, Vector3D, Vector3D> getRefAxis;
 
-    @Test
-    public void testCrossingBeta() throws OrekitException {
-        doTest("beta-crossing-" + getSuffix() + ".txt");
-    }
-
-    @Test
-    public void testSmallPositiveBeta() throws OrekitException {
-        doTest("beta-small-positive-" + getSuffix() + ".txt");
-    }
-
-    @Test
-    public void testLargePositiveBeta() throws OrekitException {
-        doTest("beta-large-positive-" + getSuffix() + ".txt");
-    }
-
-    private void doTest(final String fileName) throws OrekitException {
-
-        if (getClass().getResource("/gnss/" + fileName) != null) {
-
-            // the transforms between EME2000 and ITRF will not really be correct here
-            // because the corresponding EOP are not present in the resources used
-            // however, this is not a problem because we rely only on data generated
-            // in ITRF and fully consistent (both EOP and Sun ephemeris were used at
-            // data generation phase). The test performed here will convert back
-            // to EME2000 (which will be slightly offset due to missing EOP), but
-            // Sun/Earth/spacecraft relative geometry will remain consistent
-            final Frame eme2000 = FramesFactory.getEME2000();
-            final Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
-            final List<List<ParsedLine>> dataBlocks = parseFile(fileName, eme2000, itrf);
-            for (final List<ParsedLine> dataBlock : dataBlocks) {
-                final AbsoluteDate validityStart = dataBlock.get(0).date;
-                final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
-                final int          prnNumber     = dataBlock.get(0).prnNumber;
-                final PVCoordinatesProvider fakedSun = (date, frame) ->
-                TimeStampedPVCoordinates.interpolate(date,
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     dataBlock.stream().
-                                                     filter(parsedLine ->
-                                                     FastMath.abs(parsedLine.date.durationFrom(date)) < 300).
-                                                     map(parsedLine ->
-                                                     new TimeStampedPVCoordinates(parsedLine.date,
-                                                                                  parsedLine.sunP,
-                                                                                  Vector3D.ZERO,
-                                                                                  Vector3D.ZERO)));
-                final GNSSAttitudeProvider attitudeProvider =
-                                createProvider(validityStart, validityEnd, fakedSun, eme2000, prnNumber);
-                Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
-                Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
-
-                for (final ParsedLine parsedLine : dataBlock) {
-                    final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
-                    final Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-                    System.out.println(parsedLine.date + " " + FastMath.toDegrees(Vector3D.angle(xSat, parsedLine.eclipsX)));
-                    Assert.assertEquals(0.0, Vector3D.angle(xSat, parsedLine.eclipsX), 4.0e-5);
-                }
-
-            }
+        CheckAxis(final Vector3D canonical, final BiFunction<Vector3D, Vector3D, Vector3D> getRefAxis) {
+            this.canonical  = canonical;
+            this.getRefAxis = getRefAxis;
         }
+
+        double error(final Attitude attitude, final Vector3D x, final Vector3D z) {
+            final Vector3D computedAxis  = attitude.getRotation().applyInverseTo(canonical);
+            final Vector3D referenceAxis = getRefAxis.apply(x, z);
+            return Vector3D.angle(computedAxis, referenceAxis);
+        }
+
+    }
+
+    protected void doTest(final String fileName, final double tolX, double tolY, double tolZ)
+        throws OrekitException {
+
+        if (getClass().getResource("/gnss/" + fileName) == null) {
+            Assert.fail("file not found: " + fileName);
+        }
+
+        // the transforms between EME2000 and ITRF will not really be correct here
+        // because the corresponding EOP are not present in the resources used
+        // however, this is not a problem because we rely only on data generated
+        // in ITRF and fully consistent (both EOP and Sun ephemeris were used at
+        // data generation phase). The test performed here will convert back
+        // to EME2000 (which will be slightly offset due to missing EOP), but
+        // Sun/Earth/spacecraft relative geometry will remain consistent
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final List<List<ParsedLine>> dataBlocks = parseFile(fileName, eme2000, itrf);
+        double maxErrorX = 0;
+        double maxErrorY = 0;
+        double maxErrorZ = 0;
+        for (final List<ParsedLine> dataBlock : dataBlocks) {
+            final AbsoluteDate validityStart = dataBlock.get(0).date;
+            final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
+            final int          prnNumber     = dataBlock.get(0).prnNumber;
+            final PVCoordinatesProvider fakedSun = (date, frame) ->
+            TimeStampedPVCoordinates.interpolate(date,
+                                                 CartesianDerivativesFilter.USE_P,
+                                                 dataBlock.stream().
+                                                 filter(parsedLine ->
+                                                 FastMath.abs(parsedLine.date.durationFrom(date)) < 300).
+                                                 map(parsedLine ->
+                                                 new TimeStampedPVCoordinates(parsedLine.date,
+                                                                              parsedLine.sunP,
+                                                                              Vector3D.ZERO,
+                                                                              Vector3D.ZERO)));
+            final GNSSAttitudeProvider attitudeProvider =
+                            createProvider(validityStart, validityEnd, fakedSun, eme2000, prnNumber);
+            Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
+            Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
+
+            for (final ParsedLine parsedLine : dataBlock) {
+                final Attitude attitude = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
+                final Vector3D x = parsedLine.eclipsX;
+                final Vector3D z = parsedLine.orbit.getPVCoordinates().getPosition().normalize().negate();
+                final double errorX = CheckAxis.X_AXIS.error(attitude, x, z);
+                maxErrorX = FastMath.max(maxErrorX, errorX);
+                final double errorY = CheckAxis.Y_AXIS.error(attitude, x, z);
+                maxErrorY = FastMath.max(maxErrorY, errorY);
+                final double errorZ = CheckAxis.Z_AXIS.error(attitude, x, z);
+                maxErrorZ = FastMath.max(maxErrorZ, errorZ);
+                System.out.println(parsedLine.date + " " + FastMath.toDegrees(errorX) + " " +
+                                   FastMath.toDegrees(errorY) + " " + FastMath.toDegrees(errorZ));
+            }
+
+        }
+
+        Assert.assertEquals(0, maxErrorX, tolX);
+        Assert.assertEquals(0, maxErrorY, tolY);
+        Assert.assertEquals(0, maxErrorZ, tolZ);
 
     }
 
@@ -135,7 +146,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         throws OrekitException {
         final List<List<ParsedLine>> dataBlocks = new ArrayList<>();
         try (InputStream is = getClass().getResourceAsStream("/gnss/" + fileName);
-             Reader reader = new InputStreamReader(is, Charset.forName("UTF-8"));
+             Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(reader)) {
 
             // parse the reference data file into contiguous blocks
@@ -170,12 +181,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         final int          prnNumber;
         final Orbit        orbit;
         final Vector3D     sunP;
-        final double       beta;
-        final double       delta;
-        final Vector3D     nominalX;
-        final double       nominalPsi;
         final Vector3D     eclipsX;
-        final double       eclipsPsi;
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) throws OrekitException {
             final String[] fields = line.split("\\s+");
@@ -194,16 +200,16 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             sunP       = t.transformPosition(new Vector3D(Double.parseDouble(fields[12]),
                                                           Double.parseDouble(fields[13]),
                                                           Double.parseDouble(fields[14])));
-            beta       = FastMath.toRadians(Double.parseDouble(fields[15]));
-            delta      = FastMath.toRadians(Double.parseDouble(fields[16]));
-            nominalX   = t.transformVector(new Vector3D(Double.parseDouble(fields[17]),
-                                                        Double.parseDouble(fields[18]),
-                                                        Double.parseDouble(fields[19])));
-            nominalPsi = FastMath.toRadians(Double.parseDouble(fields[20]));
+//            beta       = FastMath.toRadians(Double.parseDouble(fields[15]));
+//            delta      = FastMath.toRadians(Double.parseDouble(fields[16]));
+//            nominalX   = t.transformVector(new Vector3D(Double.parseDouble(fields[17]),
+//                                                        Double.parseDouble(fields[18]),
+//                                                        Double.parseDouble(fields[19])));
+//            nominalPsi = FastMath.toRadians(Double.parseDouble(fields[20]));
             eclipsX    = t.transformVector(new Vector3D(Double.parseDouble(fields[21]),
                                                         Double.parseDouble(fields[22]),
                                                         Double.parseDouble(fields[23])));
-            eclipsPsi  = FastMath.toRadians(Double.parseDouble(fields[24]));
+//            eclipsPsi  = FastMath.toRadians(Double.parseDouble(fields[24]));
         }
 
     }

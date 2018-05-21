@@ -88,7 +88,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAngle(aNight - FastMath.PI));
+                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI));
             if (context.inTurnTimeRange(context.getDate(), 0)) {
 
                 // we need to ensure beta sign does not change during the turn

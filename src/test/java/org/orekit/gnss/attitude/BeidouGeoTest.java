@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -31,8 +33,44 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
         return new BeidouGeo(validityStart, validityEnd, sun, inertialFrame);
     }
 
-    protected String getSuffix() {
-        return "BEIDOU-2G";
+    @Test
+    public void testLargeNegativeBeta() throws OrekitException {
+        // the "large" error for the X axis (a few hundredth of a degree)
+        // are due to the reference fortran program assuming perfect circular orbits
+        // whereas Orekit takes the non-orthogonality of position and velocity into account
+        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
+        // does not really correspond to an orthogonal frame
+        doTest("beta-large-negative-BEIDOU-2G.txt", 7.1e-4, 5.4e-16, 3.4e-16);
+    }
+
+    @Test
+    public void testSmallNegativeBeta() throws OrekitException {
+        // the "large" error for the X axis (a few hundredth of a degree)
+        // are due to the reference fortran program assuming perfect circular orbits
+        // whereas Orekit takes the non-orthogonality of position and velocity into account
+        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
+        // does not really correspond to an orthogonal frame
+        doTest("beta-small-negative-BEIDOU-2G.txt", 3.1e-4, 7.6e-16, 4.0e-16);
+    }
+
+    @Test
+    public void testCrossingBeta() throws OrekitException {
+        // the "large" error for the X axis (a few hundredth of a degree)
+        // are due to the reference fortran program assuming perfect circular orbits
+        // whereas Orekit takes the non-orthogonality of position and velocity into account
+        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
+        // does not really correspond to an orthogonal frame
+        doTest("beta-crossing-BEIDOU-2G.txt", 5.3e-4, 7.4e-16, 4.6e-16);
+    }
+
+    @Test
+    public void testSmallPositiveBeta() throws OrekitException {
+        // the "large" error for the X axis (a few hundredth of a degree)
+        // are due to the reference fortran program assuming perfect circular orbits
+        // whereas Orekit takes the non-orthogonality of position and velocity into account
+        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
+        // does not really correspond to an orthogonal frame
+        doTest("beta-small-positive-BEIDOU-2G.txt", 5.8e-4, 5.7e-16, 4.3e-16);
     }
 
 }

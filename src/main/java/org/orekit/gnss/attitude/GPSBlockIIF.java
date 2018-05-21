@@ -78,36 +78,36 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
             final double absBeta = FastMath.abs(context.getBeta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
-                                context.inOrbitPlaneAngle(aNight - FastMath.PI));
+                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI));
             if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
-                final double phi;
+                final double phiDot;
+                final double linearPhi;
                 if (context.inSunSide()) {
                     // noon turn
-                    final double linearPhi;
                     if (beta > YAW_BIAS && beta < 0) {
                         // noon turn problem for small negative beta in block IIF
                         // rotation is in the wrong direction for these spacecrafts
-                        linearPhi = phiStart + FastMath.copySign(YAW_RATE, beta) * dtStart;
+                        phiDot    = FastMath.copySign(YAW_RATE, beta);
+                        linearPhi = phiStart + phiDot * dtStart;
                     } else {
                         // regular noon turn
-                        linearPhi = phiStart - FastMath.copySign(YAW_RATE, beta) * dtStart;
+                        phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                        linearPhi = phiStart + phiDot * dtStart;
                     }
                     // TODO: there is no protection against overshooting phiEnd as in night turn
                     // there should probably be some protection
-                    phi = linearPhi;
                 } else {
                     // midnight turn
-                    final double yawEnd = context.yawRate(beta);
-                    phi = phiStart - yawEnd * dtStart;
+                    phiDot    = context.yawRate(beta);
+                    linearPhi = phiStart + phiDot * dtStart;
                 }
 
-                // TODO
-                return null;
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 

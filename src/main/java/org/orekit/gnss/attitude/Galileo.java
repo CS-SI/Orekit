@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.SinCos;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -76,22 +76,24 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 BETA_X :
-                                context.inOrbitPlaneAngle(BETA_X));
+                                context.inOrbitPlaneAbsoluteAngle(BETA_X));
             if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
 
                 // handling both noon and midnight turns at once
-                final double beta   = context.getBeta();
-                final SinCos scBeta = FastMath.sinCos(beta);
-                final double sinY   = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
-                final double sd     = FastMath.copySign(FastMath.sin(context.getDelta()), context.getSVBcos());
-                final double c      = sd * scBeta.cos();
-                final double shy    = 0.5 * ((-sinY - scBeta.sin()) +
-                                             (-sinY + scBeta.sin()) *
-                                             FastMath.cos(FastMath.PI * FastMath.abs(c) / FastMath.sin(BETA_X)));
-                final double phi    = FastMath.atan2(shy, c);
+                final DerivativeStructure beta     = context.getBetaDS();
+                final DerivativeStructure cosBeta  = beta.cos();
+                final DerivativeStructure sinBeta  = beta.sin();
+                final double              sinY     = FastMath.copySign(FastMath.sin(BETA_Y), context.getSecuredBeta());
+                final DerivativeStructure sd       = FastMath.sin(context.getDeltaDS()).
+                                                     multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
+                final DerivativeStructure c        = sd.multiply(cosBeta);
+                final DerivativeStructure shy      = sinBeta.negate().subtract(sinY).
+                                                     add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                     multiply(0.5);
+                final DerivativeStructure phi     = FastMath.atan2(shy, c);
 
-                // TODO
-                return null;
+                return context.turnCorrectedAttitude(phi);
+
             }
 
         }

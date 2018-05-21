@@ -88,37 +88,40 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
             final double absBeta = FastMath.abs(context.getBeta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
-                                context.inOrbitPlaneAngle(aNight - FastMath.PI));
+                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI));
             if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
-                final double phi;
+                final double linearPhi;
+                final double phiDot;
                 if (context.inSunSide()) {
                     // noon turn
-                    final double linearPhi;
                     if (beta > 0 && beta < YAW_BIAS) {
                         // noon turn problem for small positive beta in block IIA
                         // rotation is in the wrong direction for these spacecrafts
-                        linearPhi = phiStart + FastMath.copySign(yawRate, beta) * dtStart;
+                        phiDot    = FastMath.copySign(yawRate, beta);
+                        linearPhi = phiStart + phiDot * dtStart;
                     } else {
                         // regular noon turn
-                        linearPhi = phiStart - FastMath.copySign(yawRate, beta) * dtStart;
+                        phiDot    = -FastMath.copySign(yawRate, beta);
+                        linearPhi = phiStart + phiDot * dtStart;
                     }
                     // TODO: there is no protection against overshooting phiEnd as in night turn
                     // there should probably be some protection
-                    phi = linearPhi;
                 } else {
                     // midnight turn
                     final double dtEnd = dtStart - context.getTurnDuration();
                     if (dtEnd < 0) {
                         // we are within the turn itself
-                        phi = phiStart + yawRate * dtStart;
+                        phiDot    = yawRate;
+                        linearPhi = phiStart + phiDot * dtStart;
                     } else {
                         // we are in the recovery phase after turn
-                        final double phiEnd   = phiStart + yawRate * context.getTurnDuration();
+                        phiDot = yawRate;
+                        final double phiEnd   = phiStart + phiDot * context.getTurnDuration();
                         final double deltaPhi = context.yawAngle() - phiEnd;
                         if (FastMath.abs(deltaPhi / yawRate) <= dtEnd) {
                             // time since turn end was sufficient for recovery
@@ -126,13 +129,12 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                             return context.getNominalYaw();
                         } else {
                             // recovery is not finished yet
-                            phi = phiEnd + FastMath.copySign(yawRate * dtEnd, deltaPhi);
+                            linearPhi = phiEnd + FastMath.copySign(yawRate * dtEnd, deltaPhi);
                         }
                     }
                 }
 
-                // TODO
-                return null;
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 

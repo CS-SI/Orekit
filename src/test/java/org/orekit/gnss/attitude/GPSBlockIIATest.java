@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -31,8 +33,29 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         return new GPSBlockIIA(validityStart, validityEnd, sun, inertialFrame, prnNumber);
     }
 
-    protected String getSuffix() {
-        return "BLOCK-IIA";
+    @Test
+    public void testLargeNegativeBeta() throws OrekitException {
+        doTest("beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
+    }
+
+    @Test
+    public void testSmallNegativeBeta() throws OrekitException {
+        doTest("beta-small-negative-BLOCK-IIA.txt", 2.7e-12, 2.7e-12, 6.2e-16);
+    }
+
+    @Test
+    public void testCrossingBeta() throws OrekitException {
+        doTest("beta-crossing-BLOCK-IIA.txt", 1.0e-100, 1.0e-100, 1.0e-100);
+    }
+
+    @Test
+    public void testSmallPositiveBeta() throws OrekitException {
+        doTest("beta-small-positive-BLOCK-IIA.txt", 1.6e-12, 1.6e-12, 9.8e-16);
+    }
+
+    @Test
+    public void testLargePositiveBeta() throws OrekitException {
+        doTest("beta-large-positive-BLOCK-IIA.txt", 9.0e-16, 1.2e-15, 8.0e-16);
     }
 
 }

@@ -79,24 +79,27 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
-                final double phi;
+                final double phiDot;
+                final double linearPhi;
 
                 if (context.inSunSide()) {
                     // noon turn
-                    final double linearPhi = phiStart - FastMath.copySign(YAW_RATE, beta) * dtStart;
+                    phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
                     // TODO: there is no protection against overshooting phiEnd as in night turn
                     // there should probably be some protection
-                    phi = linearPhi;
                 } else {
                     // midnight turn
-                    final double linearPhi = phiStart + FastMath.copySign(YAW_RATE, beta) * dtStart;
-                    final double phiEnd    = context.getYawEnd(beta);
+                    phiDot    = FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
+                    final double phiEnd = context.getYawEnd(beta);
                     // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
-                    phi = (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) ? phiEnd : linearPhi;
+                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
+                        return context.getNominalYaw();
+                    }
                 }
 
-                // TODO
-                return null;
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 
