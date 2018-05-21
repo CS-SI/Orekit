@@ -85,12 +85,12 @@ C        data line
            anoon      = nan
            anight     = 180.0d0 + 13.25d0
         else if (type .eq. 'GALILEO-1  ') then
-           iprn       = isat + 100
+           iprn       = isat + 64
            iblk(iprn) = -1
            anoon      = 15.0
            anight     = nan
         else if (type .eq. 'GALILEO-2  ') then
-           iprn       = isat + 100
+           iprn       = isat + 64
            iblk(iprn) = -1
            anoon      = 15.0d0 * pi / 180.0d0
            anight     = nan
