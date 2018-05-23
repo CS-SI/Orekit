@@ -17,6 +17,7 @@
 package org.orekit.estimation.sequential;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -49,7 +50,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -608,7 +608,7 @@ public class KalmanEstimatorTest {
         measurements.addAll(rangeMeasurements);
         measurements.addAll(angularMeasurements);
         measurements.addAll(rangeRateMeasurements);
-        measurements.sort(new ChronologicalComparator());
+        measurements.sort(Comparator.naturalOrder());
 
         // Reference propagator for estimation performances
         final NumericalPropagator referencePropagator = measPropagatorBuilder.
@@ -794,7 +794,7 @@ public class KalmanEstimatorTest {
         measurements.addAll(EstimationTestUtils.createMeasurements(propagator1,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 60.0));
-        measurements.sort(new ChronologicalComparator());
+        measurements.sort(Comparator.naturalOrder());
 
         // create orbit estimator
         final RealMatrix processNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {

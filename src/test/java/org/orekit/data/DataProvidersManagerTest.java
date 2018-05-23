@@ -41,7 +41,7 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(22, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
@@ -53,13 +53,17 @@ public class DataProvidersManagerTest {
         Assert.assertFalse(manager.isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader tleCounter = new CountingLoader(false);
-        Assert.assertTrue(manager.feed(".*\\.tle$", tleCounter));
-        Assert.assertEquals(4, tleCounter.getCount());
-        Assert.assertEquals(4, manager.getLoadedDataNames().size());
+        Assert.assertFalse(manager.feed(".*\\.tle$", tleCounter));
+        Assert.assertEquals(0, tleCounter.getCount());
+        Assert.assertEquals(0, manager.getLoadedDataNames().size());
+        CountingLoader txtCounter = new CountingLoader(false);
+        Assert.assertTrue(manager.feed(".*\\.txt$", txtCounter));
+        Assert.assertEquals(5, txtCounter.getCount());
+        Assert.assertEquals(5, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assert.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assert.assertEquals(4, de405Counter.getCount());
-        Assert.assertEquals(8, manager.getLoadedDataNames().size());
+        Assert.assertEquals(9, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -75,7 +79,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(22, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
@@ -190,9 +194,9 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(22, crawler.getCount());
-        Assert.assertEquals(22, filter.getFilteredCount());
-        Assert.assertEquals(22, filter.getOpenedCount());
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18, filter.getFilteredCount());
+        Assert.assertEquals(18, filter.getOpenedCount());
     }
 
     @Test
@@ -203,8 +207,8 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().addFilter(filter);
         CountingLoader crawler = new CountingLoader(false);
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(22, crawler.getCount());
-        Assert.assertEquals(22 * layers, filter.getOpenedCount());
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18 * layers, filter.getOpenedCount());
     }
 
     private static class CountingLoader implements DataLoader {

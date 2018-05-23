@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -33,7 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements TimeStamped {
+public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements ComparableMeasurement {
 
     /** Associated observed measurement. */
     private final T observedMeasurement;
@@ -145,6 +144,12 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements T
      */
     public double getTimeOffset() {
         return observedMeasurement.getDate().durationFrom(states[0].getDate());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getObservedValue() {
+        return observedMeasurement.getObservedValue();
     }
 
     /** Get the estimated value.

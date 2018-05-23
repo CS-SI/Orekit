@@ -26,7 +26,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
 
   * Geometry
@@ -163,6 +163,7 @@
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
+      * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
 
   * Orbit determination
   
@@ -196,6 +197,8 @@
       * right ascension/declination
       * position-velocity
       * inter-satellites range (one way and two way)
+      * GNSS code
+      * GNSS phase
 
     * possibility to add custom measurements
     * several predefined modifiers
@@ -210,9 +213,15 @@
     * possibility to add custom measurement modifiers (even for predefined events)
     * possibility to parse CCSDS Tracking Data Message files
 
+  * GNSS
+
+    * computation of Dilution Of Precision
+    * loading of ANTEX antenna models file
+    * loading of RINEX observation files (version 2 and version 3)
+
   * Orbit file handling
   
-    * loading of SP3-a and SP3-c orbit files
+    * loading of SP3 orbit files (from version a to d)
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format

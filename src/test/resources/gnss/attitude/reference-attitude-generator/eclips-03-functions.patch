@@ -1,0 +1,11 @@
+--- eclips_May2017.f	2018-05-20 11:34:55.164789263 +0200
++++ eclips_May2017_patched.f	2018-05-20 14:28:27.888601830 +0200
+@@ -180,6 +180,8 @@
+ C    &          SMTH, BETAE
+      &          BETAE
+       REAL*8    YAWEND
++      REAL*8    SQRT, ACOS, ATAN, DCOS, COS, ATAN2, SIN, TAN
++      REAL*8    DABS, ABS, SIGN, DMOD, MAX
+ C Dec 12, 2013
+       REAL*8 YBIAS
+       INTEGER*4 IBLK(*), J, I

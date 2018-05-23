@@ -103,6 +103,34 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         }
     }
 
+    /** Getter for the lofType.
+     * @return the lofType
+     */
+    public LOFType getLofType() {
+        return lofType;
+    }
+
+    /** Getter for the positionAngle.
+     * @return the positionAngle
+     */
+    public PositionAngle getPositionAngle() {
+        return positionAngle;
+    }
+
+    /** Getter for the lofCartesianOrbitalParametersEvolution.
+     * @return the lofCartesianOrbitalParametersEvolution
+     */
+    public UnivariateFunction[] getLofCartesianOrbitalParametersEvolution() {
+        return lofCartesianOrbitalParametersEvolution;
+    }
+
+    /** Getter for the propagationParametersEvolution.
+     * @return the propagationParametersEvolution
+     */
+    public UnivariateFunction[] getPropagationParametersEvolution() {
+        return propagationParametersEvolution;
+    }
+
     /** {@inheritDoc} */
     @Override
     public RealMatrix getProcessNoiseMatrix(final SpacecraftState previous,
@@ -137,7 +165,6 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @param previous previous state
      * @param current current state
      * @return physical (i.e. non normalized) orbital process noise matrix in inertial frame
-     * @exception OrekitException if matrix cannot be computed
      */
     private RealMatrix getInertialOrbitalProcessNoiseMatrix(final SpacecraftState previous,
                                                             final SpacecraftState current) {
@@ -196,7 +223,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         final double deltaT = current.getDate().durationFrom(previous.getDate());
 
         // Evaluate the functions, using ΔT as argument
-        final int      propagationProcessNoiseLength = lofCartesianOrbitalParametersEvolution.length;
+        final int      propagationProcessNoiseLength = propagationParametersEvolution.length;
         final double[] propagationProcessNoiseValues = new double[propagationProcessNoiseLength];
 
         // The function return a value which dimension is that of a standard deviation

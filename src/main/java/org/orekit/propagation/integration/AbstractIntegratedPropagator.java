@@ -449,8 +449,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             integrator.clearEventHandlers();
 
-            // set up events added by user
-            setUpUserEventDetectors();
+            // set up events added by user, only if handlers are activated
+            if (activateHandlers) {
+                setUpUserEventDetectors();
+            }
 
             // convert space flight dynamics API to math API
             final ODEState mathInitialState = createInitialState(getInitialIntegrationState());
@@ -606,7 +608,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, true);  //not sure of the mean orbit, should be true
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, meanOrbit);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
