@@ -249,7 +249,7 @@ public class TLESeriesTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:tle/tle-series");
     }
 
 }
