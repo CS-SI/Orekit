@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed compilation problems with JDK 1.8
+        Fixes issue #462.
+      </action>
       <action dev="luc" type="add" >
         Added specific attitude mode for GNSS satellites: GPS (block IIA, block IIF, block IIF),
         GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO). This is still considered experimental as there
