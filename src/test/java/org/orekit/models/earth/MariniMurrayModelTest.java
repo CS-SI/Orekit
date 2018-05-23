@@ -69,7 +69,7 @@ public class MariniMurrayModelTest {
 
         double height = 0;
         double elevation = 10;
-        double expectedValue = 13.25126;
+        double expectedValue = 13.26069;
         double actualValue = model.pathDelay(FastMath.toRadians(elevation), height);
 
         Assert.assertEquals(expectedValue, actualValue, 1.0e-5);

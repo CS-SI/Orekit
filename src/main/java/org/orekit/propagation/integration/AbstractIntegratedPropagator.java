@@ -608,7 +608,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, true);  //not sure of the mean orbit, should be true
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, meanOrbit);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);

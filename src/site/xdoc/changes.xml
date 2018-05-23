@@ -21,11 +21,39 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed error in relative humidity units in Marini-Marray tropospheric model.
+        Fixes issue #352.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed DSST events detection in the osculating case.
+        Fixes issue #398.
+      </action>
+      <action dev="luc" type="fix">
+        Allow several TLE with same date in TLESeries.
+        Fixes issue #411.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed compilation problems with JDK 1.8
+        Fixes issue #462.
+      </action>
+      <action dev="luc" type="add" >
+        Added specific attitude mode for GNSS satellites: GPS (block IIA, block IIF, block IIF),
+        GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO). This is still considered experimental as there
+        are some problems when Sun crosses the orbital plane during a midnight/noon turn maneuver
+        (which is a rare event but nevertheless occurs)
+      </action>
       <action dev="luc" type="add" >
         Added natural order for observed measurements primarily based on
         chronological order, but with also value comparisons if measurements
         are simultaneous (which occurs a lot in GNSS), and ensuring no
         measurements are lost if stored in SortedSet
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added GNSS code measurements
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added GNSS phase measurements (very basic implementation for now, not usable as is)
       </action>
       <action dev="luc" type="add" due-to="Albert Alcarraz García">
         Added loading of RINEX observation files (versions 2 and 3)

@@ -165,7 +165,6 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      * @param previous previous state
      * @param current current state
      * @return physical (i.e. non normalized) orbital process noise matrix in inertial frame
-     * @exception OrekitException if matrix cannot be computed
      */
     private RealMatrix getInertialOrbitalProcessNoiseMatrix(final SpacecraftState previous,
                                                             final SpacecraftState current) {

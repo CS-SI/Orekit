@@ -163,6 +163,7 @@
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
+      * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
 
   * Orbit determination
   
@@ -196,6 +197,8 @@
       * right ascension/declination
       * position-velocity
       * inter-satellites range (one way and two way)
+      * GNSS code
+      * GNSS phase
 
     * possibility to add custom measurements
     * several predefined modifiers
