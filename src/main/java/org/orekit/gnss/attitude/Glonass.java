@@ -16,12 +16,15 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Glonass navigation satellites.
@@ -57,7 +60,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public Glonass(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                   final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                   final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
@@ -96,24 +99,87 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
 
+                final double phiDot;
+                final double linearPhi;
+                final double phiEnd    = context.getYawEnd(beta);
                 if (context.inSunSide()) {
                     // noon turn
-                    final double phiDot    = -FastMath.copySign(YAW_RATE, beta);
-                    final double linearPhi = phiStart + phiDot * dtStart;
-                    // TODO: there is no protection against overshooting phiEnd
-                    // there should probably be some protection
-                    return context.turnCorrectedAttitude(linearPhi, phiDot);
+                    phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
                 } else {
                     // midnight turn
-                    final double phiDot    = FastMath.copySign(YAW_RATE, beta);
-                    final double linearPhi = phiStart + phiDot * dtStart;
-                    final double phiEnd    = context.getYawEnd(beta);
-                    // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
-                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
-                        return context.turnCorrectedAttitude(phiEnd, 0.0);
-                    } else {
-                        return context.turnCorrectedAttitude(linearPhi, phiDot);
-                    }
+                    phiDot    = FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
+                }
+                if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
+                    return context.turnCorrectedAttitude(phiEnd, 0.0);
+                } else {
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
+                }
+
+            }
+
+        }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
+        throws OrekitException {
+
+        final Field<T> field = context.getDate().getField();
+
+        // noon beta angle limit from yaw rate
+        final T realBeta = context.getBeta();
+        final T muRate   = context.getMuRate();
+        final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
+        T       aNoon    = FastMath.atan(muRate.divide(YAW_RATE));
+        if (FastMath.abs(realBeta).getReal() < aNoon.getReal()) {
+            T       yawEnd = field.getZero().add(YAW_END_ZERO);
+            for (int i = 0; i < 3; ++i) {
+                final T delta = muRate.multiply(yawEnd).divide(YAW_RATE);
+                yawEnd = FastMath.abs(context.computePhi(realBeta, delta).
+                                      subtract(context.computePhi(realBeta, delta.negate()))).
+                         multiply(0.5);
+            }
+            aNoon = muRate.multiply(yawEnd).divide(YAW_RATE);
+        }
+
+        final double cNoon  = FastMath.cos(aNoon.getReal());
+        final double cNight = FastMath.cos(aNight.getReal());
+
+        if (context.setUpTurnRegion(cNight, cNoon)) {
+
+            context.setHalfSpan(context.inSunSide() ?
+                                aNoon :
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)));
+            if (context.inTurnTimeRange(context.getDate(), 0)) {
+
+                // we need to ensure beta sign does not change during the turn
+                final T beta     = context.getSecuredBeta();
+                final T phiStart = context.getYawStart(beta);
+                final T dtStart  = context.timeSinceTurnStart(context.getDate());
+
+                final T phiDot;
+                final T linearPhi;
+                final T phiEnd    = context.getYawEnd(beta);
+                if (context.inSunSide()) {
+                    // noon turn
+                    phiDot    = field.getZero().add(-FastMath.copySign(YAW_RATE, beta.getReal()));
+                    linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                } else {
+                    // midnight turn
+                    phiDot    = field.getZero().add(FastMath.copySign(YAW_RATE, beta.getReal()));
+                    linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                }
+                if (phiEnd.getReal() / linearPhi.getReal() < 0 || phiEnd.getReal() / linearPhi.getReal() > 1) {
+                    return context.turnCorrectedAttitude(phiEnd, field.getZero());
+                } else {
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
                 }
 
             }

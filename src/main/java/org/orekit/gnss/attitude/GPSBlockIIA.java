@@ -16,11 +16,14 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for GPS block IIR navigation satellites.
@@ -68,7 +71,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
      * @param prnNumber number within the GPS constellation (between 1 and 32)
      */
     public GPSBlockIIA(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                       final PVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
+                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame, final int prnNumber) {
         super(validityStart, validityEnd, sun, inertialFrame);
         yawRate = FastMath.toRadians(YAW_RATES[prnNumber - 1]);
     }
@@ -109,8 +112,6 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(yawRate, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
-                    // TODO: there is no protection against overshooting phiEnd as in night turn
-                    // there should probably be some protection
                 } else {
                     // midnight turn
                     final double dtEnd = dtStart - context.getTurnDuration();
@@ -123,13 +124,85 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot = yawRate;
                         final double phiEnd   = phiStart + phiDot * context.getTurnDuration();
                         final double deltaPhi = context.yawAngle() - phiEnd;
-                        if (FastMath.abs(deltaPhi / yawRate) <= dtEnd) {
+                        if (FastMath.abs(deltaPhi / phiDot) <= dtEnd) {
                             // time since turn end was sufficient for recovery
                             // we are already back in nominal yaw mode
                             return context.getNominalYaw();
                         } else {
                             // recovery is not finished yet
                             linearPhi = phiEnd + FastMath.copySign(yawRate * dtEnd, deltaPhi);
+                        }
+                    }
+                }
+
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
+
+            }
+
+        }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+
+        final Field<T> field = context.getDate().getField();
+
+        // noon beta angle limit from yaw rate
+        final T      aNoon  = FastMath.atan(context.getMuRate().divide(yawRate));
+        final T      aNight = field.getZero().add(NIGHT_TURN_LIMIT);
+        final double cNoon  = FastMath.cos(aNoon.getReal());
+        final double cNight = FastMath.cos(aNight.getReal());
+
+        if (context.setUpTurnRegion(cNight, cNoon)) {
+
+            final T absBeta = FastMath.abs(context.getBeta());
+            context.setHalfSpan(context.inSunSide() ?
+                                absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))) :
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)));
+            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+
+                // we need to ensure beta sign does not change during the turn
+                final T beta     = context.getSecuredBeta();
+                final T phiStart = context.getYawStart(beta);
+                final T dtStart  = context.timeSinceTurnStart(context.getDate());
+                final T linearPhi;
+                final T phiDot;
+                if (context.inSunSide()) {
+                    // noon turn
+                    if (beta.getReal() > 0 && beta.getReal() < YAW_BIAS) {
+                        // noon turn problem for small positive beta in block IIA
+                        // rotation is in the wrong direction for these spacecrafts
+                        phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                        linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                    } else {
+                        // regular noon turn
+                        phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                        linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                    }
+                } else {
+                    // midnight turn
+                    final T dtEnd = dtStart.subtract(context.getTurnDuration());
+                    if (dtEnd.getReal() < 0) {
+                        // we are within the turn itself
+                        phiDot    = field.getZero().add(yawRate);
+                        linearPhi = phiStart.add(phiDot.multiply(dtStart));
+                    } else {
+                        // we are in the recovery phase after turn
+                        phiDot = field.getZero().add(yawRate);
+                        final T phiEnd   = phiStart.add(phiDot.multiply(context.getTurnDuration()));
+                        final T deltaPhi = context.yawAngle().subtract(phiEnd);
+                        if (FastMath.abs(deltaPhi.divide(phiDot).getReal()) <= dtEnd.getReal()) {
+                            // time since turn end was sufficient for recovery
+                            // we are already back in nominal yaw mode
+                            return context.getNominalYaw();
+                        } else {
+                            // recovery is not finished yet
+                            linearPhi = phiEnd.add(dtEnd.multiply(yawRate).copySign(deltaPhi));
                         }
                     }
                 }

@@ -16,12 +16,16 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Galileo navigation satellites.
@@ -63,7 +67,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public Galileo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                   final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                   final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
@@ -91,6 +95,44 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
                                                      add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
                                                      multiply(0.5);
                 final DerivativeStructure phi     = FastMath.atan2(shy, c);
+
+                return context.turnCorrectedAttitude(phi);
+
+            }
+
+        }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
+
+        if (FastMath.abs(context.getBeta()).getReal() < BETA_Y &&
+            context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
+
+            final Field<T> field = context.getDate().getField();
+            final T        betaX = field.getZero().add(BETA_X);
+            context.setHalfSpan(context.inSunSide() ?
+                                betaX :
+                                context.inOrbitPlaneAbsoluteAngle(betaX));
+            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+
+                // handling both noon and midnight turns at once
+                final FieldDerivativeStructure<T> beta     = context.getBetaDS();
+                final FieldDerivativeStructure<T> cosBeta  = beta.cos();
+                final FieldDerivativeStructure<T> sinBeta  = beta.sin();
+                final T                           sinY     = FastMath.sin(field.getZero().add(BETA_Y)).copySign(context.getSecuredBeta());
+                final FieldDerivativeStructure<T> sd       = FastMath.sin(context.getDeltaDS()).
+                                                             multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
+                final FieldDerivativeStructure<T> c        = sd.multiply(cosBeta);
+                final FieldDerivativeStructure<T> shy      = sinBeta.negate().subtract(sinY).
+                                                             add(sinBeta.subtract(sinY).multiply(c.abs().multiply(FastMath.PI / FastMath.sin(BETA_X)).cos())).
+                                                             multiply(0.5);
+                final FieldDerivativeStructure<T> phi     = FastMath.atan2(shy, c);
 
                 return context.turnCorrectedAttitude(phi);
 

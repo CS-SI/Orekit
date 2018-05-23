@@ -16,10 +16,12 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for navigation satellites for which no specialized model is known.
@@ -39,13 +41,20 @@ public class GenericGNSS extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public GenericGNSS(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                       final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
     /** {@inheritDoc} */
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
+        // no eclipse/noon turn mode for generic spacecraft
+        return context.getNominalYaw();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
         // no eclipse/noon turn mode for generic spacecraft
         return context.getNominalYaw();
     }

@@ -20,14 +20,14 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 
 public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     protected GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
                                                   final AbsoluteDate validityEnd,
-                                                  final PVCoordinatesProvider sun,
+                                                  final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
         return new Galileo(validityStart, validityEnd, sun, inertialFrame);
@@ -41,7 +41,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
         // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        // - Orekit compuptes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)
@@ -60,7 +60,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
         // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        // - Orekit compuptes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)

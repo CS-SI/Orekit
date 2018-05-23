@@ -20,14 +20,14 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 
 public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
 
     protected GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
                                                   final AbsoluteDate validityEnd,
-                                                  final PVCoordinatesProvider sun,
+                                                  final ExtendedPVCoordinatesProvider sun,
                                                   final Frame inertialFrame,
                                                   final int prnNumber) {
         return new BeidouGeo(validityStart, validityEnd, sun, inertialFrame);

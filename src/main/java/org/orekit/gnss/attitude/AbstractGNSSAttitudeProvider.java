@@ -23,9 +23,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -46,7 +49,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     private final AbsoluteDate validityEnd;
 
     /** Provider for Sun position. */
-    private final PVCoordinatesProvider sun;
+    private final ExtendedPVCoordinatesProvider sun;
 
     /** Inertial frame where velocity are computed. */
     private final Frame inertialFrame;
@@ -59,7 +62,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      */
     protected AbstractGNSSAttitudeProvider(final AbsoluteDate validityStart,
                                            final AbsoluteDate validityEnd,
-                                           final PVCoordinatesProvider sun,
+                                           final ExtendedPVCoordinatesProvider sun,
                                            final Frame inertialFrame) {
         this.validityStart = validityStart;
         this.validityEnd   = validityEnd;
@@ -104,8 +107,17 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame)
         throws OrekitException {
-        // TODO
-        return null;
+
+        // Sun/spacecraft geometry
+        // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
+        final TimeStampedFieldPVCoordinates<T> sunPV = sun.getPVCoordinates(date, inertialFrame);
+        final TimeStampedFieldPVCoordinates<T> svPV  = pvProv.getPVCoordinates(date, inertialFrame);
+
+        // compute yaw correction
+        final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(new GNSSFieldAttitudeContext<>(sunPV, svPV));
+
+        return new FieldAttitude<>(inertialFrame, corrected).withReferenceFrame(frame);
+
     }
 
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
@@ -114,6 +126,16 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
      * @exception OrekitException if yaw corrected attitude cannot be computed
      */
     protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context)
+        throws OrekitException;
+
+    /** Compute GNSS attitude with midnight/noon yaw turn correction.
+     * @param context context data for attitude computation
+     * @param <T> type of the field elements
+     * @return corrected yaw, using inertial frame as the reference
+     * @exception OrekitException if yaw corrected attitude cannot be computed
+     */
+    protected abstract <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
+        correctedYaw(GNSSFieldAttitudeContext<T> context)
         throws OrekitException;
 
 }
