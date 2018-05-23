@@ -22,6 +22,10 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed DSST events detection in the osculating case.
+        Fixes issue #398.
+      </action>
+      <action dev="luc" type="fix">
         Allow several TLE with same date in TLESeries.
         Fixes issue #411.
       </action>

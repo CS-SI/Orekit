@@ -954,6 +954,28 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
+        public void init(final ODEStateAndDerivative initialState, final double finalTime)
+            throws OrekitExceptionWrapper {
+            try {
+                // Build the mean state interpolated at initial point
+                final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
+                                                                          initialState.getPrimaryState(),
+                                                                          initialState.getPrimaryDerivative(),
+                                                                          true);
+
+                // Compute short periodic coefficients for this point
+                for (DSSTForceModel forceModel : forceModels) {
+                    forceModel.updateShortPeriodTerms(meanStates);
+
+                }
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
             throws OrekitExceptionWrapper {
 
