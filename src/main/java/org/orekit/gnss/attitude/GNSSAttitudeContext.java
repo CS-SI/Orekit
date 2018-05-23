@@ -131,8 +131,8 @@ class GNSSAttitudeContext implements TimeStamped {
         this.nominalYawDS = nominalYaw.toDerivativeStructureRotation(ORDER);
 
         // TODO: the Kouba model assumes perfectly circular orbit, it should really be:
-        // this.muRate = svPV.getAngularVelocity();
-        this.muRate = svPV.getVelocity().getNorm() / svPV.getPosition().getNorm();
+        this.muRate = svPV.getAngularVelocity().getNorm();
+        //this.muRate = svPV.getVelocity().getNorm() / svPV.getPosition().getNorm();
 
     }
 
@@ -298,8 +298,8 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     private DerivativeStructure inOrbitPlaneAbsoluteAngle(final DerivativeStructure angle) {
         // TODO: the Kouba model assumes planar right-angle triangle resolution, it should really be:
-        //  return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
-        return angle.multiply(angle).subtract(beta.multiply(beta)).sqrt();
+        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
+        //return angle.multiply(angle).subtract(beta.multiply(beta)).sqrt();
     }
 
     /** Project a spacecraft/Sun angle into orbital plane.
@@ -314,8 +314,8 @@ class GNSSAttitudeContext implements TimeStamped {
      */
     public double inOrbitPlaneAbsoluteAngle(final double angle) {
         // TODO: the Kouba model assumes planar right-angle triangle resolution, it should really be:
-        // return FastMath.acos(FastMath.cos(angle) / FastMath.cos(beta.getReal()));
-        return FastMath.sqrt(angle * angle - beta.getReal() * beta.getReal());
+        return FastMath.acos(FastMath.cos(angle) / FastMath.cos(beta.getReal()));
+        //return FastMath.sqrt(angle * angle - beta.getReal() * beta.getReal());
     }
 
     /** Compute yaw.

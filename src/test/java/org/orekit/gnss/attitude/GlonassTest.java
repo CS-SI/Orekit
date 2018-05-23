@@ -40,7 +40,13 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        doTestAxes("beta-small-negative-GLONASS.txt", 4.7e-13, 4.7e-13, 5.7e-16);
+        // the differences with the reference Kouba models are due to the following changes:
+        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        //   Kouba assumes a perfectly circular orbit
+        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
+        //   Kouba uses projected planar geometry (μ² = α² - β²)
+        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
+        doTestAxes("beta-small-negative-GLONASS.txt", 1.6e-4, 1.6e-4, 8.0e-16);
     }
 
     @Test
@@ -50,7 +56,13 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
-        doTestAxes("beta-small-positive-GLONASS.txt", 2.4e-12, 2.4e-12, 3.9e-16);
+        // the differences with the reference Kouba models are due to the following changes:
+        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        //   Kouba assumes a perfectly circular orbit
+        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
+        //   Kouba uses projected planar geometry (μ² = α² - β²)
+        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
+        doTestAxes("beta-small-positive-GLONASS.txt", 1.6e-4, 1.6e-4, 3.9e-16);
     }
 
     @Test
