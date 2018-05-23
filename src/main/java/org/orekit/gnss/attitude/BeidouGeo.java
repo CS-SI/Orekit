@@ -16,11 +16,13 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Beidou geostationary orbit navigation satellites.
@@ -39,13 +41,23 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouGeo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                     final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                     final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
     /** {@inheritDoc} */
     @Override
     protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
+        throws OrekitException {
+
+        // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw
+        return context.orbitNormalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected  <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
         throws OrekitException {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw

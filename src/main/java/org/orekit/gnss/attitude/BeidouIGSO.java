@@ -16,12 +16,14 @@
  */
 package org.orekit.gnss.attitude;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Beidou inclined geosynchronous orbit navigation satellites.
@@ -43,7 +45,7 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouIGSO(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                      final PVCoordinatesProvider sun, final Frame inertialFrame) {
+                      final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 
@@ -53,6 +55,21 @@ public class BeidouIGSO extends AbstractGNSSAttitudeProvider {
         throws OrekitException {
 
         if (FastMath.abs(context.getBeta()) < 2 * BETA_0) {
+            // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
+            return context.orbitNormalYaw();
+        }
+
+        // in nominal yaw mode
+        return context.getNominalYaw();
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
+        throws OrekitException {
+
+        if (FastMath.abs(context.getBeta()).getReal() < 2 * BETA_0) {
             // when Sun is close to orbital plane, attitude is in Orbit Normal (ON) yaw
             return context.orbitNormalYaw();
         }

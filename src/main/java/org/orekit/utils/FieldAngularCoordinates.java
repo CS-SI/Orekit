@@ -168,6 +168,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * have consistent derivation orders.
      * </p>
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @since 9.2
      */
     public FieldAngularCoordinates(final FieldRotation<FieldDerivativeStructure<T>> r) {
 
