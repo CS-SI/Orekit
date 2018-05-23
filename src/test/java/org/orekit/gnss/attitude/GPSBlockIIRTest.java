@@ -40,7 +40,13 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        doTestAxes("beta-small-negative-BLOCK-IIR.txt", 1.3e-12, 1.3e-12, 9.1e-16);
+        // the differences with the reference Kouba models are due to the following changes:
+        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        //   Kouba assumes a perfectly circular orbit
+        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
+        //   Kouba uses projected planar geometry (μ² = α² - β²)
+        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
+        doTestAxes("beta-small-negative-BLOCK-IIR.txt", 2.0e-4, 2.0e-4, 9.1e-16);
     }
 
     @Test
@@ -53,7 +59,13 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
-        doTestAxes("beta-small-positive-BLOCK-IIR.txt", 1.7e-12, 1.7e-12, 7.9e-16);
+        // the differences with the reference Kouba models are due to the following changes:
+        // - Orekit compuptes angular velocity tkaing eccentricity into account
+        //   Kouba assumes a perfectly circular orbit
+        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
+        //   Kouba uses projected planar geometry (μ² = α² - β²)
+        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
+        doTestAxes("beta-small-positive-BLOCK-IIR.txt", 8.6e-5, 8.6e-5, 7.9e-16);
     }
 
     @Test
