@@ -22,6 +22,10 @@
   <body>
     <release version="9.2" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed error in relative humidity units in Marini-Marray tropospheric model.
+        Fixes issue #352.
+      </action>
+      <action dev="luc" type="fix">
         Fixed DSST events detection in the osculating case.
         Fixes issue #398.
       </action>
