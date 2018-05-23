@@ -40,9 +40,6 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20171114L;
 
-    /** Satellite-Sun angle limit for a midnight turn maneuver. */
-    private static final double NIGHT_TURN_LIMIT = FastMath.toRadians(180.0 - 13.25);
-
     /** Yaw rates for all spacecrafts. */
     private static final double YAW_RATE = FastMath.toRadians(0.2);
 
@@ -86,14 +83,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
                     // noon turn
                     phiDot    = -FastMath.copySign(YAW_RATE, beta);
                     linearPhi = phiStart + phiDot * dtStart;
-                    // TODO: there is no protection against overshooting phiEnd as in night turn
-                    // there should probably be some protection
                 } else {
                     // midnight turn
                     phiDot    = FastMath.copySign(YAW_RATE, beta);
                     linearPhi = phiStart + phiDot * dtStart;
                     final double phiEnd = context.getYawEnd(beta);
-                    // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
                     if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
                         return context.getNominalYaw();
                     }

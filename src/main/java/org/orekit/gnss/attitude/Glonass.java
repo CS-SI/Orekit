@@ -96,24 +96,22 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                 final double phiStart = context.getYawStart(beta);
                 final double dtStart  = context.timeSinceTurnStart(context.getDate());
 
+                final double phiDot;
+                final double linearPhi;
+                final double phiEnd    = context.getYawEnd(beta);
                 if (context.inSunSide()) {
                     // noon turn
-                    final double phiDot    = -FastMath.copySign(YAW_RATE, beta);
-                    final double linearPhi = phiStart + phiDot * dtStart;
-                    // TODO: there is no protection against overshooting phiEnd
-                    // there should probably be some protection
-                    return context.turnCorrectedAttitude(linearPhi, phiDot);
+                    phiDot    = -FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
                 } else {
                     // midnight turn
-                    final double phiDot    = FastMath.copySign(YAW_RATE, beta);
-                    final double linearPhi = phiStart + phiDot * dtStart;
-                    final double phiEnd    = context.getYawEnd(beta);
-                    // TODO: the part "phiEnd / linearPhi < 0" is suspicious and should probably be removed
-                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
-                        return context.turnCorrectedAttitude(phiEnd, 0.0);
-                    } else {
-                        return context.turnCorrectedAttitude(linearPhi, phiDot);
-                    }
+                    phiDot    = FastMath.copySign(YAW_RATE, beta);
+                    linearPhi = phiStart + phiDot * dtStart;
+                }
+                if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
+                    return context.turnCorrectedAttitude(phiEnd, 0.0);
+                } else {
+                    return context.turnCorrectedAttitude(linearPhi, phiDot);
                 }
 
             }

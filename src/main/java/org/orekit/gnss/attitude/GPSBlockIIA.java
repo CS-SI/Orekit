@@ -109,8 +109,6 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(yawRate, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
-                    // TODO: there is no protection against overshooting phiEnd as in night turn
-                    // there should probably be some protection
                 } else {
                     // midnight turn
                     final double dtEnd = dtStart - context.getTurnDuration();
@@ -123,7 +121,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot = yawRate;
                         final double phiEnd   = phiStart + phiDot * context.getTurnDuration();
                         final double deltaPhi = context.yawAngle() - phiEnd;
-                        if (FastMath.abs(deltaPhi / yawRate) <= dtEnd) {
+                        if (FastMath.abs(deltaPhi / phiDot) <= dtEnd) {
                             // time since turn end was sufficient for recovery
                             // we are already back in nominal yaw mode
                             return context.getNominalYaw();

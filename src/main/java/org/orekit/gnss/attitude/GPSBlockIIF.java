@@ -99,8 +99,6 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(YAW_RATE, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
-                    // TODO: there is no protection against overshooting phiEnd as in night turn
-                    // there should probably be some protection
                 } else {
                     // midnight turn
                     phiDot    = context.yawRate(beta);
