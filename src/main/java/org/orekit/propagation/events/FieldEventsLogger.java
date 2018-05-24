@@ -207,7 +207,9 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
         }
 
         /** {@inheritDoc} */
-        public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        public void init(final FieldSpacecraftState<T> s0,
+                         final FieldAbsoluteDate<T> t) throws OrekitException {
+            super.init(s0, t);
             detector.init(s0, t);
         }
 

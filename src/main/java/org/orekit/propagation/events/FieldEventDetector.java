@@ -58,8 +58,11 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+    default void init(FieldSpacecraftState<T> s0,
+                      FieldAbsoluteDate<T> t) throws OrekitException {
         // nothing by default
     }
 

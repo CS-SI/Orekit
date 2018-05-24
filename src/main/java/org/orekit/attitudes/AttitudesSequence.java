@@ -144,7 +144,8 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+                public void init(final FieldSpacecraftState<T> s0,
+                                 final FieldAbsoluteDate<T> t) throws OrekitException {
                     sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
                 }
 
@@ -400,7 +401,8 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) throws OrekitException {
 
             // reset the transition parameters (this will be done once for each switch,
             //  despite doing it only once would have sufficient; its not really a problem)

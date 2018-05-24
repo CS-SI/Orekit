@@ -243,7 +243,8 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) throws OrekitException {
         super.init(s0, t);
         for (final EventDetector detector : detectors) {
             detector.init(s0, t);
