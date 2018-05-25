@@ -112,7 +112,7 @@ public class RinexLoaderTest {
             Assert.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
             Assert.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
             Assert.assertEquals(-1,                      header.getClkOffset());
-            Assert.assertEquals(0,                       header.getListAppliedDCBs().size());
+            Assert.assertEquals(0,                       header.getListAppliedDCBS().size());
             Assert.assertEquals(0,                       header.getListAppliedPCVS().size());
             Assert.assertEquals(3,                       header.getPhaseShiftCorrections().size());
             Assert.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
@@ -432,13 +432,13 @@ public class RinexLoaderTest {
         RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
         for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             RinexHeader header = entry.getKey();
-            List<AppliedDCBs> list = header.getListAppliedDCBs();
+            List<AppliedDCBs> list = header.getListAppliedDCBS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
-            Assert.assertEquals("some-program-name", list.get(0).getProgDCBS());
+            Assert.assertEquals("dcbs-program-name", list.get(0).getProgDCBS());
             Assert.assertEquals("http://example.com/GPS", list.get(0).getSourceDCBS());
             Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
-            Assert.assertEquals("some-program-name", list.get(1).getProgDCBS());
+            Assert.assertEquals("dcbs-program-name", list.get(1).getProgDCBS());
             Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
         }
     }
@@ -451,10 +451,10 @@ public class RinexLoaderTest {
             List<AppliedPCVS> list = header.getListAppliedPCVS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
-            Assert.assertEquals("some-program-name", list.get(0).getProgPCVS());
+            Assert.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
             Assert.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
             Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
-            Assert.assertEquals("some-program-name", list.get(1).getProgPCVS());
+            Assert.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
             Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
         }
     }

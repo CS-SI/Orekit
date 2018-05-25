@@ -14,8 +14,8 @@ E   12 C1X L1X S1X C5X L5X S5X C7X L7X S7X C8X L8X S8X      SYS / # / OBS TYPES
 C    9 C1I L1I S1I C7I L7I S7I C6I L6I S6I                  SYS / # / OBS TYPES
     15.000                                                  INTERVAL
   2016     1    11     0     0    0.0000000     GPS         TIME OF FIRST OBS
-G some-program-name http://example.com/GPS                  SYS / PCVS APPLIED   
-R some-program-name http://example.com/GLONASS              SYS / PCVS APPLIED   
+G pcvs-program-name http://example.com/GPS                  SYS / PCVS APPLIED   
+R pcvs-program-name http://example.com/GLONASS              SYS / PCVS APPLIED   
 G L2X -0.25000                                              SYS / PHASE SHIFT   
 R L1P  0.25000                                              SYS / PHASE SHIFT   
 R L2C -0.25000                                              SYS / PHASE SHIFT   

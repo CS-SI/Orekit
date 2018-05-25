@@ -111,7 +111,7 @@ public class RinexHeader {
     private final int clkOffset;
 
     /** List of applied differential code bias corrections. */
-    private List<AppliedDCBs> listAppliedDCBs;
+    private List<AppliedDCBs> listAppliedDCBS;
 
     /** List of antenna center variation corrections. */
     private List<AppliedPCVS> listAppliedPCVS;
@@ -212,7 +212,7 @@ public class RinexHeader {
     * @param tFirstObs Time of First observation record
     * @param tLastObs Time of last observation record
     * @param clkOffset Realtime-derived receiver clock offset
-    * @param listAppliedDCBs List of applied differential code bias corrections
+    * @param listAppliedDCBS List of applied differential code bias corrections
     * @param listAppliedPCVS List of antenna center variation corrections
     * @param phaseShiftCorrections List of phase shift correction used to generate phases consistent w/r to cycle shifts
     * @param leapSeconds Number of leap seconds since 6-Jan-1980
@@ -229,7 +229,7 @@ public class RinexHeader {
                        final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
                        final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
                        final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                       final int clkOffset, final List<AppliedDCBs> listAppliedDCBs,
+                       final int clkOffset, final List<AppliedDCBs> listAppliedDCBS,
                        final List<AppliedPCVS> listAppliedPCVS,
                        final List<PhaseShiftCorrection> phaseShiftCorrections, final int leapSeconds,
                        final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
@@ -256,7 +256,7 @@ public class RinexHeader {
         this.sigStrengthUnit = sigStrengthUnit;
         this.phaseShiftCorrections = phaseShiftCorrections;
         this.obsCode = obsCode;
-        this.listAppliedDCBs = listAppliedDCBs;
+        this.listAppliedDCBS = listAppliedDCBS;
         this.listAppliedPCVS = listAppliedPCVS;
         this.leapSecondsDayNum = leapSecondsDayNum;
         this.leapSecondsFuture = leapSecondsFuture;
@@ -490,8 +490,8 @@ public class RinexHeader {
     /** Get the list of applied differential code bias corrections.
      * @return list of applied differential code bias corrections
      */
-    public List<AppliedDCBs> getListAppliedDCBs() {
-        return listAppliedDCBs;
+    public List<AppliedDCBs> getListAppliedDCBS() {
+        return listAppliedDCBS;
     }
 
     /** Get the list of antenna center variation corrections.

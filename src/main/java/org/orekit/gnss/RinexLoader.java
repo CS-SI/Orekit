@@ -1058,7 +1058,7 @@ public class RinexLoader {
              * @param phaseShiftCorrection Phase Shift Corrections (cycles)
              * @param satsPhaseShift List of satellites involved
              */
-            private PhaseShiftCorrection (final SatelliteSystem satSystemPhaseShift,
+            private PhaseShiftCorrection(final SatelliteSystem satSystemPhaseShift,
                                          final ObservationType typeObsPhaseShift,
                                          final double phaseShiftCorrection, final String[] satsPhaseShift) {
                 this.satSystemPhaseShift = satSystemPhaseShift;
@@ -1112,7 +1112,7 @@ public class RinexLoader {
              * @param scaleFactor Factor to divide stored observations (1,10,100,1000)
              * @param typesObsScaleFactor List of Observations types that have been scaled
              */
-            private ScaleFactorCorrection (final SatelliteSystem satSystemScaleFactor,
+            private ScaleFactorCorrection(final SatelliteSystem satSystemScaleFactor,
                                           final double scaleFactor,
                                           final List<ObservationType> typesObsScaleFactor) {
                 this.satSystemScaleFactor = satSystemScaleFactor;
@@ -1159,8 +1159,8 @@ public class RinexLoader {
              * @param progDCBS Program name used to apply DCBs
              * @param sourceDCBS Source of corrections (URL)
              */
-            private AppliedDCBs (final SatelliteSystem satelliteSystem,
-                                 final String progDCBS, final String sourceDCBS) {
+            private AppliedDCBs(final SatelliteSystem satelliteSystem,
+                                final String progDCBS, final String sourceDCBS) {
                 this.satelliteSystem = satelliteSystem;
                 this.progDCBS        = progDCBS;
                 this.sourceDCBS      = sourceDCBS;
@@ -1209,8 +1209,8 @@ public class RinexLoader {
              * @param progPCVS Program name used for PCVs
              * @param sourcePCVS Source of corrections (URL)
              */
-            private AppliedPCVS (final SatelliteSystem satelliteSystem,
-                                 final String progPCVS, final String sourcePCVS) {
+            private AppliedPCVS(final SatelliteSystem satelliteSystem,
+                                final String progPCVS, final String sourcePCVS) {
                 this.satelliteSystem = satelliteSystem;
                 this.progPCVS        = progPCVS;
                 this.sourcePCVS      = sourcePCVS;
