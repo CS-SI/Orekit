@@ -19,6 +19,13 @@ package org.orekit.time;
 import org.hipparchus.RealFieldElement;
 
 
+/** IRNSS time scale (also called IRNWT for IRNSS NetWork Time).
+ * <p>By convention, TIRNSS = TAI - 19 s.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
+ * @author Luc Maisonobe
+ * @see AbsoluteDate
+ */
 public class IRNSSScale implements TimeScale {
 
     /** Serializable UID. */

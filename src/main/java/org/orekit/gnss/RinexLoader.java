@@ -684,7 +684,7 @@ public class RinexLoader {
                                                 timeScale = TimeScalesFactory.getBDT();
                                                 break;
                                             case IRNSS:
-                                                timeScale = TimeScalesFactory.getIRNSST();
+                                                timeScale = TimeScalesFactory.getIRNSS();
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
@@ -701,7 +701,7 @@ public class RinexLoader {
                                                 } else if (timeScaleStr.equals(BDT)) {
                                                     timeScale = TimeScalesFactory.getBDT();
                                                 } else if (timeScaleStr.equals(IRN)) {
-                                                    timeScale = TimeScalesFactory.getIRNSST();
+                                                    timeScale = TimeScalesFactory.getIRNSS();
                                                 } else {
                                                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                                 }

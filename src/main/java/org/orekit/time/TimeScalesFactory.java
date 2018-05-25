@@ -391,7 +391,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Indian Regional Navigation Satellite System time scale.
      * @return  Indian Regional Navigation Satellite System time scale
      */
-    public static IRNSSScale getIRNSST() {
+    public static IRNSSScale getIRNSS() {
         synchronized (TimeScalesFactory.class) {
 
             if (irnss == null) {
