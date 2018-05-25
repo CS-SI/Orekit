@@ -19,7 +19,13 @@ package org.orekit.time;
 import org.hipparchus.RealFieldElement;
 
 
-public class BDSScale implements TimeScale {
+/** Beidou system time scale.
+ * <p>By convention, BDT = UTC on January 1st 2006.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
+ * @see AbsoluteDate
+ */
+public class BDTScale implements TimeScale {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20180323L;
@@ -29,7 +35,7 @@ public class BDSScale implements TimeScale {
 
     /** Package private constructor for the factory.
      */
-    BDSScale() {
+    BDTScale() {
     }
 
     /** {@inheritDoc} */
@@ -52,7 +58,7 @@ public class BDSScale implements TimeScale {
 
     /** {@inheritDoc} */
     public String getName() {
-        return "BDS";
+        return "BDT";
     }
 
     /** {@inheritDoc} */
