@@ -618,7 +618,7 @@ public class KeplerianOrbit extends Orbit {
      * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
-     * @return v the true anomaly
+     * @return E the eccentric anomaly
      */
     public static double meanToEllipticEccentric(final double M, final double e) {
 
