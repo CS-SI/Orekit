@@ -26,6 +26,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.RinexLoader.Parser.AppliedDCBs;
+import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -424,8 +426,39 @@ public class RinexLoaderTest {
             Assert.assertEquals(14, ((Integer) oe.getParts()[2]).intValue());
         }
     }
-    
-    
+
+    @Test
+    public void testDCBSApplied() throws OrekitException {
+        RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
+        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
+            RinexHeader header = entry.getKey();
+            List<AppliedDCBs> list = header.getListAppliedDCBs();
+            Assert.assertEquals(2, list.size());
+            Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+            Assert.assertEquals("some-program-name", list.get(0).getProgDCBS());
+            Assert.assertEquals("http://example.com/GPS", list.get(0).getSourceDCBS());
+            Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+            Assert.assertEquals("some-program-name", list.get(1).getProgDCBS());
+            Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
+        }
+    }
+
+    @Test
+    public void testPCVSApplied() throws OrekitException {
+        RinexLoader  loader = new RinexLoader("^pcvss\\.00o$");
+        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
+            RinexHeader header = entry.getKey();
+            List<AppliedPCVS> list = header.getListAppliedPCVS();
+            Assert.assertEquals(2, list.size());
+            Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+            Assert.assertEquals("some-program-name", list.get(0).getProgPCVS());
+            Assert.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
+            Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+            Assert.assertEquals("some-program-name", list.get(1).getProgPCVS());
+            Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
+        }
+    }
+
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,

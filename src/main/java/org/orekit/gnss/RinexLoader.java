@@ -75,7 +75,7 @@ public class RinexLoader {
     private static final String CENTER_OF_MASS_XYZ   = "CENTER OF MASS: XYZ";
     private static final String SIGNAL_STRENGTH_UNIT = "SIGNAL STRENGTH UNIT";
     private static final String SYS_NB_OBS_TYPES     = "SYS / # / OBS TYPES";
-    private static final String SYS_DCBS_APPLIED     = "SYS / DCBs APPLIED";
+    private static final String SYS_DCBS_APPLIED     = "SYS / DCBS APPLIED";
     private static final String SYS_PCVS_APPLIED     = "SYS / PCVS APPLIED";
     private static final String SYS_SCALE_FACTOR     = "SYS / SCALE FACTOR";
     private static final String SYS_PHASE_SHIFT      = "SYS / PHASE SHIFT";
@@ -769,11 +769,13 @@ public class RinexLoader {
                                         break;
                                     case SYS_DCBS_APPLIED :
 
-                                        listAppliedDCBs.add(new AppliedDCBs(parseString(line, 2, 17), parseString(line, 20, 40)));
+                                        listAppliedDCBs.add(new AppliedDCBs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                                                            parseString(line, 2, 17), parseString(line, 20, 40)));
                                         break;
                                     case SYS_PCVS_APPLIED :
 
-                                        listAppliedPCVS.add(new AppliedPCVS(parseString(line, 2, 17), parseString(line, 20, 40)));
+                                        listAppliedPCVS.add(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                                                            parseString(line, 2, 17), parseString(line, 20, 40)));
                                         break;
                                     case SYS_SCALE_FACTOR :
                                         satSystemScaleFactor  = null;
@@ -1143,58 +1145,91 @@ public class RinexLoader {
          */
         public class AppliedDCBs {
 
+            /** Satellite system. */
+            private final SatelliteSystem satelliteSystem;
+
             /** Program name used to apply differential code bias corrections. */
-            private final String progDCBs;
+            private final String progDCBS;
+
             /** Source of corrections (URL). */
-            private final String sourceDCBs;
+            private final String sourceDCBS;
 
             /** Simple constructor.
-             * @param progDCBsG Program name used to apply DCBs
-             * @param sourceDCBsG Source of corrections (URL)
+             * @param satelliteSystem satellite system
+             * @param progDCBS Program name used to apply DCBs
+             * @param sourceDCBS Source of corrections (URL)
              */
-            private AppliedDCBs (final String progDCBsG, final String sourceDCBsG) {
-                this.progDCBs = progDCBsG;
-                this.sourceDCBs = sourceDCBsG;
+            private AppliedDCBs (final SatelliteSystem satelliteSystem,
+                                 final String progDCBS, final String sourceDCBS) {
+                this.satelliteSystem = satelliteSystem;
+                this.progDCBS        = progDCBS;
+                this.sourceDCBS      = sourceDCBS;
             }
+
+            /** Get the satellite system.
+             * @return satellite system
+             */
+            public SatelliteSystem getSatelliteSystem() {
+                return satelliteSystem;
+            }
+
             /** Get the program name used to apply DCBs.
              * @return  Program name used to apply DCBs
              */
-            public String getProgDCBs() {
-                return progDCBs;
+            public String getProgDCBS() {
+                return progDCBS;
             }
+
             /** Get the source of corrections.
              * @return Source of corrections (URL)
              */
-            public String getSourceDCBs() {
-                return sourceDCBs;
+            public String getSourceDCBS() {
+                return sourceDCBS;
             }
 
         }
+
         /** Corrections of antenna phase center variations (PCVs) applied.
          * Contains information on the programs used to correct the observations
          * in RINEX files for antenna phase center variations.
          */
         public class AppliedPCVS {
 
+            /** Satellite system. */
+            private final SatelliteSystem satelliteSystem;
+
             /** Program name used to antenna center variation corrections. */
             private final String progPCVS;
+
             /** Source of corrections (URL). */
             private final String sourcePCVS;
 
             /** Simple constructor.
+             * @param satelliteSystem satellite system
              * @param progPCVS Program name used for PCVs
              * @param sourcePCVS Source of corrections (URL)
              */
-            private AppliedPCVS (final String progPCVS, final String sourcePCVS) {
-                this.progPCVS = progPCVS;
-                this.sourcePCVS = sourcePCVS;
+            private AppliedPCVS (final SatelliteSystem satelliteSystem,
+                                 final String progPCVS, final String sourcePCVS) {
+                this.satelliteSystem = satelliteSystem;
+                this.progPCVS        = progPCVS;
+                this.sourcePCVS      = sourcePCVS;
             }
+
+            /** Get the satellite system.
+             * @return satellite system
+             */
+            public SatelliteSystem getSatelliteSystem() {
+                return satelliteSystem;
+            }
+
             /** Get the program name used to apply PCVs.
              * @return  Program name used to apply PCVs
              */
             public String getProgPCVS() {
                 return progPCVS;
             }
+
             /** Get the source of corrections.
              * @return Source of corrections (URL)
              */
