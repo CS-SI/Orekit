@@ -549,7 +549,7 @@ public class RinexLoader {
                         int                                              leapSecondsFuture      = 0;
                         int                                              leapSecondsWeekNum     = 0;
                         int                                              leapSecondsDayNum      = 0;
-                        final List<AppliedDCBs>                          listAppliedDCBs        = new ArrayList<>();
+                        final List<AppliedDCBS>                          listAppliedDCBs        = new ArrayList<>();
                         final List<AppliedPCVS>                          listAppliedPCVS        = new ArrayList<>();
                         SatelliteSystem                                  satSystemScaleFactor   = null;
                         int                                              scaleFactor            = 1;
@@ -769,7 +769,7 @@ public class RinexLoader {
                                         break;
                                     case SYS_DCBS_APPLIED :
 
-                                        listAppliedDCBs.add(new AppliedDCBs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                        listAppliedDCBs.add(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
                                                                             parseString(line, 2, 17), parseString(line, 20, 40)));
                                         break;
                                     case SYS_PCVS_APPLIED :
@@ -1143,7 +1143,7 @@ public class RinexLoader {
          * Contains information on the programs used to correct the observations
          * in RINEX files for differential code biases.
          */
-        public class AppliedDCBs {
+        public class AppliedDCBS {
 
             /** Satellite system. */
             private final SatelliteSystem satelliteSystem;
@@ -1159,7 +1159,7 @@ public class RinexLoader {
              * @param progDCBS Program name used to apply DCBs
              * @param sourceDCBS Source of corrections (URL)
              */
-            private AppliedDCBs(final SatelliteSystem satelliteSystem,
+            private AppliedDCBS(final SatelliteSystem satelliteSystem,
                                 final String progDCBS, final String sourceDCBS) {
                 this.satelliteSystem = satelliteSystem;
                 this.progDCBS        = progDCBS;

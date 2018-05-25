@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBs;
+import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
 import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.gnss.RinexLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
@@ -111,7 +111,7 @@ public class RinexHeader {
     private final int clkOffset;
 
     /** List of applied differential code bias corrections. */
-    private List<AppliedDCBs> listAppliedDCBS;
+    private List<AppliedDCBS> listAppliedDCBS;
 
     /** List of antenna center variation corrections. */
     private List<AppliedPCVS> listAppliedPCVS;
@@ -229,7 +229,7 @@ public class RinexHeader {
                        final Vector3D antPhaseCenter, final Vector3D antBSight, final double antAzi,
                        final Vector3D antZeroDir, final Vector3D centerMass, final String sigStrengthUnit,
                        final double interval, final AbsoluteDate tFirstObs, final AbsoluteDate tLastObs,
-                       final int clkOffset, final List<AppliedDCBs> listAppliedDCBS,
+                       final int clkOffset, final List<AppliedDCBS> listAppliedDCBS,
                        final List<AppliedPCVS> listAppliedPCVS,
                        final List<PhaseShiftCorrection> phaseShiftCorrections, final int leapSeconds,
                        final int leapSecondsFuture, final int leapSecondsWeekNum, final int leapSecondsDayNum) {
@@ -490,7 +490,7 @@ public class RinexHeader {
     /** Get the list of applied differential code bias corrections.
      * @return list of applied differential code bias corrections
      */
-    public List<AppliedDCBs> getListAppliedDCBS() {
+    public List<AppliedDCBS> getListAppliedDCBS() {
         return listAppliedDCBS;
     }
 

@@ -26,7 +26,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBs;
+import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
 import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -432,7 +432,7 @@ public class RinexLoaderTest {
         RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
         for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             RinexHeader header = entry.getKey();
-            List<AppliedDCBs> list = header.getListAppliedDCBS();
+            List<AppliedDCBS> list = header.getListAppliedDCBS();
             Assert.assertEquals(2, list.size());
             Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
             Assert.assertEquals("dcbs-program-name", list.get(0).getProgDCBS());
@@ -445,7 +445,7 @@ public class RinexLoaderTest {
 
     @Test
     public void testPCVSApplied() throws OrekitException {
-        RinexLoader  loader = new RinexLoader("^pcvss\\.00o$");
+        RinexLoader  loader = new RinexLoader("^pcvs\\.00o$");
         for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             RinexHeader header = entry.getKey();
             List<AppliedPCVS> list = header.getListAppliedPCVS();
