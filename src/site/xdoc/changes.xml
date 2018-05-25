@@ -21,12 +21,16 @@
   </properties>
   <body>
     <release version="9.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed missing eclipse detectors in field version of Solar radiation pressure.
+        Fixes issue #366.
+      </action>
       <action dev="evan" type="fix">
         Fixed issue where EventHandler.init() was never called.
         Fixes issue #471.
       </action>
       <action dev="luc" type="fix">
-        Fixed error in relative humidity units in Marini-Marray tropospheric model.
+        Fixed error in relative humidity units in Marini-Murray tropospheric model.
         Fixes issue #352.
       </action>
       <action dev="luc" type="fix">

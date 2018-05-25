@@ -72,6 +72,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -133,7 +134,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
                                          CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(),
                                          date, Constants.JPL_SSD_SUN_GM);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
                                        (RadiationSensitive) new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
@@ -161,7 +162,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                                FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
                                                0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
-            PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+            ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             OneAxisEllipsoid earth =
                 new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -534,7 +535,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assert.assertEquals(86164, period, 1);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -636,7 +637,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
 
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -792,7 +793,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setInitialState(iSR);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -867,7 +868,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
 
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =

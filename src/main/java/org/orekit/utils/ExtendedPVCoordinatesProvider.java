@@ -17,6 +17,7 @@
 
 package org.orekit.utils;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -28,6 +29,15 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  */
 public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
+
+    /** Convert to a {@link FieldPVCoordinatesProvider} with a specific type.
+     * @param <T> the type of the field elements
+     * @param field field for the argument and value
+     * @return converted function
+     */
+    default <T extends RealFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
+        return this::getPVCoordinates;
+    }
 
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date
