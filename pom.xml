@@ -37,6 +37,7 @@
     <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
+    <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
@@ -725,6 +726,19 @@
       <id>release</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${orekit.maven-source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
