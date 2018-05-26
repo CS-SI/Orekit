@@ -60,6 +60,9 @@ import org.orekit.propagation.SpacecraftState;
  * <p>
  * This class always provides one initial noise matrix or initial covariance matrix and one process noise matrix.
  * </p>
+ * <p>
+ * WARNING: as of release 9.2, this feature is still considered experimental
+ * </p>
  * @author Luc Maisonobe
  * @author Maxime Journot
  * @since 9.2

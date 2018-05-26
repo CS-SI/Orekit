@@ -44,6 +44,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * account. The date of the measurement corresponds to the
  * reception on ground of the emitted signal.
  * </p>
+ * <p>
+ * WARNING: as of release 9.2, this feature is still considered experimental
+ * </p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
  * @author Maxime Journot

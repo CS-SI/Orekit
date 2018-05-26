@@ -36,6 +36,9 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * hard-coded data are used and its low level models are used, but the
  * structure of the code and the API have been completely rewritten.
  * </p>
+ * <p>
+ * WARNING: as of release 9.2, this feature is still considered experimental
+ * </p>
  * @author J. Kouba original fortran routine
  * @author Luc Maisonobe Java translation
  * @since 9.2

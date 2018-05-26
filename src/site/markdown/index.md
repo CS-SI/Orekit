@@ -164,6 +164,7 @@
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
       * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
+        (as of release 9.2, this feature is still considered experimental)
 
   * Orbit determination
   
@@ -176,6 +177,7 @@
     *  Kalman filtering
 
       * customizable process noise matrices providers
+      * time dependent process noise provider (as of release 9.2, this feature is still considered experimental)
 
     * parameters estimation
 
@@ -198,7 +200,7 @@
       * position-velocity
       * inter-satellites range (one way and two way)
       * GNSS code
-      * GNSS phase
+      * GNSS phase (as of release 9.2, this feature is still considered experimental)
 
     * possibility to add custom measurements
     * several predefined modifiers

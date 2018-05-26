@@ -27,6 +27,9 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /**
  * Attitude providers for Beidou inclined geosynchronous orbit navigation satellites.
+ * <p>
+ * WARNING: as of release 9.2, this feature is still considered experimental
+ * </p>
  * @author Luc Maisonobe Java translation
  * @since 9.2
  */
