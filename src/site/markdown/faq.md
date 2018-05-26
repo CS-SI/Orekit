@@ -132,6 +132,7 @@ Math to Hipparchus
   Orekit 9.0   | Hipparchus          1.1
   Orekit 9.0.1 | Hipparchus          1.1
   Orekit 9.1   | Hipparchus          1.2
+  Orekit 9.2   | Hipparchus          1.3
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
