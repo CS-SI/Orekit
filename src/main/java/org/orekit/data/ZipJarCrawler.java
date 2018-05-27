@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -210,19 +208,16 @@ public class ZipJarCrawler implements DataProvider {
                             entryName = entryName.substring(lastSlash + 1);
                         }
 
-                        // remove suffix from gzip entries
-                        final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(entryName);
-                        final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : entryName;
+                        // apply all registered filters
+                        NamedData data = new NamedData(entryName, () -> entry);
+                        data = DataProvidersManager.getInstance().applyAllFilters(data);
 
-                        if (supported.matcher(baseName).matches()) {
-
-                            // visit the current entry
-                            final InputStream stream =
-                                gzipMatcher.matches() ? new GZIPInputStream(entry) : entry;
-                            visitor.loadData(stream, fullName);
-                            stream.close();
-                            loaded = true;
-
+                        if (supported.matcher(data.getName()).matches()) {
+                            // visit the current file
+                            try (InputStream input = data.getStreamOpener().openStream()) {
+                                visitor.loadData(input, fullName);
+                                loaded = true;
+                            }
                         }
 
                     }

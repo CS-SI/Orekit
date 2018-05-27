@@ -1,0 +1,88 @@
+' Copyright 2002-2018 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.hipparchus #ECEBD8 {
+
+    interface "FieldElement<T>" as FieldElement_T_ {
+      T add(T a)
+      T subtract(T a)
+      T negate()
+      T multiply(int n)
+      T multiply(T a)
+      T divide(T a)
+      T reciprocal()
+      Field<T> getField()
+    }
+
+    interface "RealFieldElement<T>" as RealFieldElement_T_ {
+      T sin()
+      T cos()
+      ...
+      T copySign(T sign)
+      double getReal()
+    }
+    note top
+      lots of mathematical methods
+      omitted for clarity
+    end note
+
+    package analysis.differentiation #DDEBD8  {
+
+        class DSFactory {
+          +DSFactory(int parameters, int order)
+          +constant(double value)
+          +variable(int index, double value)
+        }
+
+        class DerivativeStructure {
+          +DSFactory getFactory()
+          +int getFreeParameters()
+          +int getOrder()
+          +double getValue()
+          +double getPartialDerivative(int[] orders)
+          +double taylor(double[] delta)
+        }
+
+        FieldElement_T_     <..      RealFieldElement_T_
+        RealFieldElement_T_     <..      DerivativeStructure
+        DSFactory           --> DerivativeStructure : creates
+    }
+
+    package util #DDEBD8  {
+       RealFieldElement_T_     <..      Tuple
+    }
+
+  }
+
+  package org.orekit.propagation #ECEBD8 {
+      interface "FieldPropagator<T>" as FieldPropagator_T_ {
+      }
+      RealFieldElement_T_ <-- FieldPropagator_T_
+  }
+
+@enduml

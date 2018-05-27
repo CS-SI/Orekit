@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,6 +60,7 @@ public enum OrekitMessages implements Localizable {
     FRAME_ANCESTOR_OF_BOTH_FRAMES("frame {0} is an ancestor of both frames {1} and {2}"),
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
+    NO_SUCH_ITRF_FRAME("ITRF frame {0} not found"),
     UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
     NON_PSEUDO_INERTIAL_FRAME("non pseudo-inertial frame \"{0}\""),
     DATA_ROOT_DIRECTORY_DOES_NOT_EXIST("data root directory {0} does not exist"),
@@ -172,6 +173,7 @@ public enum OrekitMessages implements Localizable {
     DSST_SPR_SHADOW_INCONSISTENT("inconsistent shadow computation: entry = {0} whereas exit = {1}"),
     DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD("The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
+    SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM("geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
@@ -201,7 +203,22 @@ public enum OrekitMessages implements Localizable {
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),
     NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
-    STATION_NOT_FOUND("station {0} not found, known stations: {1}");
+    STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
+    UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
+    UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
+    CANNOT_FIND_SATELLITE_IN_SYSTEM("cannot find satellite {0} in satellite system {1}"),
+    UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0} in file {1}, line {2}"),
+    MISMATCHED_FREQUENCIES("mismatched frequencies in file {0}, line {1} (expected {2}, got {3})"),
+    WRONG_COLUMNS_NUMBER("wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)"),
+    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"),
+    INCOMPLETE_HEADER("incomplete header in file {0}"),
+    INCONSISTENT_NUMBER_OF_SATS("inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}"),
+    INCONSISTENT_SATELLITE_SYSTEM("the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header"),
+    NO_PROPAGATOR_CONFIGURED("no propagator configured"),
+    DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}"),
+    NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
+    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
+    CORRUPTED_FILE("file {0} is corrupted");
 
 
     // CHECKSTYLE: resume JavadocVariable check

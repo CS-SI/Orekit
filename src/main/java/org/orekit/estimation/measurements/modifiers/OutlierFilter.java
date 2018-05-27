@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,19 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
         this.maxSigma = maxSigma;
     }
 
+    /** Get the value of warmup iterations.
+     * @return the value of warmup iterations
+     */
+    protected int getWarmup() {
+        return warmup;
+    }
+
+    /** Get the value of the outlier detection limit.
+     *  @return the value of the outlier detection limit
+     */
+    protected double getMaxSigma() {
+        return maxSigma;
+    }
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
@@ -65,9 +78,8 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
             final double[] sigma       = estimated.getObservedMeasurement().getTheoreticalStandardDeviation();
             for (int i = 0; i < observed.length; ++i) {
                 if (FastMath.abs(observed[i] - theoretical[i]) > maxSigma * sigma[i]) {
-                    // observed value is too far
-                    // set current weight to 0.0
-                    estimated.setCurrentWeight(new double[observed.length]);
+                    // observed value is too far, reject measurement
+                    estimated.setStatus(EstimatedMeasurement.Status.REJECTED);
                 }
             }
         }

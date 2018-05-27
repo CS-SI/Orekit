@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,8 +69,10 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+    public void init(final FieldSpacecraftState<T> s0,
+                     final FieldAbsoluteDate<T> t) throws OrekitException {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
+        getHandler().init(s0, t);
     }
 
     /** {@inheritDoc} */

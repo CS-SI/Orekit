@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,6 +68,20 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     }
 
     /** Build a new alignment detector.
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param body the body to align
+     * @param alignAngle the alignment angle (rad)
+     */
+    public AlignmentDetector(final double maxCheck, final double threshold,
+                             final PVCoordinatesProvider body,
+                             final double alignAngle) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<AlignmentDetector>(),
+             body, alignAngle);
+    }
+
+    /** Build a new alignment detector.
      * <p>The orbit is used only to set an upper bound for the max check interval
      * to period/3.</p>
      * @param threshold convergence threshold (s)
@@ -79,9 +93,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
                              final Orbit orbit,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<AlignmentDetector>(),
-             body, alignAngle);
+        this(orbit.getKeplerianPeriod() / 3, threshold, body, alignAngle);
     }
 
     /** Private constructor with full parameters.

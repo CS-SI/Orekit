@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -291,6 +292,26 @@ public class CelestialBodyFactoryTest {
             Assert.assertEquals(frame.toString(), refDistance,
                                 bodyDistance(sun, earthMoonBarycenter, date, frame),
                                 1.0e-14 * refDistance);
+        }
+    }
+
+    @Test
+    public void testICRFAndGCRFAlignment() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final CelestialBody earthMoonBarycenter   = CelestialBodyFactory.getEarthMoonBarycenter();
+        final CelestialBody solarSystemBarycenter = CelestialBodyFactory.getSolarSystemBarycenter();
+        final List<Frame> frames = Arrays.asList(earthMoonBarycenter.getInertiallyOrientedFrame(),
+                                                 earthMoonBarycenter.getBodyOrientedFrame(),
+                                                 solarSystemBarycenter.getInertiallyOrientedFrame(),
+                                                 solarSystemBarycenter.getBodyOrientedFrame());
+        final Frame icrf = FramesFactory.getICRF();
+        final Frame gcrf = FramesFactory.getGCRF();
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60) {
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            for (final Frame frame : frames) {
+                Assert.assertEquals(0.0, frame.getTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
+                Assert.assertEquals(0.0, frame.getTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
+            }
         }
     }
 

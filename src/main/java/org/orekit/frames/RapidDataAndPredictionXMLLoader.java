@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,15 +91,21 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
         /** Converter for nutation corrections. */
         private final IERSConventions.NutationCorrectionConverter converter;
 
+        /** Configuration for ITRF versions. */
+        private final ITRFVersionLoader itrfVersionLoader;
+
         /** History entries. */
         private final List<EOPEntry> history;
 
         /** Simple constructor.
          * @param converter converter to use
+         * @exception OrekitException if ITRF version loader cannot be parsed
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter) {
-            this.converter = converter;
-            this.history   = new ArrayList<EOPEntry>();
+        Parser(final IERSConventions.NutationCorrectionConverter converter)
+            throws OrekitException {
+            this.converter         = converter;
+            this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
+            this.history           = new ArrayList<EOPEntry>();
         }
 
         /** {@inheritDoc} */
@@ -191,18 +197,22 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             /** Indicator for daily data XML format or final data XML format. */
             private DataFileContent content;
 
+            /** ITRF version configuration. */
+            private ITRFVersionLoader.ITRFVersionConfiguration configuration;
+
             /** Simple constructor.
              * @param name file name
              */
             EOPContentHandler(final String name) {
-                this.name = name;
-                buffer  = new StringBuffer();
+                this.name   = name;
+                this.buffer = new StringBuffer();
             }
 
             /** {@inheritDoc} */
             @Override
             public void startDocument() {
-                content = DataFileContent.UNKNOWN;
+                content       = DataFileContent.UNKNOWN;
+                configuration = null;
             }
 
             /** {@inheritDoc} */
@@ -350,7 +360,12 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             };
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion()));
                     }
                 }
             }
@@ -405,7 +420,12 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             };
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = itrfVersionLoader.getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion()));
                     }
                 }
             }

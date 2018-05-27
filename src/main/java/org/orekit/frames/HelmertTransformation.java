@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,62 +89,62 @@ public class HelmertTransformation implements TransformProvider {
         // _________________________________________________________________________________________
 
         /** Transformation from ITRF 2014 To ITRF 2008. */
-        ITRF_2014_TO_ITRF_2008(2010,
+        ITRF_2014_TO_ITRF_2008(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_2008, 2010,
                                 1.6, 1.9,     2.4, 0.00, 0.00, 0.00,
                                 0.0, 0.0,    -0.1, 0.00, 0.00, 0.00),
 
         /** Transformation from ITRF 2014 To ITRF 2005. */
-        ITRF_2014_TO_ITRF_2005(2010,
+        ITRF_2014_TO_ITRF_2005(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_2005, 2010,
                                 2.6, 1.0,    -2.3, 0.00, 0.00, 0.00,
                                 0.3, 0.0,    -0.1, 0.00, 0.00, 0.00),
 
         /** Transformation from ITRF 2014 To ITRF 2000. */
-        ITRF_2014_TO_ITRF_2000(2010,
+        ITRF_2014_TO_ITRF_2000(ITRFVersion.ITRF_2014, ITRFVersion.ITRF_2000, 2010,
                                 0.7, 1.2,   -26.1, 0.00, 0.00, 0.00,
                                 0.1, 0.1,    -1.9, 0.00, 0.00, 0.00),
 
         /** Transformation from ITRF 2014 To ITRF 97. */
-        ITRF_2014_TO_ITRF_97  (2010,
+        ITRF_2014_TO_ITRF_97  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_97, 2010,
                                 7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 96. */
-        ITRF_2014_TO_ITRF_96  (2010,
+        ITRF_2014_TO_ITRF_96  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_96, 2010,
                                 7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,  -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 94. */
-        ITRF_2014_TO_ITRF_94  (2010,
+        ITRF_2014_TO_ITRF_94  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_94, 2010,
                                 7.4, -0.5,  -62.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 93. */
-        ITRF_2014_TO_ITRF_93  (2010,
+        ITRF_2014_TO_ITRF_93  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_93, 2010,
                               -50.4,  3.3,  -60.2, -2.81, -3.38, 0.40,
                                -2.8, -0.1,   -2.5, -0.11, -0.19, 0.07),
 
         /** Transformation from ITRF 2014 To ITRF 92. */
-        ITRF_2014_TO_ITRF_92  (2010,
+        ITRF_2014_TO_ITRF_92  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_92, 2010,
                                15.4,  1.5,  -70.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 91. */
-        ITRF_2014_TO_ITRF_91  (2010,
+        ITRF_2014_TO_ITRF_91  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_91, 2010,
                                27.4, 15.5,  -76.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 90. */
-        ITRF_2014_TO_ITRF_90  (2010,
+        ITRF_2014_TO_ITRF_90  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_90, 2010,
                                25.4, 11.5,  -92.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 89. */
-        ITRF_2014_TO_ITRF_89  (2010,
+        ITRF_2014_TO_ITRF_89  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_89, 2010,
                                30.4, 35.5, -130.8, 0.00, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
         /** Transformation from ITRF 2014 To ITRF 88. */
-        ITRF_2014_TO_ITRF_88  (2010,
+        ITRF_2014_TO_ITRF_88  (ITRFVersion.ITRF_2014, ITRFVersion.ITRF_88, 2010,
                                25.4, -0.5, -154.8, 0.10, 0.00, 0.26,
                                 0.1, -0.5,   -3.3, 0.00, 0.00, 0.02),
 
@@ -180,64 +180,72 @@ public class HelmertTransformation implements TransformProvider {
         // _________________________________________________________________________________________
 
         /** Transformation from ITRF 2008 To ITRF 2005. */
-        ITRF_2008_TO_ITRF_2005(2000,
+        ITRF_2008_TO_ITRF_2005(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_2005, 2000,
                                -2.0, -0.9,   -4.7,  0.00,  0.00,  0.00,
                                 0.3,  0.0,    0.0,  0.00,  0.00,  0.00),
 
         /** Transformation from ITRF 2008 To ITRF 2000. */
-        ITRF_2008_TO_ITRF_2000(2000,
+        ITRF_2008_TO_ITRF_2000(ITRFVersion.ITRF_2008, ITRFVersion.ITRF_2000, 2000,
                                -1.9, -1.7,  -10.5,  0.00,  0.00,  0.00,
                                 0.1,  0.1,   -1.8,  0.00,  0.00,  0.00),
 
         /** Transformation from ITRF 2008 To ITRF 97. */
-        ITRF_2008_TO_ITRF_97  (2000,
+        ITRF_2008_TO_ITRF_97  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_97, 2000,
                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 96. */
-        ITRF_2008_TO_ITRF_96  (2000,
+        ITRF_2008_TO_ITRF_96  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_96, 2000,
                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 94. */
-        ITRF_2008_TO_ITRF_94  (2000,
+        ITRF_2008_TO_ITRF_94  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_94, 2000,
                                 4.8,  2.6,  -33.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 93. */
-        ITRF_2008_TO_ITRF_93  (2000,
+        ITRF_2008_TO_ITRF_93  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_93, 2000,
                               -24.0,  2.4,  -38.6, -1.71, -1.48, -0.30,
                                -2.8, -0.1,   -2.4, -0.11, -0.19,  0.07),
 
         /** Transformation from ITRF 2008 To ITRF 92. */
-        ITRF_2008_TO_ITRF_92  (2000,
+        ITRF_2008_TO_ITRF_92  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_92, 2000,
                                12.8,  4.6,  -41.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 91. */
-        ITRF_2008_TO_ITRF_91  (2000,
+        ITRF_2008_TO_ITRF_91  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_91, 2000,
                                24.8, 18.6,  -47.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 90. */
-        ITRF_2008_TO_ITRF_90  (2000,
+        ITRF_2008_TO_ITRF_90  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_90, 2000,
                                22.8, 14.6,  -63.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 89. */
-        ITRF_2008_TO_ITRF_89  (2000,
+        ITRF_2008_TO_ITRF_89  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_89, 2000,
                                27.8, 38.6, -101.2,  0.00,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02),
 
         /** Transformation from ITRF 2008 To ITRF 88. */
-        ITRF_2008_TO_ITRF_88  (2000,
+        ITRF_2008_TO_ITRF_88  (ITRFVersion.ITRF_2008, ITRFVersion.ITRF_88, 2000,
                                22.8,  2.6, -125.2,  0.10,  0.00,  0.06,
                                 0.1, -0.5,   -3.2,  0.00,  0.00,  0.02);
+
+        /** Origin ITRF. */
+        private final ITRFVersion origin;
+
+        /** Destination ITRF. */
+        private final ITRFVersion destination;
 
         /** Transformation. */
         private final HelmertTransformation transformation;
 
         /** Simple constructor.
+         * @param origin origin ITRF
+         * @param destination destination ITRF
          * @param refYear reference year for the epoch of the transform
          * @param t1 translation parameter along X axis (BEWARE, this is in mm)
          * @param t2 translation parameter along Y axis (BEWARE, this is in mm)
@@ -252,14 +260,40 @@ public class HelmertTransformation implements TransformProvider {
          * @param r2Dot rate of rotation parameter around Y axis (BEWARE, this is in mas/y)
          * @param r3Dot rate of rotation parameter around Z axis (BEWARE, this is in mas/y)
          */
-        Predefined(final int refYear,
-                           final double t1, final double t2, final double t3,
-                           final double r1, final double r2, final double r3,
-                           final double t1Dot, final double t2Dot, final double t3Dot,
-                           final double r1Dot, final double r2Dot, final double r3Dot) {
-            transformation =
+        Predefined(final ITRFVersion origin, final ITRFVersion destination, final int refYear,
+                   final double t1, final double t2, final double t3,
+                   final double r1, final double r2, final double r3,
+                   final double t1Dot, final double t2Dot, final double t3Dot,
+                   final double r1Dot, final double r2Dot, final double r3Dot) {
+            this.origin         = origin;
+            this.destination    = destination;
+            this.transformation =
                     new HelmertTransformation(new AbsoluteDate(refYear, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
                                               t1, t2, t3, r1, r2, r3, t1Dot, t2Dot, t3Dot, r1Dot, r2Dot, r3Dot);
+        }
+
+        /** Get the origin ITRF.
+         * @return origin ITRF
+         * @since 9.2
+         */
+        public ITRFVersion getOrigin() {
+            return origin;
+        }
+
+        /** Get the destination ITRF.
+         * @return destination ITRF
+         * @since 9.2
+         */
+        public ITRFVersion getDestination() {
+            return destination;
+        }
+
+        /** Get the underlying {@link HelmertTransformation}.
+         * @return underlying {@link HelmertTransformation}
+         * @since 9.2
+         */
+        public HelmertTransformation getTransformation() {
+            return transformation;
         }
 
         /** Create an ITRF frame by transforming another ITRF frame.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -707,7 +707,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param M mean anomaly (rad)
      * @param e eccentricity
      * @param <T> type of the field elements
-     * @return v the true anomaly
+     * @return E the eccentric anomaly
      */
     public static <T extends RealFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
         // reduce M to [-PI PI) interval

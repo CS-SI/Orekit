@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2017 CS Systèmes d'Information
+<!-- Copyright 2002-2018 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,6 +20,196 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.
+    It introduces several new features and bug fixes. New features introduced in version 9.2 are
+    Kalman filter for orbit determination, loading of RINEX files, loading of ANTEX files, loading
+    of version d of SP3 files (version a to c were already supported), on-the-fly decompression of .Z
+    files, code measurements, phase measurements (but only a very basic implementation for now),
+    specific attitude laws (GPS, GLONASS, GALILEO, BEIDOU) with midnight/noon turns, possibility to
+    use backward propagation in LS orbit determination, support for any ITRF version, even if EOP
+    files do not match the desired version, attitude overriding in constant thrust maneuvers,
+    FunctionalDetector, filtering mechanism to insert specific decompression or deciphering algorithms
+    during data loading, frames for Lagrange L1 and L2 point for any two related celestial bodies.
+    WARNING: phase measurements, GNSS attitude and time-dependent process noise are considered
+    experimental features for now, they should not be used yet for operational systems.
+    Several bugs have been fixed.">
+      <action dev="luc" type="fix">
+        Fixed missing eclipse detectors in field version of Solar radiation pressure.
+        Fixes issue #366.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed issue where EventHandler.init() was never called.
+        Fixes issue #471.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed error in relative humidity units in Marini-Murray tropospheric model.
+        Fixes issue #352.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed DSST events detection in the osculating case.
+        Fixes issue #398.
+      </action>
+      <action dev="luc" type="fix">
+        Allow several TLE with same date in TLESeries.
+        Fixes issue #411.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed compilation problems with JDK 1.8
+        Fixes issue #462.
+      </action>
+      <action dev="luc" type="add" >
+        Added specific attitude mode for GNSS satellites: GPS (block IIA, block IIF, block IIF),
+        GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO). This is still considered experimental as there
+        are some problems when Sun crosses the orbital plane during a midnight/noon turn maneuver
+        (which is a rare event but nevertheless occurs)
+      </action>
+      <action dev="luc" type="add" >
+        Added natural order for observed measurements primarily based on
+        chronological order, but with also value comparisons if measurements
+        are simultaneous (which occurs a lot in GNSS), and ensuring no
+        measurements are lost if stored in SortedSet
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added GNSS code measurements
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added GNSS phase measurements (very basic implementation for now, not usable as is)
+      </action>
+      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+        Added loading of RINEX observation files (versions 2 and 3)
+      </action>
+      <action dev="luc" type="fix">
+        Fixed compression table reset problem in .Z files
+        Fixes issue #450.
+      </action>
+      <action dev="maxime" type="fix">
+        Fixed de-activation of event detection.
+        In the propagate(startDate, endDate) function of class "AbstractIntegratedPropagator",
+        for dates out of the time interval defined by ]startDate, endDate].
+        Fixes issue #449.
+      </action>
+      <action dev="luc" type="add">
+        Added support for loading Unix-compressed files (ending in .Z).
+        This file compression algorithm is still widely used in the GNSS
+        community (SP3 files, clock files, Klobuchar coefficients...)
+        Fixes issue #447.
+      </action>
+      <action dev="luc" type="add">
+        Added a customizable filtering capability in data loading.
+        This allows users to insert layers providing features like
+        custom decompression algorithms, deciphering, monitoring...
+        Fixes issue #446.
+      </action>
+      <action dev="luc" type="add">
+        Allow direct retrieval of rotation part without derivatives from
+        LOFType without computing the full transform from inertial frame.
+      </action>
+      <action dev="maxime" type="fix">
+        Added a provider for time-dependent process noise in Kalman estimator.
+        This providers allow users to set up realistic models where the process
+        noise increases in the along track direction.
+        Fixes issue #403.
+      </action>
+      <action dev="maxime" type="add">
+        Increased visibility of attributes in ConstantThrustManeuver class.
+        Added getters for all attributes. Also added an attribute name that
+        allows the differentiation of the maneuvers, both from a parameter driver
+        point of view and from a force model point of view.
+        Fixes issue #426.
+      </action>
+      <action dev="maxime" type="add">
+        Increased visibility of attributes in propagator builders.
+        By adding getters for all attributes in NumericalPropagatorBuilder
+        and AbstractPropagatorBuilder.
+        Also made the method findByName in ParameterDriversList public.
+        Fixes issue #425.
+      </action>
+      <action dev="luc" type="fix">
+        Ensure the correct ITRF version is used in CCSDS files, regardless
+        of the EOP source chosen, defaulting to ITRF-2014.
+      </action>
+      <action dev="luc" type="fix">
+        Split initial covariance matrix and process noise matrix in two
+        methods in the covariance matrix provider interface.
+      </action>
+      <action dev="luc" type="add">
+        Added VersionedITRF frame that allow users with needs for very high
+        accuracy to specify which ITRF version they want, and stick to it
+        regardless of their EOP source.
+        Fixes issue #412.
+      </action>
+      <action dev="luc" type="add">
+        Added an itrf-versions.conf configuration file allowing to specify
+        which ITRF version each EOP file defines for which date
+      </action>
+      <action dev="luc" type="add">
+        EOP history now contains the ITRF version corresponding to each
+        EOP entry on a per date basis
+      </action>
+      <action dev="luc" type="add">
+        Added an ITRFVersion enumerate to simplify conversion between ITRF frames,
+        even when no direct Helmert transformation is available
+      </action>
+      <action dev="luc" type="add">
+        Added TransformProviderUtility to reverse or combine TransformProvider instances.
+      </action>
+      <action dev="luc" type="add">
+        Allow attitude overriding during constant-thrust maneuvers.
+        Fixes issue #410.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed out-of-sync attitude computation near switch events in AttitudeSequence.
+        Fixes issue #404.
+      </action>
+      <action dev="luc" type="add">
+        Added a method to extract sub-ranges from TimeSpanMap instances.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed TLE creation with B* coefficients having single digits like 1.0e-4.
+        Fixes issue #388.
+      </action>
+      <action dev="evan" type="add">
+        Add FunctionalDetector.
+      </action>
+      <action dev="luc" type="add">
+        Added handling of IGS ANTEX GNSS antenna models file.
+      </action>
+      <action dev="luc" type="add">
+        Added support for SP3-d files.
+      </action>
+      <action dev="luc" type="fix">
+        Improved SP3 files parsing.
+        Some files already operationally produced by IGS Multi-GNSS Experiment (MGEX)
+        exceed the maximum number of satellites supported by the regular SP3-c file
+        format (which is 85 satellites) and extended the header, without updating the
+        format version to SP3-d, which specifically raises the 85 satellites limitation.
+        Fixes issue #376.
+      </action>
+      <action dev="maxime" type="add">
+        Allow backward propagation in batch LS orbit determination.
+        Fixes issue #375.
+      </action>
+      <action dev="maxime" type="add">
+        Added covariance matrix to PV measurements.
+        Fixes issue #374.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed issue when converting very far points (such as Sun center) to geodetic coordinates.
+        Fixes issue #373.
+      </action>
+      <action dev="luc" type="add" >
+        Added more conversions between PV coordinates and DerivativeStructure.
+        This simplifies for example getting the time derivative of the momentum.
+      </action>
+      <action dev="maxime" type="fix">
+        Fixed weights for angular measurements in W3B orbit determination.
+        Fixed in test and tutorial.
+        Fixes issue #370.
+      </action>
+      <action dev="luc" type="add" due-to="Julio Hernanz">
+        Added frames for L1 and L2 Lagrange points, for any pair of celestial bodies.
+      </action>
+    </release>
     <release version="9.1" date="2017-11-26"
              description="Version 9.1 is a minor release of Orekit. It introduces a few new
              features and bug fixes. New features introduced in version 9.1 are some

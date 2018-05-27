@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,8 +58,11 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+    default void init(FieldSpacecraftState<T> s0,
+                      FieldAbsoluteDate<T> t) throws OrekitException {
         // nothing by default
     }
 

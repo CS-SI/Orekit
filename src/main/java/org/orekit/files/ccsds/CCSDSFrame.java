@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.HelmertTransformation;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LOFType;
 import org.orekit.utils.IERSConventions;
 
@@ -82,7 +82,22 @@ public enum CCSDSFrame {
 
     },
 
-    /** International Celestial Reference Frame 2008. */
+    /** International Terrestrial Reference Frame 2014. */
+    ITRF2014(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP)
+                throws OrekitException {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return FramesFactory.getITRF(ITRFVersion.ITRF_2014, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 2008. */
     ITRF2008(null) {
 
         /** {@inheritDoc} */
@@ -92,12 +107,12 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRF(conventions, simpleEOP);
+            return FramesFactory.getITRF(ITRFVersion.ITRF_2008, conventions, simpleEOP);
         }
 
     },
 
-    /** International Celestial Reference Frame 2005. */
+    /** International Terrestrial Reference Frame 2005. */
     ITRF2005(null) {
 
         /** {@inheritDoc} */
@@ -107,15 +122,12 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            final Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEOP);
-            final HelmertTransformation.Predefined predefinedHT =
-                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
-            return predefinedHT.createTransformedITRF(itrf2008, toString());
+            return FramesFactory.getITRF(ITRFVersion.ITRF_2005, conventions, simpleEOP);
         }
 
     },
 
-    /** International Celestial Reference Frame 2000. */
+    /** International Terrestrial Reference Frame 2000. */
     ITRF2000(null) {
 
         /** {@inheritDoc} */
@@ -125,15 +137,12 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            final Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEOP);
-            final HelmertTransformation.Predefined predefinedHT =
-                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000;
-            return predefinedHT.createTransformedITRF(itrf2008, toString());
+            return FramesFactory.getITRF(ITRFVersion.ITRF_2000, conventions, simpleEOP);
         }
 
     },
 
-    /** International Celestial Reference Frame 1993. */
+    /** International Terrestrial Reference Frame 1993. */
     ITRF93(null) {
 
         /** {@inheritDoc} */
@@ -143,15 +152,12 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            final Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEOP);
-            final HelmertTransformation.Predefined predefinedHT =
-                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93;
-            return predefinedHT.createTransformedITRF(itrf2008, toString());
+            return FramesFactory.getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
         }
 
     },
 
-    /** International Celestial Reference Frame 1997. */
+    /** International Terrestrial Reference Frame 1997. */
     ITRF97(null) {
 
         /** {@inheritDoc} */
@@ -161,10 +167,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            final Frame itrf2008 = FramesFactory.getITRF(conventions, simpleEOP);
-            final HelmertTransformation.Predefined predefinedHT =
-                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97;
-            return predefinedHT.createTransformedITRF(itrf2008, toString());
+            return FramesFactory.getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
         }
 
     },

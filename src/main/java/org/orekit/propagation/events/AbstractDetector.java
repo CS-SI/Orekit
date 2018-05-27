@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,9 +69,17 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
         this.forward   = true;
     }
 
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    /**
+     * {@inheritDoc}
+     *
+     * <p> This implementation sets the direction of propagation and initializes the event
+     * handler. If a subclass overrides this method it should call {@code
+     * super.init(s0, t)}.
+     */
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) throws OrekitException {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
+        getHandler().init(s0, t);
     }
 
     /** {@inheritDoc} */

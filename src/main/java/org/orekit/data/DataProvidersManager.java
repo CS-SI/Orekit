@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,6 +58,14 @@ import org.orekit.errors.OrekitMessages;
  * providers, they must call explicitly the {@link #addDefaultProviders()} method.
  * </p>
  *
+ * <p>
+ * The default configuration uses a predefined set of {@link DataFilter data filters}
+ * that already handled gzip-compressed files (recognized by the {@code .gz} suffix)
+ * and Unix-compressed files (recognized by the {@code .Z} suffix).
+ * Users can {@link #addFilter(DataFilter) add} custom filters for handling specific
+ * types of filters (decompression, deciphering...).
+ * </p>
+ *
  * @author Luc Maisonobe
  * @see DirectoryCrawler
  * @see ClasspathCrawler
@@ -70,6 +78,14 @@ public class DataProvidersManager {
     /** Supported data providers. */
     private final List<DataProvider> providers;
 
+    /** Supported filters.
+     * @since 9.2
+     */
+    private final List<DataFilter> filters;
+
+    /** Number of predefined filters. */
+    private final int predefinedFilters;
+
     /** Loaded data. */
     private final Set<String> loaded;
 
@@ -80,7 +96,15 @@ public class DataProvidersManager {
      */
     private DataProvidersManager() {
         providers = new ArrayList<DataProvider>();
+        filters   = new ArrayList<>();
         loaded    = new LinkedHashSet<String>();
+
+        // set up predefined filters
+        addFilter(new GzipFilter());
+        addFilter(new UnixCompressFilter());
+
+        predefinedFilters = filters.size();
+
     }
 
     /** Get the unique instance.
@@ -190,9 +214,64 @@ public class DataProvidersManager {
         providers.clear();
     }
 
+    /** Add a data filter.
+     * @param filter filter to add
+     * @see #applyAllFilters(NamedData)
+     * @see #clearFilters()
+     * @since 9.2
+     */
+    public void addFilter(final DataFilter filter) {
+        filters.add(filter);
+    }
+
+    /** Remove all data filters, except the predefined ones.
+     * @see #addFilter(DataFilter)
+     * @since 9.2
+     */
+    public void clearFilters() {
+        for (int i = filters.size() - 1; i >= predefinedFilters; --i) {
+            filters.remove(i);
+        }
+    }
+
+    /** Apply all the relevant data filters, taking care of layers.
+     * <p>
+     * If several filters can be applied, they will all be applied
+     * as a stack, even recursively if required. This means that if
+     * filter A applies to files with names of the form base.ext.a
+     * and filter B applies to files with names of the form base.ext.b,
+     * then providing base.ext.a.b.a will result in filter A being
+     * applied on top of filter B which itself is applied on top of
+     * another instance of filter A.
+     * </p>
+     * @param original original named data
+     * @return fully filtered named data
+     * @exception IOException if some data stream cannot be filtered
+     * @see #addFilter(DataFilter)
+     * @see #clearFilters()
+     * @since 9.2
+     */
+    public NamedData applyAllFilters(final NamedData original)
+        throws IOException {
+        NamedData top = original;
+        for (boolean filtering = true; filtering;) {
+            filtering = false;
+            for (final DataFilter filter : filters) {
+                final NamedData filtered = filter.filter(top);
+                if (filtered != top) {
+                    // the filter has been applied, we need to restart the loop
+                    top       = filtered;
+                    filtering = true;
+                    break;
+                }
+            }
+        }
+        return top;
+    }
+
     /** Check if some provider is supported.
      * @param provider provider to check
-     * @return true if the specified provider instane is already in the supported list
+     * @return true if the specified provider instance is already in the supported list
      * @see #addProvider(DataProvider)
      * @see #removeProvider(DataProvider)
      * @see #clearProviders()

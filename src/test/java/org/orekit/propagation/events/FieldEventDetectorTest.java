@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,6 +58,56 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 public class FieldEventDetectorTest {
 
     private double mu;
+
+    @Test
+    public void testEventHandlerInit() throws OrekitException {
+        doTestEventHandlerInit(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
+            throws OrekitException {
+
+        final T zero = field.getZero();
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
+                                                              zero.add(3492467.56),
+                                                              zero.add(-25767.257));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(505.848),
+                                                              zero.add(942.781),
+                                                              zero.add(7435.922));
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
+        final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                             FramesFactory.getEME2000(), date, mu);
+        // mutable boolean
+        final boolean[] eventOccurred = new boolean[1];
+        FieldEventHandler<FieldDateDetector<T>, T> handler =
+                new FieldEventHandler<FieldDateDetector<T>, T>() {
+            private boolean initCalled;
+            @Override
+            public Action eventOccurred(FieldSpacecraftState<T> s,
+                                        FieldDateDetector<T> detector,
+                                        boolean increasing) {
+                if (!initCalled) {
+                    throw new RuntimeException("init() not called before eventOccurred()");
+                }
+                eventOccurred[0] = true;
+                return Action.STOP;
+            }
+
+            @Override
+            public void init(FieldSpacecraftState<T> initialState,
+                             FieldAbsoluteDate<T> target) {
+                initCalled = true;
+            }
+        };
+
+        FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
+        T stepSize = zero.add(60.0);
+        propagator.addEventDetector(new FieldDateDetector<>(date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler));
+        propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
+        Assert.assertTrue(eventOccurred[0]);
+
+    }
 
     @Test
     public void testBasicScheduling() throws OrekitException {

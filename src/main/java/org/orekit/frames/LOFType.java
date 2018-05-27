@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,14 +47,14 @@ public enum LOFType {
     TNW {
 
         /** {@inheritDoc} */
-        protected Rotation rotationFromInertial(final PVCoordinates pv) {
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
-        protected <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> pv) {
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -81,14 +81,14 @@ public enum LOFType {
     QSW {
 
         /** {@inheritDoc} */
-        protected Rotation rotationFromInertial(final PVCoordinates pv) {
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
-        protected <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> pv) {
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -115,14 +115,14 @@ public enum LOFType {
     LVLH {
 
         /** {@inheritDoc} */
-        protected Rotation rotationFromInertial(final PVCoordinates pv) {
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
         }
 
         /** {@inheritDoc} */
-        protected <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> pv) {
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_K));
@@ -146,14 +146,14 @@ public enum LOFType {
     VVLH {
 
         /** {@inheritDoc} */
-        protected Rotation rotationFromInertial(final PVCoordinates pv) {
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.MINUS_K, Vector3D.MINUS_J);
         }
 
         /** {@inheritDoc} */
-        protected <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> pv) {
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.MINUS_K),
                                        new FieldVector3D<>(field, Vector3D.MINUS_J));
@@ -176,14 +176,14 @@ public enum LOFType {
     VNC {
 
         /** {@inheritDoc} */
-        protected Rotation rotationFromInertial(final PVCoordinates pv) {
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_J);
         }
 
         @Override
-        protected <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> pv) {
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J));
@@ -237,19 +237,33 @@ public enum LOFType {
     }
 
     /** Get the rotation from inertial frame to local orbital frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first
+     * time derivatives (i.e. rotation rate) is needed as well, the full
+     * {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial}
+     * method must be called and the complete rotation transform must be extracted
+     * from it.
+     * </p>
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return rotation from inertial frame to local orbital frame
      */
-    protected abstract Rotation rotationFromInertial(PVCoordinates pv);
+    public abstract Rotation rotationFromInertial(PVCoordinates pv);
 
     /** Get the rotation from inertial frame to local orbital frame.
+     * <p>
+     * This rotation does not include any time derivatives. If first
+     * time derivatives (i.e. rotation rate) is needed as well, the full
+     * {@link #transformFromInertial(FieldAbsoluteDate, FieldPVCoordinates) transformFromInertial}
+     * method must be called and the complete rotation transform must be extracted
+     * from it.
+     * </p>
      * @param field field to which the elements belong
      * @param pv position-velocity of the spacecraft in some inertial frame
-     * @param <T> type of the fiels elements
+     * @param <T> type of the field elements
      * @return rotation from inertial frame to local orbital frame
      * @since 9.0
      */
-    protected abstract <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
-                                                                                             FieldPVCoordinates<T> pv);
+    public abstract <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
+                                                                                          FieldPVCoordinates<T> pv);
 
 }

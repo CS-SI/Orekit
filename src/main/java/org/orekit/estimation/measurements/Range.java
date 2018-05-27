@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,16 +34,26 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling a range measurement from a ground station.
+/** Class modeling a range measurement from a ground station or
+ * from a satellite.
  * <p>
- * The measurement is considered to be a signal emitted from
- * a ground station, reflected on spacecraft, and received
- * on the same ground station. Its value is the elapsed time
- * between emission and reception divided by 2c were c is the
- * speed of light. The motion of both the station and the
+ * For two-way measurements, the measurement is considered
+ * to be a signal emitted from a ground station, reflected
+ * on spacecraft, and received on the same ground station.
+ * Its value is the elapsed time between emission and reception
+ * divided by 2c were c is the speed of light.
+ * </p>
+ * <p>
+ * For one-way measurements, a signal is emitted by the satellite
+ * and received by the ground station. The measurement value
+ * is the elapsed time between emission and reception divided by
+ * the speed of light.
+ * </p>
+ * <p>
+ * The motion of both the station and the
  * spacecraft during the signal flight time are taken into
  * account. The date of the measurement corresponds to the
- * reception on ground of the reflected signal.
+ * reception on ground of the emitted or reflected signal.
  * </p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
@@ -54,6 +64,9 @@ public class Range extends AbstractMeasurement<Range> {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
+
+    /** Flag indicating whether it is a two-way measurement. */
+    private final boolean twoway;
 
     /** Simple constructor.
      * <p>
@@ -72,7 +85,28 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        this(station, date, range, sigma, baseWeight, 0);
+        this(station, true, date, range, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * This constructor uses 0 as the index of the propagator related
+     * to this measurement, thus being well suited for mono-satellite
+     * orbit determination.
+     * </p>
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     */
+    public Range(final GroundStation station, final AbsoluteDate date, final double range,
+                 final double sigma, final double baseWeight, final boolean twoWay)
+        throws OrekitException {
+        this(station, twoWay, date, range, sigma, baseWeight, 0);
     }
 
     /** Simple constructor.
@@ -90,6 +124,25 @@ public class Range extends AbstractMeasurement<Range> {
                  final double range, final double sigma, final double baseWeight,
                  final int propagatorIndex)
         throws OrekitException {
+        this(station, true, date, range, sigma, baseWeight, 0);
+    }
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param propagatorIndex index of the propagator related to this measurement
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
+     * name conflict occurs
+     * @since 9.0
+     */
+    public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
+                 final double range, final double sigma, final double baseWeight,
+                 final int propagatorIndex)
+        throws OrekitException {
         super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -101,6 +154,7 @@ public class Range extends AbstractMeasurement<Range> {
               station.getPolarOffsetYDriver(),
               station.getPolarDriftYDriver());
         this.station = station;
+        this.twoway = twoWay;
     }
 
     /** Get the ground station from which measurement is performed.
@@ -108,6 +162,13 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public GroundStation getStation() {
         return station;
+    }
+
+    /** Check if the instance represents a two-way measurement.
+     * @return true if the instance represents a two-way measurement
+     */
+    public boolean isTwoWay() {
+        return twoway;
     }
 
     /** {@inheritDoc} */
@@ -161,39 +222,56 @@ public class Range extends AbstractMeasurement<Range> {
         // Downlink delay
         final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
-        // Transit state
+        // Transit state & Transit state (re)computed with derivative structures
         final double                delta        = downlinkDate.durationFrom(state.getDate());
         final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
-
-        // Transit state (re)computed with derivative structures
         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
 
-        // Station at transit state date (derivatives of tauD taken into account)
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
-                        stationDownlink.shiftedBy(tauD.negate());
+        // prepare the evaluation
+        final EstimatedMeasurement<Range> estimated;
+        final DerivativeStructure range;
 
-        // Uplink delay
-        final DerivativeStructure tauU =
-                        signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
-                        stationDownlink.shiftedBy(-tauD.getValue() - tauU.getValue());
+        if (twoway) {
 
-        // Prepare the evaluation
-        final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation,
-                                                        new SpacecraftState[] {
-                                                            transitState
-                                                        }, new TimeStampedPVCoordinates[] {
-                                                            stationUplink.toTimeStampedPVCoordinates(),
-                                                            transitStateDS.toTimeStampedPVCoordinates(),
-                                                            stationDownlink.toTimeStampedPVCoordinates()
-                                                        });
+            // Station at transit state date (derivatives of tauD taken into account)
+            final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
+                            stationDownlink.shiftedBy(tauD.negate());
+            // Uplink delay
+            final DerivativeStructure tauU =
+                            signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
+            final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
+                            stationDownlink.shiftedBy(-tauD.getValue() - tauU.getValue());
 
-        // Range value
-        final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-        final DerivativeStructure tau    = tauD.add(tauU);
-        final DerivativeStructure range  = tau.multiply(cOver2);
+            // Prepare the evaluation
+            estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                                                            new SpacecraftState[] {
+                                                                transitState
+                                                            }, new TimeStampedPVCoordinates[] {
+                                                                stationUplink.toTimeStampedPVCoordinates(),
+                                                                transitStateDS.toTimeStampedPVCoordinates(),
+                                                                stationDownlink.toTimeStampedPVCoordinates()
+                                                            });
+
+            // Range value
+            final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
+            final DerivativeStructure tau    = tauD.add(tauU);
+            range                            = tau.multiply(cOver2);
+
+        } else {
+
+            estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation,
+                            new SpacecraftState[] {
+                                transitState
+                            }, new TimeStampedPVCoordinates[] {
+                                transitStateDS.toTimeStampedPVCoordinates(),
+                                stationDownlink.toTimeStampedPVCoordinates()
+                            });
+
+            // Range value
+            range = tauD.multiply(Constants.SPEED_OF_LIGHT);
+        }
+
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state

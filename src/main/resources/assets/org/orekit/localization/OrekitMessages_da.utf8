@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = ramme {0} er ikke en forgænger for hverken ra
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = ramme {0} har dybden {1}, den kan ikke have en forgænger {2} niveauer over
 
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = ITRF ramme {0} blev ikke fundet
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, understøttede typer: {0} og {1}
 
@@ -62,7 +65,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = ingen jordorienteringsparametre er indl
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametre mellem {0} og {1}
 
 # missing Earth Orientation Parameters
-NO_EARTH_ORIENTATION_PARAMETERS = <MISSING TRANSLATION>
+NO_EARTH_ORIENTATION_PARAMETERS = ingen jordorienteringsparametre
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en understøttet IERS datafil
@@ -355,6 +358,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = ikke understøttet version {0} af sp3 fil
 
+# found {0} epochs in file {1}, expected {2}
+SP3_NUMBER_OF_EPOCH_MISMATCH = fandt {0} epoker i filen {1}, forventede {2}
+
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet ende på fil i sp3 fil (efter linje {0})
 
@@ -449,5 +455,49 @@ NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = filen {0} indeholder ikke Klobuchar koefficien
 NO_REFERENCE_DATE_FOR_PARAMETER = ingen referencedato angivet for parameteren {0}
 
 # station {0} not found, known stations: {1}
-STATION_NOT_FOUND = <MISSING TRANSLATION>
+STATION_NOT_FOUND = station {0} blev ikke fundet, kendte stationer: {1}
 
+# unknown satellite system {0}
+UNKNOWN_SATELLITE_SYSTEM = ukendt satellitsystem {0}
+
+# unknown satellite antenna code {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE = ukendt satellitantennekode {0}
+
+# cannot find satellite {0} in satellite system {1}
+CANNOT_FIND_SATELLITE_IN_SYSTEM = kunne ikke finde satellitten {0} i satellitsystemet {1}
+
+# unknown RINEX frequency {0} in file {1}, line {2}
+UNKNOWN_RINEX_FREQUENCY = ukendt RINEX-frekvens {0} i filen {1}, linje {2}
+
+# mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
+MISMATCHED_FREQUENCIES = uafstemte frekvenser i filen {0}, linje {1} (forventede {2}, fandt {3})
+
+# wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
+WRONG_COLUMNS_NUMBER = forkert kolonneantal i filen {0}, linje {1} (forventede {2} kolonner, fandt {3} kolonner)
+
+# unsupported format for file {0}
+UNSUPPORTED_FILE_FORMAT = ikke understøttet format for filen {0}
+
+# incomplete header in file {0}
+INCOMPLETE_HEADER = ufuldstændig header i filen {0}
+
+# inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}
+INCONSISTENT_NUMBER_OF_SATS = Uoverensstemmende antal satellitter i linje {0}, filen {1}: observation med {2} satellitter og maksimum antal satellitter er {3}
+
+# the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
+INCONSISTENT_SATELLITE_SYSTEM = Satellitsystemet {3} fra linje {0}, i filen {1} stemmer ikke overens med Rinex Satellite System {2} i header
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = Ingen propagator er konfigureret
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = Dimensionen {0} stemmer ikke overens med parameterlisten: {1}
+
+# file {0} is not a supported Unix-compressed file
+NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = filen {0} er ikke en understøttet Unix-komprimeret fil
+
+# unexpected end of file {0}
+UNEXPECTED_END_OF_FILE = uventet afslutning på filen {0}
+
+# file {0} is corrupted
+CORRUPTED_FILE = filen {0} er korrumperet

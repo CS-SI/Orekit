@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,7 @@ public class OPMParserTest {
         Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
-        Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
+        Assert.assertEquals(CCSDSFrame.ITRF97.toString(), StreamingOemWriter.guessFrame(file.getMetaData().getFrame()));
         Assert.assertEquals(CcsdsTimeScale.TAI, file.getMetaData().getTimeSystem());
         Assert.assertFalse(file.hasCovarianceMatrix());
 
@@ -98,21 +98,21 @@ public class OPMParserTest {
             Assert.fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
+            Assert.assertEquals("ITRF-97/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
         try {
             file.generateKeplerianOrbit();
             Assert.fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
+            Assert.assertEquals("ITRF-97/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
         try {
             file.generateSpacecraftState();
             Assert.fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
+            Assert.assertEquals("ITRF-97/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
 
     }

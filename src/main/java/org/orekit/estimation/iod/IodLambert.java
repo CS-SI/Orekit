@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -282,7 +282,8 @@ public class IodLambert {
             final double beta = longway * 2 * FastMath.asin(FastMath.sqrt((speri - chord) / (2. * sma)));
             final double psi  = (alfa - beta) / 2;
             // Eq. 7.21
-            final double etaSq = 2 * sma * FastMath.pow(FastMath.sin(psi), 2) / speri;
+            final double sinPsi = FastMath.sin(psi);
+            final double etaSq = 2 * sma * sinPsi * sinPsi / speri;
             eta  = FastMath.sqrt(etaSq);
         } else {
             // hyperbola
@@ -290,7 +291,8 @@ public class IodLambert {
             final double delta = longway * 2 * FastMath.asinh(FastMath.sqrt((chord - speri) / (2 * sma)));
             //
             final double psi  = (gamma - delta) / 2.;
-            final double etaSq = -2 * sma * FastMath.pow(FastMath.sinh(psi), 2) / speri;
+            final double sinhPsi = FastMath.sinh(psi);
+            final double etaSq = -2 * sma * sinhPsi * sinhPsi / speri;
             eta  = FastMath.sqrt(etaSq);
         }
 

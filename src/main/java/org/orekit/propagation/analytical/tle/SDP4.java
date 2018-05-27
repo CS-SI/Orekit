@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ import org.orekit.utils.Constants;
  */
 abstract class SDP4  extends TLEPropagator {
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** New perigee argument. */
     protected double omgadf;
@@ -55,7 +55,7 @@ abstract class SDP4  extends TLEPropagator {
     /** New inclination. */
     protected double xinc;
 
-    // CHECKSTYLE: resume VisibilityModifierCheck
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.

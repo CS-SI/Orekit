@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -618,7 +618,7 @@ public class KeplerianOrbit extends Orbit {
      * </p>
      * @param M mean anomaly (rad)
      * @param e eccentricity
-     * @return v the true anomaly
+     * @return E the eccentric anomaly
      */
     public static double meanToEllipticEccentric(final double M, final double e) {
 

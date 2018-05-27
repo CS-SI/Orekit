@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,6 +51,44 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class EventDetectorTest {
 
     private double mu;
+
+    @Test
+    public void testEventHandlerInit() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
+        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
+        final Orbit orbit = new CircularOrbit(new PVCoordinates(position,  velocity),
+                                              FramesFactory.getEME2000(), date, mu);
+        // mutable boolean
+        final boolean[] eventOccurred = new boolean[1];
+        EventHandler<DateDetector> handler = new EventHandler<DateDetector>() {
+            private boolean initCalled;
+            @Override
+            public Action eventOccurred(SpacecraftState s,
+                                        DateDetector detector,
+                                        boolean increasing) {
+                if (!initCalled) {
+                    throw new RuntimeException("init() not called before eventOccurred()");
+                }
+                eventOccurred[0] = true;
+                return Action.STOP;
+            }
+
+            @Override
+            public void init(SpacecraftState initialState,
+                             AbsoluteDate target) {
+                initCalled = true;
+            }
+        };
+
+        Propagator propagator = new KeplerianPropagator(orbit);
+        double stepSize = 60.0;
+        propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(handler));
+        propagator.propagate(date.shiftedBy(10 * stepSize));
+        Assert.assertTrue(eventOccurred[0]);
+
+    }
 
     @Test
     public void testBasicScheduling() throws OrekitException {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,8 @@ import org.orekit.utils.OrekitConfiguration;
  * The user can retrieve those reference frames using various static methods, the most
  * important ones being: {@link #getFrame(Predefined)}, {@link #getGCRF()},
  * {@link #getCIRF(IERSConventions, boolean)} {@link #getTIRF(IERSConventions, boolean)},
- * {@link #getITRF(IERSConventions, boolean)}, {@link #getEME2000()},
- * {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions, boolean)},
+ * {@link #getITRF(IERSConventions, boolean)}, {@link #getITRF(ITRFVersion, IERSConventions, boolean)},
+ * {@link #getEME2000()}, {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions, boolean)},
  * {@link #getGTOD(IERSConventions, boolean)}, {@link #getITRFEquinox(IERSConventions, boolean)},
  * {@link #getTEME()} and {@link #getVeis1950()}.
  * </p>
@@ -73,22 +74,24 @@ import org.orekit.utils.OrekitConfiguration;
  * <p>
  * This frame is used to define position on solid Earth. It rotates with
  * the Earth and includes the pole motion with respect to Earth crust as
- * provided by {@link org.orekit.data.DataProvidersManager IERS data}.
+ * provided by IERS {@link EOPHistory Earth Orientation Parameters}.
  * Its pole axis is the IERS Reference Pole (IRP).
  * </p>
  * <p>
- * Previous realizations of the ITRS are available and linked together using
- * {@link HelmertTransformation Helmert transformations}. Parameters for all
- * ITRS realizations since 1988 are available from the ITRF site <a
- * href="ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP"> ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP</a>).
- * Orekit provides a {@link HelmertTransformation.Predefined#createTransformedITRF(Frame,
- * String) utility} method to build simply several of them and link them together.
+ * Depending on the  {@link EOPHistory Earth Orientation Parameters} source,
+ * different ITRS realization may be returned by {@link #getITRF(IERSConventions, boolean)},
+ * and if EOP are mixed, the ITRF may even jump from one realization to another one.
+ * This is not a problem for most users as different ITRS realizations are very close
+ * to each other (a few millimeters at Earth surface). If however a specific ITRF version
+ * (i.e. an ITRS realization) is needed for very high accuracy, Orekit provides the
+ * {@link FramesFactory#getITRF(ITRFVersion, IERSConventions, boolean)} method
+ * to get it and take care of jumps in EOP.
  * </p>
  * <p>
  * ITRF can be built using the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8 and any supported {@link IERSConventions
  * IERS conventions} (even IERS 1996 can be used with non-rotating origin paradigm,
- * despite the resolution was not yet adopted at conventions publication time.
+ * despite the resolution was not yet adopted at conventions publication time).
  * </p>
  * <p>
  * ITRF can also be built using the classical equinox paradigm used prior to IAU 2000
@@ -118,7 +121,7 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getEOPHistory(IERSConventions, boolean)}, {@link EOPHistory#getStartDate()},
  * and {@link EOPHistory#getEndDate()}.
  * <p>
- * For more on configuring the EOP data Orekit uses see
+ * For more information on configuring the EOP data Orekit uses see
  * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
  * https://www.orekit.org/forge/projects/orekit/wiki/Configuration</a>.
  * <p>
@@ -191,6 +194,10 @@ public class FramesFactory {
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
         new HashMap<Predefined, FactoryManagedFrame>();
+
+    /** Predefined versioned ITRF frames. */
+    private static transient Map<ITRFKey, VersionedITRF> VERSIONED_ITRF_FRAMES =
+        new HashMap<ITRFKey, VersionedITRF>();
 
     /** Loaders for Earth Orientation parameters. */
     private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
@@ -543,7 +550,7 @@ public class FramesFactory {
 
     /** Get the unique ICRF frame.
      * <p>The ICRF frame is centered at solar system barycenter and aligned
-     * with EME2000.</p>
+     * with GCRF.</p>
      * @return the unique instance of the ICRF frame
      * @exception OrekitException if solar system ephemerides cannot be loaded
      */
@@ -619,11 +626,26 @@ public class FramesFactory {
         }
     }
 
-    /** Get the ITRF2008 reference frame, using IERS 2010 conventions.
+    /** Get an unspecified International Terrestrial Reference Frame.
+     * <p>
+     * The frame returned uses the {@link EOPEntry Earth Orientation Parameters}
+     * blindly. So if for example one loads only EOP 14 C04 files to retrieve
+     * the parameters, the frame will be an {@link ITRFVersion#ITRF_2014}. However,
+     * if parameters are loaded from different files types, or even for file
+     * types that changed their reference (like Bulletin A switching from
+     * {@link ITRFVersion#ITRF_2008} to {@link ITRFVersion#ITRF_2014} starting
+     * with Vol. XXXI No. 013 published on 2018-03-29), then the ITRF returned
+     * by this method will jump from one version to another version.
+     * </p>
+     * <p>
+     * IF a specific version of ITRF is needed, then {@link #getITRF(ITRFVersion,
+     * IERSConventions, boolean)} should be used instead.
+     * </p>
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @see #getITRF(ITRFVersion, IERSConventions, boolean)
      * @since 6.1
      */
     public static FactoryManagedFrame getITRF(final IERSConventions conventions,
@@ -678,6 +700,45 @@ public class FramesFactory {
      */
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions) throws OrekitException {
         return getTIRF(conventions, true);
+    }
+
+    /** Get an specific International Terrestrial Reference Frame.
+     * <p>
+     * Note that if a specific version of ITRF is required, then {@code simpleEOP}
+     * should most probably be set to {@code false}, as ignoring tidal effects
+     * has an effect of the same order of magnitude as the differences between
+     * the various {@link ITRFVersion ITRF versions}.
+     * </p>
+     * @param version ITRF version
+     * @param conventions IERS conventions to apply
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     * @since 9.2
+     */
+    public static VersionedITRF getITRF(final ITRFVersion version,
+                                        final IERSConventions conventions,
+                                        final boolean simpleEOP)
+        throws OrekitException {
+        synchronized (FramesFactory.class) {
+            // try to find an already built frame
+            final ITRFKey key = new ITRFKey(version, conventions, simpleEOP);
+            VersionedITRF frame = VERSIONED_ITRF_FRAMES.get(key);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                final FactoryManagedFrame rawITRF = getITRF(conventions, simpleEOP);
+                frame = new VersionedITRF(rawITRF.getParent(), version,
+                                          (ITRFProvider) rawITRF.getTransformProvider(),
+                                          version.toString().replace('_', '-') +
+                                          "/" +
+                                          rawITRF.getName());
+                VERSIONED_ITRF_FRAMES.put(key, frame);
+            }
+
+            return frame;
+
+        }
     }
 
     /** Get the TIRF reference frame.
@@ -1366,6 +1427,62 @@ public class FramesFactory {
         }
 
         return peeled;
+
+    }
+
+    /** Local class for different ITRF versions keys.
+     * @since 9.2
+     */
+    private static class ITRFKey implements Serializable {
+
+        /** Serialized UID. */
+        private static final long serialVersionUID = 20180412L;
+
+        /** ITRF version. */
+        private final ITRFVersion version;
+
+        /** IERS conventions to apply. */
+        private final IERSConventions conventions;
+
+        /** Tidal effects flag. */
+        private final boolean simpleEOP;
+
+        /** Simple constructor.
+         * @param version ITRF version
+         * @param conventions IERS conventions to apply
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+         */
+        ITRFKey(final ITRFVersion version, final IERSConventions conventions, final boolean simpleEOP) {
+            this.version     = version;
+            this.conventions = conventions;
+            this.simpleEOP   = simpleEOP;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int hashCode() {
+            return (version.ordinal()     << 5) +
+                   (conventions.ordinal() << 1) +
+                   (simpleEOP ? 0 : 1);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(final Object other) {
+
+            if (this == other) {
+                return true;
+            }
+
+            if (other instanceof ITRFKey) {
+                final ITRFKey key = (ITRFKey) other;
+                return version     == key.version     &&
+                       conventions == key.conventions &&
+                       simpleEOP   == key.simpleEOP;
+            }
+
+            return false;
+        }
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -27,9 +28,9 @@ import java.util.TreeSet;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
@@ -125,7 +126,7 @@ public class TLESeries implements DataLoader {
         filterLaunchNumber     = -1;
         filterLaunchPiece      = null;
 
-        tles     = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        tles     = new TreeSet<TimeStamped>(new TLEComparator());
         previous = null;
         next     = null;
 
@@ -416,6 +417,31 @@ public class TLESeries implements DataLoader {
      */
     public TLE getLast() {
         return (TLE) tles.last();
+    }
+
+    /** Comparator allowing different TLEs at same date (see issue 411).
+     * @since 9.2
+     */
+    private static class TLEComparator implements Comparator<TimeStamped> {
+        /** {@inheritDoc} */
+        @Override
+        public int compare(final TimeStamped timeStamped1, final TimeStamped timeStamped2) {
+            final int dateCompare = timeStamped1.getDate().compareTo(timeStamped2.getDate());
+            if (dateCompare == 0 && timeStamped1 instanceof TLE && timeStamped2 instanceof TLE) {
+                try {
+                    final TLE tle1 = (TLE) timeStamped1;
+                    final TLE tle2 = (TLE) timeStamped2;
+                    final int line1Compare = tle1.getLine1().compareTo(tle2.getLine1());
+                    return (line1Compare == 0) ?
+                           tle1.getLine2().compareTo(tle2.getLine2()) :
+                           line1Compare;
+                } catch (OrekitException oe) {
+                    // this should never happen
+                    throw new OrekitInternalError(oe);
+                }
+            }
+            return dateCompare;
+        }
     }
 
 }

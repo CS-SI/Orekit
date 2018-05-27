@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -154,6 +155,21 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
              new FieldRotation<>(field, ac.getRotation()),
              new FieldVector3D<>(field, ac.getRotationRate()),
              new FieldVector3D<>(field, ac.getRotationAcceleration()));
+    }
+
+    /** Builds a TimeStampedFieldAngularCoordinates from  a {@link FieldRotation}&lt;{@link FieldDerivativeStructure}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param date coordinates date
+     * @param r rotation with time-derivatives embedded within the coordinates
+     * @since 9.2
+     */
+    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                              final FieldRotation<FieldDerivativeStructure<T>> r) {
+        super(r);
+        this.date = date;
     }
 
     /** Revert a rotation/rotation rate pair.

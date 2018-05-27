@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,11 +79,12 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param baseWeight base weight
      * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
+     * @throws OrekitException may be used in classes that extends this one
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) throws OrekitException {
 
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
@@ -118,11 +119,12 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param baseWeight base weight
      * @param propagatorsIndices indices of the propagators related to this measurement
      * @param supportedParameters supported parameters
+     * @throws OrekitException may be used in classes that extends this one
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) throws OrekitException {
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);

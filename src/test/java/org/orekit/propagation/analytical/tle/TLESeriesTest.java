@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -247,9 +247,23 @@ public class TLESeriesTest {
         Assert.assertEquals(tleFrame.getName(), FramesFactory.getFrame(Predefined.TEME).getName());
     }
 
+    @Test
+    public void testIssue411() throws IOException, OrekitException {
+
+        TLESeries series = new TLESeries("^same-date-tle.txt$", false);
+
+        series.loadTLEData(-1);
+        TLE first = series.getFirst();
+        TLE last  = series.getLast();
+        Assert.assertEquals(16908, first.getSatelliteNumber());
+        Assert.assertEquals(16908, last.getSatelliteNumber());
+        Assert.assertNotSame(first, last);
+
+    }
+
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:tle/tle-series");
     }
 
 }

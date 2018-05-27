@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,10 @@ import org.orekit.errors.OrekitException;
  */
 public interface DataProvider {
 
-    /** Pattern for name of gzip files. */
+    /** Pattern for name of gzip files.
+     * @deprecated as of 9.2, replaced with {@link GzipFilter}
+     */
+    @Deprecated
     Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");
 
     /** Pattern for name of zip/jar archives. */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -97,7 +98,7 @@ public class TCGScaleTest {
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         // Note that the dUT1 here is -0.439962, whereas it is -0.4399619 in the book
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              { 53098, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53099, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53100, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },

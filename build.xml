@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="9.1"   />
+  <property name="project.version"         value="9.2" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,23 +18,24 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"      value="1.2"                                           />
-  <property name="hipparchus.core.jar"     value="hipparchus-core-${hipparchus.version}.jar"     />
-  <property name="hipparchus.geometry.jar" value="hipparchus-geometry-${hipparchus.version}.jar" />
-  <property name="hipparchus.ode.jar"      value="hipparchus-ode-${hipparchus.version}.jar"      />
-  <property name="hipparchus.fitting.jar"  value="hipparchus-fitting-${hipparchus.version}.jar"  />
-  <property name="hipparchus.optim.jar"    value="hipparchus-optim-${hipparchus.version}.jar"    />
-  <property name="hipparchus.stat.jar"     value="hipparchus-stat-${hipparchus.version}.jar"     />
-  <property name="hipparchus.maven.path"   value="org/hipparchus"                                />
-  <property name="junit.version"           value="4.12"                                          />
-  <property name="junit.jar"               value="junit-${junit.version}.jar"                    />
-  <property name="junit.maven.path"        value="junit/junit"                                   />
-  <property name="hamcrest.version"        value="1.3"                                           />
-  <property name="hamcrest.core.jar"       value="hamcrest-core-${hamcrest.version}.jar"         />
-  <property name="hamcrest.maven.path"     value="org/hamcrest"                                  />
-  <property name="maven.repository"        value="http://repo1.maven.org/maven2"                 />
+  <property name="hipparchus.version"       value="1.3"                                            />
+  <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
+  <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
+  <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
+  <property name="hipparchus.fitting.jar"   value="hipparchus-fitting-${hipparchus.version}.jar"   />
+  <property name="hipparchus.optim.jar"     value="hipparchus-optim-${hipparchus.version}.jar"     />
+  <property name="hipparchus.filtering.jar" value="hipparchus-filtering-${hipparchus.version}.jar" />
+  <property name="hipparchus.stat.jar"      value="hipparchus-stat-${hipparchus.version}.jar"      />
+  <property name="hipparchus.maven.path"    value="org/hipparchus"                                 />
+  <property name="junit.version"            value="4.12"                                           />
+  <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
+  <property name="junit.maven.path"         value="junit/junit"                                    />
+  <property name="hamcrest.version"         value="1.3"                                            />
+  <property name="hamcrest.core.jar"        value="hamcrest-core-${hamcrest.version}.jar"          />
+  <property name="hamcrest.maven.path"      value="org/hamcrest"                                   />
+  <property name="maven.repository"         value="http://repo1.maven.org/maven2"                  />
 
-  <property name="copyright"               value="2002-2017 CS Syst&#232;mes d&#039;Information" />
+  <property name="copyright"               value="2002-2018 CS Syst&#232;mes d&#039;Information" />
 
   <available file="${lib.dir}/${hipparchus.core.jar}" property="libs.present" />
 
@@ -66,6 +67,8 @@
          dest="${lib.dir}/${hipparchus.fitting.jar}"/>
     <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-optim/${hipparchus.version}/${hipparchus.optim.jar}"
          dest="${lib.dir}/${hipparchus.optim.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-filtering/${hipparchus.version}/${hipparchus.filtering.jar}"
+         dest="${lib.dir}/${hipparchus.filtering.jar}"/>
     <get src="${maven.repository}/${hipparchus.maven.path}/hipparchus-stat/${hipparchus.version}/${hipparchus.stat.jar}"
          dest="${lib.dir}/${hipparchus.stat.jar}"/>
     <get src="${maven.repository}/${junit.maven.path}/${junit.version}/${junit.jar}"
@@ -88,7 +91,7 @@
   <target name="compile-tests" depends="compile" description="Compile the test code" >
     <mkdir dir="${test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" includeantruntime="false"
-    	   classpath="${main.classes.dir}:${lib.dir}/${junit.jar}:${lib.dir}/${hamcrest.core.jar}:${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}"
+    	   classpath="${main.classes.dir}:${lib.dir}/${junit.jar}:${lib.dir}/${hamcrest.core.jar}:${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.filtering.jar}:${lib.dir}/${hipparchus.stat.jar}"
     	   deprecation="true" target="1.8" source="1.8">
     </javac>
     <copy todir="${test.classes.dir}">

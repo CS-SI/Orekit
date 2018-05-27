@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.estimation.leastsquares;
+
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Map;
@@ -89,6 +91,9 @@ public class ModelTest {
         final Model model = new Model(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
+        
+        // Test forward propagation flag to true
+        assertEquals(true, model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -108,6 +113,46 @@ public class ModelTest {
         }
         Assert.assertEquals(index, value.getFirst().getDimension());
 
+    }
+    
+    @Test
+    public void testBackwardPropagation() throws OrekitException {
+
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+        final NumericalPropagatorBuilder[] builders = { propagatorBuilder };
+
+        // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, -1.0, 300.0);
+        final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
+        for (ObservedMeasurement<?> measurement : measurements) {
+            for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    estimatedMeasurementsParameters.add(driver);
+                }
+            }
+        }
+
+        // create model
+        final ModelObserver modelObserver = new ModelObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void modelCalled(final Orbit[] newOrbits,
+                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
+                // Do nothing here 
+            }
+        };
+        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        // Test forward propagation flag to false
+        assertEquals(false, model.isForwardPropagation());
     }
 
 }

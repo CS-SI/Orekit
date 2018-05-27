@@ -129,7 +129,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /**  {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) throws OrekitException {
+        super.init(s0, t);
 
         // delegate to raw detector
         rawDetector.init(s0, t);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,11 +71,15 @@ class MeasurementHandler implements MultiSatStepHandler {
 
         while (number < precompensated.size()) {
 
-            // consider the next measurement to handle
+            // Consider the next measurement to handle
             final PreCompensation next = precompensated.get(number);
 
-            if (next.getDate().compareTo(interpolators.get(0).getCurrentState().getDate()) > 0) {
-                // the next date is past the end of the interpolator,
+            // Current state date for interpolator 0
+            final AbsoluteDate currentDate = interpolators.get(0).getCurrentState().getDate();
+            if ((model.isForwardPropagation()  && (next.getDate().compareTo(currentDate) > 0)) ||
+                (!model.isForwardPropagation() && (next.getDate().compareTo(currentDate) < 0))) {
+
+                // The next date is past the end of the interpolator,
                 // it will be picked-up in a future step
                 if (isLast) {
                     // this should never happen

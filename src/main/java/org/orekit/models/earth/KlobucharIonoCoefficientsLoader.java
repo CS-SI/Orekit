@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.time.DateComponents;
 /** Loads Klobuchar-Style ionospheric coefficients a given input stream.
  * A stream contains the alphas and betas coefficient for a given day.
  * <p>
- * They are obtained from <a href="ftp://ftp.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
+ * They are obtained from <a href="ftp://ftp.aiub.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
  * Find more on the files at the <a href="http://www.aiub.unibe.ch/research/code___analysis_center/klobuchar_style_ionospheric_coefficients/index_eng.html">Astronomical Institute site</a>.
  * <p>
  * The files are UNIX-style compressed (.Z) files.

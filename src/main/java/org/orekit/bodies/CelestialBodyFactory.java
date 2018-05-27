@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -308,6 +308,13 @@ public class CelestialBodyFactory {
     }
 
     /** Get the solar system barycenter aggregated body.
+     * <p>
+     * Both the {@link CelestialBody#getInertiallyOrientedFrame() inertially
+     * oriented frame} and {@link CelestialBody#getBodyOrientedFrame() body
+     * oriented frame} for this aggregated body are aligned with
+     * {@link org.orekit.frames.FramesFactory#getICRF() ICRF} (and therefore also
+     * {@link org.orekit.frames.FramesFactory#getGCRF() GCRF})
+     * </p>
      * @return solar system barycenter aggregated body
      * @exception OrekitException if the celestial body cannot be built
      */
@@ -340,6 +347,13 @@ public class CelestialBodyFactory {
     }
 
     /** Get the Earth-Moon barycenter singleton bodies pair.
+     * <p>
+     * Both the {@link CelestialBody#getInertiallyOrientedFrame() inertially
+     * oriented frame} and {@link CelestialBody#getBodyOrientedFrame() body
+     * oriented frame} for this bodies pair are aligned with
+     * {@link org.orekit.frames.FramesFactory#getICRF() ICRF} (and therefore also
+     * {@link org.orekit.frames.FramesFactory#getGCRF() GCRF})
+     * </p>
      * @return Earth-Moon barycenter bodies pair
      * @exception OrekitException if the celestial body cannot be built
      */

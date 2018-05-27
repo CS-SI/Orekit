@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,10 +121,10 @@ public class IonoModifierTest {
             Assert.assertTrue(found);
             //
             EstimatedMeasurement<Range> eval = range.estimate(0, 0,  new SpacecraftState[] { refstate });
-            final double w = evalNoMod.getCurrentWeight()[0];
-            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
-            eval.setCurrentWeight(new double[] { w + 2 });
-            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
@@ -190,10 +190,10 @@ public class IonoModifierTest {
             Assert.assertTrue(found);
             //
             EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
-            final double w = evalNoMod.getCurrentWeight()[0];
-            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
-            eval.setCurrentWeight(new double[] { w + 2 });
-            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
 
             try {
                 eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));

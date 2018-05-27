@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class HarrisPriester implements Atmosphere {
     /** Lag angle sine. */
     private static final double SINLAG = FastMath.sin(LAG);
 
-    // CHECKSTYLE: stop NoWhitespaceAfter
+    // CHECKSTYLE: stop NoWhitespaceAfter check
     /** Harris-Priester min-max density (kg/m3) vs. altitude (m) table.
      *  These data are valid for a mean solar activity. */
     private static final double[][] ALT_RHO = {
@@ -119,7 +119,7 @@ public class HarrisPriester implements Atmosphere {
         {  960000.0, 1.560e-15, 2.360e-14 },
         { 1000000.0, 1.150e-15, 1.810e-14 }
     };
-    // CHECKSTYLE: resume NoWhitespaceAfter
+    // CHECKSTYLE: resume NoWhitespaceAfter check
 
     /** Cosine exponent from 2 to 6 according to inclination. */
     private double n;

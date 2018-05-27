@@ -83,8 +83,11 @@ public interface EventHandler<T extends EventDetector> {
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(SpacecraftState initialState, AbsoluteDate target)
+            throws OrekitException {
         // nothing by default
     }
 

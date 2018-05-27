@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,6 +81,13 @@ public class TimeScalesFactory implements Serializable {
 
     /** UTCTAI offsets loaders. */
     private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<UTCTAIOffsetsLoader>();
+
+    /** IRNSS System Time scale. */
+    private static IRNSSScale irnss = null;
+
+    /** BDS System Time scale. */
+    private static BDTScale bds = null;
+
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -378,6 +385,35 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return gmst;
+
+        }
+    }
+    /** Get the Indian Regional Navigation Satellite System time scale.
+     * @return  Indian Regional Navigation Satellite System time scale
+     */
+    public static IRNSSScale getIRNSS() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (irnss == null) {
+                irnss = new IRNSSScale();
+            }
+
+            return irnss;
+
+        }
+    }
+
+    /** Get the BeiDou Navigation Satellite System time scale.
+     * @return  BeiDou Navigation Satellite System time scale
+     */
+    public static BDTScale getBDT() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (bds == null) {
+                bds = new BDTScale();
+            }
+
+            return bds;
 
         }
     }

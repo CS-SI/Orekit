@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -197,7 +197,7 @@ public class OceanLoading implements StationDisplacement {
     };
     // CHECKSTYLE: resume Indentation check
 
-    // CHECKSTYLE: stop NoWhitespaceAfter
+    // CHECKSTYLE: stop NoWhitespaceAfter check
     /** Doodson arguments for all tides used. */
     private static final int[][] DOODSON_ARGUMENTS = {
         { 2,  0,  0,  0,  0,  0 }, { 2,  2, -2,  0,  0,  0 }, { 2, -1,  0,  1,  0,  0 },
@@ -315,7 +315,7 @@ public class OceanLoading implements StationDisplacement {
         { 0,  4, -4,  2,  0,  0 }, { 0,  2,  1,  0,  1, -1 }, { 0,  3, -2, -1,  1,  0 },
         { 0,  4, -3,  0,  1,  1 }, { 0,  2,  0,  0,  3,  0 }, { 0,  6, -4,  0,  0,  0 }
     };
-    // CHECKSTYLE: resume NoWhitespaceAfter
+    // CHECKSTYLE: resume NoWhitespaceAfter check
 
     /** Cartwright-Edden amplitudes for all tides. */
     private static final Map<Tide, Double> CARTWRIGHT_EDDEN_AMPLITUDE_MAP;
@@ -427,7 +427,7 @@ public class OceanLoading implements StationDisplacement {
         }
 
         // convert to proper frame
-        final GeodeticPoint gp = earth.transform(referencePoint, earthFrame, null);
+        final GeodeticPoint gp = earth.transform(referencePoint, earthFrame, elements.getDate());
         return new Vector3D(dz, gp.getZenith(),
                             dw, gp.getWest(),
                             ds, gp.getSouth());

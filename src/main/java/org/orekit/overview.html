@@ -35,7 +35,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Time
     <ul>
       <li>high accuracy absolute dates</li>
-      <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)</li>
+      <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)</li>
       <li>transparent handling of leap seconds</li>
       <li>support for CCSDS time code standards</li>
     </ul>
@@ -180,6 +180,8 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
           <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
           <li>tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames</li>
+          <li>specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF),
+              GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO), (as of release 9.2, this feature is still considered experimental)</li>
         </ul>
       </li>
     </ul>
@@ -187,6 +189,19 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Orbit determination
     <ul>
       <li>batch least squares fitting
+        <ul>
+          <li>optimizers choice (Levenberg-Marquardt or Gauss-Newton)</li>
+          <li>decomposition algorithms choice (QR, LU, SVD, Cholesky)</li>
+          <li>choice between forming normal equations or not</li>
+        </ul>
+      </li>
+      <li>Kalman filtering
+        <ul>
+          <li>customizable process noise matrices providers</li>
+          <li>time-dependent process nous provider (as of release 9.2, this feature is still considered experimental)</li>
+        </ul>
+      </li>
+      <li>parameters estimation
         <ul>
           <li>orbital parameters estimation (or only a subset if desired)</li>
           <li>force model parameters estimation (drag coefficients, radiation pressure coefficients,
@@ -207,6 +222,8 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>right ascension/declination</li>
           <li>position-velocity</li>
           <li>inter-satellites range (one way and two way)</li>
+          <li>GNSS code</li>
+          <li>GNSS phase (as of release 9.2, this feature is still considered experimental)</li>
         </ul>
       </li>
       <li>possibility to add custom measurements</li>
@@ -223,9 +240,16 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>possibility to parse CCSDS Tracking Data Message files</li>
     </ul>
   </li>
+  <li>GNSS
+    <ul>
+      <li>computation of Dilution Of Precision</li>
+      <li>loading of ANTEX antenna models file</li>
+      <li>loading of RINEX observation files (version 2 and version 3)</li>
+    </ul>
+  </li>
   <li>Orbit file handling
     <ul>
-      <li>loading of SP3-a and SP3-c orbit files</li>
+      <li>loading of SP3 orbit files (from versions a to d)</li>
       <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM file format</li>
@@ -250,7 +274,9 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading from classpath</li>
       <li>loading from network (even through internet proxies)</li>
       <li>support for zip archives</li>
-      <li>support from gzip compressed files</li>
+      <li>automatic decompression of gzip compressed (.gz) files upon loading</li>
+      <li>automatic decompression of Unix compressed (.Z) files upon loading</li>
+      <li>plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring</li>
       <li>plugin mechanism to delegate loading to user defined database or data access library</li>
     </ul>
   </li>

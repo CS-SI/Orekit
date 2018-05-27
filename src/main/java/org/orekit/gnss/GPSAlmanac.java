@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -162,7 +162,8 @@ public class GPSAlmanac implements GPSOrbitalElements {
 
     @Override
     public double getMeanMotion() {
-        return FastMath.sqrt(GPS_MU / FastMath.pow(sma, 3));
+        final double absA = FastMath.abs(sma);
+        return FastMath.sqrt(GPS_MU / absA) / absA;
     }
 
     @Override

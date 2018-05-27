@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -56,7 +56,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  */
 public class BatchLSEstimator {
 
-    /** Builders for propagator. */
+    /** Builders for propagators. */
     private final NumericalPropagatorBuilder[] builders;
 
     /** Measurements. */
@@ -665,9 +665,8 @@ public class BatchLSEstimator {
                     sortedEstimations[i++] = entry.getValue();
                 }
 
-                // sort the array chronologically
-                Arrays.sort(sortedEstimations, 0, sortedEstimations.length,
-                            new ChronologicalComparator());
+                // sort the array, primarily chronologically
+                Arrays.sort(sortedEstimations, 0, sortedEstimations.length, Comparator.naturalOrder());
 
             }
 

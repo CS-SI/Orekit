@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2018 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -40,6 +40,13 @@ Orekit is also available in maven central repository,
 with groupID org.orekit and artifactId orekit so maven
 internal mechanism will download automatically all artifacts and dependencies
 as required.
+
+|  package |                                              link                                                             |
+|----------|---------------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-9.2-sources.zip](https://www.orekit.org/forge/attachments/download/731/orekit-9.2-sources.zip)        |
+|  binary  | [orekit-9.2.jar](https://www.orekit.org/forge/attachments/download/732/orekit-9.2.jar)                        |
+|  javadoc | [orekit-9.2-javadoc.jar](https://www.orekit.org/forge/attachments/download/733/orekit-9.2-javadoc.jar)        |
+version 9.2 downloads (release date: 2018-05-26)
 
 |  package |                                              link                                                             |
 |----------|---------------------------------------------------------------------------------------------------------------|

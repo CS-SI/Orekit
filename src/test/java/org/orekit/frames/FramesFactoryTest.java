@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -388,7 +388,7 @@ public class FramesFactoryTest {
         // real data from buletinb-298.txt
 
         // first use case: don't propagate the dx, dy correction to TOD, set dPsi, dEpsilon to 0.0
-        final List<EOPEntry> forced = Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+        final List<EOPEntry> forced = Utils.buildEOPList(IERSConventions.IERS_2010, ITRFVersion.ITRF_2008, new double[][] {
             { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869, 0.0, 0.0, -0.000118, 0.000091 },
             { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527, 0.0, 0.0, -0.000140, 0.000111 },
             { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668, 0.0, 0.0, -0.000165, 0.000148 },
@@ -401,7 +401,7 @@ public class FramesFactoryTest {
         Frame todNoCorrection = FramesFactory.getTOD(IERSConventions.IERS_2010, false);
 
         // second use case: convert dx, dy data into dDPsi, dDEpsilon
-        final List<EOPEntry> converted = Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+        final List<EOPEntry> converted = Utils.buildEOPList(IERSConventions.IERS_2010, ITRFVersion.ITRF_2008, new double[][] {
             { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869, Double.NaN, Double.NaN, -0.000118, 0.000091 },
             { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527, Double.NaN, Double.NaN, -0.000140, 0.000111 },
             { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668, Double.NaN, Double.NaN, -0.000165, 0.000148 },

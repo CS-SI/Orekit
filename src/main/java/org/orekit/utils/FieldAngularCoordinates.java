@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,9 @@ package org.orekit.utils;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -30,6 +33,7 @@ import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Simple container for rotation / rotation rate pairs, using {@link
  * RealFieldElement}.
@@ -158,6 +162,56 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         this.rotationAcceleration = new FieldVector3D<>(field, ang.getRotationAcceleration());
     }
 
+    /** Builds a FieldAngularCoordinates from  a {@link FieldRotation}&lt;{@link FieldDerivativeStructure}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param r rotation with time-derivatives embedded within the coordinates
+     * @since 9.2
+     */
+    public FieldAngularCoordinates(final FieldRotation<FieldDerivativeStructure<T>> r) {
+
+        final T q0       = r.getQ0().getValue();
+        final T q1       = r.getQ1().getValue();
+        final T q2       = r.getQ2().getValue();
+        final T q3       = r.getQ3().getValue();
+
+        rotation     = new FieldRotation<>(q0, q1, q2, q3, false);
+        if (r.getQ0().getOrder() >= 1) {
+            final T q0Dot    = r.getQ0().getPartialDerivative(1);
+            final T q1Dot    = r.getQ1().getPartialDerivative(1);
+            final T q2Dot    = r.getQ2().getPartialDerivative(1);
+            final T q3Dot    = r.getQ3().getPartialDerivative(1);
+            rotationRate =
+                    new FieldVector3D<>(q0.linearCombination(q1.negate(), q0Dot, q0,          q1Dot,
+                                                             q3,          q2Dot, q2.negate(), q3Dot).multiply(2),
+                                        q0.linearCombination(q2.negate(), q0Dot, q3.negate(), q1Dot,
+                                                             q0,          q2Dot, q1,          q3Dot).multiply(2),
+                                        q0.linearCombination(q3.negate(), q0Dot, q2,          q1Dot,
+                                                             q1.negate(), q2Dot, q0,          q3Dot).multiply(2));
+            if (r.getQ0().getOrder() >= 2) {
+                final T q0DotDot = r.getQ0().getPartialDerivative(2);
+                final T q1DotDot = r.getQ1().getPartialDerivative(2);
+                final T q2DotDot = r.getQ2().getPartialDerivative(2);
+                final T q3DotDot = r.getQ3().getPartialDerivative(2);
+                rotationAcceleration =
+                        new FieldVector3D<>(q0.linearCombination(q1.negate(), q0DotDot, q0,          q1DotDot,
+                                                                 q3,          q2DotDot, q2.negate(), q3DotDot).multiply(2),
+                                            q0.linearCombination(q2.negate(), q0DotDot, q3.negate(), q1DotDot,
+                                                                 q0,          q2DotDot, q1,          q3DotDot).multiply(2),
+                                            q0.linearCombination(q3.negate(), q0DotDot, q2,          q1DotDot,
+                                                                 q1.negate(), q2DotDot, q0,          q3DotDot).multiply(2));
+            } else {
+                rotationAcceleration = FieldVector3D.getZero(q0.getField());
+            }
+        } else {
+            rotationRate         = FieldVector3D.getZero(q0.getField());
+            rotationAcceleration = FieldVector3D.getZero(q0.getField());
+        }
+
+    }
+
     /** Fixed orientation parallel with reference frame
      * (identity rotation, zero rotation rate and acceleration).
      * @param field field for the components
@@ -275,6 +329,104 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
         return omega;
 
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link FieldDerivativeStructure}&gt;.
+     * <p>
+     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * to the user-specified order.
+     * </p>
+     * @param order derivation order for the vector components
+     * @return rotation with time-derivatives embedded within the coordinates
+     * @exception OrekitException if the user specified order is too large
+     * @since 9.2
+     */
+    public FieldRotation<FieldDerivativeStructure<T>> toDerivativeStructureRotation(final int order)
+        throws OrekitException {
+
+        // quaternion components
+        final T q0 = rotation.getQ0();
+        final T q1 = rotation.getQ1();
+        final T q2 = rotation.getQ2();
+        final T q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final T oX    = rotationRate.getX();
+        final T oY    = rotationRate.getY();
+        final T oZ    = rotationRate.getZ();
+        final T q0Dot = q0.linearCombination(q1.negate(), oX, q2.negate(), oY, q3.negate(), oZ).multiply(0.5);
+        final T q1Dot = q0.linearCombination(q0,          oX, q3.negate(), oY, q2,          oZ).multiply(0.5);
+        final T q2Dot = q0.linearCombination(q3,          oX, q0,          oY, q1.negate(), oZ).multiply(0.5);
+        final T q3Dot = q0.linearCombination(q2.negate(), oX, q1,          oY, q0,          oZ).multiply(0.5);
+
+        // second time-derivatives of the quaternion
+        final T oXDot = rotationAcceleration.getX();
+        final T oYDot = rotationAcceleration.getY();
+        final T oZDot = rotationAcceleration.getZ();
+        final T q0DotDot = q0.linearCombination(array6(q1, q2,  q3, q1Dot, q2Dot,  q3Dot),
+                                                array6(oXDot, oYDot, oZDot, oX, oY, oZ)).
+                           multiply(-0.5);
+        final T q1DotDot = q0.linearCombination(array6(q0, q2, q3.negate(), q0Dot, q2Dot, q3Dot.negate()),
+                                                array6(oXDot, oZDot, oYDot, oX, oZ, oY)).multiply(0.5);
+        final T q2DotDot =  q0.linearCombination(array6(q0, q3, q1.negate(), q0Dot, q3Dot, q1Dot.negate()),
+                                                 array6(oYDot, oXDot, oZDot, oY, oX, oZ)).multiply(0.5);
+        final T q3DotDot =  q0.linearCombination(array6(q0, q1, q2.negate(), q0Dot, q1Dot, q2Dot.negate()),
+                                                 array6(oZDot, oYDot, oXDot, oZ, oY, oX)).multiply(0.5);
+
+        final FDSFactory<T> factory;
+        final FieldDerivativeStructure<T> q0DS;
+        final FieldDerivativeStructure<T> q1DS;
+        final FieldDerivativeStructure<T> q2DS;
+        final FieldDerivativeStructure<T> q3DS;
+        switch(order) {
+            case 0 :
+                factory = new FDSFactory<>(q0.getField(), 1, order);
+                q0DS = factory.build(q0);
+                q1DS = factory.build(q1);
+                q2DS = factory.build(q2);
+                q3DS = factory.build(q3);
+                break;
+            case 1 :
+                factory = new FDSFactory<>(q0.getField(), 1, order);
+                q0DS = factory.build(q0, q0Dot);
+                q1DS = factory.build(q1, q1Dot);
+                q2DS = factory.build(q2, q2Dot);
+                q3DS = factory.build(q3, q3Dot);
+                break;
+            case 2 :
+                factory = new FDSFactory<>(q0.getField(), 1, order);
+                q0DS = factory.build(q0, q0Dot, q0DotDot);
+                q1DS = factory.build(q1, q1Dot, q1DotDot);
+                q2DS = factory.build(q2, q2Dot, q2DotDot);
+                q3DS = factory.build(q3, q3Dot, q3DotDot);
+                break;
+            default :
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        }
+
+        return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
+
+    }
+
+    /** Build an arry of 6 elements.
+     * @param e1 first element
+     * @param e2 second element
+     * @param e3 third element
+     * @param e4 fourth element
+     * @param e5 fifth element
+     * @param e6 sixth element
+     * @return a new array
+     * @since 9.2
+     */
+    private T[] array6(final T e1, final T e2, final T e3, final T e4, final T e5, final T e6) {
+        final T[] array = MathArrays.buildArray(e1.getField(), 6);
+        array[0] = e1;
+        array[1] = e2;
+        array[2] = e3;
+        array[3] = e4;
+        array[4] = e5;
+        array[5] = e6;
+        return array;
     }
 
     /** Estimate rotation rate between two orientations.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.TimeShiftable;
@@ -235,6 +236,107 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         }
 
         return new FieldVector3D<>(x, y, z);
+
+    }
+
+    /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * to the user-specified order. As both the instance components {@link #getPosition() position},
+     * {@link #getVelocity() velocity} and {@link #getAcceleration() acceleration} and the
+     * {@link DerivativeStructure#getPartialDerivative(int...) derivatives} of the components
+     * holds time-derivatives, there are several ways to retrieve these derivatives. If for example
+     * the {@code order} is set to 2, then both {@code pv.getPosition().getX().getPartialDerivative(2)},
+     * {@code pv.getVelocity().getX().getPartialDerivative(1)} and
+     * {@code pv.getAcceleration().getX().getValue()} return the exact same value.
+     * </p>
+     * <p>
+     * If derivation order is 1, the first derivative of acceleration will be computed as a
+     * Keplerian-only jerk. If derivation order is 2, the second derivative of velocity (which
+     * is also the first derivative of acceleration) will be computed as a Keplerian-only jerk,
+     * and the second derivative of acceleration will be computed as a Keplerian-only jounce.
+     * </p>
+     * @param order derivation order for the vector components (must be either 0, 1 or 2)
+     * @return pv coordinates with time-derivatives embedded within the coordinates
+     * @exception OrekitException if the user specified order is too large
+     * @since 9.2
+     */
+    public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order)
+        throws OrekitException {
+
+        final DSFactory factory;
+        final DerivativeStructure x0;
+        final DerivativeStructure y0;
+        final DerivativeStructure z0;
+        final DerivativeStructure x1;
+        final DerivativeStructure y1;
+        final DerivativeStructure z1;
+        final DerivativeStructure x2;
+        final DerivativeStructure y2;
+        final DerivativeStructure z2;
+        switch(order) {
+            case 0 :
+                factory = new DSFactory(1, order);
+                x0 = factory.build(position.getX());
+                y0 = factory.build(position.getY());
+                z0 = factory.build(position.getZ());
+                x1 = factory.build(velocity.getX());
+                y1 = factory.build(velocity.getY());
+                z1 = factory.build(velocity.getZ());
+                x2 = factory.build(acceleration.getX());
+                y2 = factory.build(acceleration.getY());
+                z2 = factory.build(acceleration.getZ());
+                break;
+            case 1 : {
+                factory = new DSFactory(1, order);
+                final double   r2            = position.getNormSq();
+                final double   r             = FastMath.sqrt(r2);
+                final double   pvOr2         = Vector3D.dotProduct(position, velocity) / r2;
+                final double   a             = acceleration.getNorm();
+                final double   aOr           = a / r;
+                final Vector3D keplerianJerk = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+                x0 = factory.build(position.getX(),     velocity.getX());
+                y0 = factory.build(position.getY(),     velocity.getY());
+                z0 = factory.build(position.getZ(),     velocity.getZ());
+                x1 = factory.build(velocity.getX(),     acceleration.getX());
+                y1 = factory.build(velocity.getY(),     acceleration.getY());
+                z1 = factory.build(velocity.getZ(),     acceleration.getZ());
+                x2 = factory.build(acceleration.getX(), keplerianJerk.getX());
+                y2 = factory.build(acceleration.getY(), keplerianJerk.getY());
+                z2 = factory.build(acceleration.getZ(), keplerianJerk.getZ());
+                break;
+            }
+            case 2 : {
+                factory = new DSFactory(1, order);
+                final double   r2              = position.getNormSq();
+                final double   r               = FastMath.sqrt(r2);
+                final double   pvOr2           = Vector3D.dotProduct(position, velocity) / r2;
+                final double   a               = acceleration.getNorm();
+                final double   aOr             = a / r;
+                final Vector3D keplerianJerk   = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+                final double   v2              = velocity.getNormSq();
+                final double   pa              = Vector3D.dotProduct(position, acceleration);
+                final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
+                final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
+                                                              4 * aOr * pvOr2 - aj / (a * r), velocity);
+                x0 = factory.build(position.getX(),     velocity.getX(),      acceleration.getX());
+                y0 = factory.build(position.getY(),     velocity.getY(),      acceleration.getY());
+                z0 = factory.build(position.getZ(),     velocity.getZ(),      acceleration.getZ());
+                x1 = factory.build(velocity.getX(),     acceleration.getX(),  keplerianJerk.getX());
+                y1 = factory.build(velocity.getY(),     acceleration.getY(),  keplerianJerk.getY());
+                z1 = factory.build(velocity.getZ(),     acceleration.getZ(),  keplerianJerk.getZ());
+                x2 = factory.build(acceleration.getX(), keplerianJerk.getX(), keplerianJounce.getX());
+                y2 = factory.build(acceleration.getY(), keplerianJerk.getY(), keplerianJounce.getY());
+                z2 = factory.build(acceleration.getZ(), keplerianJerk.getZ(), keplerianJounce.getZ());
+                break;
+            }
+            default :
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        }
+
+        return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
+                                        new FieldVector3D<>(x1, y1, z1),
+                                        new FieldVector3D<>(x2, y2, z2));
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
@@ -100,6 +102,9 @@ class Model implements MultivariateJacobianFunction {
     /** Date of the last enabled measurement. */
     private AbsoluteDate lastDate;
 
+    /** Boolean indicating if the propagation will go forward or backward. */
+    private final boolean forwardPropagation;
+
     /** Mappers for Jacobians. */
     private JacobiansMapper[] mappers;
 
@@ -129,7 +134,6 @@ class Model implements MultivariateJacobianFunction {
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
         this.mappers                         = new JacobiansMapper[builders.length];
-
 
         // allocate vector and matrix
         int rows = 0;
@@ -177,9 +181,28 @@ class Model implements MultivariateJacobianFunction {
             ++columns;
         }
 
+        // Initialize point and value
         value    = new ArrayRealVector(rows);
         jacobian = MatrixUtils.createRealMatrix(rows, columns);
 
+        // Decide whether the propagation will be done forward or backward.
+        // Minimize the duration between first measurement treated and orbit determination date
+        // Propagator builder number 0 holds the reference date for orbit determination
+        final AbsoluteDate refDate = builders[0].getInitialOrbitDate();
+
+        // Sort the measurement list chronologically
+        measurements.sort(new ChronologicalComparator());
+        firstDate = measurements.get(0).getDate();
+        lastDate  = measurements.get(measurements.size() - 1).getDate();
+
+        // Decide the direction of propagation
+        if (FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate))) {
+            // Propagate forward from firstDate
+            forwardPropagation = true;
+        } else {
+            // Propagate backward from lastDate
+            forwardPropagation = false;
+        }
     }
 
     /** Set the counter for evaluations.
@@ -194,6 +217,13 @@ class Model implements MultivariateJacobianFunction {
      */
     void setIterationsCounter(final Incrementor iterationsCounter) {
         this.iterationsCounter = iterationsCounter;
+    }
+
+    /** Return the forward propagation flag.
+     * @return the forward propagation flag
+     */
+    boolean isForwardPropagation() {
+        return forwardPropagation;
     }
 
     /** {@inheritDoc} */
@@ -221,8 +251,14 @@ class Model implements MultivariateJacobianFunction {
                 }
             }
 
-            // run the propagation, gathering residuals on the fly
-            parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+            // Run the propagation, gathering residuals on the fly
+            if (forwardPropagation) {
+                // Propagate forward from firstDate
+                parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+            } else {
+                // Propagate backward from lastDate
+                parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
+            }
 
             observer.modelCalled(orbits, evaluations);
 
@@ -343,8 +379,14 @@ class Model implements MultivariateJacobianFunction {
         }
         precompensated.sort(new ChronologicalComparator());
 
+        // Assign first and last date
         firstDate = precompensated.get(0).getDate();
         lastDate  = precompensated.get(precompensated.size() - 1).getDate();
+
+        // Reverse the list in case of backward propagation
+        if (!forwardPropagation) {
+            Collections.reverse(precompensated);
+        }
 
         return new MeasurementHandler(this, precompensated);
 
@@ -382,12 +424,17 @@ class Model implements MultivariateJacobianFunction {
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();
         final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
 
-        // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
+
+        if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+            return;
+        }
+
+        // compute weighted residuals
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
-        final double[] weight    = evaluation.getCurrentWeight();
+        final double[] weight    = evaluation.getObservedMeasurement().getBaseWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }
@@ -425,7 +472,7 @@ class Model implements MultivariateJacobianFunction {
             // Jacobian of the measurement with respect to propagation parameters
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
+            if (nbParams > 0) {
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);

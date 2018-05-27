@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class ITRFEquinoxProviderTest {
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              { 53098, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53099, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53100, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
@@ -102,7 +102,7 @@ public class ITRFEquinoxProviderTest {
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
@@ -149,7 +149,7 @@ public class ITRFEquinoxProviderTest {
         //     dY 2006    -0′′.0002259
 
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              { 54192, -0.072073685,  1.4020, 0.0349282, 0.4833163, -0.0550666, -0.0063580, Double.NaN, Double.NaN },
                              { 54193, -0.072073685,  1.4020, 0.0349282, 0.4833163, -0.0550666, -0.0063580, Double.NaN, Double.NaN },
                              { 54194, -0.072073685,  1.4020, 0.0349282, 0.4833163, -0.0550666, -0.0063580, Double.NaN, Double.NaN },

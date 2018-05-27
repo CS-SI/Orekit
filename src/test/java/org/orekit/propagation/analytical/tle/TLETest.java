@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -404,6 +404,51 @@ public class TLETest {
         Assert.assertEquals(0.00000051,
                             tle.getMeanMotionFirstDerivative() * Constants.JULIAN_DAY * Constants.JULIAN_DAY / (4 * FastMath.PI),
                             1.0e-15);
+    }
+
+    @Test
+    public void testEqualTLE() throws OrekitException {
+        TLE tleA = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        TLE tleB = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        Assert.assertTrue(tleA.equals(tleB));
+    }
+
+    @Test
+    public void testNonEqualTLE() throws OrekitException {
+        TLE tleA = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        TLE tleB = new TLE("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
+                "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
+        Assert.assertFalse(tleA.equals(tleB));
+    }
+
+    @Test
+    public void testIssue388() throws OrekitException {
+        TLE tleRef = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                             "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        TLE tleOriginal = new TLE(27421, 'U', 2002, 21, "A", TLE.DEFAULT, 2,
+                                  new AbsoluteDate("2002-05-04T11:45:15.695", TimeScalesFactory.getUTC()),
+                                  FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY),
+                                  FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY)),
+                                  FastMath.toRadians(0.0),
+                                  1.333E-4, FastMath.toRadians(98.7490),
+                                  FastMath.toRadians(133.9522), FastMath.toRadians(199.5121), FastMath.toRadians(226.1918),
+                                  6, -0.0089879);
+        Assert.assertEquals(tleRef.getLine1(), tleOriginal.getLine1());
+        Assert.assertEquals(tleRef.getLine2(), tleOriginal.getLine2());
+        TLE changedBStar = new TLE(27421, 'U', 2002, 21, "A", TLE.DEFAULT, 2,
+                                   new AbsoluteDate("2002-05-04T11:45:15.695", TimeScalesFactory.getUTC()),
+                                   FastMath.toRadians(14.26113993 * 360 / Constants.JULIAN_DAY),
+                                   FastMath.toRadians(-.00021470 * 360 * 2 / (Constants.JULIAN_DAY * Constants.JULIAN_DAY)),
+                                   FastMath.toRadians(0.0),
+                                   1.333E-4, FastMath.toRadians(98.7490),
+                                   FastMath.toRadians(133.9522), FastMath.toRadians(199.5121), FastMath.toRadians(226.1918),
+                                   6, 1.0e-4);
+        Assert.assertEquals(tleRef.getLine1().replace("-89879-2", " 10000-3"), changedBStar.getLine1());
+        Assert.assertEquals(tleRef.getLine2(), changedBStar.getLine2());
+        Assert.assertEquals(1.0e-4, new TLE(changedBStar.getLine1(), changedBStar.getLine2()).getBStar(), 1.0e-15);
     }
 
     @Before

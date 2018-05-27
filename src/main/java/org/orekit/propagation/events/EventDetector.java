@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,8 +59,10 @@ public interface EventDetector extends Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    default void init(SpacecraftState s0, AbsoluteDate t) {
+    default void init(SpacecraftState s0, AbsoluteDate t) throws OrekitException {
         // nothing by default
     }
 

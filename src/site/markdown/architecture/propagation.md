@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2018 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -360,7 +360,7 @@ Semianalytical propagation is implemented using Draper Semianalytical Satellite 
 Since version 7.0, both mean elements equations of motion models and short periodic terms
 have been implemented and validated.
 
-## Field propagation and Taylor Algebra
+## Field propagation
 
 Since 9.0, most of the Orekit propagators (in fact all of them except DSST) have both a regular
 version the propagates states based on classical real numbers (i.e. double precision numbers)
@@ -369,6 +369,10 @@ and a more general version that propagates states based on any class that implem
 support all operations from the real field (addition, subtraction, multiplication, division,
 but also direct and inverse trigonometric functions, direct and inverse hyperbolic functions,
 logarithms, powers, roots...).
+
+![fields class diagram](../images/design/field.png)
+
+### Taylor algebra
 
 A very important implementation of the `RealFieldElement` interface is the `DerivativeStructure`
 class, which in addition to compute the result of the canonical operation (add, multiply, sin,
@@ -408,3 +412,21 @@ a Monte-Carlo application is *very* fast. So even if the propagation ends up to 
 hundred of times slower than regular propagation, depending on the number of derivatives, the
 payoff is still very important as soon as we evaluate a few hundreds of points. As Monte-Carlo
 analyses more often use several thousands of evaluations, the payoff is really interesting.
+
+### Parallel computation
+
+Another important implementation of the `RealFieldElement` interface is the `Tuple`
+class, which computes the same operation on a number of components of a tuple, hence
+allowing to perform parallel orbit propagation in one run. Each spacecraft will correspond
+to one component of the tuple. The first spacecraft (component at index 0) is the reference.
+
+There is a catch, however. In many places in orbit propagations, there are conditional
+statements the depend on the current state (for example is the spacecraft in eclipse
+or still in Sun light). As a single choice is allowed, the outcome of the check is based
+on the reference spacecraft only (i.e. fist component of the tuple) and the conditional
+branch is selected according to this reference spacecraft. The spacecrafts represented by
+the other components of the tuple will follow the same branch in the algorithm, even despite
+they may not be in the same conditions. This means that using `Tuple` for orbit propagation
+works only for close enough spacecrafts. This is well suited for finite differences,
+formation flying or co-positioning, but this is not suited for constellations.
+

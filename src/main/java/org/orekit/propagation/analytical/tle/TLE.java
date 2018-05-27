@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,10 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -357,9 +359,15 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
         final double dAbs = FastMath.abs(d);
         int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
-        final long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
+        long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         if (mantissa == 0) {
             exponent = 0;
+        } else if (mantissa > (ArithmeticUtils.pow(10, mantissaSize) - 1)) {
+            // rare case: if d has a single digit like d = 1.0e-4 with mantissaSize = 5
+            // the above computation finds exponent = -4 and mantissa = 100000 which
+            // doesn't fit in a 5 digits string
+            exponent++;
+            mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         }
         final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
@@ -678,6 +686,68 @@ public class TLE implements TimeStamped, Serializable {
             }
         }
         return sum % 10;
+    }
+
+    /** Check if this tle equals the provided tle.
+     * <p>Due to the difference in precision between object and string
+     * representations of TLE, it is possible for this method to return false
+     * even if string representations returned by {@link #toString()}
+     * are equal.</p>
+     * @param o other tle
+     * @return true if this tle equals the provided tle
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof TLE)) {
+            return false;
+        }
+        final TLE tle = (TLE) o;
+        return satelliteNumber == tle.satelliteNumber &&
+                classification == tle.classification &&
+                launchYear == tle.launchYear &&
+                launchNumber == tle.launchNumber &&
+                Objects.equals(launchPiece, tle.launchPiece) &&
+                ephemerisType == tle.ephemerisType &&
+                elementNumber == tle.elementNumber &&
+                Objects.equals(epoch, tle.epoch) &&
+                meanMotion == tle.meanMotion &&
+                meanMotionFirstDerivative == tle.meanMotionFirstDerivative &&
+                meanMotionSecondDerivative == tle.meanMotionSecondDerivative &&
+                eccentricity == tle.eccentricity &&
+                inclination == tle.inclination &&
+                pa == tle.pa &&
+                raan == tle.raan &&
+                meanAnomaly == tle.meanAnomaly &&
+                revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
+                bStar == tle.bStar;
+    }
+
+    /** Get a hashcode for this tle.
+     * @return hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(satelliteNumber,
+                classification,
+                launchYear,
+                launchNumber,
+                launchPiece,
+                ephemerisType,
+                elementNumber,
+                epoch,
+                meanMotion,
+                meanMotionFirstDerivative,
+                meanMotionSecondDerivative,
+                eccentricity,
+                inclination,
+                pa,
+                raan,
+                meanAnomaly,
+                revolutionNumberAtEpoch,
+                bStar);
     }
 
 }

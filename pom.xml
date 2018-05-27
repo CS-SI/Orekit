@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>9.1</version>
+  <version>9.2</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -26,7 +26,7 @@
     <orekit.maven-bundle-plugin.version>3.3.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>2.17</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.1</orekit.checkstyle.version>
+    <orekit.checkstyle.version>8.10</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.0.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.6.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.10.4</orekit.maven-javadoc-plugin.version>
@@ -37,6 +37,7 @@
     <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
+    <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.20</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.20</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
@@ -44,7 +45,7 @@
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>1.6</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>2.5.2</orekit.maven-install-plugin.version>
-    <orekit.hipparchus.version>1.2</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.3</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -154,6 +155,9 @@
   <contributors>
     <contributor>
       <name>Roberto Alacevich</name>
+    </contributor>
+    <contributor>
+      <name>Albert Alcarraz Garc&#237;a</name>
     </contributor>
     <contributor>
       <name>Daniel Aguilar Taboada</name>
@@ -292,6 +296,13 @@
     <dependency>
       <groupId>org.hipparchus</groupId>
       <artifactId>hipparchus-optim</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-filtering</artifactId>
       <version>${orekit.hipparchus.version}</version>
       <type>jar</type>
       <optional>false</optional>
@@ -536,21 +547,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>ru.concerteza.buildnumber</groupId>
-        <artifactId>maven-jgit-buildnumber-plugin</artifactId>
-        <version>${orekit.jgit.buildnumber.version}</version>
-        <executions>
-          <execution>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>extract-buildnumber</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${orekit.maven-jar-plugin.version}</version>
@@ -558,7 +554,6 @@
           <archive>
             <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
             <manifestEntries>
-              <Implementation-Build>${orekit.implementation.build}</Implementation-Build>
               <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
               <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
             </manifestEntries>
@@ -688,9 +683,62 @@
 
   <profiles>
     <profile>
+      <id>git</id>
+      <activation>
+      <file>
+        <exists>.git</exists>
+      </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>ru.concerteza.buildnumber</groupId>
+            <artifactId>maven-jgit-buildnumber-plugin</artifactId>
+            <version>${orekit.jgit.buildnumber.version}</version>
+            <executions>
+              <execution>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>extract-buildnumber</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>${orekit.maven-jar-plugin.version}</version>
+            <configuration>
+             <archive>
+              <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
+              <manifestEntries>
+                <Implementation-Build>${orekit.implementation.build}</Implementation-Build>
+                <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
+                <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
+              </manifestEntries>
+             </archive>
+            </configuration>
+          </plugin>
+       </plugins>
+      </build>
+    </profile>
+    <profile>
       <id>release</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${orekit.maven-source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
@@ -545,6 +546,94 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 3.0e-14);
         checkParameterDerivative(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
 
+    }
+
+    @Test
+    public void testInertialManeuver() throws OrekitException {
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv = 0;
+
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), initDate, mu);
+
+        final double duration = 3653.99;
+        final double f = 420;
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
+        final AttitudeProvider inertialLaw = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider lofLaw = new LofOffset(orbit.getFrame(), LOFType.VNC);
+
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
+                                                       TimeScalesFactory.getUTC());
+        final ConstantThrustManeuver maneuverWithoutOverride =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+        Assert.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
+        Assert.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
+
+        // reference propagation:
+        // propagator already uses inertial law
+        // maneuver does not need to override it to get an inertial maneuver
+        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        AdaptiveStepsizeIntegrator integrator1 =
+            new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator1.setInitialStepSize(60);
+        final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
+        propagator1.setInitialState(initialState);
+        propagator1.setAttitudeProvider(inertialLaw);
+        propagator1.addForceModel(maneuverWithoutOverride);
+        final SpacecraftState finalState1 = propagator1.propagate(fireDate.shiftedBy(3800));
+
+
+        // test propagation:
+        // propagator uses a LOF-aligned law
+        // maneuver needs to override it to get an inertial maneuver
+        final ConstantThrustManeuver maneuverWithOverride =
+                        new ConstantThrustManeuver(fireDate, duration, f, isp,
+                                                   inertialLaw, Vector3D.PLUS_I);
+        Assert.assertEquals(f,   maneuverWithoutOverride.getThrust(), 1.0e-10);
+        Assert.assertEquals(isp, maneuverWithoutOverride.getISP(),    1.0e-10);
+
+        AdaptiveStepsizeIntegrator integrator2 =
+                        new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator2.setInitialStepSize(60);
+        final NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
+        propagator2.setInitialState(initialState);
+        propagator2.setAttitudeProvider(lofLaw);
+        propagator2.addForceModel(maneuverWithOverride);
+        final SpacecraftState finalState2 = propagator2.propagate(finalState1.getDate());
+        Assert.assertThat(finalState2.getPVCoordinates(),
+                          OrekitMatchers.pvCloseTo(finalState1.getPVCoordinates(),
+                                                   1.0e-10));
+
+        // intentionally wrong propagation, that will produce a very different state
+        // propagator uses LOF attitude,
+        // maneuver forget to override it, so maneuver will be LOF-aligned in this case
+        AdaptiveStepsizeIntegrator integrator3 =
+                        new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator3.setInitialStepSize(60);
+        final NumericalPropagator propagator3 = new NumericalPropagator(integrator3);
+        propagator3.setInitialState(initialState);
+        propagator3.setAttitudeProvider(lofLaw);
+        propagator3.addForceModel(maneuverWithoutOverride);
+        final SpacecraftState finalState3 = propagator3.propagate(finalState1.getDate());
+        Assert.assertEquals(345859.0,
+                           Vector3D.distance(finalState1.getPVCoordinates().getPosition(),
+                                             finalState3.getPVCoordinates().getPosition()),
+                           1.0);
     }
 
     @Before

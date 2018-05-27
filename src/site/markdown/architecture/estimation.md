@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2017 CS Systèmes d'Information
+<!--- Copyright 2002-2018 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -30,7 +30,8 @@ operational needs.
 Organization
 ------------
 
-There are two main sub-packages: `org.orekit.estimation.measurements` and `org.orekit.estimation.leastsquares`.
+There are three main sub-packages: `org.orekit.estimation.measurements`, `org.orekit.estimation.leastsquares`,
+and `org.orekit.estimation.sequential`.
 
 ### Measurements
 
@@ -85,6 +86,37 @@ generic step handling mechanism and the orbit determination framework. At each m
 and Jacobians from the propagator side, calls the measurement methods to get the residuals and the partial
 derivatives on the measurements side, and fetches the least squares estimator with the combined values, to be
 provided back to the Hipparchus least squares solver, thus closing the loop.
+
+### Kalman filter
+
+![kalman filter overview class diagram](../images/design/kalman-overview-class-diagram.png)
+
+The `sequential` package provides an implementation of a Kalman estimator engine to perform an orbit
+determination. Users will typically create one instance of this object (using the builder), and feed the
+filter one measurement at a time, each time getting a corrected state.
+
+One important difference with the batch least squares estimator is that a Kalman filter needs an initial
+covariance matrix (which can be computed from a previous orbit determination, possibly from a batch least
+squares for the first estimation) and a process noise matrix, which represent the expected noise induced
+by the propagation itself between the previous and the current measurement.
+
+In simple cases, or if the user has no clue about what to use, a simple provider is available in Orekit that
+uses only constant matrices. This is however not suitable for the process noise as its depends on both
+previous and current states and most importantly on the time gap between them. If two measurements are only
+a few seconds apart, the noise introduced by the estimation step should be far smaller than the noise
+introduced by an estimation step between measurements separated by a few hours.
+
+A simplified model expanding an error ellipsoid with principal axes in the along-track, across-track and
+normal directions and using polynomials lengths for the ellipsoid axes is expected to be included in the
+library. Finding the right coefficients for the polynomials will remain the responsibility of user. One
+way to tune it properly for a family of orbits is to use a first run of Taylor algebra during the mission
+analysis phase, to monitor how the high order uncertainties evolve, and to fit an ellipsoid on this evolution.
+Then a Kalman filter using a covariance matrix provider with such a polynomial ellipsoid model
+will be more realistic than a basic constant matrix.
+
+For even more accurate representations, users are free to set up their own models, which could go up to
+evaluating the effect of each force models. This is done by providing a custom implementation of
+`ProcessNoiseMatrixProvider`.
 
 ### Estimated parameters
 

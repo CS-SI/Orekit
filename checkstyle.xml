@@ -71,31 +71,30 @@
                              PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR,
                              SR_ASSIGN, STAR, STAR_ASSIGN"/>
         </module>
-        <module name="FileContentsHolder"/>
         <module name="SuppressionCommentFilter">
            <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
             <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>
             <property name="checkFormat"      value="JavadocVariable"/>
         </module>
         <module name="SuppressionCommentFilter">
-            <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifierCheck"/>
-            <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
+            <property name="offCommentFormat" value="CHECKSTYLE\: stop VisibilityModifier check"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifier check"/>
             <property name="checkFormat"      value="VisibilityModifierCheck"/>
         </module>
         <module name="SuppressionCommentFilter">
-            <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter"/>
-            <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter"/>
+            <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter check"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter check"/>
             <property name="checkFormat"      value="NoWhitespaceAfter"/>
-        </module>
-        <module name="SuppressionCommentFilter">
-          <property name="offCommentFormat" value="CHECKSTYLE\: stop FallThrough check"/>
-          <property name="onCommentFormat" value="CHECKSTYLE\: resume FallThrough check"/>
-          <property name="checkFormat" value="FallThrough"/>
         </module>
         <module name="SuppressionCommentFilter">
           <property name="offCommentFormat" value="CHECKSTYLE\: stop Indentation check"/>
           <property name="onCommentFormat" value="CHECKSTYLE\: resume Indentation check"/>
           <property name="checkFormat" value="IndentationCheck"/>
+        </module>
+        <module name="SuppressionCommentFilter">
+          <property name="offCommentFormat" value="CHECKSTYLE\: stop MultipleStringLiterals check"/>
+          <property name="onCommentFormat" value="CHECKSTYLE\: resume MultipleStringLiterals check"/>
+          <property name="checkFormat" value="MultipleStringLiteralsCheck"/>
         </module>
     </module>
     <module name="RegexpHeader">

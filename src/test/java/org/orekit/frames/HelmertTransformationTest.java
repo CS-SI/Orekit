@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,8 +35,12 @@ public class HelmertTransformationTest {
     public void testHelmert20052008() throws OrekitException {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Frame itrf2005 =
-                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005.createTransformedITRF(itrf2008, "2005");
+        HelmertTransformation.Predefined ht = HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
+        Assert.assertEquals(ITRFVersion.ITRF_2008, ht.getOrigin());
+        Assert.assertEquals(ITRFVersion.ITRF_2005, ht.getDestination());
+        Assert.assertEquals(new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+                            ht.getTransformation().getEpoch());
+        Frame itrf2005 = ht.createTransformedITRF(itrf2008, "2005");
         Vector3D pos2005 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per http://itrf.ign.fr/ITRF_solutions/2008/tp_08-05.php

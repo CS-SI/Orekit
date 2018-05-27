@@ -119,7 +119,7 @@ public class MariniMurrayModel implements TroposphericModel {
      *
      * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
      *
-     * @param rh relative humidity, in percent.
+     * @param rh relative humidity, in percent (50% -&gt; 0.5).
      * @return the water vapor, in mbar (1 mbar = 100 Pa).
      */
     private double getWaterVapor(final double rh) {
@@ -134,7 +134,7 @@ public class MariniMurrayModel implements TroposphericModel {
         // enhancement factor, equation (4) of reference paper
         final double fw = 1.00062 + (3.14 * 1e-6) * P0 + (5.6 * 1e-7) * FastMath.pow(T0 - 273.15, 2);
 
-        final double e = (rh / 100.0) * fw * es;
+        final double e = rh * fw * es;
         return e;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,9 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
@@ -31,6 +33,11 @@ import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 public class FieldPVCoordinatesTest {
@@ -173,6 +180,320 @@ public class FieldPVCoordinatesTest {
                 k.scalarMultiply(0.5));
     }
 
+    @Test
+    public void testToDerivativeStructureVectorNeg() throws OrekitException {
+        try {
+            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(-1);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+        }
+    }
+
+    @Test
+    public void testToDerivativeStructureVector3() throws OrekitException {
+        try {
+            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+        }
+    }
+
+    @Test
+    public void testToDerivativeStructureVector0() throws OrekitException {
+        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                         new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                         toDerivativeStructureVector(0);
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(0, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
+                                         FieldVector3D.getZero(Decimal64Field.getInstance()),
+                                         FieldVector3D.getZero(Decimal64Field.getInstance())),
+                new FieldPVCoordinates<>(fv), 1.0e-15);
+    }
+
+    @Test
+    public void testToDerivativeStructureVector1() throws OrekitException {
+        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toDerivativeStructureVector(1);
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(1, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
+                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                         FieldVector3D.getZero(Decimal64Field.getInstance())),
+                new FieldPVCoordinates<>(fv), 1.0e-15);
+    }
+
+    @Test
+    public void testToDerivativeStructureVector2() throws OrekitException {
+        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toDerivativeStructureVector(2);
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(2, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fv.getX().getPartialDerivative(2).getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).getReal(), 1.0e-15);
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
+                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                         new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))),
+                new FieldPVCoordinates<>(fv), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            FieldVector3D<Decimal64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                                  new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                         shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+        }
+    }
+
+    @Test
+    public void testToDerivativeStructurePVNeg() throws OrekitException {
+        try {
+            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(-1);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+        }
+    }
+
+    @Test
+    public void testToDerivativeStructurePV3() throws OrekitException {
+        try {
+            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+        }
+    }
+
+    @Test
+    public void testToDerivativeStructurePV0() throws OrekitException {
+        FieldPVCoordinates<DerivativeStructure> fv =
+                new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                  new Vector3D(-1, -0.1, -10),
+                                  new Vector3D(10, -1.0, -100)).toDerivativeStructurePV(0);
+        Assert.assertEquals(1, fv.getPosition().getX().getFreeParameters());
+        Assert.assertEquals(0, fv.getPosition().getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        Assert.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+    }
+
+    @Test
+    public void testToDerivativeStructurePV1() throws OrekitException {
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toDerivativeStructurePV(1);
+        Assert.assertEquals(1, fv.getPosition().getX().getFreeParameters());
+        Assert.assertEquals(1, fv.getPosition().getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        Assert.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+
+        Assert.assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getPartialDerivative(1).getReal(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testToDerivativeStructurePV2() throws OrekitException {
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toDerivativeStructurePV(2);
+        Assert.assertEquals(1, fv.getPosition().getX().getFreeParameters());
+        Assert.assertEquals(2, fv.getPosition().getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        Assert.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+
+        Assert.assertEquals(fv.getVelocity().getX().getReal(),                             fv.getPosition().getX().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getY().getReal(),                             fv.getPosition().getY().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getZ().getReal(),                             fv.getPosition().getZ().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(),                         fv.getPosition().getX().getPartialDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(),                         fv.getPosition().getY().getPartialDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(),                         fv.getPosition().getZ().getPartialDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(),                         fv.getVelocity().getX().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(),                         fv.getVelocity().getY().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(),                         fv.getVelocity().getZ().getPartialDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getPartialDerivative(1).getReal(), fv.getVelocity().getX().getPartialDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getPartialDerivative(1).getReal(), fv.getVelocity().getY().getPartialDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getPartialDerivative(1).getReal(), fv.getVelocity().getZ().getPartialDerivative(2).getReal(), 1.0e-10);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10),
+                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getPosition().getX().taylor(dt).getReal(), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getPosition().getY().taylor(dt).getReal(), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt).getReal(), 1.0e-14);
+        }
+
+    }
+
+    @Test
+    public void testJerkIsVelocitySecondDerivative() throws OrekitException {
+        final FieldCartesianOrbit<Decimal64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
+                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+                                                        FramesFactory.getEME2000(),
+                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
+                                                        Constants.EIGEN5C_EARTH_MU);
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
+        Assert.assertEquals(numericalJerk.getX().getReal(),
+                            fv.getVelocity().getX().getPartialDerivative(2).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getY().getReal(),
+                            fv.getVelocity().getY().getPartialDerivative(2).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getZ().getReal(),
+                            fv.getVelocity().getZ().getPartialDerivative(2).getReal(),
+                            1.0e-13);
+
+    }
+
+    @Test
+    public void testJerkIsAccelerationDerivative() throws OrekitException {
+        final FieldCartesianOrbit<Decimal64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
+                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+                                                        FramesFactory.getEME2000(),
+                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
+                                                        Constants.EIGEN5C_EARTH_MU);
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv1 = orbit.getPVCoordinates().toDerivativeStructurePV(1);
+        FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
+        Assert.assertEquals(numericalJerk.getX().getReal(),
+                            fv1.getAcceleration().getX().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getY().getReal(),
+                            fv1.getAcceleration().getY().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getZ().getReal(),
+                            fv1.getAcceleration().getZ().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv2 = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        Assert.assertEquals(numericalJerk.getX().getReal(),
+                            fv2.getAcceleration().getX().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getY().getReal(),
+                            fv2.getAcceleration().getY().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+        Assert.assertEquals(numericalJerk.getZ().getReal(),
+                            fv2.getAcceleration().getZ().getPartialDerivative(1).getReal(),
+                            1.0e-13);
+
+    }
+
+    @Test
+    public void testJounceIsAccelerationSecondDerivative() throws OrekitException {
+        final FieldCartesianOrbit<Decimal64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
+                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+                                                        FramesFactory.getEME2000(),
+                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
+                                                        Constants.EIGEN5C_EARTH_MU);
+        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        FieldVector3D<Decimal64> numericalJounce = differentiate(orbit, o -> {
+        FieldVector3D<FieldDerivativeStructure<Decimal64>> a = o.getPVCoordinates().toDerivativeStructurePV(1).getAcceleration();
+            return new FieldVector3D<>(a.getX().getPartialDerivative(1),
+                                       a.getY().getPartialDerivative(1),
+                                       a.getZ().getPartialDerivative(1));
+        });
+        Assert.assertEquals(numericalJounce.getX().getReal(),
+                            fv.getAcceleration().getX().getPartialDerivative(2).getReal(),
+                            1.0e-15);
+        Assert.assertEquals(numericalJounce.getY().getReal(),
+                            fv.getAcceleration().getY().getPartialDerivative(2).getReal(),
+                            1.0e-15);
+        Assert.assertEquals(numericalJounce.getZ().getReal(),
+                            fv.getAcceleration().getZ().getPartialDerivative(2).getReal(),
+                            1.0e-15);
+
+    }
+
+    @Test
+    public void testMomentumDerivative() throws OrekitException {
+        final FieldPVCoordinates<Decimal64> pva =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
+                                                 new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.)));
+        final FieldVector3D<Decimal64> p  = pva.getPosition();
+        final FieldVector3D<Decimal64>  v  = pva.getVelocity();
+        final FieldVector3D<Decimal64>  a  = pva.getAcceleration();
+        final Decimal64   r2 = p.getNormSq();
+        final Decimal64   r  = r2.sqrt();
+        final FieldVector3D<Decimal64>  keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-2).divide(r2), a,
+                                                                            a.getNorm().negate().divide(r), v);
+        final FieldPVCoordinates<Decimal64> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);
+        final FieldVector3D<Decimal64>  momentumRef    = pva.getMomentum();
+        final FieldVector3D<Decimal64>  momentumDotRef = pva.crossProduct(velocity).getVelocity();
+
+        final FieldVector3D<FieldDerivativeStructure<Decimal64>> momentumDot = pva.toDerivativeStructurePV(1).getMomentum();
+        Assert.assertEquals(momentumRef.getX().getReal(),    momentumDot.getX().getReal(),                         1.0e-15);
+        Assert.assertEquals(momentumRef.getY().getReal(),    momentumDot.getY().getReal(),                         1.0e-15);
+        Assert.assertEquals(momentumRef.getZ().getReal(),    momentumDot.getZ().getReal(),                         1.0e-15);
+        Assert.assertEquals(momentumDotRef.getX().getReal(), momentumDot.getX().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(momentumDotRef.getY().getReal(), momentumDot.getY().getPartialDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(momentumDotRef.getZ().getReal(), momentumDot.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
+
+    }
 
     @Test
     public void testShift() {
@@ -278,5 +599,24 @@ public class FieldPVCoordinatesTest {
         Assert.assertEquals(expected.getVelocity().getY().getReal(), real.getVelocity().getY().getReal(), epsilon);
         Assert.assertEquals(expected.getVelocity().getZ().getReal(), real.getVelocity().getZ().getReal(), epsilon);
     }
+
+    private interface OrbitFunction<T extends RealFieldElement<T>>  {
+        FieldVector3D<T> apply(final FieldCartesianOrbit<T> o) throws OrekitException;
+    }
+
+    private <T extends RealFieldElement<T>> FieldVector3D<T> differentiate(FieldCartesianOrbit<T> orbit,
+                                                                           OrbitFunction<T> picker) {
+        try {
+            FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+            final T step = orbit.getDate().getField().getZero().add(0.01); 
+            for (int i = -4; i < 4; ++i) {
+                T dt = step.multiply(i);
+                interpolator.addSamplePoint(dt, picker.apply(orbit.shiftedBy(dt)).toArray());
+            }
+            return new FieldVector3D<>(interpolator.derivatives(orbit.getDate().getField().getZero(), 1)[1]);
+        } catch (OrekitException oe) {
+            return null;
+        }
+     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.DateComponents;
@@ -430,7 +431,7 @@ public class IERSConventionsTest {
         // The differences are nevertheless quite small (9e-11 radians is sub-millimeter level
         // in low Earth orbit).
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
@@ -512,7 +513,7 @@ public class IERSConventionsTest {
         //        --> 2.7601901615614221619
 
         Utils.setLoaders(IERSConventions.IERS_2003,
-                         Utils.buildEOPList(IERSConventions.IERS_2003, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_2003, ITRFVersion.ITRF_2008, new double[][] {
                              { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
@@ -593,7 +594,7 @@ public class IERSConventionsTest {
         //        --> 2.7601901613234058885
 
         Utils.setLoaders(IERSConventions.IERS_2010,
-                         Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_2010, ITRFVersion.ITRF_2008, new double[][] {
                              { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
                              { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
@@ -723,7 +724,7 @@ public class IERSConventionsTest {
         //       86400.0 -0.29874248853173840 -0.12308592577174847  0.22161565557764881
 
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_1996, ITRFVersion.ITRF_2008, new double[][] {
                              {  52653,  -0.2979055,   0.0005744,  -0.120344,   0.217095, 0.0, 0.0, 0.0, 0.0 },
                              {  52654,  -0.2984238,   0.0004224,  -0.121680,   0.219400, 0.0, 0.0, 0.0, 0.0 },
                              {  52655,  -0.2987682,   0.0002878,  -0.122915,   0.221760, 0.0, 0.0, 0.0, 0.0 },
@@ -801,7 +802,7 @@ public class IERSConventionsTest {
         //       86400.0 -0.29874235341010519  0.00035460263868306 -0.12312252389660779  0.22161364352515728
 
         Utils.setLoaders(IERSConventions.IERS_2003,
-                         Utils.buildEOPList(IERSConventions.IERS_2003, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_2003, ITRFVersion.ITRF_2008, new double[][] {
                              {  52653,  -0.2979055,   0.0005744,  -0.120344,   0.217095, 0.0, 0.0, 0.0, 0.0 },
                              {  52654,  -0.2984238,   0.0004224,  -0.121680,   0.219400, 0.0, 0.0, 0.0, 0.0 },
                              {  52655,  -0.2987682,   0.0002878,  -0.122915,   0.221760, 0.0, 0.0, 0.0, 0.0 },
@@ -881,7 +882,7 @@ public class IERSConventionsTest {
         //       86400.0 -0.29874235341010519  0.00035460263868306 -0.12312252389660779  0.22161364352515728
 
         Utils.setLoaders(IERSConventions.IERS_2010,
-                         Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+                         Utils.buildEOPList(IERSConventions.IERS_2010, ITRFVersion.ITRF_2008, new double[][] {
                              {  52653,  -0.2979055,   0.0005744,  -0.120344,   0.217095, 0.0, 0.0, 0.0, 0.0 },
                              {  52654,  -0.2984238,   0.0004224,  -0.121680,   0.219400, 0.0, 0.0, 0.0, 0.0 },
                              {  52655,  -0.2987682,   0.0002878,  -0.122915,   0.221760, 0.0, 0.0, 0.0, 0.0 },

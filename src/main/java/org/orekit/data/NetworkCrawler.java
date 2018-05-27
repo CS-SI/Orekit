@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,9 +25,7 @@ import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
@@ -124,24 +122,16 @@ public class NetworkCrawler implements DataProvider {
 
                         } else {
 
-                            // remove suffix from gzip files
-                            final Matcher gzipMatcher = GZIP_FILE_PATTERN.matcher(fileName);
-                            final String baseName = gzipMatcher.matches() ? gzipMatcher.group(1) : fileName;
+                            // apply all registered filters
+                            NamedData data = new NamedData(fileName, () -> getStream(url));
+                            data = DataProvidersManager.getInstance().applyAllFilters(data);
 
-                            if (supported.matcher(baseName).matches()) {
-
-                                final InputStream stream = getStream(url);
-
+                            if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                if (gzipMatcher.matches()) {
-                                    visitor.loadData(new GZIPInputStream(stream), name);
-                                } else {
-                                    visitor.loadData(stream, name);
+                                try (InputStream input = data.getStreamOpener().openStream()) {
+                                    visitor.loadData(input, name);
+                                    loaded = true;
                                 }
-
-                                stream.close();
-                                loaded = true;
-
                             }
 
                         }

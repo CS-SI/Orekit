@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -213,7 +213,9 @@ public class EventsLogger implements Serializable {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) throws OrekitException {
+            super.init(s0, t);
             detector.init(s0, t);
         }
 

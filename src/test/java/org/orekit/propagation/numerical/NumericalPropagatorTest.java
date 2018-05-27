@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,10 +80,12 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -94,7 +96,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
 
 public class NumericalPropagatorTest {
 
@@ -1344,6 +1345,73 @@ public class NumericalPropagatorTest {
 
     }
 
+    /** Test de-activation of event detection and step handling.
+     *  When propagating out of start and target date in propagate(startDate, targetDate)
+     *  <p>See issue 449 in Orekit forge and 
+     *  {@link org.orekit.propagation.Propagator#propagate(AbsoluteDate, AbsoluteDate)}.
+     *  </p>
+     * @throws OrekitException if propagation failed
+     */
+    @Test
+    public void testEventAndStepHandlerDeactivationIssue449() throws OrekitException {
+
+        // Setup
+        RecordAndContinue<DateDetector> recordAndContinue = new RecordAndContinue<>();
+        DateDetector dateDetector = new DateDetector(1, 1E-1,
+                                                     initDate.shiftedBy(10.),
+                                                     initDate.shiftedBy(15.),
+                                                     initDate.shiftedBy(20.))
+                        .withHandler(recordAndContinue);
+
+        propagator.addEventDetector(dateDetector);
+        
+        final AbsoluteDate startDate = initDate.shiftedBy(30.);
+        final AbsoluteDate finalDate = initDate.shiftedBy(40.);
+        
+        final DateRecorderHandler dateRecorderHandler = new DateRecorderHandler(startDate, finalDate);
+        propagator.setMasterMode(1.0, dateRecorderHandler);
+
+        // Action
+        propagator.propagate(startDate, finalDate);
+
+        // Verify
+        // No event is detected
+        Assert.assertEquals(0, recordAndContinue.getEvents().size());
+        
+        // Handler is deactivated (no dates recorded between start and stop date)
+        Assert.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
+    }
+    
+    /** Record the dates treated by the handler.
+     *  If they are out of an interval defined by a start and final date.
+     */
+    private static class DateRecorderHandler implements OrekitFixedStepHandler {
+
+        /** Start date of the propagation. */
+        private final AbsoluteDate startDate;
+        
+        /** Final date of the propagation. */
+        private final AbsoluteDate finalDate;
+        
+        /** List of handled date. Recorded only if they are out of the propagation interval. */
+        public final List<AbsoluteDate> handledDatesOutOfInterval;
+        
+        DateRecorderHandler(final AbsoluteDate startDate, final AbsoluteDate finalDate) {
+          this.startDate = startDate;
+          this.finalDate = finalDate;
+          this.handledDatesOutOfInterval = new ArrayList<>();
+        }
+
+        @Override
+        public void handleStep(SpacecraftState currentState, boolean isLast)
+                throws OrekitException {
+          final AbsoluteDate date = currentState.getDate();
+          if (date.compareTo(startDate) < 0 || date.compareTo(finalDate) > 0) {
+            handledDatesOutOfInterval.add(currentState.getDate());
+          }
+        }
+      }
+    
     /**
      * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
      *   If we have [0, 1, 2, 3, 4], and input is 2, then we will do 2->3, 2->4.

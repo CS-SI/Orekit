@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,16 @@ package org.orekit.data;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
 public class DataProvidersManagerTest {
@@ -37,7 +41,7 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(21, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
@@ -49,13 +53,17 @@ public class DataProvidersManagerTest {
         Assert.assertFalse(manager.isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader tleCounter = new CountingLoader(false);
-        Assert.assertTrue(manager.feed(".*\\.tle$", tleCounter));
-        Assert.assertEquals(4, tleCounter.getCount());
-        Assert.assertEquals(4, manager.getLoadedDataNames().size());
+        Assert.assertFalse(manager.feed(".*\\.tle$", tleCounter));
+        Assert.assertEquals(0, tleCounter.getCount());
+        Assert.assertEquals(0, manager.getLoadedDataNames().size());
+        CountingLoader txtCounter = new CountingLoader(false);
+        Assert.assertTrue(manager.feed(".*\\.txt$", txtCounter));
+        Assert.assertEquals(5, txtCounter.getCount());
+        Assert.assertEquals(5, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assert.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assert.assertEquals(4, de405Counter.getCount());
-        Assert.assertEquals(8, manager.getLoadedDataNames().size());
+        Assert.assertEquals(9, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -71,7 +79,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(21, crawler.getCount());
+        Assert.assertEquals(18, crawler.getCount());
     }
 
     @Test
@@ -179,6 +187,30 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(6, crawler.getCount());
     }
 
+    @Test
+    public void testSimpleFilter() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        CountingFilter filter = new CountingFilter();
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18, filter.getFilteredCount());
+        Assert.assertEquals(18, filter.getOpenedCount());
+    }
+
+    @Test
+    public void testMultiLayerFilter() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final int layers = 10;
+        MultiLayerFilter filter = new MultiLayerFilter(layers);
+        DataProvidersManager.getInstance().addFilter(filter);
+        CountingLoader crawler = new CountingLoader(false);
+        Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
+        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(18 * layers, filter.getOpenedCount());
+    }
+
     private static class CountingLoader implements DataLoader {
         private boolean shouldFail;
         private int count;
@@ -198,6 +230,68 @@ public class DataProvidersManagerTest {
         }
         public int getCount() {
             return count;
+        }
+    }
+
+    private static class CountingFilter implements DataFilter {
+        private Map<NamedData, NamedData> filtered;
+        private int opened;
+        public CountingFilter() {
+            filtered = new IdentityHashMap<>();
+            opened   = 0;
+        }
+        public NamedData filter(NamedData original) {
+            if (filtered.containsKey(original)) {
+                return original;
+            } else {
+                NamedData f = new NamedData(original.getName(),
+                                            () -> {
+                                                ++opened;
+                                                return original.getStreamOpener().openStream();
+                                            });
+                filtered.put(f, f);
+                return f;
+            }
+        }
+        public int getFilteredCount() {
+            return filtered.size();
+        }
+        public int getOpenedCount() {
+            return opened;
+        }
+    }
+
+    private static class MultiLayerFilter implements DataFilter {
+        private static final String  PREFIX  = "multilayer-";
+        private static final Pattern PATTERN = Pattern.compile(PREFIX + "(\\d+)-(.*)");
+        private final int layers;
+        private int opened;
+        public MultiLayerFilter(final int layers) {
+            this.layers = layers;
+            this.opened = 0;
+        }
+        public NamedData filter(final NamedData original) {
+            Matcher matcher = PATTERN.matcher(original.getName());
+            int level = 0;
+            String baseName = original.getName();
+            if (matcher.matches()) {
+                level = Integer.parseInt(matcher.group(1));
+                baseName = matcher.group(2);
+            }
+            if (level++ < layers) {
+                // add one filtering layer
+                return new NamedData(PREFIX + level + "-" + baseName,
+                                     () -> {
+                                         ++opened;
+                                         return original.getStreamOpener().openStream();
+                                     });
+            } else {
+                // final layer, don't filter anymore
+                return original;
+            }
+        }
+        public int getOpenedCount() {
+            return opened;
         }
     }
 

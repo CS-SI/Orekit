@@ -37,6 +37,9 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = sistemul de coordonate {0} nu este un strămo�
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = sistemul de coordonate {0} are nivelul {1}, nu poate avea un strămoș cu {2} nivele deasupra
 
+# ITRF frame {0} not found
+NO_SUCH_ITRF_FRAME = sistemul de coordonate ITRF cu numele {0} nu a fost găsit
+
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistem orbital de coordonate nesuportat, tipuri suportate: {0} și {1}
 
@@ -56,13 +59,13 @@ NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} nu este nici un director, nici un fișier
 UNABLE_TO_FIND_RESOURCE = imposibil de găsit resursa {0} în classpath
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nici un Parametru de Orientare al Pământului nu a fost încărcat
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = niciun Parametru de Orientare al Pământului nu a fost încărcat
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pamântului lipsesc între {0} și {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pământului lipsesc între {0} și {1}
 
 # missing Earth Orientation Parameters
-NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pamântului lipsesc
+NO_EARTH_ORIENTATION_PARAMETERS = Parametrii de Orientare ai Pământului lipsesc
 
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = fișierul {0} nu este un fișier IERS de date suportat
@@ -107,7 +110,7 @@ POSITIVE_FLOW_RATE = rata fluxului pozitivă (q: {0})
 NO_GRAVITY_FIELD_DATA_LOADED = nu sunt încărcate date referitoare la câmpul gravitațional
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = depășire inferioara la normalizarea campului gravitațional pentru gradul {0} și ordinul {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = depășire inferioară la normalizarea campului gravitațional pentru gradul {0} și ordinul {1}
 
 # no ocean tide data loaded
 NO_OCEAN_TIDE_DATA_LOADED = nu sunt încărcate date referitoare la mareele oceanice
@@ -158,7 +161,7 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același ob
 TLE_INVALID_PARAMETER = parametru TLE invalid pentru obiectul {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
-TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptata {1} ({3})
+TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptată {1} ({3})
 
 # no TLE data available
 NO_TLE_DATA_AVAILABLE = nu sunt date TLE disponibile
@@ -260,7 +263,7 @@ UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {
 TOO_SMALL_SCALE_FOR_PARAMETER = factorul de scalare pentru parametrul {0} este prea mic: {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
+UNKNOWN_ADDITIONAL_STATE = starea adițională "{0}" necunoscută
 
 # unknown month "{0}"
 UNKNOWN_MONTH = lună necunoscută "{0}"
@@ -272,7 +275,7 @@ SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matricea Jacobiană asociată tipului {0} est
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobianul de stare nu a fost inițializat încă
 
 # state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
-STATE_JACOBIAN_NOT_6X6 = Jacobianul de stare este o matrice {0}x{1}, ar trebui sa fie o matrice 6x6
+STATE_JACOBIAN_NOT_6X6 = Jacobianul de stare este o matrice {0}x{1}, ar trebui să fie o matrice 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii dar Jacobianul parametrilor are {1} linii
@@ -281,10 +284,10 @@ STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = matricea Jacobiană inițială are {0} coloane, dar {1} parametrii au fost selectați
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
-ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbita trebuie sa fie ori eliptică cu a > 0 și e < 1 ori hiperbolică cu a < 0 și e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbita trebuie să fie ori eliptică cu a > 0 și e < 1 ori hiperbolică cu a < 0 și e > 1, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia realaă {0} în afara domeniului pentru orbitele hiperbolice (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia reală {0} în afara domeniului pentru orbitele hiperbolice (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
 HYPERBOLIC_ORBIT_NOT_HANDLED_AS = orbitele hiperbolice nu pot fi tratate ca instanțe de {0}
@@ -354,6 +357,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versiunea fișierului sp3 {0} nesuportată
+
+# found {0} epochs in file {1}, expected {2}
+SP3_NUMBER_OF_EPOCH_MISMATCH = găsite {0} date de referință în fișierul {1}, așteptate {2}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului sp3 (după linia {0})
@@ -434,7 +440,7 @@ NULL_ARGUMENT = argumentul {0} nu poate fi nul
 VALUE_NOT_FOUND = valoarea {0} nu a fost găsită în {1}
 
 # Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spașiale multiple
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spațiale multiple
 
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Coeficienții Klobuchar α sau β nu pot fi încărcați din {0}
@@ -450,3 +456,48 @@ NO_REFERENCE_DATE_FOR_PARAMETER = nicio dată de referință nu este specificat�
 
 # station {0} not found, known stations: {1}
 STATION_NOT_FOUND = stația {0} nu a fost găsită, stații cunoscute: {1}
+
+# unknown satellite system {0}
+UNKNOWN_SATELLITE_SYSTEM = sistemul de sateliți {0} este necunoscut
+
+# unknown satellite antenna code {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE = codul {0} de antenă satelit este necunoscut
+
+# cannot find satellite {0} in satellite system {1}
+CANNOT_FIND_SATELLITE_IN_SYSTEM = imposibil de găsit satelitul {0}  in sistemul de sateliți {1}
+
+# unknown RINEX frequency {0} in file {1}, line {2}
+UNKNOWN_RINEX_FREQUENCY = frecventa RINEX {0} din fișierul {1}, linia {2} este necunoscută
+
+# mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
+MISMATCHED_FREQUENCIES = frecvențe nepotrivite în fișierul {0}, linia {1} (așteptate {2}, găsite {3})
+
+# wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
+WRONG_COLUMNS_NUMBER = număr incorect de coloane în fișierul {0}, linia {1} (așteptate {2} coloane, găsite {3} coloane)
+
+# unsupported format for file {0}
+UNSUPPORTED_FILE_FORMAT = formatul de fișier {0} nu este suportat
+
+# incomplete header in file {0}
+INCOMPLETE_HEADER = antet incomplet în fișierul {0}
+
+# inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}
+INCONSISTENT_NUMBER_OF_SATS = inconsistență în numărul de sateliți de la linia {0}, fișier {1}: observații cu {2} sateliți iar numărul maxim de sateliți este {3}
+
+# the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
+INCONSISTENT_SATELLITE_SYSTEM = sistemul de sateliți {3} de la linia {0}, fișier {1} nu este în concordanță cu Sistemul de Sateliți Sinex {2} din antet
+
+# no propagator configured
+NO_PROPAGATOR_CONFIGURED = niciun propagator nu este configurat
+
+# dimension {0} is inconsistent with parameters list: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = dimensiunea {0} este inconsistentă cu lista de parametrii: {1}
+
+# file {0} is not a supported Unix-compressed file
+NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = fișierul {0} nu este o arhiva validă UNIX
+
+# unexpected end of file {0}
+UNEXPECTED_END_OF_FILE = final neașteptat al fișierului {0}
+
+# file {0} is corrupted
+CORRUPTED_FILE = fișierul {0} este corupt

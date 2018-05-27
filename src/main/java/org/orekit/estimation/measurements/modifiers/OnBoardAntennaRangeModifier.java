@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,8 +54,55 @@ public class OnBoardAntennaRangeModifier implements EstimationModifier<Range> {
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<Range> estimated) {
+        if (estimated.getObservedMeasurement().isTwoWay()) {
+            modifyTwoWay(estimated);
+        } else {
+            modifyOneWay(estimated);
+        }
+    }
+
+    /** Apply a modifier to a one-way range measurement.
+     * @param estimated estimated measurement to modify
+     */
+    private void modifyOneWay(final EstimatedMeasurement<Range> estimated) {
+
+        // the participants are spacecraft at emission, ground station at reception
+        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+        final AbsoluteDate               emissionDate = participants[0].getDate();
+        final Vector3D                   pReception   = participants[1].getPosition();
+
+        // transform from spacecraft to inertial frame at emission date
+        final SpacecraftState refState          = estimated.getStates()[0];
+        final SpacecraftState emissionState     = refState.shiftedBy(emissionDate.durationFrom(refState.getDate()));
+        final Transform       spacecraftToInert = emissionState.toTransform().getInverse();
+
+        // compute the geometrical value of the range directly from participants positions.
+        // Note that this may be different from the value returned by estimated.getEstimatedValue(),
+        // because other modifiers may already have been taken into account
+        final Vector3D pSpacecraft = spacecraftToInert.transformPosition(Vector3D.ZERO);
+        final double rangeUsingSpacecraftCenter = Vector3D.distance(pSpacecraft, pReception);
+
+        // compute the geometrical value of the range replacing
+        // the spacecraft position with antenna phase center position
+        final Vector3D pAPC = spacecraftToInert.transformPosition(antennaPhaseCenter);
+        final double rangeUsingAntennaPhaseCenter = Vector3D.distance(pAPC, pReception);
+
+        // get the estimated value before this modifier is applied
+        final double[] value = estimated.getEstimatedValue();
+
+        // modify the value
+        value[0] += rangeUsingAntennaPhaseCenter - rangeUsingSpacecraftCenter;
+        estimated.setEstimatedValue(value);
+
+    }
+
+    /** Apply a modifier to a two-way range measurement.
+     * @param estimated estimated measurement to modify
+     */
+    private void modifyTwoWay(final EstimatedMeasurement<Range> estimated) {
 
         // the participants are ground station at emission, spacecraft, ground station at reception
+        // or spacecraft, ground station at reception if oneWay
         final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
         final Vector3D                   pEmission    = participants[0].getPosition();
         final AbsoluteDate               transitDate  = participants[1].getDate();

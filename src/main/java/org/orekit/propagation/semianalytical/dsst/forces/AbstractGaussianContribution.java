@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,7 +99,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private static final int I = 1;
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** a. */
     protected double a;
@@ -150,7 +150,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** μ .*/
     protected double mu;
 
-    // CHECKSTYLE: resume VisibilityModifierCheck
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /** Contribution to be numerically averaged. */
     private final ForceModel contribution;
@@ -603,8 +603,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private static class GaussQuadrature {
 
-        // CHECKSTYLE: stop NoWhitespaceAfter
-
         // Points and weights for the available quadrature orders
 
         /** Points for quadrature of order 12. */
@@ -1046,7 +1044,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             0.00732755390127620800,
             0.00315334605230596250
         };
-        // CHECKSTYLE: resume NoWhitespaceAfter
 
         /** Node points. */
         private final double[] nodePoints;

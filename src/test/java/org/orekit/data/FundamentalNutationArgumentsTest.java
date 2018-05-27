@@ -1,4 +1,4 @@
-/* Copyright 2002-2017 CS Systèmes d'Information
+/* Copyright 2002-2018 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -284,14 +284,14 @@ public class FundamentalNutationArgumentsTest {
     public void testSerializationNoTidalCorrection() throws OrekitException, IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
-        checkSerialization(280000, 285000, conventions.getNutationArguments(ut1));
+        checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
     }
 
     @Test
     public void testSerializationTidalCorrection() throws OrekitException, IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
-        checkSerialization(280000, 285000, conventions.getNutationArguments(ut1));
+        checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
     }
 
     @Test
