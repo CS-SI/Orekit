@@ -20,7 +20,21 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="9.2" date="TBD" description="TBD">
+    <release version="TBD" date="TBD" description="TBD">
+    </release>
+    <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.
+    It introduces several new features and bug fixes. New features introduced in version 9.2 are
+    Kalman filter for orbit determination, loading of RINEX files, loading of ANTEX files, loading
+    of version d of SP3 files (version a to c were already supported), on-the-fly decompression of .Z
+    files, code measurements, phase measurements (but only a very basic implementation for now),
+    specific attitude laws (GPS, GLONASS, GALILEO, BEIDOU) with midnight/noon turns, possibility to
+    use backward propagation in LS orbit determination, support for any ITRF version, even if EOP
+    files do not match the desired version, attitude overriding in constant thrust maneuvers,
+    FunctionalDetector, filtering mechanism to insert specific decompression or deciphering algorithms
+    during data loading, frames for Lagrange L1 and L2 point for any two related celestial bodies.
+    WARNING: phase measurements, GNSS attitude and time-dependent process noise are considered
+    experimental features for now, they should not be used yet for operational systems.
+    Several bugs have been fixed.">
       <action dev="luc" type="fix">
         Fixed missing eclipse detectors in field version of Solar radiation pressure.
         Fixes issue #366.
