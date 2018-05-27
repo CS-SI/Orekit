@@ -200,9 +200,9 @@ public class GeodeticPoint implements Serializable {
 
     @Override
     public int hashCode() {
-        return new Double(this.getLatitude()).hashCode() ^
-               new Double(this.getLongitude()).hashCode() ^
-               new Double(this.getAltitude()).hashCode();
+        return Double.valueOf(this.getLatitude()).hashCode() ^
+               Double.valueOf(this.getLongitude()).hashCode() ^
+               Double.valueOf(this.getAltitude()).hashCode();
     }
 
     @Override
