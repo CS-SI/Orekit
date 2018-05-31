@@ -41,9 +41,10 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
+import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -57,7 +58,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class BatchLSEstimator {
 
     /** Builders for propagator. */
-    private final NumericalPropagatorBuilder[] builders;
+    private final IntegratedPropagatorBuilder[] builders;
 
     /** Measurements. */
     private final List<ObservedMeasurement<?>> measurements;
@@ -110,7 +111,7 @@ public class BatchLSEstimator {
      * @exception OrekitException if some propagator parameter cannot be retrieved
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final NumericalPropagatorBuilder... propagatorBuilder)
+                            final IntegratedPropagatorBuilder... propagatorBuilder)
         throws OrekitException {
 
         this.builders                       = propagatorBuilder;
@@ -310,7 +311,7 @@ public class BatchLSEstimator {
      * For parameters whose reference date has not been set to a non-null date beforehand (i.e.
      * the parameters for which {@link ParameterDriver#getReferenceDate()} returns {@code null},
      * a default reference date will be set automatically at the start of the estimation to the
-     * {@link NumericalPropagatorBuilder#getInitialOrbitDate() initial orbit date} of the first
+     * {@link AbstractPropagatorBuilder#getInitialOrbitDate() initial orbit date} of the first
      * propagator builder. For parameters whose reference date has been set to a non-null date,
      * this reference date is untouched.
      * </p>
@@ -334,7 +335,7 @@ public class BatchLSEstimator {
      * @exception OrekitException if there is a conflict in parameters names
      * or if orbit cannot be determined
      */
-    public NumericalPropagator[] estimate() throws OrekitException {
+    public AbstractIntegratedPropagator[] estimate() throws OrekitException {
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
@@ -394,8 +395,9 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
-                                      modelObserver);
+        final ODModel model = builders[0].buildModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        //final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
+                                      //modelObserver);
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
@@ -532,7 +534,7 @@ public class BatchLSEstimator {
         private final LeastSquaresProblem problem;
 
         /** Multivariate function model. */
-        private final Model model;
+        private final ODModel model;
 
         /** Estimated orbital parameters. */
         private final ParameterDriversList estimatedOrbitalParameters;
@@ -551,7 +553,7 @@ public class BatchLSEstimator {
          * @param estimatedMeasurementsParameters estimated measurements parameters
          */
         TappedLSProblem(final LeastSquaresProblem problem,
-                        final Model model,
+                        final ODModel model,
                         final ParameterDriversList estimatedOrbitalParameters,
                         final ParameterDriversList estimatedPropagatorParameters,
                         final ParameterDriversList estimatedMeasurementsParameters) {

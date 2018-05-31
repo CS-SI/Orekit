@@ -41,10 +41,10 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
-import org.orekit.propagation.numerical.JacobiansMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
+import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
@@ -57,7 +57,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class Model implements ODModel {
+public class DSSTModel implements ODModel {
 
     /** Builders for propagators. */
     private final IntegratedPropagatorBuilder[] builders;
@@ -105,7 +105,7 @@ public class Model implements ODModel {
     private final boolean forwardPropagation;
 
     /** Mappers for Jacobians. */
-    private JacobiansMapper[] mappers;
+    private DSSTJacobiansMapper[] mappers;
 
     /** Model function value. */
     private RealVector value;
@@ -120,10 +120,10 @@ public class Model implements ODModel {
      * @param observer observer to be notified at model calls
      * @exception OrekitException if some propagator parameter cannot be set properly
      */
-    public Model(final IntegratedPropagatorBuilder[] builders,
-                 final List<ObservedMeasurement<?>> measurements,
-                 final ParameterDriversList estimatedMeasurementsParameters,
-                 final ModelObserver observer)
+    public DSSTModel(final IntegratedPropagatorBuilder[] builders,
+                     final List<ObservedMeasurement<?>> measurements,
+                     final ParameterDriversList estimatedMeasurementsParameters,
+                     final ModelObserver observer)
         throws OrekitException {
 
         this.builders                        = builders;
@@ -133,7 +133,7 @@ public class Model implements ODModel {
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
-        this.mappers                         = new JacobiansMapper[builders.length];
+        this.mappers                         = new DSSTJacobiansMapper[builders.length];
 
         // allocate vector and matrix
         int rows = 0;
@@ -227,7 +227,7 @@ public class Model implements ODModel {
         try {
 
             // Set up the propagators parallelizer
-            final NumericalPropagator[] propagators = createPropagators(point);
+            final DSSTPropagator[] propagators = createPropagators(point);
             final Orbit[] orbits = new Orbit[propagators.length];
             for (int i = 0; i < propagators.length; ++i) {
                 mappers[i] = configureDerivatives(propagators[i]);
@@ -301,10 +301,10 @@ public class Model implements ODModel {
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator[] createPropagators(final RealVector point)
+    public DSSTPropagator[] createPropagators(final RealVector point)
         throws OrekitException {
 
-        final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
+        final DSSTPropagator[] propagators = new DSSTPropagator[builders.length];
 
         // Set up the propagators
         for (int i = 0; i < builders.length; ++i) {
@@ -331,7 +331,7 @@ public class Model implements ODModel {
             }
 
             // Build the propagator
-            propagators[i] = (NumericalPropagator) builders[i].buildPropagator(propagatorArray);
+            propagators[i] = (DSSTPropagator) builders[i].buildPropagator(propagatorArray);
         }
 
         return propagators;
@@ -379,12 +379,12 @@ public class Model implements ODModel {
      * @return mapper for this propagator
      * @exception OrekitException if orbit cannot be created with the current point
      */
-    private JacobiansMapper configureDerivatives(final NumericalPropagator propagators)
+    private DSSTJacobiansMapper configureDerivatives(final DSSTPropagator propagators)
         throws OrekitException {
 
-        final String equationName = Model.class.getName() + "-derivatives";
+        final String equationName = DSSTModel.class.getName() + "-derivatives";
 
-        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagators);
+        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, propagators);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagators.getInitialState();
@@ -417,15 +417,8 @@ public class Model implements ODModel {
 
             final int p = observedMeasurement.getPropagatorsIndices().get(k);
 
-            // partial derivatives of the current Cartesian coordinates with respect to current orbital state
-            final double[][] aCY = new double[6][6];
-            final Orbit currentOrbit = evaluationStates[k].getOrbit();
-            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngle(), aCY);
-            final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
-
             // Jacobian of the measurement with respect to current orbital state
-            final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
-            final RealMatrix dMdY = dMdC.multiply(dCdY);
+            final RealMatrix dMdY = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];

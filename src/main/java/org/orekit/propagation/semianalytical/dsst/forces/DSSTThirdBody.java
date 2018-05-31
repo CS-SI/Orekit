@@ -58,6 +58,9 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class DSSTThirdBody implements DSSTForceModel {
 
+    /** Name of the single parameter of this model: the attraction coefficient. */
+    public static final String ATTRACTION_COEFFICIENT = " attraction coefficient";
+
     /** Retrograde factor I.
      *  <p>
      *  DSST model needs equinoctial orbit as internal representation.
@@ -88,14 +91,13 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Drivers for third body attraction coefficient. */
     private final ParameterDriver gmParameterDriver;
 
-
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body) {
         try {
-            gmParameterDriver = new ParameterDriver(body.getName() + " attraction coefficient",
+            gmParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
                                                     body.getGM(), FastMath.scalb(1.0, 32),
                                                     0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException e) {
@@ -216,7 +218,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         // Parameters for array building
         final Field<T> field = currentState.getDate().getField();
-        final T zero = field.getZero();
+        final T zero         = field.getZero();
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha

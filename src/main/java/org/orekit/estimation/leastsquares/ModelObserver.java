@@ -30,7 +30,7 @@ import org.orekit.orbits.Orbit;
  * @author Luc Maisonobe
  * @since 8.0
  */
-interface ModelObserver {
+public interface ModelObserver {
 
     /** Notification callback for orbit changes.
      * @param orbits current estimated orbits

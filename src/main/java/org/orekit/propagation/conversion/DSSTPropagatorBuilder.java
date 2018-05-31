@@ -22,29 +22,28 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.leastsquares.Model;
+import org.orekit.estimation.leastsquares.DSSTModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.forces.ForceModel;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Builder for numerical propagator.
- * @author Pascal Parraud
- * @since 6.0
- */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
+/** Builder for DSST propagator. */
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
 
     /** Force models used during the extrapolation of the orbit. */
-    private final List<ForceModel> forceModels;
+    private final List<DSSTForceModel> forceModels;
 
     /** Current mass for initial state (kg). */
     private double mass;
@@ -63,20 +62,17 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * </p>
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
      */
-    public NumericalPropagatorBuilder(final Orbit referenceOrbit,
-                                      final ODEIntegratorBuilder builder,
-                                      final PositionAngle positionAngle,
-                                      final double positionScale)
+    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
+                                 final ODEIntegratorBuilder builder,
+                                 final double positionScale)
         throws OrekitException {
-        super(referenceOrbit, positionAngle, positionScale, true);
+        super(referenceOrbit, PositionAngle.MEAN, positionScale, true);
         this.builder     = builder;
-        this.forceModels = new ArrayList<ForceModel>();
+        this.forceModels = new ArrayList<DSSTForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
         this.attProvider = Propagator.DEFAULT_LAW;
     }
@@ -98,10 +94,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     /** Add a force model to the global perturbation model.
      * <p>If this method is not called at all, the integrated orbit will follow
      * a Keplerian evolution only.</p>
-     * @param model perturbing {@link ForceModel} to add
+     * @param model perturbing {@link DSSTForceModel} to add
      * @exception OrekitException if model parameters cannot be set
      */
-    public void addForceModel(final ForceModel model)
+    public void addForceModel(final DSSTForceModel model)
         throws OrekitException {
         forceModels.add(model);
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -110,19 +106,17 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator buildPropagator(final double[] normalizedParameters)
+    public DSSTPropagator buildPropagator(final double[] normalizedParameters)
         throws OrekitException {
 
         setParameters(normalizedParameters);
-        final Orbit           orbit    = createInitialOrbit();
-        final Attitude        attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState state    = new SpacecraftState(orbit, attitude, mass);
+        final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
+        final Attitude         attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
+        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
 
-        final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orbit, getOrbitType()));
-        propagator.setOrbitType(getOrbitType());
-        propagator.setPositionAngleType(getPositionAngle());
+        final DSSTPropagator propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL));
         propagator.setAttitudeProvider(attProvider);
-        for (ForceModel model : forceModels) {
+        for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
         propagator.resetInitialState(state);
@@ -131,12 +125,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public Model buildModel(final IntegratedPropagatorBuilder[] builders,
-                            final List<ObservedMeasurement<?>> measurements,
-                            final ParameterDriversList estimatedMeasurementsParameters,
-                            final ModelObserver observer)
+    public DSSTModel buildModel(final IntegratedPropagatorBuilder[] builders,
+                                final List<ObservedMeasurement<?>> measurements,
+                                final ParameterDriversList estimatedMeasurementsParameters,
+                                final ModelObserver observer)
         throws OrekitException {
-        return new Model(builders, measurements, estimatedMeasurementsParameters, observer);
+        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

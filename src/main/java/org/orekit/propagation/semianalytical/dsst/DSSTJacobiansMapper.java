@@ -101,13 +101,12 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
         final double[] p = state.getAdditionalState(name);
 
         for (int i = 0; i < STATE_DIMENSION; i++) {
-            int pIndex = i * STATE_DIMENSION;
             final double[] row = dYdY0[i];
             for (int j = 0; j < STATE_DIMENSION; j++) {
-                row[j] = p[pIndex];
-                pIndex += j + 1;
+                row[j] = p[i * STATE_DIMENSION + j];
             }
         }
+
     }
 
 
@@ -120,11 +119,9 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
             final double[] p = state.getAdditionalState(name);
 
             for (int i = 0; i < STATE_DIMENSION; i++) {
-                int pIndex = STATE_DIMENSION * STATE_DIMENSION + i + parameters.getNbParams();
                 final double[] row = dYdP[i];
                 for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = p[pIndex];
-                    pIndex += j + 1;
+                    row[j] = p[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
                 }
             }
 

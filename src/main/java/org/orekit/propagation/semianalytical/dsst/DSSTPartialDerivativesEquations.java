@@ -152,7 +152,8 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Set the initial value of the Jacobian with respect to state and parameter.
      * <p>
      * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
-     * double[][])} with dYdY0 set to the identity matrix.
+     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
+     * to a zero matrix.
      * </p>
      * <p>
      * The force models parameters for which partial derivatives are desired,
@@ -271,14 +272,13 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         // initialize Jacobians to zero
         final int paramDim = selected.getNbParams();
         final int dim = 6;
-        final double[][] dMeanElementRatedParam = new double[dim][paramDim];
+        final double[][] dMeanElementRatedParam   = new double[dim][paramDim];
         final double[][] dMeanElementRatedElement = new double[dim][dim];
-
-        final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
 
         // Compute Jacobian
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
+            final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
             final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
             final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
             final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
@@ -341,7 +341,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
 
-            //             [ Bdot ] = [ dMeanElementRatedElement ] * [ B ] + [ dMeanElementsdParam ]
+            //             [ Bdot ] = [ dMeanElementRatedElement ] * [ B ] + [ dMeanElementRatedParam ]
 
             // The B sub-columns and its derivative (Bdot) are 6 elements columns.
 

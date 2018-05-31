@@ -467,6 +467,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j, final T[] parameters)
             throws OrekitException {
 
+            this.meanMode = meanMode;
+            this.j = j;
+            this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
+
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
@@ -475,10 +480,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                                                            state.getMu(),
                                                                            state.getFrame());
             this.state = new FieldSpacecraftState<T>(fixedOrbit, state.getAttitude(), state.getMass());
-            this.meanMode = meanMode;
-            this.j = j;
-            this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
         }
 
         /** {@inheritDoc} */
@@ -519,8 +520,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                              shiftedOrbit.getEquinoctialEy(),
                                              shiftedOrbit.getHx(),
                                              shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
+                                             shiftedOrbit.getLM(),
+                                             PositionAngle.MEAN,
                                              shiftedOrbit.getFrame(),
                                              state.getDate(),
                                              shiftedOrbit.getMu());
@@ -544,17 +545,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             //Compute the derivatives of the elements by the speed
             final T[] deriv = MathArrays.buildArray(field, dimension);
             // da/dv
-            deriv[0] = acc.dotProduct(getAoV(vel));
+            deriv[0] = getAoV(vel).dotProduct(acc);
             // dex/dv
-            deriv[1] = acc.dotProduct(getKoV(X, Y, Xdot, Ydot));
+            deriv[1] = getKoV(X, Y, Xdot, Ydot).dotProduct(acc);
             // dey/dv
-            deriv[2] = acc.dotProduct(getHoV(X, Y, Xdot, Ydot));
+            deriv[2] = getHoV(X, Y, Xdot, Ydot).dotProduct(acc);
             // dhx/dv
-            deriv[3] = acc.dotProduct(getQoV(X));
+            deriv[3] = getQoV(X).dotProduct(acc);
             // dhy/dv
-            deriv[4] = acc.dotProduct(getPoV(Y));
+            deriv[4] = getPoV(Y).dotProduct(acc);
             // dλ/dv
-            deriv[5] = acc.dotProduct(getLoV(X, Y, Xdot, Ydot));
+            deriv[5] = getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
 
             // Compute mean elements rates
             T[] val = null;
@@ -1439,16 +1440,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                                             final T lowerBound, final T upperBound,
                                                             final FieldAbstractGaussianContributionContext<T> context) {
 
-            final int pointsLength = nodePoints.length;
+            final int pointsLength  = nodePoints.length;
             final int weightsLength = nodeWeights.length;
 
             final Field<T> field = context.getFieldAuxiliaryElements().getDate().getField();
             final T zero = field.getZero();
 
-            T[] adaptedPoints = MathArrays.buildArray(field, pointsLength);
+            T[] adaptedPoints  = MathArrays.buildArray(field, pointsLength);
             T[] adaptedWeights = MathArrays.buildArray(field, weightsLength);
 
-            final T[] nodePoint = MathArrays.buildArray(field, pointsLength);
+            final T[] nodePoint  = MathArrays.buildArray(field, pointsLength);
             final T[] nodeWeight = MathArrays.buildArray(field, weightsLength);
 
             for (int i = 0; i < pointsLength; i++) {
@@ -1505,7 +1506,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T shift = a.add(scale);
             for (int i = 0; i < points.length; i++) {
                 points[i]   = scale.multiply(points[i]).add(shift);
-                weights[i] = scale.multiply(weights[i]);
+                weights[i]  = scale.multiply(weights[i]);
             }
         }
 

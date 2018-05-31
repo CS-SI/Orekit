@@ -907,7 +907,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
-                final double[] daidt = elementRates(forceModel, state, auxiliaryElements);
+                final double[] daidt = elementRates(forceModel, state, auxiliaryElements, forceModel.getParameters());
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
                 }
@@ -925,14 +925,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
+         *  @param parameters force model parameters
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          *  @throws OrekitException if some specific error occurs
          */
         private double[] elementRates(final DSSTForceModel forceModel,
                                       final SpacecraftState state,
-                                      final AuxiliaryElements auxiliaryElements)
+                                      final AuxiliaryElements auxiliaryElements,
+                                      final double[] parameters)
             throws OrekitException {
-            return forceModel.getMeanElementRate(state, auxiliaryElements, forceModel.getParameters());
+            return forceModel.getMeanElementRate(state, auxiliaryElements, parameters);
         }
 
     }

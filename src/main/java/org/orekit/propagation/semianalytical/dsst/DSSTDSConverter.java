@@ -66,18 +66,21 @@ class DSSTDSConverter extends AbstractDSConverter {
         final DerivativeStructure ey  = factory.variable(2, state.getEquinoctialEy());
         final DerivativeStructure hx  = factory.variable(3, state.getHx());
         final DerivativeStructure hy  = factory.variable(4, state.getHy());
-        final DerivativeStructure l   = factory.variable(5, state.getLv());
+        final DerivativeStructure l   = factory.variable(5, state.getLM());
 
         // date
         final AbsoluteDate date = state.getDate();
-        final FieldAbsoluteDate<DerivativeStructure> dateField = new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
+        final FieldAbsoluteDate<DerivativeStructure> dateField = new FieldAbsoluteDate<>(sma.getField(), date);
 
         // mass never has derivatives
         final DerivativeStructure dsM = factory.constant(state.getMass());
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
-                        new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, l, PositionAngle.TRUE,
-                                        state.getFrame(), dateField, state.getMu());
+                        new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, l,
+                                        PositionAngle.MEAN,
+                                        state.getFrame(),
+                                        dateField,
+                                        state.getMu());
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         // compute attitude partial derivatives
@@ -114,16 +117,18 @@ class DSSTDSConverter extends AbstractDSConverter {
             final DSFactory factory = new DSFactory(FREE_STATE_PARAMETERS + nbParams, 1);
             final FieldSpacecraftState<DerivativeStructure> s0 = dsStates.get(0);
 
+            final FieldAbsoluteDate<DerivativeStructure> date = new FieldAbsoluteDate<>(extend(s0.getA(), factory).getField(),
+                                                                                        s0.getDate().toAbsoluteDate());
             // orbit
             final FieldOrbit<DerivativeStructure> dsOrbit =
-                            new FieldEquinoctialOrbit<DerivativeStructure>(extend(s0.getA(),             factory),
-                                                                           extend(s0.getEquinoctialEx(), factory),
-                                                                           extend(s0.getEquinoctialEy(), factory),
-                                                                           extend(s0.getHx(),            factory),
-                                                                           extend(s0.getHy(),            factory),
-                                                                           extend(s0.getLv(),            factory),
-                                                                           PositionAngle.TRUE,
-                                                                           s0.getFrame(), s0.getDate(), s0.getMu());
+                            new FieldEquinoctialOrbit<>(extend(s0.getA(),             factory),
+                                                        extend(s0.getEquinoctialEx(), factory),
+                                                        extend(s0.getEquinoctialEy(), factory),
+                                                        extend(s0.getHx(),            factory),
+                                                        extend(s0.getHy(),            factory),
+                                                        extend(s0.getLM(),            factory),
+                                                        PositionAngle.MEAN,
+                                                        s0.getFrame(), date, s0.getMu());
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();

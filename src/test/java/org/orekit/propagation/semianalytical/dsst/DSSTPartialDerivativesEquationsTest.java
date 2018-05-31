@@ -85,7 +85,7 @@ public class DSSTPartialDerivativesEquationsTest {
                                                  0.15995912655021305,
                                                  -0.5969755874197339,
                                                  15.47576793123677,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngle.MEAN,
                                                  eci, date, gm);
         state = new SpacecraftState(orbit).addAdditionalState("pde", new double[2 * 3 * 6]);
         pde.setInitialJacobians(state);
