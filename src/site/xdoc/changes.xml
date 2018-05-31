@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Derivatives with respect to mass are not computed anymore since several versions,
+        some remnants of former computation remained and have now been removed.
+      </action>
     </release>
     <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.
     It introduces several new features and bug fixes. New features introduced in version 9.2 are
