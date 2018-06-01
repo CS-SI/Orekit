@@ -329,17 +329,20 @@ public class EstimationTestUtils {
             }
         }
 
+        final double rms = FastMath.sqrt(sum / k);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
         Assert.assertEquals(expectedRMS,
-                            FastMath.sqrt(sum / k),
+                            rms,
                             rmsEps);
         Assert.assertEquals(expectedMax,
                             max,
                             maxEps);
         Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            deltaPos,
                             posEps);
         Assert.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
+                            deltaVel,
                             velEps);
 
     }
@@ -432,9 +435,9 @@ public class EstimationTestUtils {
             for (int i = 0; i < 6; i++) {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
-//          // FIXME: debug
-//          final double dPos = Vector3D.distance(refOrbit.getPVCoordinates().getPosition(), estimatedPosition);
-//          final double dVel = Vector3D.distance(refOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
+//          // FIXME: debug print values
+//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+//          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
 //          System.out.println("dVel    = " + dVel + " m/s");
@@ -447,12 +450,11 @@ public class EstimationTestUtils {
 //          //debug
 
             // Check the final orbit estimation & PV sigmas
-            Assert.assertEquals(expectedDeltaPos[k],
-                                Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition),
-                                posEps[k]);
-            Assert.assertEquals(expectedDeltaVel[k],
-                                Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity),
-                                velEps[k]);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+            Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
+            Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
+
             for (int i = 0; i < 3; i++) {
                 Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
                 Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);

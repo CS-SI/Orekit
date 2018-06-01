@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed wrong values of radec generated in AngularRaDecMeasurementCreator.
+        Fixed wrong values of range rate generated in RangeRateMeasurementCreator.
+        Added tests that check the values of measurements for each type of measurement.
+        Upgraded precision in Kalman and batch least-squares OD tests that are using range-rate and radec measurements.
+        Fixes issue #473.
+      </action>
       <action dev="luc" type="fix">
         Derivatives with respect to mass are not computed anymore since several versions,
         some remnants of former computation remained and have now been removed.
