@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -40,6 +41,64 @@ import org.orekit.utils.StateFunction;
 
 public class PVTest {
 
+    /** Compare observed values and estimated values.
+     *  Both are calculated with a different algorithm
+     */
+    @Test
+    public void testValues() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect right-ascension/declination measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               1.0, 3.0, 300.0);
+
+        propagator.setSlaveMode();
+
+        // Prepare statistics for PV values difference
+        final StreamingStatistics[] pvDiffStat = new StreamingStatistics[6];
+        for (int i = 0; i < 6; i++) {
+            pvDiffStat[i] = new StreamingStatistics();  
+        }
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+            
+            // Estimate the AZEL value
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            
+            // Store the difference between estimated and observed values in the stats
+            for (int i = 0; i < 6; i++) {
+                pvDiffStat[i].addValue(FastMath.abs(estimated.getEstimatedValue()[i] - measurement.getObservedValue()[i]));    
+            }
+        }
+
+        // Mean and std errors check
+        for (int i = 0; i < 3; i++) {
+            // Check position values
+            Assert.assertEquals(0.0, pvDiffStat[i].getMean(), 3.74e-7);
+            Assert.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.21e-7);
+            
+            // Check velocity values
+            Assert.assertEquals(0.0, pvDiffStat[i+3].getMean(), 1.29e-10);
+            Assert.assertEquals(0.0, pvDiffStat[i+3].getStandardDeviation(), 7.82e-11);
+        }
+    }
+    
+    /** Test the values of the state derivatives using a numerical.
+     * finite differences calculation as a reference
+     */
     @Test
     public void testStateDerivatives() throws OrekitException {
 

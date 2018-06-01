@@ -101,7 +101,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 station.getPolarOffsetXDriver().setReferenceDate(date);
                 station.getPolarOffsetYDriver().setReferenceDate(date);
                 final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date);
-                final Vector3D  stationPArrival = offsetToInertialArrival.transformVector(Vector3D.ZERO);
+                final Vector3D  stationPArrival = offsetToInertialArrival.transformPosition(Vector3D.ZERO);
                 
                 // Vector station position at signal arrival - satellite at signal departure
                 // In inertial reference frame

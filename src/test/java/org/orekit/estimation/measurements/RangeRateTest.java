@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,6 +41,98 @@ import org.orekit.utils.StateFunction;
 
 public class RangeRateTest {
 
+    /** Compare observed values and estimated values.
+     *  Both are calculated with a different algorithm.
+     *  One-way measurements.
+     */
+    @Test
+    public void testValuesOneWay() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect right-ascension/declination measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context, false),
+                                                               1.0, 3.0, 300.0);
+
+        propagator.setSlaveMode();
+
+        // Prepare statistics for values difference
+        final StreamingStatistics diffStat = new StreamingStatistics();
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+            
+            // Estimate the AZEL value
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            
+            // Store the difference between estimated and observed values in the stats
+            diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
+        }
+
+        // Mean and std errors check
+        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+    }
+    
+    /** Compare observed values and estimated values.
+     *  Both are calculated with a different algorithm.
+     *  Two-ways measurements.
+     */
+    @Test
+    public void testValuesTwoWays() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect right-ascension/declination measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context, true),
+                                                               1.0, 3.0, 300.0);
+
+        propagator.setSlaveMode();
+
+        // Prepare statistics for values difference
+        final StreamingStatistics diffStat = new StreamingStatistics();
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+            
+            // Estimate the AZEL value
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            
+            // Store the difference between estimated and observed values in the stats
+            diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
+        }
+
+        // Mean and std errors check
+        Assert.assertEquals(0.0, diffStat.getMean(), 6.5e-8);
+        Assert.assertEquals(0.0, diffStat.getStandardDeviation(), 5.5e-8);
+    }
+    
+    /** Test the values of the state derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One way measurements.
+     */
     @Test
     public void testStateDerivativesOneWay() throws OrekitException {
 
@@ -93,11 +186,14 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.6e-8);
+        Assert.assertEquals(0, maxRelativeError, 1.5e-8);
 
     }
 
-
+    /** Test the values of the state derivatives using a numerical
+     * finite differences calculation as a reference.
+     * Two-ways measurements.
+     */
     @Test
     public void testStateDerivativesTwoWays() throws OrekitException {
 
@@ -157,6 +253,10 @@ public class RangeRateTest {
 
     }
 
+    /** Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One-way measurements.
+     */
     @Test
     public void testParameterDerivativesOneWay() throws OrekitException {
 
@@ -223,6 +323,10 @@ public class RangeRateTest {
 
     }
 
+    /** Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference.
+     * Two-ways measurements.
+     */
     @Test
     public void testParameterDerivativesTwoWays() throws OrekitException {
 
@@ -289,6 +393,10 @@ public class RangeRateTest {
 
     }
 
+    /** Test the values of the state derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One-way measurements with modifiers (tropospheric corrections).
+     */
     @Test
     public void testStateDerivativesWithModifier() throws OrekitException {
 
@@ -342,11 +450,14 @@ public class RangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 1.5e-7);
+        Assert.assertEquals(0, maxRelativeError, 1.4e-7);
 
     }
 
-
+    /** Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference.
+     * One-way measurements with modifiers (tropospheric corrections).
+     */
     @Test
     public void testParameterDerivativesWithModifier() throws OrekitException {
 
