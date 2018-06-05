@@ -133,8 +133,8 @@ public class EOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(history);
 
-        Assert.assertTrue(bos.size() > 145000);
-        Assert.assertTrue(bos.size() < 150000);
+        Assert.assertTrue(bos.size() > 150000);
+        Assert.assertTrue(bos.size() < 155000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

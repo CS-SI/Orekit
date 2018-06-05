@@ -73,7 +73,8 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
     }
 
     @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) throws OrekitException {
         super.init(s0, t);
         this.original.init(s0, t);
     }

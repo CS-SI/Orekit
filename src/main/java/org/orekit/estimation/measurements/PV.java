@@ -430,7 +430,7 @@ public class PV extends AbstractMeasurement<PV> {
         // Build the PV 6x6 covariance matrix
         final double[][] pvCovarianceMatrix = new double[6][6];
         for (int i = 0; i < sigmaPV.length; i++) {
-            pvCovarianceMatrix[i][i] =  FastMath.pow(sigmaPV[i],  2.);
+            pvCovarianceMatrix[i][i] =  sigmaPV[i] * sigmaPV[i];
         }
         return pvCovarianceMatrix;
     }
@@ -459,8 +459,8 @@ public class PV extends AbstractMeasurement<PV> {
         // Build the PV 6x6 covariance matrix
         final double[][] pvCovarianceMatrix = new double[6][6];
         for (int i = 0; i < sigmaPosition.length; i++) {
-            pvCovarianceMatrix[i][i]         =  FastMath.pow(sigmaPosition[i],  2.);
-            pvCovarianceMatrix[i + 3][i + 3] =  FastMath.pow(sigmaVelocity[i],  2.);
+            pvCovarianceMatrix[i][i]         =  sigmaPosition[i] * sigmaPosition[i];
+            pvCovarianceMatrix[i + 3][i + 3] =  sigmaVelocity[i] * sigmaVelocity[i];
         }
         return pvCovarianceMatrix;
     }

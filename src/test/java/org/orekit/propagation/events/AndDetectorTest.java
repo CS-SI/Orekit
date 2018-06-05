@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
@@ -101,13 +102,19 @@ public class AndDetectorTest {
         Assert.assertTrue("positive", and.g(s) > 0);
     }
 
-    /** Check wrapped detectors are initialized. */
+    /**
+     * Check wrapped detectors are initialized.
+     *
+     * @throws OrekitException on error.
+     */
     @Test
-    public void testInit() {
+    public void testInit() throws OrekitException {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
-        BooleanDetector and = BooleanDetector.andCombine(a, b);
+        @SuppressWarnings("unchecked")
+        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
         Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
@@ -118,6 +125,7 @@ public class AndDetectorTest {
         // verify
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
+        Mockito.verify(c).init(s, t);
     }
 
     /** check when no operands are passed to the constructor. */

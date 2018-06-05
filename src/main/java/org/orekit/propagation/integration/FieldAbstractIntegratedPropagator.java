@@ -744,6 +744,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public int getDimension() {
             return dimension;
         }
@@ -766,6 +767,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public T[] computeDerivatives(final T t, final T[] primary,
                                       final T[] primaryDot, final T[] secondary)
             throws OrekitExceptionWrapper {
@@ -773,7 +775,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             try {
 
                 // update space dynamics view
-                // the state contains only the ODE elements
                 FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);

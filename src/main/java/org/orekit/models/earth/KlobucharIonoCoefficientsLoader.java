@@ -32,7 +32,7 @@ import org.orekit.time.DateComponents;
 /** Loads Klobuchar-Style ionospheric coefficients a given input stream.
  * A stream contains the alphas and betas coefficient for a given day.
  * <p>
- * They are obtained from <a href="ftp://ftp.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
+ * They are obtained from <a href="ftp://ftp.aiub.unibe.ch/aiub/CODE/">University of Bern Astronomical Institute ftp</a>.
  * Find more on the files at the <a href="http://www.aiub.unibe.ch/research/code___analysis_center/klobuchar_style_ionospheric_coefficients/index_eng.html">Astronomical Institute site</a>.
  * <p>
  * The files are UNIX-style compressed (.Z) files.

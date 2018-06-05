@@ -32,6 +32,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -85,6 +86,7 @@ public class Utils {
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();
         DataProvidersManager.getInstance().clearProviders();
+        DataProvidersManager.getInstance().clearFilters();
         DataProvidersManager.getInstance().clearLoadedDataNames();
     }
 
@@ -134,7 +136,7 @@ public class Utils {
         }
     }
 
-    public static List<EOPEntry> buildEOPList(IERSConventions conventions,
+    public static List<EOPEntry> buildEOPList(IERSConventions conventions, ITRFVersion version,
                                               double[][] data) throws OrekitException {
         IERSConventions.NutationCorrectionConverter converter =
                 conventions.getNutationCorrectionConverter();
@@ -171,7 +173,7 @@ public class Utils {
                                   Constants.ARC_SECONDS_TO_RADIANS * row[3],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[4],
                                   equinox[0], equinox[1],
-                                  nro[0], nro[1]));
+                                  nro[0], nro[1], version));
         }
         return list;
     }

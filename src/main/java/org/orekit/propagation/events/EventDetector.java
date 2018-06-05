@@ -59,8 +59,10 @@ public interface EventDetector extends Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    default void init(SpacecraftState s0, AbsoluteDate t) {
+    default void init(SpacecraftState s0, AbsoluteDate t) throws OrekitException {
         // nothing by default
     }
 

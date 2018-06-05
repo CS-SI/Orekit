@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.attitudes.Attitude;
@@ -81,18 +82,40 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         this.attProvider = Propagator.DEFAULT_LAW;
     }
 
-    /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
+    /** Create a copy of a NumericalPropagatorBuilder object.
+     * @return Copied version of the NumericalPropagatorBuilder
+     * @throws OrekitException if parameters drivers cannot be scaled
      */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
-        this.attProvider = attitudeProvider;
+    public NumericalPropagatorBuilder copy() throws OrekitException {
+        final NumericalPropagatorBuilder copyBuilder =
+                        new NumericalPropagatorBuilder(createInitialOrbit(),
+                                                       builder,
+                                                       getPositionAngle(),
+                                                       getPositionScale());
+        copyBuilder.setAttitudeProvider(attProvider);
+        copyBuilder.setMass(mass);
+        for (ForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
     }
 
-    /** Set the initial mass.
-     * @param mass the mass (kg)
+    /** Get the integrator builder.
+     * @return the integrator builder
+     * @since 9.2
      */
-    public void setMass(final double mass) {
-        this.mass = mass;
+    public ODEIntegratorBuilder getIntegratorBuilder()
+    {
+        return builder;
+    }
+
+    /** Get the list of all force models.
+     * @return the list of all force models
+     * @since 9.2
+     */
+    public List<ForceModel> getAllForceModels()
+    {
+        return Collections.unmodifiableList(forceModels);
     }
 
     /** Add a force model to the global perturbation model.
@@ -107,6 +130,38 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
+    }
+
+    /** Get the mass.
+     * @return the mass
+     * @since 9.2
+     */
+    public double getMass()
+    {
+        return mass;
+    }
+
+    /** Set the initial mass.
+     * @param mass the mass (kg)
+     */
+    public void setMass(final double mass) {
+        this.mass = mass;
+    }
+
+    /** Get the attitudeProvider.
+     * @return the attitude provider
+     * @since 9.2
+     */
+    public AttitudeProvider getAttitudeProvider()
+    {
+        return attProvider;
+    }
+
+    /** Set the attitude provider.
+     * @param attitudeProvider attitude provider
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attProvider = attitudeProvider;
     }
 
     /** {@inheritDoc} */

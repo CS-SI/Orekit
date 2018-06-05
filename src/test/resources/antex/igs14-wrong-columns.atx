@@ -1,0 +1,27 @@
+     1.4            M                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT   
+########################################################### COMMENT             
+  This file is NOT an original ANTEX file                   COMMENT             
+  It has been edited for tests purposes                     COMMENT             
+  It will generate a parse error on purpose                 COMMENT             
+  Do NOT use this file except for test purposes             COMMENT             
+########################################################### COMMENT             
+                                                            END OF HEADER       
+                                                            START OF ANTENNA    
+GLONASS             R01                 R796      2004-053A TYPE / SERIAL NO    
+                    COD                      0    29-JAN-17 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  15.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     2                                                      # OF FREQUENCIES    
+  2004    12    26     0     0    0.0000000                 VALID FROM          
+  2009    12    13    23    59   59.9999999                 VALID UNTIL         
+IGS14_1972                                                  SINEX CODE          
+   R01                                                      START OF FREQUENCY  
+      0.00      0.00   2058.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30   -1.60   -1.80   -1.60   -1.10    0.00    1.50    2.20
+   R01                                                      END OF FREQUENCY    
+   R02                                                      START OF FREQUENCY  
+      0.00      0.00   2058.90                              NORTH / EAST / UP   
+   NOAZI    1.90    1.50    1.10    0.80    0.20   -0.20   -0.60   -1.10   -1.30
+   R02                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      

@@ -53,8 +53,7 @@ class DSConverter extends AbstractDSConverter {
     /** Simple constructor.
      * @param state
      * @param state regular state
-     * @param freeStateParameters number of free parameters, either 3 (position),
-     * 6 (position-velocity)
+     * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
      * @exception OrekitException if attitude cannot be computed
      */
@@ -64,40 +63,40 @@ class DSConverter extends AbstractDSConverter {
         super(freeStateParameters);
         this.freeStateParameters = freeStateParameters;
 
-        // prepare derivation variables, position, optionally velocity and mass
+        // prepare derivation variables, position, optionally velocity
         final DSFactory factory = new DSFactory(freeStateParameters, 1);
 
         // position always has derivatives
         final Vector3D pos = state.getPVCoordinates().getPosition();
         final FieldVector3D<DerivativeStructure> posDS = new FieldVector3D<>(factory.variable(0, pos.getX()),
-                        factory.variable(1, pos.getY()),
-                        factory.variable(2, pos.getZ()));
+                                                                             factory.variable(1, pos.getY()),
+                                                                             factory.variable(2, pos.getZ()));
 
         // velocity may have derivatives or not
         final Vector3D vel = state.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> velDS;
         if (freeStateParameters > 3) {
             velDS = new FieldVector3D<>(factory.variable(3, vel.getX()),
-                            factory.variable(4, vel.getY()),
-                            factory.variable(5, vel.getZ()));
+                                        factory.variable(4, vel.getY()),
+                                        factory.variable(5, vel.getZ()));
         } else {
             velDS = new FieldVector3D<>(factory.constant(vel.getX()),
-                            factory.constant(vel.getY()),
-                            factory.constant(vel.getZ()));
+                                        factory.constant(vel.getY()),
+                                        factory.constant(vel.getZ()));
         }
 
         // acceleration never has derivatives
         final Vector3D acc = state.getPVCoordinates().getAcceleration();
         final FieldVector3D<DerivativeStructure> accDS = new FieldVector3D<>(factory.constant(acc.getX()),
-                        factory.constant(acc.getY()),
-                        factory.constant(acc.getZ()));
+                                                                             factory.constant(acc.getY()),
+                                                                             factory.constant(acc.getZ()));
 
         // mass never has derivatives
         final DerivativeStructure dsM = factory.constant(state.getMass());
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                        state.getFrame(), state.getMu());
+                                                  state.getFrame(), state.getMu());
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         if (freeStateParameters > 3) {

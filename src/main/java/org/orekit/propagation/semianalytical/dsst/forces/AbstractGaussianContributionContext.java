@@ -29,7 +29,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  */
 class AbstractGaussianContributionContext extends ForceModelContext {
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
     protected double ton2a;
@@ -43,6 +43,8 @@ class AbstractGaussianContributionContext extends ForceModelContext {
     protected double ooBpo;
     /** 1 / μ .*/
     protected double ooMu;
+
+    // CHECKSTYLE: resume VisibilityModifier check
 
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.

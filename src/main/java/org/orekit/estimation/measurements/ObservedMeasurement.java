@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -42,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends TimeStamped {
+public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement {
 
     /** Enable or disable a measurement.
      * <p>
@@ -99,14 +98,6 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends T
      * @see EstimatedMeasurement#getCurrentWeight()
      */
     double[] getBaseWeight();
-
-    /** Get the observed value.
-     * <p>
-     * The observed value is the value that was measured by the instrument.
-     * </p>
-     * @return observed value (array of size {@link #getDimension()}
-     */
-    double[] getObservedValue();
 
     /** Add a modifier.
      * <p>

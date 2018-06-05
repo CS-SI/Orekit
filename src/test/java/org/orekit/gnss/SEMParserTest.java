@@ -153,7 +153,7 @@ public class SEMParserTest {
         Assert.assertEquals(0., alm.getCrs(), 0.);
         Assert.assertEquals(0., alm.getCuc(), 0.);
         Assert.assertEquals(0., alm.getCus(), 0.);
-        Assert.assertEquals(1.4484676213604244E-4, alm.getMeanMotion(), 0.);
+        Assert.assertEquals(1.4484676213604242E-4, alm.getMeanMotion(), 0.);
     }
 
 }

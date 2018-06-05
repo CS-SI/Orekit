@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,6 @@ import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -667,9 +667,8 @@ public class BatchLSEstimator {
                     sortedEstimations[i++] = entry.getValue();
                 }
 
-                // sort the array chronologically
-                Arrays.sort(sortedEstimations, 0, sortedEstimations.length,
-                            new ChronologicalComparator());
+                // sort the array, primarily chronologically
+                Arrays.sort(sortedEstimations, 0, sortedEstimations.length, Comparator.naturalOrder());
 
             }
 

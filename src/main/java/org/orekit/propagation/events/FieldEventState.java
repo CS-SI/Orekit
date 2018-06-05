@@ -140,8 +140,11 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws  OrekitException if some specific error occurs
      */
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+    public void init(final FieldSpacecraftState<T> s0,
+                     final FieldAbsoluteDate<T> t) throws OrekitException {
         detector.init(s0, t);
         final Field<T> field = detector.getMaxCheckInterval().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);

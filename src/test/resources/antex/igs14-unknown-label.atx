@@ -1,0 +1,39 @@
+     1.4            M                                       ANTEX VERSION / SYST
+A                                                           PCV TYPE / REFANT   
+########################################################### COMMENT             
+  This file is NOT an original ANTEX file                   COMMENT             
+  It has been edited for tests purposes                     COMMENT             
+  It will generate a parse error on purpose                 COMMENT             
+  Do NOT use this file except for test purposes             COMMENT             
+########################################################### COMMENT             
+                                                            END OF HEADER       
+                                                            START OF ANTENNA    
+GALILEO-2           E01                 E210      2016-030B TYPE / SERIAL NO    
+                    DLR/GFZ                  0    09-JUN-16 METH / BY / # / DATE
+     0.0                                                    DAZI                
+     0.0  13.0   1.0                                        ZEN1 / ZEN2 / DZEN  
+     5                                                      # OF FREQUENCIES    
+  2016     5    24     0     0    0.0000000                 VALID FROM          
+IGS14_1972                                                  THIS IS NOT AN ANTEX LABEL
+OFFSET UPDATE IN GPS WEEK 1915                              COMMENT             
+   E01                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E01                                                      END OF FREQUENCY    
+   E05                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E05                                                      END OF FREQUENCY    
+   E06                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E06                                                      END OF FREQUENCY    
+   E07                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E07                                                      END OF FREQUENCY    
+   E08                                                      START OF FREQUENCY  
+    120.00    -10.00   1100.00                              NORTH / EAST / UP   
+   NOAZI    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+   E08                                                      END OF FREQUENCY    
+                                                            END OF ANTENNA      

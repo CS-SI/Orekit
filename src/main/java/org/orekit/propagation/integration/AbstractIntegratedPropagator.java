@@ -449,8 +449,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             integrator.clearEventHandlers();
 
-            // set up events added by user
-            setUpUserEventDetectors();
+            // set up events added by user, only if handlers are activated
+            if (activateHandlers) {
+                setUpUserEventDetectors();
+            }
 
             // convert space flight dynamics API to math API
             final ODEState mathInitialState = createInitialState(getInitialIntegrationState());
@@ -606,7 +608,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, true);  //not sure of the mean orbit, should be true
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, meanOrbit);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -641,7 +643,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          *                         initialization.
          */
         default void init(final SpacecraftState initialState, final AbsoluteDate target)
-                throws OrekitException {
+            throws OrekitException {
         }
 
         /** Compute differential equations for main state.
@@ -727,6 +729,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public int getDimension() {
             return dimension;
         }
@@ -749,6 +752,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] computeDerivatives(final double t, final double[] primary,
                                            final double[] primaryDot, final double[] secondary)
             throws OrekitExceptionWrapper {
@@ -756,7 +760,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                // the state contains only the ODE elements
                 SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);

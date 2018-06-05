@@ -109,8 +109,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Maximum value for j index. */
     private static final int JMAX = 12;
 
-    // CHECKSTYLE: resume VisibilityModifierCheck
-
     /** Contribution to be numerically averaged. */
     private final ForceModel contribution;
 
@@ -920,8 +918,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private static class GaussQuadrature {
 
-        // CHECKSTYLE: stop NoWhitespaceAfter
-
         // Points and weights for the available quadrature orders
 
         /** Points for quadrature of order 12. */
@@ -1363,7 +1359,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             0.00732755390127620800,
             0.00315334605230596250
         };
-        // CHECKSTYLE: resume NoWhitespaceAfter
 
         /** Node points. */
         private final double[] nodePoints;

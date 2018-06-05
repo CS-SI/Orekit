@@ -403,12 +403,17 @@ public class Model implements ODModel {
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();
         final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
 
-        // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
+
+        if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+            return;
+        }
+
+        // compute weighted residuals
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
-        final double[] weight    = evaluation.getCurrentWeight();
+        final double[] weight    = evaluation.getObservedMeasurement().getBaseWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }
@@ -446,7 +451,7 @@ public class Model implements ODModel {
             // Jacobian of the measurement with respect to propagation parameters
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
+            if (nbParams > 0) {
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
