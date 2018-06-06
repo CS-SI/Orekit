@@ -41,7 +41,7 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
         // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit compuptes angular velocity taking eccentricity into account
+        // - Orekit computes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)
@@ -60,7 +60,7 @@ public class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
         // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit compuptes angular velocity taking eccentricity into account
+        // - Orekit computes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)
