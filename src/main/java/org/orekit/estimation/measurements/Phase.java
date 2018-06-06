@@ -47,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thierry Ceolin
  * @author Luc Maisonobe
  * @author Maxime Journot
- * @since 8.0
+ * @since 9.2
  */
 public class Phase extends AbstractMeasurement<Phase> {
 
@@ -89,7 +89,6 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param propagatorIndex index of the propagator related to this measurement
      * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
-     * @since 9.0
      */
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
@@ -105,7 +104,7 @@ public class Phase extends AbstractMeasurement<Phase> {
               station.getPolarDriftXDriver(),
               station.getPolarOffsetYDriver(),
               station.getPolarDriftYDriver());
-        this.station = station;
+        this.station    = station;
         this.wavelength = wavelength;
     }
 
@@ -184,8 +183,8 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                         });
 
         // Phase value
-        final double              cOver2 = Constants.SPEED_OF_LIGHT / wavelength;
-        final DerivativeStructure phase  = tauD.multiply(cOver2);
+        final double              cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final DerivativeStructure phase       = tauD.multiply(cOverLambda);
 
         estimated.setEstimatedValue(phase.getValue());
 

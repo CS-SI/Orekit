@@ -85,8 +85,11 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * </p>
      * @param initialState initial state
      * @param target target date for the propagation
+     *
+     * @throws  OrekitException if some specific error occurs
      */
-    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+    default void init(FieldSpacecraftState<T> initialState,
+                      FieldAbsoluteDate<T> target) throws OrekitException {
         // nothing by default
     }
 

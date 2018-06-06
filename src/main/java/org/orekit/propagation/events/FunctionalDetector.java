@@ -38,6 +38,9 @@ import org.orekit.propagation.events.handlers.EventHandler;
  */
 public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20180525L;
+
     /** The g function. */
     private final GFunction gFunction;
 

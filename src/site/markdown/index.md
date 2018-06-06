@@ -176,6 +176,7 @@
     *  Kalman filtering
 
       * customizable process noise matrices providers
+      * time dependent process noise provider
 
     * parameters estimation
 

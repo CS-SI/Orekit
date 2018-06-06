@@ -86,7 +86,7 @@ public class TimeScalesFactory implements Serializable {
     private static IRNSSScale irnss = null;
 
     /** BDS System Time scale. */
-    private static BDSScale bds = null;
+    private static BDTScale bds = null;
 
 
     /** Private constructor.
@@ -391,7 +391,7 @@ public class TimeScalesFactory implements Serializable {
     /** Get the Indian Regional Navigation Satellite System time scale.
      * @return  Indian Regional Navigation Satellite System time scale
      */
-    public static IRNSSScale getIRNSST() {
+    public static IRNSSScale getIRNSS() {
         synchronized (TimeScalesFactory.class) {
 
             if (irnss == null) {
@@ -406,11 +406,11 @@ public class TimeScalesFactory implements Serializable {
     /** Get the BeiDou Navigation Satellite System time scale.
      * @return  BeiDou Navigation Satellite System time scale
      */
-    public static BDSScale getBDT() {
+    public static BDTScale getBDT() {
         synchronized (TimeScalesFactory.class) {
 
             if (bds == null) {
-                bds = new BDSScale();
+                bds = new BDTScale();
             }
 
             return bds;

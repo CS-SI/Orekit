@@ -139,8 +139,11 @@ public class EventState<T extends EventDetector> implements Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     *
+     * @throws OrekitException if some specific error occurs
      */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0,
+                     final AbsoluteDate t) throws OrekitException {
         detector.init(s0, t);
         lastT = AbsoluteDate.PAST_INFINITY;
         lastG = Double.NaN;

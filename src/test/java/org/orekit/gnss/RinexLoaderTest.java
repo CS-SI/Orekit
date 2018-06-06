@@ -26,6 +26,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
+import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -110,7 +112,7 @@ public class RinexLoaderTest {
             Assert.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
             Assert.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
             Assert.assertEquals(-1,                      header.getClkOffset());
-            Assert.assertEquals(0,                       header.getListAppliedDCBs().size());
+            Assert.assertEquals(0,                       header.getListAppliedDCBS().size());
             Assert.assertEquals(0,                       header.getListAppliedPCVS().size());
             Assert.assertEquals(3,                       header.getPhaseShiftCorrections().size());
             Assert.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
@@ -424,8 +426,39 @@ public class RinexLoaderTest {
             Assert.assertEquals(14, ((Integer) oe.getParts()[2]).intValue());
         }
     }
-    
-    
+
+    @Test
+    public void testDCBSApplied() throws OrekitException {
+        RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
+        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
+            RinexHeader header = entry.getKey();
+            List<AppliedDCBS> list = header.getListAppliedDCBS();
+            Assert.assertEquals(2, list.size());
+            Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+            Assert.assertEquals("dcbs-program-name", list.get(0).getProgDCBS());
+            Assert.assertEquals("http://example.com/GPS", list.get(0).getSourceDCBS());
+            Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+            Assert.assertEquals("dcbs-program-name", list.get(1).getProgDCBS());
+            Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
+        }
+    }
+
+    @Test
+    public void testPCVSApplied() throws OrekitException {
+        RinexLoader  loader = new RinexLoader("^pcvs\\.00o$");
+        for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
+            RinexHeader header = entry.getKey();
+            List<AppliedPCVS> list = header.getListAppliedPCVS();
+            Assert.assertEquals(2, list.size());
+            Assert.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+            Assert.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
+            Assert.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
+            Assert.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+            Assert.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
+            Assert.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
+        }
+    }
+
     private void checkObservation(final ObservationDataSet obser,
                                   final int year, final int month, final int day,
                                   final int hour, final int minute, final double second,
