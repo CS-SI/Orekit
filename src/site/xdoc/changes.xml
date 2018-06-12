@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="476">
+        Fix generics in EventEnablingPredicateFilter.
+        Fixes #476.
+      </action>
       <action dev="maxime" type="fix">
         Fixed wrong values of radec generated in AngularRaDecMeasurementCreator.
         Fixed wrong values of range rate generated in RangeRateMeasurementCreator.
