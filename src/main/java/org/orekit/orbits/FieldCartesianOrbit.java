@@ -736,7 +736,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
 
         final FieldPVCoordinates<T> pv = getPVCoordinates();

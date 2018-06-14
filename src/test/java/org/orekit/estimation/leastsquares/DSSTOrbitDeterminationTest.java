@@ -37,9 +37,9 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
@@ -184,13 +184,13 @@ public class DSSTOrbitDeterminationTest {
               OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
+        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/W3B:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
+        
         //orbit determination run.
         ResultOD odsatW3 = run(input, false);
 
@@ -644,23 +644,23 @@ public class DSSTOrbitDeterminationTest {
             }
         }
 
-        // solar radiation pressure
-        if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
-            final double  cr          = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
-            final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
-            final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
-
-            propagatorBuilder.addForceModel(new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                                       body.getEquatorialRadius(),
-                                                                       new IsotropicRadiationSingleCoefficient(area, cr)));
-            if (cREstimated) {
-                for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-                    if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
-                        driver.setSelected(true);
-                    }
-                }
-            }
-        }
+//        // solar radiation pressure
+//        if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
+//            final double  cr          = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
+//            final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
+//            final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
+//
+//            propagatorBuilder.addForceModel(new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(),
+//                                                                       body.getEquatorialRadius(),
+//                                                                       new IsotropicRadiationSingleCoefficient(area, cr)));
+//            if (cREstimated) {
+//                for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+//                    if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
+//                        driver.setSelected(true);
+//                    }
+//                }
+//            }
+//        }
 
         return propagatorBuilder;
 
@@ -819,32 +819,32 @@ public class DSSTOrbitDeterminationTest {
 
         // transponder delay
         final double transponderDelayBias;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS)) {
             transponderDelayBias = 0;
         } else {
-            transponderDelayBias = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS);
+            transponderDelayBias = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS);
         }
 
         final double transponderDelayBiasMin;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_MIN)) {
             transponderDelayBiasMin = Double.NEGATIVE_INFINITY;
         } else {
-            transponderDelayBiasMin = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN);
+            transponderDelayBiasMin = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS_MIN);
         }
 
         final double transponderDelayBiasMax;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_MAX)) {
             transponderDelayBiasMax = Double.NEGATIVE_INFINITY;
         } else {
-            transponderDelayBiasMax = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX);
+            transponderDelayBiasMax = parser.getDouble(ParameterKey.ONBOARD_RANGE_BIAS_MAX);
         }
 
         // bias estimation flag
         final boolean transponderDelayBiasEstimated;
-        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_ESTIMATED)) {
+        if (!parser.containsKey(ParameterKey.ONBOARD_RANGE_BIAS_ESTIMATED)) {
             transponderDelayBiasEstimated = false;
         } else {
-            transponderDelayBiasEstimated = parser.getBoolean(ParameterKey.TRANSPONDER_DELAY_BIAS_ESTIMATED);
+            transponderDelayBiasEstimated = parser.getBoolean(ParameterKey.ONBOARD_RANGE_BIAS_ESTIMATED);
         }
 
         if (FastMath.abs(transponderDelayBias) >= Precision.SAFE_MIN || transponderDelayBiasEstimated) {
@@ -1176,7 +1176,7 @@ public class DSSTOrbitDeterminationTest {
             optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
         } else {
             // we want to use a Gauss-Newton optimization engine
-            optimizer = new GaussNewtonOptimizer(Decomposition.QR);
+            optimizer = new GaussNewtonOptimizer(new QRDecomposer(1e-11), false);
         }
 
         final double convergenceThreshold;
@@ -1916,16 +1916,20 @@ public class DSSTOrbitDeterminationTest {
         SOLAR_RADIATION_PRESSURE_CR_ESTIMATED,
         SOLAR_RADIATION_PRESSURE_AREA,
         GENERAL_RELATIVITY,
+        ATTITUDE_MODE,
         POLYNOMIAL_ACCELERATION_NAME,
         POLYNOMIAL_ACCELERATION_DIRECTION_X,
         POLYNOMIAL_ACCELERATION_DIRECTION_Y,
         POLYNOMIAL_ACCELERATION_DIRECTION_Z,
         POLYNOMIAL_ACCELERATION_COEFFICIENTS,
         POLYNOMIAL_ACCELERATION_ESTIMATED,
-        TRANSPONDER_DELAY_BIAS,
-        TRANSPONDER_DELAY_BIAS_MIN,
-        TRANSPONDER_DELAY_BIAS_MAX,
-        TRANSPONDER_DELAY_BIAS_ESTIMATED,
+        ONBOARD_RANGE_BIAS,
+        ONBOARD_RANGE_BIAS_MIN,
+        ONBOARD_RANGE_BIAS_MAX,
+        ONBOARD_RANGE_BIAS_ESTIMATED,
+        ON_BOARD_ANTENNA_PHASE_CENTER_X,
+        ON_BOARD_ANTENNA_PHASE_CENTER_Y,
+        ON_BOARD_ANTENNA_PHASE_CENTER_Z,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
         GROUND_STATION_LONGITUDE,
@@ -1953,6 +1957,9 @@ public class DSSTOrbitDeterminationTest {
         GROUND_STATION_ELEVATION_REFRACTION_CORRECTION,
         GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION,
         GROUND_STATION_IONOSPHERIC_CORRECTION,
+        SOLID_TIDES_DISPLACEMENT_CORRECTION,
+        SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION,
+        OCEAN_LOADING_CORRECTION,
         RANGE_MEASUREMENTS_BASE_WEIGHT,
         RANGE_RATE_MEASUREMENTS_BASE_WEIGHT,
         AZIMUTH_MEASUREMENTS_BASE_WEIGHT,
@@ -1968,6 +1975,7 @@ public class DSSTOrbitDeterminationTest {
         AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION,
         PV_OUTLIER_REJECTION_MULTIPLIER,
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
+        SATELLITE_ID_IN_RINEX_FILES,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
         ESTIMATOR_OPTIMIZATION_ENGINE,

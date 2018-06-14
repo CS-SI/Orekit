@@ -77,10 +77,10 @@ class DSSTDSConverter extends AbstractDSConverter {
 
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, l,
-                                        PositionAngle.MEAN,
-                                        state.getFrame(),
-                                        dateField,
-                                        state.getMu());
+                                                    PositionAngle.MEAN,
+                                                    state.getFrame(),
+                                                    dateField,
+                                                    state.getMu());
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         // compute attitude partial derivatives
@@ -101,7 +101,7 @@ class DSSTDSConverter extends AbstractDSConverter {
         // count the required number of parameters
         int nbParams = 0;
         for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-            if (driver.isSelected()) {
+            if (driver.isSelected()) { // et si c'est pas mu alors l'ajouter !
                 ++nbParams;
             }
         }
@@ -158,7 +158,7 @@ class DSSTDSConverter extends AbstractDSConverter {
      */
     public DerivativeStructure[] getParameters(final FieldSpacecraftState<DerivativeStructure> state,
                                                final DSSTForceModel forceModel) {
-        final DSFactory factory = state.getMass().getFactory();
+        final DSFactory factory = state.getA().getFactory();
         final ParameterDriver[] drivers = forceModel.getParametersDrivers();
         final DerivativeStructure[] parameters = new DerivativeStructure[drivers.length];
         int index = FREE_STATE_PARAMETERS;

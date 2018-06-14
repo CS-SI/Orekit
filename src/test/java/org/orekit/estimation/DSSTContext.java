@@ -36,7 +36,6 @@ import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
@@ -86,13 +85,13 @@ public class DSSTContext {
                                                   dP);
         
         final DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), dragSensitive);
-        final DSSTForceModel srp  = new DSSTSolarRadiationPressure(sun, earth.getEquatorialRadius(), radiationSensitive);
+        //final DSSTForceModel srp  = new DSSTSolarRadiationPressure(sun, earth.getEquatorialRadius(), radiationSensitive);
         
         final DSSTForceModel moonForce = new DSSTThirdBody(moon);
         final DSSTForceModel sunForce  = new DSSTThirdBody(sun);
         
         propagatorBuilder.addForceModel(drag);
-        propagatorBuilder.addForceModel(srp);
+        //propagatorBuilder.addForceModel(srp);
         propagatorBuilder.addForceModel(moonForce);
         propagatorBuilder.addForceModel(sunForce);
 

@@ -616,7 +616,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, double gm, T[] pDot);
+    public abstract void addKeplerContribution(PositionAngle type, T gm, T[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

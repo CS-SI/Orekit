@@ -274,11 +274,11 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         final int dim = 6;
         final double[][] dMeanElementRatedParam   = new double[dim][paramDim];
         final double[][] dMeanElementRatedElement = new double[dim][dim];
+        final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
 
         // Compute Jacobian
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
-            final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
             final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
             final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
             final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
@@ -314,6 +314,21 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             }
 
         }
+
+//        int element = 0;
+//        for (int i = 0; i < dim; i++) {
+//            final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
+//            for (int j = 0; j < dim; j++) {
+//                pDot[element++] = dMeanElementRatedElementi[j];
+//            }
+//        }
+//
+//        for (int k = 0; k < dim; k++) {
+//            final double[] dMeanElementRatedParamk = dMeanElementRatedParam[k];
+//            for (int i = 0;  i < paramDim; i++) {
+//                pDot[element++] = dMeanElementRatedParamk[i];
+//            }
+//        }
 
         // The variational equations of the complete state Jacobian matrix have the following form:
 

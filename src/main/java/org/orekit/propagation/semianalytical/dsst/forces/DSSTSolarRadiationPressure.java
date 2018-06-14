@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -25,17 +26,23 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Solar radiation pressure contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -65,7 +72,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     private static final String PREFIX = "DSST-SRP-";
 
     /** Sun model. */
-    private final PVCoordinatesProvider sun;
+    private final ExtendedPVCoordinatesProvider sun;
 
     /** Central Body radius. */
     private final double                ae;
@@ -255,7 +262,31 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         super(PREFIX, GAUSS_THRESHOLD,
               new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft));
 
-        this.sun  = sun;
+        if (sun instanceof ExtendedPVCoordinatesProvider) {
+            this.sun = (ExtendedPVCoordinatesProvider) sun;
+        } else {
+            this.sun = new ExtendedPVCoordinatesProvider() {
+
+                /** {@inheritDoc} */
+                @Override
+                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+                    throws OrekitException {
+                    // delegate to raw Sun provider
+                    return sun.getPVCoordinates(date, frame);
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
+                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
+                        throws OrekitException {
+                    // SRP was created with a provider that does not support fields,
+                    // but the fields methods are called
+                    throw new OrekitIllegalArgumentException(LocalizedCoreFormats.UNSUPPORTED_OPERATION);
+                }
+
+            };
+        };
         this.ae   = equatorialRadius;
         this.spacecraft = spacecraft;
     }
@@ -417,7 +448,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         ll[1] = auxiliaryElements.normalizeAngle(state.getLv(), 0).add(FastMath.PI);
 
         // Direction cosines of the Sun in the equinoctial frame
-        final FieldVector3D<T> sunDir = new FieldVector3D<>(field, sun.getPVCoordinates(state.getDate().toAbsoluteDate(), state.getFrame()).getPosition().normalize());
+        final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
         final T alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());

@@ -408,7 +408,7 @@ public class DSSTModel implements ODModel {
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
-        final double[] weight    = evaluation.getCurrentWeight();
+        final double[] weight    = evaluation.getObservedMeasurement().getBaseWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }

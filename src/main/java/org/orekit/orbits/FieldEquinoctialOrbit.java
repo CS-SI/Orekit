@@ -1116,11 +1116,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
-        final T n = zero.add(gm).divide(a).sqrt().divide(a);
+        final T n = gm.divide(a).sqrt().divide(a);
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);

@@ -31,7 +31,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  */
 public class FieldAbstractGaussianContributionContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    // CHECKSTYLE: stop VisibilityModifier check
 
     /** 2 / (n² * a) . */
     protected T ton2a;
@@ -46,14 +46,15 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
     /** 1 / μ .*/
     protected double ooMu;
 
+    // CHECKSTYLE: resume VisibilityModifier check
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters)
+    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements)
         throws OrekitException {
 
         super(auxiliaryElements);

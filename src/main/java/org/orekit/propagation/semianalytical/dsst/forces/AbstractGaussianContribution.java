@@ -164,13 +164,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
+    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements)
         throws OrekitException {
-        return new AbstractGaussianContributionContext(auxiliaryElements, parameters);
+        return new AbstractGaussianContributionContext(auxiliaryElements);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -179,14 +178,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                                       final T[] parameters)
+    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
         throws OrekitException {
-        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
+        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
     }
 
     /** {@inheritDoc} */
@@ -195,7 +192,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Container for attributes
-        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
+        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
         final double[] ll = getLLimits(state, context);
@@ -225,7 +222,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Container for attributes
-        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
+        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements);
         final Field<T> field = state.getDate().getField();
 
         T[] meanElementRate = MathArrays.buildArray(field, 6);
@@ -391,7 +388,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
 
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context, parameters);
@@ -454,6 +451,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Auxiliary Elements. */
         private final FieldAuxiliaryElements<T> auxiliaryElements;
 
+        /** Drivers for solar radiation and atmospheric drag forces. */
+        private final T[] parameters;
+
         /** Build a new instance with a new field.
          *  @param  state current state information: date, kinematics, attitude
          *  @param meanMode if true return the value associated to the mean elements variation,
@@ -462,13 +462,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param parameters values of the force model parameters
          *  @throws OrekitException if some specific error occurs
          */
-        FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j, final T[] parameters)
+        FieldIntegrableFunction(final FieldSpacecraftState<T> state,
+                                final boolean meanMode,
+                                final int j,
+                                final T[] parameters)
             throws OrekitException {
 
             this.meanMode = meanMode;
             this.j = j;
+            this.parameters = parameters;
             this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
 
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
@@ -518,8 +522,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                              shiftedOrbit.getEquinoctialEy(),
                                              shiftedOrbit.getHx(),
                                              shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLM(),
-                                             PositionAngle.MEAN,
+                                             shiftedOrbit.getLv(),
+                                             PositionAngle.TRUE,
                                              shiftedOrbit.getFrame(),
                                              state.getDate(),
                                              shiftedOrbit.getMu());
@@ -534,7 +538,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 final FieldSpacecraftState<T> shiftedState =
                         new FieldSpacecraftState<T>(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, contribution.getParameters(field));
+                acc = contribution.acceleration(shiftedState, parameters);
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -697,6 +701,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Auxiliary Elements. */
         private final AuxiliaryElements auxiliaryElements;
 
+        /** Drivers for solar radiation and atmospheric drag forces. */
+        private final double[] parameters;
+
         /** Build a new instance.
          *  @param  state current state information: date, kinematics, attitude
          *  @param meanMode if true return the value associated to the mean elements variation,
@@ -705,7 +712,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param parameters values of the force model parameters
          *  @throws OrekitException if some specific error occurs
          */
-        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j, final double[] parameters)
+        IntegrableFunction(final SpacecraftState state,
+                           final boolean meanMode,
+                           final int j,
+                           final double[] parameters)
             throws OrekitException {
 
             // remove derivatives from state
@@ -718,8 +728,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
             this.meanMode = meanMode;
             this.j = j;
+            this.parameters = parameters;
             this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-            this.context = new AbstractGaussianContributionContext(auxiliaryElements, parameters);
+            this.context = new AbstractGaussianContributionContext(auxiliaryElements);
         }
 
         /** {@inheritDoc} */
@@ -773,7 +784,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 final SpacecraftState shiftedState =
                         new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, contribution.getParameters());
+                acc = contribution.acceleration(shiftedState, parameters);
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -1656,7 +1667,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param parameters values of the force model parameters
          * @throws OrekitException in case of an error
          */
-        private void computeCoefficients(final SpacecraftState state, final AbstractGaussianContributionContext context, final double[] parameters)
+        private void computeCoefficients(final SpacecraftState state,
+                                         final AbstractGaussianContributionContext context,
+                                         final double[] parameters)
             throws OrekitException {
             // Computes the limits for the integral
             final double[] ll = getLLimits(state, context);

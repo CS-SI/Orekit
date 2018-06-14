@@ -40,7 +40,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
@@ -189,7 +188,7 @@ public class DSSTTesseral implements DSSTForceModel {
         throws OrekitException {
 
         try {
-            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                     provider.getMu(), FastMath.scalb(1.0, 32),
                                                     0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException oe) {
@@ -1024,9 +1023,9 @@ public class DSSTTesseral implements DSSTForceModel {
             dRdhCos  *=  context.getMoa();
             dRdhSin  *=  context.getMoa();
             dRdkCos  *=  context.getMoa();
-            dRdkSin *=  context.getMoa();
-            dRdlCos *=  context.getMoa();
-            dRdlSin *=  context.getMoa();
+            dRdkSin  *=  context.getMoa();
+            dRdlCos  *=  context.getMoa();
+            dRdlSin  *=  context.getMoa();
             dRdAlCos *=  context.getMoa();
             dRdAlSin *=  context.getMoa();
             dRdBeCos *=  context.getMoa();

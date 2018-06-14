@@ -38,6 +38,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -50,12 +51,15 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -192,6 +196,38 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
+    /** Set the central attraction coefficient μ.
+     * <p>
+     * Setting the central attraction coefficient is
+     * equivalent to {@link #addForceModel(DSSTForceModel) add}
+     * a {@link DSSTNewtonianAttraction} force model.
+     * </p>
+    * @param mu central attraction coefficient (m³/s²)
+    * @see #addForceModel(DSSTForceModel)
+    * @see #getAllForceModels()
+    */
+    public void setMu(final double mu) {
+        addForceModel(new DSSTNewtonianAttraction(mu));
+    }
+
+    /** Set the central attraction coefficient μ only in upper class.
+     * @param mu central attraction coefficient (m³/s²)
+     */
+    private void superSetMu(final double mu) {
+        super.setMu(mu);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof DSSTNewtonianAttraction;
+    }
+
     /** Set the initial state with osculating orbital elements.
      *  @param initialState initial state (defined with osculating elements)
      *  @throws OrekitException if the initial state cannot be set
@@ -220,8 +256,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     @Override
     public void resetInitialState(final SpacecraftState state) throws OrekitException {
-        super.setStartDate(state.getDate());
         super.resetInitialState(state);
+        if (!hasNewtonianAttraction()) {
+            // use the state to define central attraction
+            setMu(state.getMu());
+        }
+        super.setStartDate(state.getDate());
     }
 
     /** Set the selected short periodic coefficients that must be stored as additional states.
@@ -293,10 +333,48 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  </p>
      *  @param force perturbing {@link DSSTForceModel force} to add
      *  @see #removeForceModels()
+     *  @see #setMu(double)
      */
     public void addForceModel(final DSSTForceModel force) {
-        forceModels.add(force);
+
+        if (force instanceof DSSTNewtonianAttraction) {
+            // we want to add the central attraction force model
+
+            try {
+                // ensure we are notified of any mu change
+                force.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                });
+            } catch (OrekitException oe) {
+                // this should never happen
+                throw new OrekitInternalError(oe);
+            }
+
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, force);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(force);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, force);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(force);
+            }
+        }
+
         force.registerAttitudeProvider(getAttitudeProvider());
+
     }
 
     /** Remove all perturbing force models from the global perturbation model.
@@ -307,7 +385,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
-        forceModels.clear();
+        final int last = forceModels.size() - 1;
+        if (hasNewtonianAttraction()) {
+            // preserve the Newtonian attraction model at the end
+            final DSSTForceModel newton = forceModels.get(last);
+            forceModels.clear();
+            forceModels.add(newton);
+        } else {
+            forceModels.clear();
+        }
+        //forceModels.clear();
     }
 
     /** Get all the force models, perturbing forces and Newtonian attraction included.
@@ -913,15 +1000,15 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 }
             }
 
-            // finalize derivatives by adding the Kepler contribution
-            final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-            orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
+//            // finalize derivatives by adding the Kepler contribution
+//            final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
+//            orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
 
             return yDot.clone();
         }
 
         /** This method allows to compute the mean equinoctial elements rates da<sub>i</sub> / dt
-         *  for a specific for model.
+         *  for a specific force model.
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit

@@ -148,6 +148,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** Force models used during the extrapolation of the FieldOrbit<T>, without Jacobians. */
     private final List<ForceModel> forceModels;
 
+    /** Field used by this class.*/
+    private final Field<T> field;
+
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -162,6 +165,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      */
     public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
         super(field, integrator, true);
+        this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
@@ -464,7 +468,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         @Override
         public void addKeplerContribution(final double mu) {
-            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
+            final T zero = field.getZero();
+            orbit.addKeplerContribution(getPositionAngleType(), zero.add(mu), yDot);
         }
 
         /** {@inheritDoc} */

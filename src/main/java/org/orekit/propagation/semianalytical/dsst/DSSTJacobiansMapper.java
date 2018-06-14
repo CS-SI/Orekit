@@ -72,7 +72,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     /** {@inheritDoc} */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
-                             final double[][] dY1dP, final double[] p) {
+                                    final double[][] dY1dP, final double[] p) {
 
         // map the converted state Jacobian to one-dimensional array
         int index = 0;

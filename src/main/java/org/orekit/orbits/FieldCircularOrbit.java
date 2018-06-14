@@ -1367,7 +1367,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngle type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;

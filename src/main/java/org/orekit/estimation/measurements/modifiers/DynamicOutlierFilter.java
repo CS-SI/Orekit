@@ -56,7 +56,6 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
 
     /** Set the current value of sigma.
      * @param sigma The value of sigma to set
-     * @throws MathIllegalArgumentException if the size of sigma as input does not match the size of the measurement
      */
     public void setSigma(final double[] sigma) {
         this.sigma = sigma;
