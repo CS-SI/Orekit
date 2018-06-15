@@ -46,21 +46,25 @@ The data files for attitude reference were created as follows:
      rm $f
    done
 
-4) applied three patches to Kouba reference eclips routine from May 2017 to fix issues detected
+4) applied four patches to Kouba reference eclips routine from May 2017 to fix issues detected
    during validation:
      - prevent NaNs appearing due to numerical noise at exact alignment
      - fix rotated X vector normalization problem when orbit is not perfectly circular
      - fix rotated X vector division by zero at orbit node
-     - missing declaration for math functions leading to them being used as simple precision
-       instead of double precision
+     - missing declaration for math functions leading to them being used as simple precision instead of double precision
+     - fix literal constants leading to them being used as simple precision instead of double precision
    The Kouba reference routine can be found at the IGS Analysis Center Coordinator site
-   (http://acc.igs.org/orbits). The patch eclips-01-max.patch addresses the first issue
-   whereas the patch eclips-02-normalization.patch addresses the second and third issues.
-   In fact, as an additional precaution, we took care in the base sample generator program
-   to avoid extracting sample points exactly at alignment (we extracted points at -39min,
-   -33min, ..., -3min, +3min, ..., +33min, +39min), so the first patch could have been safely
-   ignored with these specific samples (but it was mandatory in our first tests as we used
-   the perfectly aligned points provided by Orekit alignment detector)
+   (http://acc.igs.org/orbits). In fact, as an additional precaution, we took care in the base
+   sample generator program to avoid extracting sample points exactly at alignment (we extracted
+   points at -39min, -33min, ..., -3min, +3min, ..., +33min, +39min), so the first patch could
+   have been safely ignored with these specific samples (but it was mandatory in our first tests
+   as we used the perfectly aligned points provided by Orekit alignment detector)
+
+   echo eclips_May2017.f | tar xvf /the/path/to/eclips_May2017.tar --files-from -
+   for f in eclips-*.patch ; do
+     patch -p0 < $f
+   done
+   gfortran -g -o driverEclips driverEclips.f eclips_May2017.f
 
 5) compiled the eclips driver program and linked it with the patched Kouba reference
    eclipse routine, and ran it on the small files to add new columns at the end of each
