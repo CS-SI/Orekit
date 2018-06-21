@@ -29,9 +29,9 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenThirdBodyLinear;
 
 /** This class is a container for the field attributes of
@@ -79,6 +79,9 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
 
     /** Distance from center of mass of the central body to the 3rd body. */
     private T R3;
+
+    /** A = sqrt(μ * a). */
+    private final T A;
 
     // Direction cosines of the symmetry axis
     /** α. */
@@ -151,6 +154,9 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
 
+        final T mu = parameters[1];
+        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
+
         this.gm = parameters[0];
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
         this.factory = new FDSFactory<>(field, 1, 1);
@@ -185,11 +191,11 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         XXX = X.multiply(XX);
 
         // -2 * a / A
-        m2aoA = auxiliaryElements.getSma().multiply(-2.).divide(auxiliaryElements.getA());
+        m2aoA = auxiliaryElements.getSma().multiply(-2.).divide(A);
         // B / A
-        BoA = auxiliaryElements.getB().divide(auxiliaryElements.getA());
+        BoA = auxiliaryElements.getB().divide(A);
         // 1 / AB
-        ooAB = (auxiliaryElements.getA().multiply(auxiliaryElements.getB())).reciprocal();
+        ooAB = (A.multiply(auxiliaryElements.getB())).reciprocal();
         // -C / 2AB
         mCo2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
         // B / A(1 + B)
@@ -287,6 +293,13 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      */
     public FieldHansenThirdBodyLinear<T>[] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public T getA() {
+        return A;
     }
 
     /** Get distance from center of mass of the central body to the 3rd body.

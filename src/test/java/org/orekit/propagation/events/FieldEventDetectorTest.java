@@ -77,7 +77,7 @@ public class FieldEventDetectorTest {
                                                               zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, zero.add(mu));
         // mutable boolean
         final boolean[] eventOccurred = new boolean[1];
         FieldEventHandler<FieldDateDetector<T>, T> handler =
@@ -126,7 +126,7 @@ public class FieldEventDetectorTest {
                                                               zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
@@ -191,7 +191,7 @@ public class FieldEventDetectorTest {
                                                               zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, zero.add(mu));
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, step));
@@ -220,7 +220,7 @@ public class FieldEventDetectorTest {
                                                               zero.add(7435.922));
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2003, 9, 16, utc);
         final FieldOrbit<T> orbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                        FramesFactory.getEME2000(), date, mu);
+                        FramesFactory.getEME2000(), date, zero.add(mu));
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
@@ -288,7 +288,7 @@ public class FieldEventDetectorTest {
                                                                                                     new FieldVector3D<>(zero.add(-5012.9298276860990),
                                                                                                                         zero.add(1920.3567095973078),
                                                                                                                         zero.add(-5172.7403501801580))),
-                                                                           eme2000, initialDate, Constants.WGS84_EARTH_MU));
+                                                                           eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
         FieldKeplerianPropagator<T> k2 =
                 new FieldKeplerianPropagator<>(new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(4008912.4039522274),
                                                                                                                         zero.add(-3155453.3125615157),
@@ -296,7 +296,7 @@ public class FieldEventDetectorTest {
                                                                                                     new FieldVector3D<>(zero.add(-5012.5883854112530),
                                                                                                                         zero.add(1920.6332221785074),
                                                                                                                         zero.add(-5172.2177085540500))),
-                                                             eme2000, initialDate, Constants.WGS84_EARTH_MU));
+                                                             eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
         k2.addEventDetector(new FieldCloseApproachDetector<>(zero.add(2015.243454166727), zero.add(0.0001), 100,
                                                              new FieldContinueOnEvent<FieldCloseApproachDetector<T>, T>(),
                                                              k1));
@@ -355,7 +355,7 @@ public class FieldEventDetectorTest {
                                                                                                                 new FieldVector3D<>(zero.add(-5012.9298276860990),
                                                                                                                                     zero.add(1920.3567095973078),
                                                                                                                                     zero.add(-5172.7403501801580))),
-                                            eme2000, initialDate, Constants.WGS84_EARTH_MU));
+                                            eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
             k.addEventDetector(new FieldDateDetector<T>(initialDate.shiftedBy(Constants.JULIAN_DAY)) {
                 @Override
                 public T g(final FieldSpacecraftState<T> s) throws OrekitException {
@@ -419,7 +419,7 @@ public class FieldEventDetectorTest {
                                                                                         field.getZero().add(0), PositionAngle.TRUE,
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
-                                                                                        Constants.EIGEN5C_EARTH_MU));
+                                                                                        field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
        Assert.assertSame(s, dummyDetector.resetState(s));
 
     }

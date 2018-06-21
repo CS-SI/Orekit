@@ -123,7 +123,7 @@ public class FieldSpacecraftStateTest {
 
 
         KeplerianOrbit      kep_r = new KeplerianOrbit(a_r, e_r, i_r, pa_r, raan_r, m_r, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_r, mu);
-        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_f, mu );
+        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_f, zero.add(mu));
 
         SpacecraftState ScS_r = new SpacecraftState(kep_r);
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(kep_f);
@@ -213,13 +213,13 @@ public class FieldSpacecraftStateTest {
                                                             TimeScalesFactory.getUTC());
 
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
-                                                 ae, mu, c20, c30, c40, c50, c60);
+                                                 ae, zero.add(mu), c20, c30, c40, c50, c60);
 
         FieldAbsoluteDate<T> centerDate = orbit.getDate().shiftedBy(100.0);
 
@@ -271,7 +271,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeScalesFactory.getUTC());
 
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         new FieldSpacecraftState<>(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(zero.add(10.0)),
@@ -300,7 +300,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldKeplerianOrbit<T> orbit10Shifts = orbit;
         for (int ii = 0; ii < 10; ii++) {
@@ -338,7 +338,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         new FieldSpacecraftState<>(orbit,
                             new FieldAttitude<>(orbit.getDate(),
@@ -365,12 +365,12 @@ public class FieldSpacecraftStateTest {
                         TimeScalesFactory.getUTC());
 
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldKeplerianPropagator<T> propagator =
-                        new FieldKeplerianPropagator<>(orbit, attitudeLaw, mu, mass);
+                        new FieldKeplerianPropagator<>(orbit, attitudeLaw, zero.add(mu), mass);
 
         double maxDP = 0;
         double maxDV = 0;
@@ -408,12 +408,12 @@ public class FieldSpacecraftStateTest {
                                                             TimeScalesFactory.getUTC());
 
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         FieldKeplerianPropagator<T> propagator =
-                        new FieldKeplerianPropagator<>(orbit, attitudeLaw, mu, mass);
+                        new FieldKeplerianPropagator<>(orbit, attitudeLaw, zero.add(mu), mass);
 
 
 

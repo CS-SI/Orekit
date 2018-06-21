@@ -38,9 +38,6 @@ public class AuxiliaryElements {
     /** Orbit frame. */
     private final Frame frame;
 
-    /** Central body attraction coefficient. */
-    private final double mu;
-
     /** Eccentricity. */
     private final double ecc;
 
@@ -89,9 +86,6 @@ public class AuxiliaryElements {
      */
     private final int    I;
 
-    /** A = sqrt(μ * a). */
-    private final double A;
-
     /** B = sqrt(1 - h² - k²). */
     private final double B;
 
@@ -121,14 +115,12 @@ public class AuxiliaryElements {
      * @param retrogradeFactor retrograde factor I [Eq. 2.1.2-(2)]
      */
     public AuxiliaryElements(final Orbit orbit, final int retrogradeFactor) {
+
         // Date of the orbit
         date = orbit.getDate();
 
         // Orbit definition frame
         frame = orbit.getFrame();
-
-        // Central body attraction coefficient
-        mu = orbit.getMu();
 
         // Eccentricity
         ecc = orbit.getE();
@@ -158,7 +150,6 @@ public class AuxiliaryElements {
         final double p2 = p * p;
 
         // A, B, C parameters [Eq. 2.1.6-(1)]
-        A = FastMath.sqrt(mu * sma);
         B = FastMath.sqrt(1 - k2 - h2);
         C = 1 + q2 + p2;
 
@@ -189,13 +180,6 @@ public class AuxiliaryElements {
      */
     public Frame getFrame() {
         return frame;
-    }
-
-    /** Get the central body attraction coefficient.
-     * @return μ
-     */
-    public double getMu() {
-        return mu;
     }
 
     /** Get the eccentricity.
@@ -296,13 +280,6 @@ public class AuxiliaryElements {
      */
     public int getRetrogradeFactor() {
         return I;
-    }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-    public double getA() {
-        return A;
     }
 
     /** Get B = sqrt(1 - e²).

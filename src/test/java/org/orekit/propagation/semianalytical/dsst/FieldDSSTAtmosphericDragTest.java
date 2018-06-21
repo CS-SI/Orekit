@@ -71,7 +71,7 @@ public class FieldDSSTAtmosphericDragTest {
         
         final Frame earthFrame = FramesFactory.getEME2000();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
-        
+        final double mu = 3.986004415E14;
         // a  = 7204535.84810944 m
         // ex = -0.001119677138261611
         // ey = 5.333650671984143E-4
@@ -87,7 +87,7 @@ public class FieldDSSTAtmosphericDragTest {
                                                                 PositionAngle.TRUE,
                                                                 earthFrame,
                                                                 initDate,
-                                                                3.986004415E14);
+                                                                zero.add(mu));
 
         // Drag Force Model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
@@ -96,7 +96,7 @@ public class FieldDSSTAtmosphericDragTest {
         final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
         final double cd = 2.0;
         final double area = 25.0;
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area);
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, mu);
 
         // Register the attitude provider to the force model
         Rotation rotation =  new Rotation(1., 0., 0., 0., false);
@@ -121,12 +121,12 @@ public class FieldDSSTAtmosphericDragTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-        Assert.assertEquals(-3.415320567871035E-5, elements[0].getReal(), 2.e-20);
-        Assert.assertEquals(6.276312897745139E-13, elements[1].getReal(), 2.9e-27);
-        Assert.assertEquals(-9.303357008691404E-13, elements[2].getReal(), 2.7e-27);
-        Assert.assertEquals(-7.052316604063199E-14, elements[3].getReal(), 2.e-28);
-        Assert.assertEquals(-6.793277250493389E-14, elements[4].getReal(), 9.e-29);
-        Assert.assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 2.e-28);
+        Assert.assertEquals(-3.415320567871035E-5,   elements[0].getReal(), 2.0e-20);
+        Assert.assertEquals(6.276312897745139E-13,   elements[1].getReal(), 2.9e-27);
+        Assert.assertEquals(-9.303357008691404E-13,  elements[2].getReal(), 2.7e-27);
+        Assert.assertEquals(-7.052316604063199E-14,  elements[3].getReal(), 2.0e-28);
+        Assert.assertEquals(-6.793277250493389E-14,  elements[4].getReal(), 9.0e-29);
+        Assert.assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 2.0e-28);
     
     }
     

@@ -70,9 +70,9 @@ public class DSSTZonalTest {
         
         final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
         
-        final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
         final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
+
+        final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -83,11 +83,11 @@ public class DSSTZonalTest {
         }
         
         Assert.assertEquals(0.0, elements[0], 1.e-25);
-        Assert.assertEquals(1.3909396722346468E-11, elements[1], 3.e-26);
+        Assert.assertEquals(1.3909396722346468E-11,  elements[1], 3.e-26);
         Assert.assertEquals(-2.0275977261372793E-13, elements[2], 3.e-27);
-        Assert.assertEquals(3.087141512018238E-9, elements[3], 1.e-24);
-        Assert.assertEquals(2.6606317310148797E-9, elements[4], 4.e-24);
-        Assert.assertEquals(-3.659904725206694E-9, elements[5], 1.e-24);
+        Assert.assertEquals(3.087141512018238E-9,    elements[3], 1.e-24);
+        Assert.assertEquals(2.6606317310148797E-9,   elements[4], 4.e-24);
+        Assert.assertEquals(-3.659904725206694E-9,   elements[5], 1.e-24);
         
     }
     

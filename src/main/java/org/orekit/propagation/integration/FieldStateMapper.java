@@ -43,7 +43,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     private final AttitudeProvider attitudeProvider;
 
     /** Central attraction coefficient. */
-    private final double mu;
+    private final T mu;
 
     /** Inertial frame. */
     private final Frame frame;
@@ -62,7 +62,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
      */
-    protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
+    protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
                           final OrbitType orbitType, final PositionAngle positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
@@ -102,7 +102,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Get the central attraction coefficient μ.
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu() {
+    public T getMu() {
         return mu;
     }
 

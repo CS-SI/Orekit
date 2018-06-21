@@ -394,7 +394,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         } else {
             forceModels.clear();
         }
-        //forceModels.clear();
     }
 
     /** Get all the force models, perturbing forces and Newtonian attraction included.
@@ -532,11 +531,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                      final AbsoluteDate tEnd)
         throws OrekitException {
 
-        // compute common auxiliary elements
-        final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
-
         // check if only mean elements must be used
         final boolean meanOnly = isMeanOrbit();
+
+        // compute common auxiliary elements
+        final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
 
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
@@ -987,10 +986,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         @Override
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
+            Arrays.fill(yDot, 0.0);
+
             // compute common auxiliary elements
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-
-            Arrays.fill(yDot, 0.0);
 
             // compute the contributions of all perturbing forces
             for (final DSSTForceModel forceModel : forceModels) {
@@ -999,10 +998,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     yDot[i] += daidt[i];
                 }
             }
-
-//            // finalize derivatives by adding the Kepler contribution
-//            final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-//            orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
 
             return yDot.clone();
         }

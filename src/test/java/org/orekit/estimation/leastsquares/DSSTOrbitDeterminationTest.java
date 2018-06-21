@@ -47,7 +47,6 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
-import org.junit.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -76,8 +75,6 @@ import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimat
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -97,7 +94,6 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -124,7 +120,7 @@ public class DSSTOrbitDeterminationTest {
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
-        Utils.setDataRoot("orbit-determination/Lageos2:potential/icgem-format");
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
@@ -615,11 +611,11 @@ public class DSSTOrbitDeterminationTest {
         // third body attraction
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) &&
             parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
-            propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+            propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), 3.986004415E14));
         }
         if (parser.containsKey(ParameterKey.THIRD_BODY_MOON) &&
             parser.getBoolean(ParameterKey.THIRD_BODY_MOON)) {
-            propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+            propagatorBuilder.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(), 3.986004415E14));
         }
 
         // drag
@@ -634,7 +630,7 @@ public class DSSTOrbitDeterminationTest {
             DataProvidersManager manager = DataProvidersManager.getInstance();
             manager.feed(msafe.getSupportedNames(), msafe);
             Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
-            propagatorBuilder.addForceModel(new DSSTAtmosphericDrag(atmosphere, new IsotropicDrag(area, cd)));
+            propagatorBuilder.addForceModel(new DSSTAtmosphericDrag(atmosphere, new IsotropicDrag(area, cd), 3.986004415E14));
             if (cdEstimated) {
                 for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                     if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {

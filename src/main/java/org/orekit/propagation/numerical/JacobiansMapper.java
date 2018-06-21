@@ -194,4 +194,10 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int getAdditionalStateDimension() {
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+    }
+
 }

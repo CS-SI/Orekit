@@ -61,6 +61,14 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Name of the single parameter of this model: the attraction coefficient. */
     public static final String ATTRACTION_COEFFICIENT = " attraction coefficient";
 
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
     /** Retrograde factor I.
      *  <p>
      *  DSST model needs equinoctial orbit as internal representation.
@@ -89,20 +97,34 @@ public class DSSTThirdBody implements DSSTForceModel {
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
     /** Drivers for third body attraction coefficient. */
+    private final ParameterDriver bodyParameterDriver;
+
+    /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
+     *  @param mu central attraction coefficient
      *  @see org.orekit.bodies.CelestialBodyFactory
      */
-    public DSSTThirdBody(final CelestialBody body) {
+    public DSSTThirdBody(final CelestialBody body, final double mu) {
         try {
-            gmParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
-                                                    body.getGM(), FastMath.scalb(1.0, 32),
-                                                    0.0, Double.POSITIVE_INFINITY);
+            bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
+                                                     body.getGM(), MU_SCALE,
+                                                     0.0, Double.POSITIVE_INFINITY);
+
         } catch (OrekitException e) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(e);
+        }
+
+        try {
+            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    mu, MU_SCALE,
+                                                    0.0, Double.POSITIVE_INFINITY);
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
         }
         this.body = body;
     }
@@ -218,13 +240,13 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         // Parameters for array building
         final Field<T> field = currentState.getDate().getField();
-        final T zero         = field.getZero();
+        final T        zero  = field.getZero();
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
         final T UAlphaGamma   = udu.getdUdGa().multiply(context.getAlpha()).subtract(udu.getdUdAl().multiply(context.getGamma()));
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final T UBetaGamma    =  udu.getdUdGa().multiply(context.getBeta()).subtract(udu.getdUdBe().multiply(context.getGamma()));
+        final T UBetaGamma    = udu.getdUdGa().multiply(context.getBeta()).subtract(udu.getdUdBe().multiply(context.getGamma()));
         // Common factor
         final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(auxiliaryElements.getP()).subtract(UBetaGamma.multiply(auxiliaryElements.getQ()).multiply(I))).multiply(context.getOoAB());
 
@@ -275,7 +297,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             // B / (A * (1 + B) * n)
             final double BoABpon = context.getBoABpo() / auxiliaryElements.getMeanMotion();
             // -3 / n²a² = -3 / nA
-            final double m3onA   = -3 / (auxiliaryElements.getA() * auxiliaryElements.getMeanMotion());
+            final double m3onA   = -3 / (context.getA() * auxiliaryElements.getMeanMotion());
 
             //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
             for (int j = 1; j < slot.cij.length; j++) {
@@ -285,10 +307,10 @@ public class DSSTThirdBody implements DSSTForceModel {
                 // Compute the cross derivatives operator :
                 final double SAlphaGammaCj    = context.getAlpha() * gfCoefs.getdSdgammaCj(j) - context.getGamma() * gfCoefs.getdSdalphaCj(j);
                 final double SAlphaBetaCj     = context.getAlpha() * gfCoefs.getdSdbetaCj(j)  - context.getBeta()  * gfCoefs.getdSdalphaCj(j);
-                final double SBetaGammaCj     =  context.getBeta() * gfCoefs.getdSdgammaCj(j) - context.getGamma() * gfCoefs.getdSdbetaCj(j);
-                final double ShkCj            =     auxiliaryElements.getH() * gfCoefs.getdSdkCj(j)     -  auxiliaryElements.getK()    * gfCoefs.getdSdhCj(j);
+                final double SBetaGammaCj     = context.getBeta() * gfCoefs.getdSdgammaCj(j) - context.getGamma() * gfCoefs.getdSdbetaCj(j);
+                final double ShkCj            = auxiliaryElements.getH() * gfCoefs.getdSdkCj(j)     -  auxiliaryElements.getK()    * gfCoefs.getdSdhCj(j);
                 final double pSagmIqSbgoABnCj = (auxiliaryElements.getP() * SAlphaGammaCj - I * auxiliaryElements.getQ() * SBetaGammaCj) * ooABn;
-                final double ShkmSabmdSdlCj   =  ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
+                final double ShkmSabmdSdlCj   = ShkCj - SAlphaBetaCj - gfCoefs.getdSdlambdaCj(j);
 
                 currentCij[0] =  ax2oAn * gfCoefs.getdSdlambdaCj(j);
                 currentCij[1] =  -(BoAn * gfCoefs.getdSdhCj(j) + auxiliaryElements.getH() * pSagmIqSbgoABnCj + auxiliaryElements.getK() * BoABpon * gfCoefs.getdSdlambdaCj(j));
@@ -349,6 +371,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     @Override
     public ParameterDriver[] getParametersDrivers() {
         return new ParameterDriver[] {
+            bodyParameterDriver,
             gmParameterDriver
         };
     }

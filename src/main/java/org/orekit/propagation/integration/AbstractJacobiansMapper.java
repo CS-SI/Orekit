@@ -59,19 +59,17 @@ public abstract class AbstractJacobiansMapper {
         return name;
     }
 
-    /** Compute the length of the one-dimensional additional state array needed.
-     * @return length of the one-dimensional additional state array
-     */
-    public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
-    }
-
     /** Get the number of parameters.
      * @return number of parameters
      */
     public int getParameters() {
         return parameters.getNbParams();
     }
+
+    /** Compute the length of the one-dimensional additional state array needed.
+     * @return length of the one-dimensional additional state array
+     */
+    public abstract int getAdditionalStateDimension();
 
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
      * <p>

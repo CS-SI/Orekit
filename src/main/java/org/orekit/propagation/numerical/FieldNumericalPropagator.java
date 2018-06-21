@@ -167,9 +167,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         super(field, integrator, true);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
-        initMapper();
+        initMapper(field);
         setAttitudeProvider(DEFAULT_LAW);
-        setMu(Double.NaN);
+        setMu(field.getZero().add(Double.NaN));
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
@@ -179,14 +179,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @param mu central attraction coefficient (m³/s²)
      * @see #addForceModel(ForceModel)
      */
-    public void setMu(final double mu) {
-        addForceModel(new NewtonianAttraction(mu));
+    public void setMu(final T mu) {
+        addForceModel(new NewtonianAttraction(mu.getReal()));
     }
 
     /** Set the central attraction coefficient μ only in upper class.
      * @param mu central attraction coefficient (m³/s²)
      */
-    private void superSetMu(final double mu) {
+    private void superSetMu(final T mu) {
         super.setMu(mu);
     }
 
@@ -219,7 +219,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                        superSetMu(driver.getValue());
+                        superSetMu(field.getZero().add(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -353,7 +353,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
+    protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
@@ -376,7 +376,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
-        FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
+        FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
                               final OrbitType orbitType, final PositionAngle positionAngleType,
                               final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
@@ -467,9 +467,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public void addKeplerContribution(final double mu) {
-            final T zero = field.getZero();
-            orbit.addKeplerContribution(getPositionAngleType(), zero.add(mu), yDot);
+        public void addKeplerContribution(final T mu) {
+            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }
 
         /** {@inheritDoc} */

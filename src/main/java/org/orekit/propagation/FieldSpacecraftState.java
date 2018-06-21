@@ -242,7 +242,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
 
         this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF,
                                                                    PositionAngle.TRUE,
-                                                                   dateF, state.getMu(), state.getFrame());
+                                                                   dateF, field.getZero().add(state.getMu()), state.getFrame());
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
         this.mass     = field.getZero().add(state.getMass());
 
@@ -567,7 +567,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2)
      */
-    public double getMu() {
+    public T getMu() {
         return orbit.getMu();
     }
 

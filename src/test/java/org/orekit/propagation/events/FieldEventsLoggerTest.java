@@ -89,7 +89,7 @@ public class FieldEventsLoggerTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), iniDate, mu);
+                                                                FramesFactory.getEME2000(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -134,7 +134,7 @@ public class FieldEventsLoggerTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), iniDate, mu);
+                                                                FramesFactory.getEME2000(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -170,7 +170,7 @@ public class FieldEventsLoggerTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), iniDate, mu);
+                                                                FramesFactory.getEME2000(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -214,7 +214,7 @@ public class FieldEventsLoggerTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), iniDate, mu);
+                                                                FramesFactory.getEME2000(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -270,7 +270,7 @@ public class FieldEventsLoggerTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685) , zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getEME2000(), iniDate, mu);
+                                                                FramesFactory.getEME2000(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001

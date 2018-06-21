@@ -94,9 +94,11 @@ class DSConverter extends AbstractDSConverter {
         // mass never has derivatives
         final DerivativeStructure dsM = factory.constant(state.getMass());
 
+        final DerivativeStructure dsMu = factory.constant(state.getMu());
+
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                                  state.getFrame(), state.getMu());
+                                                  state.getFrame(), dsMu);
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         if (freeStateParameters > 3) {
@@ -145,7 +147,8 @@ class DSConverter extends AbstractDSConverter {
                                                                                           extend(pv0.getPosition(),     factory),
                                                                                           extend(pv0.getVelocity(),     factory),
                                                                                           extend(pv0.getAcceleration(), factory)),
-                                                      s0.getFrame(), s0.getMu());
+                                                      s0.getFrame(),
+                                                      extend(s0.getMu(), factory));
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();

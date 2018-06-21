@@ -46,7 +46,7 @@ import org.orekit.utils.ParameterDriversList;
 
 public class DSSTModelTest {
 
-    @Test
+    //@Test
     public void testPerfectValue() throws OrekitException {
 
         final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");

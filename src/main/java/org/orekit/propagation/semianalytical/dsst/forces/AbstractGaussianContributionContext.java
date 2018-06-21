@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
@@ -33,16 +34,33 @@ class AbstractGaussianContributionContext extends ForceModelContext {
 
     /** 2 / (n² * a) . */
     protected double ton2a;
+
     /** 1 / A .*/
     protected double ooA;
+
     /** 1 / (A * B) .*/
     protected double ooAB;
+
     /** C / (2 * A * B) .*/
     protected double co2AB;
+
     /** 1 / (1 + B) .*/
     protected double ooBpo;
+
     /** 1 / μ .*/
     protected double ooMu;
+
+    /** A = sqrt(μ * a). */
+    private final double A;
+
+    /** Keplerian mean motion. */
+    private final double n;
+
+    /** Keplerian period. */
+    private final double period;
+
+    /** Central attraction coefficient. */
+    private double mu;
 
     // CHECKSTYLE: resume VisibilityModifier check
 
@@ -50,15 +68,29 @@ class AbstractGaussianContributionContext extends ForceModelContext {
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param parameters parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements)
+    AbstractGaussianContributionContext(final AuxiliaryElements auxiliaryElements, final double[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
 
+        // mu driver corresponds to the last term of parameters driver array
+        mu = parameters[parameters.length - 1];
+
+        // Keplerian Mean Motion
+        final double absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu / absA) / absA;
+
+        // Keplerian period
+        final double a = auxiliaryElements.getSma();
+        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+
+        // sqrt(μ * a)
+        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
         // 1 / A
-        ooA = 1. / auxiliaryElements.getA();
+        ooA = 1. / A;
         // 1 / AB
         ooAB = ooA / auxiliaryElements.getB();
         // C / 2AB
@@ -68,8 +100,22 @@ class AbstractGaussianContributionContext extends ForceModelContext {
         // 2 / (n² * a)
         ton2a = 2. / (auxiliaryElements.getMeanMotion() * auxiliaryElements.getMeanMotion() * auxiliaryElements.getSma());
         // 1 / mu
-        ooMu  = 1. / auxiliaryElements.getMu();
+        ooMu  = 1. / mu;
 
+    }
+
+    /** Get central attraction coefficient.
+     * @return mu
+     */
+    public double getMu() {
+        return mu;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public double getA() {
+        return A;
     }
 
     /** Get ooA = 1 / A.
@@ -114,4 +160,21 @@ class AbstractGaussianContributionContext extends ForceModelContext {
         return ooMu;
     }
 
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public double getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public double getMeanMotion() {
+        return n;
+    }
 }

@@ -63,6 +63,9 @@ class DSSTTesseralContext extends ForceModelContext {
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
+    /** A = sqrt(μ * a). */
+    private final double A;
+
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double chi;
@@ -158,6 +161,8 @@ class DSSTTesseralContext extends ForceModelContext {
 
         final double mu = parameters[0];
 
+        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
+
         // Eccentricity square
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
 
@@ -170,11 +175,11 @@ class DSSTTesseralContext extends ForceModelContext {
 
         // Common factors from equinoctial coefficients
         // 2 * a / A
-        ax2oA  = 2. * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        ax2oA  = 2. * auxiliaryElements.getSma() / A;
         // B / A
-        BoA    = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA    = auxiliaryElements.getB() / A;
         // 1 / AB
-        ooAB   = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB   = 1. / (A * auxiliaryElements.getB());
         // C / 2AB
         Co2AB  = auxiliaryElements.getC() * ooAB / 2.;
         // B / (A * (1 + B))
@@ -291,6 +296,13 @@ class DSSTTesseralContext extends ForceModelContext {
      */
     public HansenTesseralLinear[][] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public double getA() {
+        return A;
     }
 
     /** Get the list of resonant orders.

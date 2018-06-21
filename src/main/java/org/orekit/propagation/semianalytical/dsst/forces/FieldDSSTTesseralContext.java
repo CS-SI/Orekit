@@ -66,6 +66,9 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
+    /** A = sqrt(μ * a). */
+    private final T A;
+
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private T chi;
@@ -166,6 +169,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         final T mu = parameters[0];
 
+        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
+
         // Eccentricity square
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
 
@@ -178,11 +183,11 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
         // Common factors from equinoctial coefficients
         // 2 * a / A
-        ax2oA  = auxiliaryElements.getSma().divide(auxiliaryElements.getA()).multiply(2.);
+        ax2oA  = auxiliaryElements.getSma().divide(A).multiply(2.);
         // B / A
-        BoA    = auxiliaryElements.getB().divide(auxiliaryElements.getA());
+        BoA    = auxiliaryElements.getB().divide(A);
         // 1 / AB
-        ooAB   = auxiliaryElements.getA().multiply(auxiliaryElements.getB()).reciprocal();
+        ooAB   = A.multiply(auxiliaryElements.getB()).reciprocal();
         // C / 2AB
         Co2AB  = auxiliaryElements.getC().multiply(ooAB).divide(2.);
         // B / (A * (1 + B))
@@ -300,6 +305,13 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      */
     public FieldHansenTesseralLinear<T>[][] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public T getA() {
+        return A;
     }
 
     /** Get the list of resonant orders.

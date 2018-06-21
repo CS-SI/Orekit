@@ -184,6 +184,7 @@ public class DSSTPropagatorBuilderTest {
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
         
+        final double mu = 3.986004415E14;
         // a    = 42163393.0 m
         // ex =  -0.25925449177598586
         // ey =  -0.06946703170551687
@@ -199,9 +200,9 @@ public class DSSTPropagatorBuilderTest {
                                      PositionAngle.MEAN,
                                      earthFrame,
                                      initDate,
-                                     3.986004415E14);
+                                     mu);
         
-        moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
+        moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
         
         tolerance  = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));

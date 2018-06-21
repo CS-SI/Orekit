@@ -81,6 +81,9 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
 
+    /** A = sqrt(μ * a). */
+    private final double A;
+
     // Direction cosines of the symmetry axis
     /** α. */
     private double alpha;
@@ -145,6 +148,8 @@ class DSSTThirdBodyContext extends ForceModelContext {
 
         super(auxiliaryElements);
 
+        final double mu = parameters[1];
+        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
         this.gm = parameters[0];
         this.factory = new DSFactory(1, 1);
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
@@ -178,11 +183,11 @@ class DSSTThirdBodyContext extends ForceModelContext {
         XX = X * X;
         XXX = X * XX;
         // -2 * a / A
-        m2aoA = -2. * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        m2aoA = -2. * auxiliaryElements.getSma() / A;
         // B / A
-        BoA = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA = auxiliaryElements.getB() / A;
         // 1 / AB
-        ooAB = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB = 1. / (A * auxiliaryElements.getB());
         // -C / 2AB
         mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
         // B / A(1 + B)
@@ -284,6 +289,13 @@ class DSSTThirdBodyContext extends ForceModelContext {
      */
     public HansenThirdBodyLinear[] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public double getA() {
+        return A;
     }
 
     /** Get distance from center of mass of the central body to the 3rd body.

@@ -77,14 +77,14 @@ public class FieldDSSTZonalTest {
                                                                 PositionAngle.TRUE,
                                                                 earthFrame,
                                                                 initDate,
-                                                                3.986004415E14);
+                                                                zero.add(3.986004415E14));
         
         final T mass = zero.add(1000.0);
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, mass);
+
+        final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
-        
-        final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
@@ -94,12 +94,12 @@ public class FieldDSSTZonalTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(0.0, elements[0].getReal(), 1.e-25);
-        Assert.assertEquals(1.3909396722346468E-11, elements[1].getReal(), 3.e-26);
+        Assert.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
+        Assert.assertEquals(1.3909396722346468E-11,  elements[1].getReal(), 3.e-26);
         Assert.assertEquals(-2.0275977261372793E-13, elements[2].getReal(), 3.e-27);
-        Assert.assertEquals(3.087141512018238E-9, elements[3].getReal(), 1.e-24);
-        Assert.assertEquals(2.6606317310148797E-9, elements[4].getReal(), 4.e-24);
-        Assert.assertEquals(-3.659904725206694E-9, elements[5].getReal(), 1.e-24);
+        Assert.assertEquals(3.087141512018238E-9,    elements[3].getReal(), 1.e-24);
+        Assert.assertEquals(2.6606317310148797E-9,   elements[4].getReal(), 4.e-24);
+        Assert.assertEquals(-3.659904725206694E-9,   elements[5].getReal(), 1.e-24);
         
     }
     

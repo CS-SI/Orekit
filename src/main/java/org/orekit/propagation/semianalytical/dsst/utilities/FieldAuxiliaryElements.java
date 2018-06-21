@@ -40,9 +40,6 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
     /** Orbit frame. */
     private final Frame frame;
 
-    /** Central body attraction coefficient. */
-    private final double mu;
-
     /** Eccentricity. */
     private final T ecc;
 
@@ -92,7 +89,7 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
     private final int    I;
 
     /** A = sqrt(μ * a). */
-    private final T A;
+    //private final T A;
 
     /** B = sqrt(1 - h² - k²). */
     private final T B;
@@ -123,14 +120,12 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      * @param retrogradeFactor retrograde factor I [Eq. 2.1.2-(2)]
      */
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
+
         // Date of the orbit
         date = orbit.getDate();
 
         // Orbit definition frame
         frame = orbit.getFrame();
-
-        // Central body attraction coefficient
-        mu = orbit.getMu();
 
         // Eccentricity
         ecc = orbit.getE();
@@ -160,7 +155,7 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         final T p2 = p.multiply(p);
 
         // A, B, C parameters [Eq. 2.1.6-(1)]
-        A = FastMath.sqrt(sma.multiply(mu));
+        //A = FastMath.sqrt(sma.multiply(mu));
         B = FastMath.sqrt(k2.add(h2).negate().add(1.));
         C = q2.add(p2).add(1);
 
@@ -213,13 +208,6 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      */
     public Frame getFrame() {
         return frame;
-    }
-
-    /** Get the central body attraction coefficient.
-     * @return μ
-     */
-    public double getMu() {
-        return mu;
     }
 
     /** Get the eccentricity.
@@ -325,9 +313,9 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
     /** Get A = sqrt(μ * a).
      * @return A
      */
-    public T getA() {
-        return A;
-    }
+//    public T getA() {
+//        return A;
+//    }
 
     /** Get B = sqrt(1 - e²).
      * @return B

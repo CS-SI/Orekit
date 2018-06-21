@@ -52,7 +52,7 @@ public class DSSTSolarRadiationPressureTest {
         
         final Frame earthFrame = FramesFactory.getGCRF();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 9, 16, 0, 0, 0, TimeScalesFactory.getUTC());
-        
+        final double mu = 3.986004415E14;
         // a  = 42166258 m
         // ex = 6.532127416888538E-6
         // ey = 9.978642849310487E-5
@@ -68,11 +68,12 @@ public class DSSTSolarRadiationPressureTest {
                                                  PositionAngle.TRUE,
                                                  earthFrame,
                                                  initDate,
-                                                 3.986004415E14);
+                                                 mu);
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            mu);
         // Attitude of the satellite
         Rotation rotation =  new Rotation(0.9999999999999984,
                                           1.653020584550675E-8,

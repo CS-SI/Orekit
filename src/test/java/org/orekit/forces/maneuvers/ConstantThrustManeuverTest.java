@@ -280,7 +280,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 
@@ -429,7 +429,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                                  PositionAngle.MEAN,
                                                                                  EME,
                                                                                  J2000,
-                                                                                 Constants.EIGEN5C_EARTH_MU);
+                                                                                 zero.add(Constants.EIGEN5C_EARTH_MU));
 
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<>(FKO);
 

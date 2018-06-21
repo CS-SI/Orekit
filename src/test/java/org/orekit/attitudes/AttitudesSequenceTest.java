@@ -197,7 +197,7 @@ public class AttitudesSequenceTest {
                                                                new Vector3D(505.8479685, 942.7809215, 7435.922231));
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                      FramesFactory.getEME2000(), initialDate,
-                                                                     Constants.EIGEN5C_EARTH_MU);
+                                                                     field.getZero().add(Constants.EIGEN5C_EARTH_MU));
 
 
         // Attitudes sequence definition
@@ -255,7 +255,8 @@ public class AttitudesSequenceTest {
         // Propagator : consider the analytical Eckstein-Hechler model
         final FieldPropagator<T> propagator = new FieldEcksteinHechlerPropagator<T>(initialOrbit, attitudesSequence,
                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                                                    Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,
+                                                                                    field.getZero().add(Constants.EIGEN5C_EARTH_MU), 
+                                                                                    Constants.EIGEN5C_EARTH_C20,
                                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
 

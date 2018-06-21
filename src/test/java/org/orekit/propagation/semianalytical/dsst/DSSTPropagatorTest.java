@@ -106,8 +106,8 @@ public class DSSTPropagatorTest {
 
         List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
 
-        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
-        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu()));
 
         SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
         Assert.assertEquals( 0.421,   osculatingState.getA()             - meanState.getA(),             1.0e-3);
@@ -130,8 +130,8 @@ public class DSSTPropagatorTest {
 
         List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
 
-        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
-        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu()));
+        dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu()));
 
         SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
         Assert.assertEquals( 0.421,   osculatingState.getA()             - meanState.getA(),             1.0e-3);
@@ -369,8 +369,8 @@ public class DSSTPropagatorTest {
                                                    provider, 2, 0, 0, 2, 2, 0, 0);
 
         // Third Bodies Force Model (Moon + Sun)
-        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
-        DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
+        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
+        DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu());
 
         // SIRIUS Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000,
@@ -448,7 +448,7 @@ public class DSSTPropagatorTest {
 
         final double cd = 2.0;
         final double area = 25.0;
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area);
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, provider.getMu());
 
         // LEO Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000,
@@ -508,7 +508,8 @@ public class DSSTPropagatorTest {
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            provider.getMu());
 
         // GEO Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2003, 9, 16, 0, 0, 00.000,
@@ -610,10 +611,10 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                   nshp, 8, 8, 4, 12, 8, 8, 4));
-        propagator.addForceModel(new DSSTThirdBody(sun));
-        propagator.addForceModel(new DSSTThirdBody(moon));
-        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+        propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
+        propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
 
 
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), true);
@@ -656,10 +657,10 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                   nshp, 8, 8, 4, 12, 8, 8, 4));
-        propagator.addForceModel(new DSSTThirdBody(sun));
-        propagator.addForceModel(new DSSTThirdBody(moon));
-        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+        propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
+        propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
         propagator.setInterpolationGridToMaxTimeGap(0.5 * Constants.JULIAN_DAY);
 
         // direct generation of states
@@ -792,10 +793,10 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                   nshp, 4, 4, 4, 8, 4, 4, 2));
-        propagator.addForceModel(new DSSTThirdBody(sun));
-        propagator.addForceModel(new DSSTThirdBody(moon));
-        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
-        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+        propagator.addForceModel(new DSSTThirdBody(sun, nshp.getMu()));
+        propagator.addForceModel(new DSSTThirdBody(moon, nshp.getMu()));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180, nshp.getMu()));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
 
         final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
@@ -858,8 +859,8 @@ public class DSSTPropagatorTest {
         final SpacecraftState meanState = getGEOState();
 
         // Third Bodies Force Model (Moon + Sun)
-        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
-        final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun());
+        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
+        final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), meanState.getMu());
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(moon);
@@ -908,8 +909,9 @@ public class DSSTPropagatorTest {
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(new DSSTSolarRadiationPressure(sun,
                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                  boxAndWing));
-        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing));
+                                                  boxAndWing,
+                                                  osculatingState.getMu()));
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu()));
 
         final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assert.assertEquals(0.522,
@@ -936,7 +938,7 @@ public class DSSTPropagatorTest {
         final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.VVLH, RotationOrder.XYZ, 0.0, 0.0, 0.0);
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing));
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu()));
         final SpacecraftState meanState = DSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assert.assertEquals(0.0, Vector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()),

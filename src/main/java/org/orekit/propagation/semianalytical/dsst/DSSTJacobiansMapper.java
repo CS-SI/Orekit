@@ -95,7 +95,8 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) throws OrekitException {
+    public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0)
+        throws OrekitException {
 
         // extract additional state
         final double[] p = state.getAdditionalState(name);
@@ -111,7 +112,8 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
 
     /** {@inheritDoc} */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) throws OrekitException {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
+        throws OrekitException {
 
         if (parameters.getNbParams() != 0) {
 
@@ -127,6 +129,12 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getAdditionalStateDimension() {
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
     }
 
 }

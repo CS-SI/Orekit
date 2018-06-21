@@ -65,7 +65,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         final Frame earthFrame = FramesFactory.getGCRF();
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2003, 9, 16, 0, 0, 0, TimeScalesFactory.getUTC());
-        
+        final double mu = 3.986004415E14;
         // a  = 42166258 m
         // ex = 6.532127416888538E-6
         // ey = 9.978642849310487E-5
@@ -81,11 +81,12 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                 PositionAngle.TRUE,
                                                                 earthFrame,
                                                                 initDate,
-                                                                3.986004415E14);
+                                                                zero.add(mu));
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            mu);
 
         // Register the attitude provider to the force model
         Rotation rotation =  new Rotation(0.9999999999999984,
@@ -119,12 +120,12 @@ public class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(6.843966348263062E-8, elements[0].getReal(), 1.1e-11);
-        Assert.assertEquals(-2.990913371084091E-11, elements[1].getReal(), 2.2e-19);
-        Assert.assertEquals(-2.538374405334012E-10, elements[2].getReal(), 8.e-19);
-        Assert.assertEquals(2.0384702426501394E-13, elements[3].getReal(), 2.e-20);
+        Assert.assertEquals(6.843966348263062E-8,    elements[0].getReal(), 1.1e-11);
+        Assert.assertEquals(-2.990913371084091E-11,  elements[1].getReal(), 2.2e-19);
+        Assert.assertEquals(-2.538374405334012E-10,  elements[2].getReal(), 8.0e-19);
+        Assert.assertEquals(2.0384702426501394E-13,  elements[3].getReal(), 2.0e-20);
         Assert.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
-        Assert.assertEquals(1.6087485237156322E-11, elements[5].getReal(), 1.7e-18);
+        Assert.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
 
     }
     

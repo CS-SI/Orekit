@@ -131,9 +131,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         this.resetAtEnd = resetAtEnd;
     }
 
-    /** Initialize the mapper. */
-    protected void initMapper() {
-        stateMapper = createMapper(null, Double.NaN, null, null, null, null);
+    /** Initialize the mapper.
+     * @param field Field used by default
+     */
+    protected void initMapper(final Field<T> field) {
+        final T zero = field.getZero();
+        stateMapper = createMapper(null, zero.add(Double.NaN), null, null, null, null);
     }
 
     /**  {@inheritDoc} */
@@ -192,7 +195,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Set the central attraction coefficient μ.
      * @param mu central attraction coefficient (m³/s²)
      */
-    public void setMu(final double mu) {
+    public void setMu(final T mu) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
                                    stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -202,7 +205,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @return mu central attraction coefficient (m³/s²)
      * @see #setMu(double)
      */
-    public double getMu() {
+    public T getMu() {
         return stateMapper.getMu();
     }
 
@@ -366,7 +369,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param frame inertial frame
      * @return new mapper
      */
-    protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, double mu,
+    protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, T mu,
                                                         OrbitType orbitType, PositionAngle positionAngleType,
                                                         AttitudeProvider attitudeProvider, Frame frame);
 
@@ -452,7 +455,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
             // set propagation orbit type
             final FieldOrbit<T> initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
-            if (Double.isNaN(getMu())) {
+            if (Double.isNaN(getMu().getReal())) {
                 setMu(initialOrbit.getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {

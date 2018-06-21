@@ -63,20 +63,22 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
      * @param area cross sectionnal area of satellite
+     * @param mu central attraction coefficient
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
-            final double area) {
-        this(atmosphere, new IsotropicDrag(area, cd));
+                               final double area, final double mu) {
+        this(atmosphere, new IsotropicDrag(area, cd), mu);
     }
 
     /** Simple constructor with custom spacecraft.
      * @param atmosphere atmospheric model
      * @param spacecraft spacecraft model
+     * @param mu central attraction coefficient
      */
-    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft, final double mu) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft), mu);
 
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
@@ -161,8 +163,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public ParameterDriver[] getParametersDrivers() {
+    protected ParameterDriver[] getParametersDriversWithoutMu() {
         return spacecraft.getDragParametersDrivers();
     }
 

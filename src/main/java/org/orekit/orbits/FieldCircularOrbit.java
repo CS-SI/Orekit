@@ -149,7 +149,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     public FieldCircularOrbit(final T a, final T ex, final T ey,
                               final T i, final T raan,
                               final T alpha, final PositionAngle type,
-                              final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                              final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
              null, null, null, null, null, null,
@@ -182,7 +182,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                               final T aDot, final T exDot, final T eyDot,
                               final T iDot, final T raanDot, final T alphaDot,
                               final PositionAngle type,
-                              final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                              final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (ex.getReal() * ex.getReal() + ey.getReal() * ey.getReal() >= 1.0) {
@@ -266,7 +266,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                              final Frame frame, final double mu)
+                              final Frame frame, final T mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
@@ -337,7 +337,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
             getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
             final T   aX                       = nonKeplerianAcceleration.getX();
             final T   aY                       = nonKeplerianAcceleration.getY();
@@ -390,7 +390,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final FieldPVCoordinates<T> PVCoordinates, final Frame frame,
-                              final FieldAbsoluteDate<T> date, final double mu)
+                              final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<>(date, PVCoordinates), frame, mu);
     }
@@ -997,7 +997,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // acceleration
         final T r2 = partialPV.getPosition().getNormSq();
-        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
         final FieldVector3D<T> acceleration = hasDerivatives() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
@@ -1034,7 +1034,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
                                                                  one, nonKeplerianAcceleration);
 
@@ -1158,7 +1158,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T r          = r2.sqrt();
         final T v2         = velocity.getNormSq();
 
-        final double mu         = getMu();
+        final T mu         = getMu();
         final T oOsqrtMuA  = one.divide(a.multiply(mu).sqrt());
         final T rOa        = r.divide(a);
         final T aOr        = a.divide(r);
@@ -1181,7 +1181,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // da
         fillHalfRow(aOr.multiply(2.0).multiply(aOr2), position, jacobian[0], 0);
-        fillHalfRow(a2.multiply(2.0 / mu), velocity, jacobian[0], 3);
+        fillHalfRow(a2.multiply(mu.divide(2.).reciprocal()), velocity, jacobian[0], 3);
 
         // differentials of the normalized momentum
         final FieldVector3D<T> danP = new FieldVector3D<>(v2, position, pv.negate(), velocity);
@@ -1437,12 +1437,12 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                                      aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                      iDot.getReal(), raanDot.getReal(), alphaVDot.getReal(),
                                      PositionAngle.TRUE, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu());
+                                     getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
                                      PositionAngle.TRUE, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu());
+                                     getDate().toAbsoluteDate(), getMu().getReal());
         }
     }
 

@@ -57,6 +57,16 @@ public class FieldKeplerianOrbitTest {
      // Body mu
     public double mu;
 
+    @Before
+    public void setUp() {
+
+        Utils.setDataRoot("regular-data");
+
+        // Body mu
+        mu = 3.9860047e14;
+
+    }
+
     @Test
     public void testKepToKep() throws OrekitException {
           doTestKeplerianToKeplerian(Decimal64Field.getInstance());
@@ -256,14 +266,14 @@ public class FieldKeplerianOrbitTest {
         // elliptic orbit
         FieldKeplerianOrbit<T> kep =
             new FieldKeplerianOrbit<>(a, e, i, pa, raan, anomaly, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> pos = kep.getPVCoordinates().getPosition();
 
         FieldVector3D<T> vit = kep.getPVCoordinates().getVelocity();
 
         FieldKeplerianOrbit<T> param = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(pos, vit),
-                                                                 FramesFactory.getEME2000(), date, mu);
+                                                                 FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         Assert.assertEquals(param.getA().getReal(), kep.getA().getReal(), kep.getA().abs().multiply(Utils.epsilonTest).getReal());
         Assert.assertEquals(param.getE().getReal(), kep.getE().getReal(), kep.getE().abs().multiply(Utils.epsilonTest).getReal());
@@ -286,13 +296,13 @@ public class FieldKeplerianOrbitTest {
 
         FieldKeplerianOrbit<T> kepCir =
             new FieldKeplerianOrbit<>(aC, eC, iC, paC, raanC, anomalyC, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> posCir = kepCir.getPVCoordinates().getPosition();
         FieldVector3D<T> vitCir = kepCir.getPVCoordinates().getVelocity();
 
         FieldKeplerianOrbit<T> paramCir = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(posCir, vitCir),
-                                                                    FramesFactory.getEME2000(), date, mu);
+                                                                    FramesFactory.getEME2000(), date, field.getZero().add(mu));
         Assert.assertEquals(paramCir.getA().getReal(), kepCir.getA().getReal(), kep.getA().abs().multiply(Utils.epsilonTest).getReal());
         Assert.assertEquals(paramCir.getE().getReal(), kepCir.getE().getReal(), kep.getE().abs().multiply(Utils.epsilonTest).getReal());
         Assert.assertEquals(FieldKeplerianOrbit.normalizeAngle(paramCir.getI(), kepCir.getI()).getReal(), kepCir.getI().getReal(), kep.getI().abs().multiply(Utils.epsilonTest).getReal());
@@ -314,14 +324,14 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> kepHyp =
             new FieldKeplerianOrbit<>(aH, eH, iH, paH, raanH,
                                       anomalyH, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> posHyp = kepHyp.getPVCoordinates().getPosition();
 
         FieldVector3D<T> vitHyp = kepHyp.getPVCoordinates().getVelocity();
 
         FieldKeplerianOrbit<T> paramHyp = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(posHyp, vitHyp),
-                                                                    FramesFactory.getEME2000(), date, mu);
+                                                                    FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         Assert.assertEquals(paramHyp.getA().getReal(), kepHyp.getA().getReal(), kepHyp.getA().abs().multiply(Utils.epsilonTest).getReal());
         Assert.assertEquals(paramHyp.getE().getReal(), kepHyp.getE().getReal(), kepHyp.getE().abs().multiply(Utils.epsilonTest).getReal());
@@ -345,7 +355,7 @@ public class FieldKeplerianOrbitTest {
         // elliptic orbit
         FieldKeplerianOrbit<T> kep =
             new FieldKeplerianOrbit<>(a, e, i, pa, raan, anomaly, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> pos = kep.getPVCoordinates().getPosition();
         FieldVector3D<T> vit = kep.getPVCoordinates().getVelocity();
@@ -371,7 +381,7 @@ public class FieldKeplerianOrbitTest {
         // elliptic orbit
         FieldKeplerianOrbit<T> kep =
             new FieldKeplerianOrbit<>(a, e, i, pa, raan, anomaly, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         Assert.assertEquals(24464560.0, kep.getA().getReal(), Utils.epsilonTest * kep.getA().getReal());
         Assert.assertEquals(-0.412036802887626, kep.getEquinoctialEx().getReal(), Utils.epsilonE * FastMath.abs(kep.getE().getReal()));
@@ -386,7 +396,7 @@ public class FieldKeplerianOrbitTest {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(7.0e6), field.getZero().add(1.0e6), field.getZero().add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero().add(-500.0), field.getZero().add(8000.0), field.getZero().add(1000.0));
         FieldKeplerianOrbit<T> p = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         // elliptic orbit
         T e = p.getE();
@@ -479,7 +489,7 @@ public class FieldKeplerianOrbitTest {
         // elliptic orbit
         FieldKeplerianOrbit<T> p =
             new FieldKeplerianOrbit<>(aa, ee, i, pa, raan, anomaly, PositionAngle.MEAN,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
 
 
@@ -507,7 +517,7 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> pCirEqua =
             new FieldKeplerianOrbit<>(field.getZero().add(24464560.0), field.getZero().add(0.1e-10), field.getZero().add(0.1e-8), field.getZero().add(3.10686), field.getZero().add(1.00681),
                                       field.getZero().add(0.67), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         e       = pCirEqua.getE();
         v       = pCirEqua.getTrueAnomaly();
@@ -535,7 +545,7 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> p =
             new FieldKeplerianOrbit<>(field.getZero().add(24464560.0), field.getZero().add(0.7311), field.getZero().add(2.1), field.getZero().add(3.10686), field.getZero().add(1.00681),
                                       field.getZero().add(0.67), PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> position = p.getPVCoordinates().getPosition();
         FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
@@ -605,7 +615,7 @@ public class FieldKeplerianOrbitTest {
                                       field.getZero().add(1.00681),
                                       field.getZero().add(0.67),
                                       PositionAngle.TRUE,
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         position = pCirEqua.getPVCoordinates().getPosition();
         velocity = pCirEqua.getPVCoordinates().getVelocity();
@@ -651,7 +661,7 @@ public class FieldKeplerianOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero().add(-2079.), field.getZero().add(5291.), field.getZero().add(-7842.));
 
         FieldKeplerianOrbit<T> p = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                             FramesFactory.getEME2000(), date, mu);
+                                                             FramesFactory.getEME2000(), date, field.getZero().add(mu));
         FieldVector3D<T> positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
@@ -664,7 +674,7 @@ public class FieldKeplerianOrbitTest {
 
 
         p = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                      FramesFactory.getEME2000(), date, mu);
+                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
         positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
@@ -680,14 +690,14 @@ public class FieldKeplerianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity);
         new FieldKeplerianOrbit<>(pvCoordinates,
                            new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "non-inertial", false),
-                           date, mu);
+                           date, field.getZero().add(mu));
     }
 
     private <T extends RealFieldElement<T>> void doTestPeriod(final Field<T> field) {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(field.getZero().add(7654321.0), field.getZero().add(0.1), field.getZero().add(0.2), field.getZero(), field.getZero(), field.getZero(),
                                                                  PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                                                 mu);
+                                                                 field.getZero().add(mu));
         Assert.assertEquals(6664.5521723383589487, orbit.getKeplerianPeriod().getReal(), 1.0e-12);
         Assert.assertEquals(0.00094277682051291315229, orbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
     }
@@ -698,7 +708,7 @@ public class FieldKeplerianOrbitTest {
                                                                  zero, zero, zero,
                                                                  PositionAngle.TRUE,
                                                                  FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                                                 mu);
+                                                                 field.getZero().add(mu));
         FieldVector3D<T> perigeeP  = orbit.getPVCoordinates().getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
@@ -709,7 +719,7 @@ public class FieldKeplerianOrbitTest {
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
             Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldKeplerianOrbit<T> rebuilt =
-                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), field.getZero().add(mu));
             Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
             Assert.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
         }
@@ -721,7 +731,7 @@ public class FieldKeplerianOrbitTest {
                                                                  zero, zero, zero.add(-1.75),
                                                                  PositionAngle.MEAN,
                                                                  FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
-                                                                 mu);
+                                                                 field.getZero().add(mu));
         FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
                                                                orbit.getPerigeeArgument(), orbit.getRightAscensionOfAscendingNode(),
                                                                zero, PositionAngle.TRUE, orbit.getFrame(),
@@ -735,7 +745,7 @@ public class FieldKeplerianOrbitTest {
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
             Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldKeplerianOrbit<T> rebuilt =
-                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), field.getZero().add(mu));
             Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
             Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
         }
@@ -748,7 +758,7 @@ public class FieldKeplerianOrbitTest {
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
-        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, field.getZero().add(mu));
         KeplerianOrbit orbit = fieldOrbit.toOrbit();
         Assert.assertFalse(orbit.hasDerivatives());
         Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                             0));
@@ -788,7 +798,7 @@ public class FieldKeplerianOrbitTest {
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
                                                                        new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
                                                                                            position));
-        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, field.getZero().add(mu));
         KeplerianOrbit orbit = fieldOrbit.toOrbit();
         Assert.assertTrue(orbit.hasDerivatives());
         Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                             0));
@@ -824,7 +834,7 @@ public class FieldKeplerianOrbitTest {
                                       PositionAngle.TRUE,
                                       FramesFactory.getEME2000(),
                                       FieldAbsoluteDate.getJ2000Epoch(field),
-                                      mu);
+                                      field.getZero().add(mu));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assert.assertEquals(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, oe.getSpecifier());
@@ -839,12 +849,12 @@ public class FieldKeplerianOrbitTest {
         final double meanAnomaly = 1.;
         final FieldKeplerianOrbit<T> orb0 = new FieldKeplerianOrbit<>(field.getZero().add(42600e3), field.getZero().add(0.9), field.getZero().add(0.00001), field.getZero().add(0), field.getZero().add(0),
                                                                       field.getZero().add(FastMath.toRadians(meanAnomaly)),
-                                                                      PositionAngle.MEAN, eme2000, date, mu);
+                                                                      PositionAngle.MEAN, eme2000, date, field.getZero().add(mu));
         // big dV along Y
         final FieldVector3D<T> deltaV = new FieldVector3D<>(field.getZero().add(0.0), field.getZero().add(110000.0), field.getZero());
         final FieldPVCoordinates<T> pv1 = new FieldPVCoordinates<>(orb0.getPVCoordinates().getPosition(),
                                                                    orb0.getPVCoordinates().getVelocity().add(deltaV));
-        final FieldKeplerianOrbit<T> orb1 = new FieldKeplerianOrbit<>(pv1, eme2000, date, mu);
+        final FieldKeplerianOrbit<T> orb1 = new FieldKeplerianOrbit<>(pv1, eme2000, date, field.getZero().add(mu));
 
         // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
         // converges in less than 50 iterations (issue #114)
@@ -869,7 +879,7 @@ public class FieldKeplerianOrbitTest {
             FieldKeplerianOrbit<T> pElliptic =
                             new FieldKeplerianOrbit<>(field.getZero().add(24464560.0), field.getZero().add(0.7311), field.getZero().add(2.1), field.getZero().add(3.10686), field.getZero().add(1.00681),
                                                       field.getZero().add(M), PositionAngle.MEAN,
-                                                      FramesFactory.getEME2000(), date, mu);
+                                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
             T E = pElliptic.getEccentricAnomaly();
             T e = pElliptic.getE();
             Assert.assertEquals(M.getReal(), E.getReal() - e.getReal() * FastMath.sin(E.getReal()), 2.0e-14);
@@ -880,7 +890,7 @@ public class FieldKeplerianOrbitTest {
             FieldKeplerianOrbit<T> pAlmostParabolic =
                             new FieldKeplerianOrbit<>(field.getZero().add(24464560.0), field.getZero().add(0.9999), field.getZero().add(2.1), field.getZero().add(3.10686), field.getZero().add(1.00681),
                                                       field.getZero().add(M), PositionAngle.MEAN,
-                                                      FramesFactory.getEME2000(), date, mu);
+                                                      FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
             T E = pAlmostParabolic.getEccentricAnomaly();
             T e = pAlmostParabolic.getE();
@@ -899,17 +909,17 @@ public class FieldKeplerianOrbitTest {
                                   zero.add(-2.55593407037698),
                                   PositionAngle.TRUE, FramesFactory.getEME2000(),
                                   new FieldAbsoluteDate<>(field, "2000-01-01T12:00:00.391", TimeScalesFactory.getUTC()),
-                                  3.986004415E14);
+                                  field.getZero().add(mu));
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) throws OrekitException {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(3782116.14107698), field.getZero().add(416663.11924914), field.getZero().add(5875541.62103057));
         FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero().add(-6349.7848910501), field.getZero().add(288.4061811651), field.getZero().add(4066.9366759691));
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                                  FramesFactory.getEME2000(),
                                                                  new FieldAbsoluteDate<>(field, "2004-01-01T23:00:00.000",
                                                                                          TimeScalesFactory.getUTC()),
-                                                                 3.986004415E14);
+                                                                 field.getZero().add(3.986004415E14));
         Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
@@ -922,7 +932,7 @@ public class FieldKeplerianOrbitTest {
                                                                  FramesFactory.getEME2000(),
                                                                  new FieldAbsoluteDate<>(field, "2004-01-01T23:00:00.000",
                                                                                          TimeScalesFactory.getUTC()),
-                                                                 3.986004415E14);
+                                                                 field.getZero().add(mu));
         Assert.assertEquals(0.0, orbit.getI().getReal(), 2.0e-14);
         Assert.assertEquals(0.0, orbit.getRightAscensionOfAscendingNode().getReal(), 2.0e-14);
     }
@@ -938,7 +948,7 @@ public class FieldKeplerianOrbitTest {
                                                                   field.getZero().add(FastMath.toRadians(20.)),
                                                                   field.getZero().add(FastMath.toRadians(40.)),
                                                                   PositionAngle.MEAN,
-                                                                  FramesFactory.getEME2000(), dateTca, mu);
+                                                                  FramesFactory.getEME2000(), dateTca, field.getZero().add(mu));
 
         // the following reference values have been computed using the free software
         // version 6.2 of the MSLIB fortran library by the following program:
@@ -1022,7 +1032,7 @@ public class FieldKeplerianOrbitTest {
         double mu =  3.986004415e+14;
         FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<>(field.getZero().add(7000000.0), field.getZero().add(0.01), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
                                                                   field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                                                  FramesFactory.getEME2000(), dateTca, mu);
+                                                                  FramesFactory.getEME2000(), dateTca, field.getZero().add(mu));
 
         for (PositionAngle type : PositionAngle.values()) {
             T hP = field.getZero().add(2.0);
@@ -1067,7 +1077,7 @@ public class FieldKeplerianOrbitTest {
         double mu =  3.986004415e+14;
         FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
                                                                   field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                                                  FramesFactory.getEME2000(), dateTca, mu);
+                                                                  FramesFactory.getEME2000(), dateTca, field.getZero().add(mu));
 
         // the following reference values have been computed using the free software
         // version 6.2 of the MSLIB fortran library by the following program:
@@ -1155,7 +1165,7 @@ public class FieldKeplerianOrbitTest {
         double mu =  3.986004415e+14;
         FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
                                                                   field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                                                  FramesFactory.getEME2000(), dateTca, mu);
+                                                                  FramesFactory.getEME2000(), dateTca, field.getZero().add(mu));
 
         for (PositionAngle type : PositionAngle.values()) {
             T hP =field.getZero().add(2.0);
@@ -1298,7 +1308,7 @@ public class FieldKeplerianOrbitTest {
                                                                      double shiftEccentricityErrorSlightlyPast, double interpolationEccentricityErrorSlightlyPast)
         throws OrekitException {
         final T zero = field.getZero();
-        final double ehMu = 3.9860047e14;
+        final T ehMu = zero.add(3.9860047e14);
         final double ae   = 6.378137e6;
         final double c20  = -1.08263e-3;
         final double c30  =  2.54e-6;
@@ -1392,7 +1402,7 @@ public class FieldKeplerianOrbitTest {
                                                                    field.getZero().add(FastMath.PI),
                                                                    field.getZero().add(0.0), PositionAngle.MEAN,
                                                                    FramesFactory.getEME2000(), dateTca,
-                                                                   Constants.EIGEN5C_EARTH_MU);
+                                                                   field.getZero().add(Constants.EIGEN5C_EARTH_MU));
         FieldEquinoctialOrbit<T> equ = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(initial);
         FieldKeplerianOrbit<T> converted = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equ);
         Assert.assertEquals(FastMath.PI,
@@ -1409,7 +1419,7 @@ public class FieldKeplerianOrbitTest {
                                                                                                 new FieldVector3D<>(field.getZero().add(-2079.),
                                                                                                                     field.getZero().add(5291.),
                                                                                                                     field.getZero().add(-7842.))),
-                                                                       FramesFactory.getEME2000(), date, 3.9860047e14);
+                                                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
         final FieldVector3D<T> p = orbit.getPVCoordinates().getPosition();
         final FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
         final FieldVector3D<T> a = orbit.getPVCoordinates().getAcceleration();
@@ -1488,13 +1498,14 @@ public class FieldKeplerianOrbitTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestNonKeplerianEllipticDerivatives(Field<T> field) throws OrekitException {
+        final T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(field.getZero().add(6896874.444705),  field.getZero().add(1956581.072644),  field.getZero().add(-147476.245054));
         final FieldVector3D<T>     velocity     = new FieldVector3D<>(field.getZero().add(166.816407662), field.getZero().add(-1106.783301861), field.getZero().add(-7372.745712770));
         final FieldVector3D <T>    acceleration = new FieldVector3D<>(field.getZero().add(-7.466182457944), field.getZero().add(-2.118153357345),  field.getZero().add(0.160004048437));
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
         final Frame frame = FramesFactory.getEME2000();
-        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final T mu   = zero.add(Constants.EIGEN5C_EARTH_MU);
         final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, mu);
 
         Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
@@ -1555,13 +1566,14 @@ public class FieldKeplerianOrbitTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestNonKeplerianHyperbolicDerivatives(final Field<T> field) throws OrekitException {
+        final T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(field.getZero().add(224267911.905821),  field.getZero().add(290251613.109399),  field.getZero().add(45534292.777492));
         final FieldVector3D<T>     velocity     = new FieldVector3D<>(field.getZero().add(-1494.068165293), field.getZero().add(1124.771027677), field.getZero().add(526.915286134));
         final FieldVector3D <T>    acceleration = new FieldVector3D<>(field.getZero().add(-0.001295920501), field.getZero().add(-0.002233045187),  field.getZero().add(-0.000349906292));
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
         final Frame frame = FramesFactory.getEME2000();
-        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final T mu   = zero.add(Constants.EIGEN5C_EARTH_MU);
         final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, mu);
 
         Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
@@ -1622,7 +1634,7 @@ public class FieldKeplerianOrbitTest {
     }
 
     private <T extends RealFieldElement<T>, S extends Function<FieldKeplerianOrbit<T>, T>>
-    double differentiate(TimeStampedFieldPVCoordinates<T> pv, Frame frame, double mu, S picker) {
+    double differentiate(TimeStampedFieldPVCoordinates<T> pv, Frame frame, T mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
         UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
@@ -1641,7 +1653,7 @@ public class FieldKeplerianOrbitTest {
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
-        final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, mu);
+        final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, field.getZero().add(mu));
 
         for (PositionAngle type : PositionAngle.values()) {
             final FieldKeplerianOrbit<T> rebuilt = new FieldKeplerianOrbit<>(orbit.getA(),
@@ -1683,7 +1695,7 @@ public class FieldKeplerianOrbitTest {
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
-        final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, mu);
+        final FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, frame, field.getZero().add(mu));
 
         for (PositionAngle type : PositionAngle.values()) {
             final FieldKeplerianOrbit<T> rebuilt = new FieldKeplerianOrbit<>(orbit.getA(),
@@ -1728,7 +1740,7 @@ public class FieldKeplerianOrbitTest {
                                                                                                 field.getZero().add(0.3)));
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, acceleration);
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
-                                                                 FieldAbsoluteDate.getJ2000Epoch(field), mu);
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field), field.getZero().add(mu));
         Assert.assertEquals(10637829.465, orbit.getA().getReal(), 1.0e-3);
         Assert.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
         Assert.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
@@ -1755,11 +1767,11 @@ public class FieldKeplerianOrbitTest {
                                                             zero.add(0.6393322823627762));
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
-                                                                 date, Constants.EIGEN5C_EARTH_MU);
+                                                                 date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assert.assertTrue(orbit.hasDerivatives());
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
-        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-orbit.getMu()),
+        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
         Assert.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
 
@@ -1792,11 +1804,11 @@ public class FieldKeplerianOrbitTest {
                                                             zero.add(-0.000349906292));
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
-                                                                 date, Constants.EIGEN5C_EARTH_MU);
+                                                                 date, zero.add(Constants.EIGEN5C_EARTH_MU));
         Assert.assertTrue(orbit.hasDerivatives());
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
-        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-orbit.getMu()),
+        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(orbit.getMu().negate()),
                                                                      position);
         Assert.assertEquals(4.78e-4, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-6);
 
@@ -1823,7 +1835,7 @@ public class FieldKeplerianOrbitTest {
                                                         field.getZero().add(-8.0));
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
-                                                                 FieldAbsoluteDate.getJ2000Epoch(field), mu);
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field), field.getZero().add(mu));
         Assert.assertEquals("Keplerian parameters: {a: 4.225517000282565E7; e: 0.002146216321416967; i: 0.20189257051515358; pa: 13.949966363606599; raan: -87.91788415673473; v: -151.79096272977213;}",
                             orbit.toString());
     }
@@ -1844,7 +1856,7 @@ public class FieldKeplerianOrbitTest {
                                                                      position.getNorm().reciprocal().multiply(mu).sqrt(),
                                                                      field.getZero()));
         // Build a KeplerianOrbit in eme2000
-        final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, eme2000, FieldAbsoluteDate.getJ2000Epoch(field), mu);
+        final FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(pv, eme2000, FieldAbsoluteDate.getJ2000Epoch(field), field.getZero().add(mu));
 
         // Build another KeplerianOrbit as a copy of the first one
         final FieldOrbit<T> orbitCopy = new FieldKeplerianOrbit<>(orbit);
@@ -1861,16 +1873,6 @@ public class FieldKeplerianOrbitTest {
                             FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
                                                    shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-10);
-
-    }
-
-    @Before
-    public void setUp() {
-
-        Utils.setDataRoot("regular-data");
-
-        // Body mu
-        mu = 3.9860047e14;
 
     }
 

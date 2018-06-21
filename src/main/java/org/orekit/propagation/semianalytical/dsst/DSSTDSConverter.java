@@ -61,12 +61,14 @@ class DSSTDSConverter extends AbstractDSConverter {
 
         final DSFactory factory = new DSFactory(FREE_STATE_PARAMETERS, 1);
 
-        final DerivativeStructure sma = factory.variable(0, state.getA());
-        final DerivativeStructure ex  = factory.variable(1, state.getEquinoctialEx());
-        final DerivativeStructure ey  = factory.variable(2, state.getEquinoctialEy());
-        final DerivativeStructure hx  = factory.variable(3, state.getHx());
-        final DerivativeStructure hy  = factory.variable(4, state.getHy());
-        final DerivativeStructure l   = factory.variable(5, state.getLM());
+        final DerivativeStructure sma  = factory.variable(0, state.getA());
+        final DerivativeStructure ex   = factory.variable(1, state.getEquinoctialEx());
+        final DerivativeStructure ey   = factory.variable(2, state.getEquinoctialEy());
+        final DerivativeStructure hx   = factory.variable(3, state.getHx());
+        final DerivativeStructure hy   = factory.variable(4, state.getHy());
+        final DerivativeStructure l    = factory.variable(5, state.getLM());
+
+        final DerivativeStructure dsMu = factory.constant(state.getMu());
 
         // date
         final AbsoluteDate date = state.getDate();
@@ -80,7 +82,7 @@ class DSSTDSConverter extends AbstractDSConverter {
                                                     PositionAngle.MEAN,
                                                     state.getFrame(),
                                                     dateField,
-                                                    state.getMu());
+                                                    dsMu);
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         // compute attitude partial derivatives
@@ -101,7 +103,7 @@ class DSSTDSConverter extends AbstractDSConverter {
         // count the required number of parameters
         int nbParams = 0;
         for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-            if (driver.isSelected()) { // et si c'est pas mu alors l'ajouter !
+            if (driver.isSelected()) {
                 ++nbParams;
             }
         }
@@ -128,7 +130,8 @@ class DSSTDSConverter extends AbstractDSConverter {
                                                         extend(s0.getHy(),            factory),
                                                         extend(s0.getLM(),            factory),
                                                         PositionAngle.MEAN,
-                                                        s0.getFrame(), date, s0.getMu());
+                                                        s0.getFrame(), date,
+                                                        extend(s0.getMu(),            factory));
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();

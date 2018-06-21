@@ -76,6 +76,9 @@ class DSSTZonalContext extends ForceModelContext {
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
 
+    /** A = sqrt(μ * a). */
+    private final double A;
+
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double X;
@@ -125,21 +128,23 @@ class DSSTZonalContext extends ForceModelContext {
 
         final double mu = parameters[0];
 
+        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
+
         // &Chi; = 1 / B
         X   = 1. / auxiliaryElements.getB();
         XX  = X * X;
         XXX = X * XX;
 
         // 1 / AB
-        ooAB   = 1. / (auxiliaryElements.getA() * auxiliaryElements.getB());
+        ooAB   = 1. / (A * auxiliaryElements.getB());
         // B / A
-        BoA    = auxiliaryElements.getB() / auxiliaryElements.getA();
+        BoA    = auxiliaryElements.getB() / A;
         // -C / 2AB
         mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
         // B / A(1 + B)
         BoABpo = BoA / (1. + auxiliaryElements.getB());
         // -2 * a / A
-        m2aoA  = -2 * auxiliaryElements.getSma() / auxiliaryElements.getA();
+        m2aoA  = -2 * auxiliaryElements.getSma() / A;
         // μ / a
         muoa   = mu / auxiliaryElements.getSma();
         // R / a
@@ -176,6 +181,13 @@ class DSSTZonalContext extends ForceModelContext {
      */
     public HansenZonalLinear[] getHansenObjects() {
         return hansenObjects;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public double getA() {
+        return A;
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.

@@ -63,16 +63,16 @@ public class FieldDSSTTesseralTest {
                                                                 PositionAngle.TRUE,
                                                                 frame,
                                                                 initDate,
-                                                                3.986004415E14);
+                                                                zero.add(3.986004415E14));
         
         final T mass = zero.add(1000.0);
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, mass);
         
-        final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
-        
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
+        
+        final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
@@ -82,12 +82,12 @@ public class FieldDSSTTesseralTest {
             elements[i] = daidt[i];
         }
 
-        Assert.assertEquals(7.120011500375922E-5, elements[0].getReal(), 6.e-19);
-        Assert.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2e-26);
+        Assert.assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
+        Assert.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
         Assert.assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
-        Assert.assertEquals(2.499304852807308E-12, elements[3].getReal(), 1e-27);
-        Assert.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3e-27);
-        Assert.assertEquals(5.795522421338584E-12, elements[5].getReal(), 1e-26);
+        Assert.assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
+        Assert.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
+        Assert.assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
         
     }
     

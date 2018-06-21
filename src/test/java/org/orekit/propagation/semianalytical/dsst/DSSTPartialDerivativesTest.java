@@ -16,7 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -69,7 +71,7 @@ public class DSSTPartialDerivativesTest {
 
     @Test
     public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
-        doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-7,
+        doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-3,
                                     OrbitType.EQUINOCTIAL);
     }
 
@@ -86,7 +88,8 @@ public class DSSTPartialDerivativesTest {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         
         DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                                      new IsotropicDrag(2.5, 1.2));
+                                                      new IsotropicDrag(2.5, 1.2),
+                                                      provider.getMu());
 
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
@@ -104,7 +107,7 @@ public class DSSTPartialDerivativesTest {
             final Orbit initialOrbit = orbitType.convertType(baseOrbit);
 
             DSSTPropagator propagator =
-                            setUpPropagator(initialOrbit, dP, orbitType, drag, tesseral, zonal);
+                            setUpPropagator(initialOrbit, dP, orbitType, zonal, tesseral, drag);
             propagator.setMu(provider.getMu());
             for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
@@ -125,7 +128,7 @@ public class DSSTPartialDerivativesTest {
 
             // compute reference Jacobian using finite differences
             double[][] dYdPRef = new double[6][1];
-            DSSTPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, drag, tesseral, zonal);
+            DSSTPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, zonal, tesseral, drag);
             propagator2.setMu(provider.getMu());
             ParameterDriversList bound = new ParameterDriversList();
             for (final DSSTForceModel forceModel : propagator2.getAllForceModels()) {
@@ -201,10 +204,7 @@ public class DSSTPartialDerivativesTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                if (dYdP[i][0] != 0) {
-                    Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
-                }
-
+                Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }
@@ -212,26 +212,21 @@ public class DSSTPartialDerivativesTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() throws OrekitException {
+    public void testPropagationTypesElliptical() throws OrekitException, FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        
+        Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        
-        DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                        new IsotropicDrag(2.5, 1.2));
-        
-        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
+        
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        
+                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            provider.getMu());
+
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -243,7 +238,7 @@ public class DSSTPartialDerivativesTest {
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
 
         // compute state Jacobian using PartialDerivatives
-        DSSTPropagator propagator = setUpPropagator(orbit, dP, orbitType, srp);
+        DSSTPropagator propagator = setUpPropagator(orbit, dP, orbitType, zonal, tesseral, srp);
         DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         final SpacecraftState initialState =
                 partials.setInitialJacobians(new SpacecraftState(orbit));
@@ -257,7 +252,7 @@ public class DSSTPartialDerivativesTest {
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        DSSTPropagator propagator2 = setUpPropagator(orbit, dP, orbitType, srp);
+        DSSTPropagator propagator2 = setUpPropagator(orbit, dP, orbitType, zonal, tesseral, srp);
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), false);
@@ -281,6 +276,7 @@ public class DSSTPartialDerivativesTest {
         }
 
         for (int i = 0; i < 6; ++i) {
+ 
             for (int j = 0; j < 6; ++j) {
                 if (dYdY0Ref[i][j] != 0 && dYdY0[i][j] != 0) {
                     double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
@@ -361,8 +357,8 @@ public class DSSTPartialDerivativesTest {
         final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
         double dP = 0.001;
-        DSSTForceModel sunAttraction  = new DSSTThirdBody(CelestialBodyFactory.getSun());
-        DSSTForceModel moonAttraction = new DSSTThirdBody(CelestialBodyFactory.getMoon());
+        DSSTForceModel sunAttraction  = new DSSTThirdBody(CelestialBodyFactory.getSun(), Constants.EIGEN5C_EARTH_MU);
+        DSSTForceModel moonAttraction = new DSSTThirdBody(CelestialBodyFactory.getMoon(), Constants.EIGEN5C_EARTH_MU);
         DSSTPropagator propagator =
                 setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL,
                                 sunAttraction, moonAttraction);
@@ -384,7 +380,6 @@ public class DSSTPartialDerivativesTest {
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
                                     SpacecraftState sP3h, SpacecraftState sP4h) {
-        //boolean withMass = jacobian.length > 6;
         double[] aM4h = stateToArray(sM4h, orbitType)[0];
         double[] aM3h = stateToArray(sM3h, orbitType)[0];
         double[] aM2h = stateToArray(sM2h, orbitType)[0];
@@ -414,6 +409,7 @@ public class DSSTPartialDerivativesTest {
 
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
+
           orbitType.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, array[0], array[1]);
           return array;
       }

@@ -80,6 +80,9 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
 
+    /** A = sqrt(μ * a). */
+    private final T A;
+
     // Common factors for potential computation
     /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private T X;
@@ -133,21 +136,23 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
         final T mu = parameters[0];
 
+        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
+
         // &Chi; = 1 / B
         X   = auxiliaryElements.getB().reciprocal();
         XX  = X.multiply(X);
         XXX = X.multiply(XX);
 
         // 1 / AB
-        ooAB   = (auxiliaryElements.getA().multiply(auxiliaryElements.getB())).reciprocal();
+        ooAB   = (A.multiply(auxiliaryElements.getB())).reciprocal();
         // B / A
-        BoA    = auxiliaryElements.getB().divide(auxiliaryElements.getA());
+        BoA    = auxiliaryElements.getB().divide(A);
         // -C / 2AB
         mCo2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
         // B / A(1 + B)
         BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
         // -2 * a / A
-        m2aoA  = auxiliaryElements.getSma().divide(auxiliaryElements.getA()).multiply(-2.);
+        m2aoA  = auxiliaryElements.getSma().divide(A).multiply(2.).negate();
         // μ / a
         muoa   = mu.divide(auxiliaryElements.getSma());
         // R / a
@@ -186,6 +191,12 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
         return hansenObjects;
     }
 
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public T getA() {
+        return A;
+    }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
      * @return &Chi;

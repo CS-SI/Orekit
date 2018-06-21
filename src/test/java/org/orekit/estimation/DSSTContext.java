@@ -84,11 +84,11 @@ public class DSSTContext {
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   dP);
         
-        final DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), dragSensitive);
+        final DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), dragSensitive, initialOrbit.getMu());
         //final DSSTForceModel srp  = new DSSTSolarRadiationPressure(sun, earth.getEquatorialRadius(), radiationSensitive);
         
-        final DSSTForceModel moonForce = new DSSTThirdBody(moon);
-        final DSSTForceModel sunForce  = new DSSTThirdBody(sun);
+        final DSSTForceModel moonForce = new DSSTThirdBody(moon, initialOrbit.getMu());
+        final DSSTForceModel sunForce  = new DSSTThirdBody(sun,  initialOrbit.getMu());
         
         propagatorBuilder.addForceModel(drag);
         //propagatorBuilder.addForceModel(srp);

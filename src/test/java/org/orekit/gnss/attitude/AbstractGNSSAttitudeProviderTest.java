@@ -137,7 +137,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 final FieldCartesianOrbit<Decimal64> orbit64 = new FieldCartesianOrbit<>(pv64,
                                                                                          parsedLine.orbit.getFrame(),
                                                                                          date64,
-                                                                                         parsedLine.orbit.getMu());
+                                                                                         field.getZero().add(parsedLine.orbit.getMu()));
                 final FieldAttitude<Decimal64> attitude64 =
                                 attitudeProvider.getAttitude(orbit64, orbit64.getDate(), parsedLine.orbit.getFrame());
                 final Attitude attitude2 = attitude64.toAttitude();

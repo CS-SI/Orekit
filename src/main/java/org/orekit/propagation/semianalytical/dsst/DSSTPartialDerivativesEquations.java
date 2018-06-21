@@ -280,8 +280,8 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
             final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-            final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
             final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
+            final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             final DerivativeStructure[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getAllDerivatives();
@@ -314,21 +314,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             }
 
         }
-
-//        int element = 0;
-//        for (int i = 0; i < dim; i++) {
-//            final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
-//            for (int j = 0; j < dim; j++) {
-//                pDot[element++] = dMeanElementRatedElementi[j];
-//            }
-//        }
-//
-//        for (int k = 0; k < dim; k++) {
-//            final double[] dMeanElementRatedParamk = dMeanElementRatedParam[k];
-//            for (int i = 0;  i < paramDim; i++) {
-//                pDot[element++] = dMeanElementRatedParamk[i];
-//            }
-//        }
 
         // The variational equations of the complete state Jacobian matrix have the following form:
 

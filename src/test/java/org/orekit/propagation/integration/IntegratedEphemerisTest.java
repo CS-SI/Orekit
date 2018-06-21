@@ -234,9 +234,9 @@ public class IntegratedEphemerisTest {
         dsstProp.addForceModel(new DSSTZonal(gravity, 8, 7, 17));
         dsstProp.addForceModel(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                 gravity, 8, 8, 4, 12, 8, 8, 4));
-        dsstProp.addForceModel(new DSSTThirdBody(sun));
-        dsstProp.addForceModel(new DSSTThirdBody(moon));
-        dsstProp.addForceModel(new DSSTSolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spacecraft));
+        dsstProp.addForceModel(new DSSTThirdBody(sun, gravity.getMu()));
+        dsstProp.addForceModel(new DSSTThirdBody(moon, gravity.getMu()));
+        dsstProp.addForceModel(new DSSTSolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spacecraft, gravity.getMu()));
 
         dsstProp.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) dsstProp.getGeneratedEphemeris();

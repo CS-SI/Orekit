@@ -56,7 +56,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
         Assert.assertSame(s, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
@@ -69,7 +69,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
         Assert.assertSame(FieldEventHandler.Action.STOP, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
@@ -82,7 +82,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          PositionAngle.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
-                                                                                         Constants.EIGEN5C_EARTH_MU));
+                                                                                         zero.add(Constants.EIGEN5C_EARTH_MU)));
         Assert.assertSame(FieldEventHandler.Action.CONTINUE, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, false));
     }
 

@@ -38,6 +38,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -52,6 +53,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
@@ -97,6 +99,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private static final int I = 1;
 
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
     /** Available orders for Gauss quadrature. */
     private static final int[] GAUSS_ORDER = {12, 16, 20, 24, 32, 40, 48};
 
@@ -130,20 +140,61 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Short period terms. */
     private GaussianShortPeriodicCoefficients gaussianSPCoefs;
 
+    /** Driver for gravitational parameter. */
+    private final ParameterDriver gmParameterDriver;
+
     /** Build a new instance.
      *  @param coefficientsKeyPrefix prefix for coefficients keys
      *  @param threshold tolerance for the choice of the Gauss quadrature order
      *  @param contribution the {@link ForceModel} to be numerically averaged
+     *  @param mu central attraction coefficient
      */
     protected AbstractGaussianContribution(final String coefficientsKeyPrefix,
                                            final double threshold,
-                                           final ForceModel contribution) {
+                                           final ForceModel contribution,
+                                           final double mu) {
+
+        try {
+            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    mu, MU_SCALE,
+                                                    0.0, Double.POSITIVE_INFINITY);
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        }
+
         this.coefficientsKeyPrefix = coefficientsKeyPrefix;
         this.contribution          = contribution;
         this.threshold             = threshold;
         this.integrator            = new GaussQuadrature(GAUSS_ORDER[MAX_ORDER_RANK]);
         this.isDirty               = true;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+
+        final ParameterDriver[] driversWithoutMu = getParametersDriversWithoutMu();
+
+        // + 1 for central attraction coefficient driver
+        final ParameterDriver[] drivers = new ParameterDriver[driversWithoutMu.length + 1];
+
+        int index = 0;
+        for (final ParameterDriver driver : driversWithoutMu) {
+            drivers[index] = driver;
+            index++;
+        }
+
+        // We put mu driver at the end of the array
+        drivers[driversWithoutMu.length] = gmParameterDriver;
+        return drivers;
+
+    }
+
+    /** Get the drivers for force model parameters.
+     * @return drivers for force model parameters
+     */
+    protected abstract ParameterDriver[] getParametersDriversWithoutMu();
 
     /** {@inheritDoc} */
     @Override
@@ -164,12 +215,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements)
+    private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
         throws OrekitException {
-        return new AbstractGaussianContributionContext(auxiliaryElements);
+        return new AbstractGaussianContributionContext(auxiliaryElements, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -178,12 +230,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param parameters parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements)
+    private <T extends RealFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                                       final T[] parameters)
         throws OrekitException {
-        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+        return new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
     }
 
     /** {@inheritDoc} */
@@ -192,7 +246,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Container for attributes
-        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
+        final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
         final double[] ll = getLLimits(state, context);
@@ -222,7 +276,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Container for attributes
-        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements);
+        final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
         final Field<T> field = state.getDate().getField();
 
         T[] meanElementRate = MathArrays.buildArray(field, 6);
@@ -243,6 +297,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 isDirty = false;
             }
         }
+
         return meanElementRate;
     }
 
@@ -388,12 +443,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements);
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
 
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context, parameters);
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
-            gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, auxiliaryElements.getMeanMotion(), auxiliaryElements.getSma());
+            gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma());
         }
 
     }
@@ -472,14 +527,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.j = j;
             this.parameters = parameters;
             this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
 
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
             final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                                            state.getDate(),
-                                                                           state.getMu(),
+                                                                           context.getMu(),
                                                                            state.getFrame());
             this.state = new FieldSpacecraftState<T>(fixedOrbit, state.getAttitude(), state.getMass());
         }
@@ -495,7 +550,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             //Compute the time difference from the true longitude difference
             final T shiftedLm = trueToMean(x);
             final T dLm = shiftedLm.subtract(auxiliaryElements.getLM());
-            final T dt = dLm.divide(auxiliaryElements.getMeanMotion());
+            final T dt = dLm.divide(context.getMeanMotion());
 
             final T cosL = FastMath.cos(x);
             final T sinL = FastMath.sin(x);
@@ -504,7 +559,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T r    = auxiliaryElements.getSma().multiply(roa);
             final T X    = r.multiply(cosL);
             final T Y    = r.multiply(sinL);
-            final T naob = auxiliaryElements.getMeanMotion().multiply(auxiliaryElements.getSma()).divide(auxiliaryElements.getB());
+            final T naob = context.getMeanMotion().multiply(auxiliaryElements.getSma()).divide(auxiliaryElements.getB());
             final T Xdot = naob.multiply(auxiliaryElements.getH().add(sinL)).negate();
             final T Ydot =  naob.multiply(auxiliaryElements.getK().add(cosL));
             final FieldVector3D<T> vel = new FieldVector3D<>(Xdot, auxiliaryElements.getVectorF(), Ydot, auxiliaryElements.getVectorG());
@@ -526,7 +581,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                              PositionAngle.TRUE,
                                              shiftedOrbit.getFrame(),
                                              state.getDate(),
-                                             shiftedOrbit.getMu());
+                                             context.getMu());
 
                 // Get the corresponding attitude
                 final FieldAttitude<T> recomposedAttitude =
@@ -718,19 +773,19 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                            final double[] parameters)
             throws OrekitException {
 
+            this.meanMode = meanMode;
+            this.j = j;
+            this.parameters = parameters;
+            this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
+            this.context = new AbstractGaussianContributionContext(auxiliaryElements, parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
             final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
                                                                            state.getDate(),
-                                                                           state.getMu(),
+                                                                           context.getMu(),
                                                                            state.getFrame());
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
-            this.meanMode = meanMode;
-            this.j = j;
-            this.parameters = parameters;
-            this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-            this.context = new AbstractGaussianContributionContext(auxiliaryElements);
         }
 
         /** {@inheritDoc} */
@@ -740,7 +795,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             //Compute the time difference from the true longitude difference
             final double shiftedLm = trueToMean(x);
             final double dLm = shiftedLm - auxiliaryElements.getLM();
-            final double dt = dLm / auxiliaryElements.getMeanMotion();
+            final double dt = dLm / context.getMeanMotion();
 
             final double cosL = FastMath.cos(x);
             final double sinL = FastMath.sin(x);
@@ -749,7 +804,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double r    = auxiliaryElements.getSma() * roa;
             final double X    = r * cosL;
             final double Y    = r * sinL;
-            final double naob = auxiliaryElements.getMeanMotion() * auxiliaryElements.getSma() / auxiliaryElements.getB();
+            final double naob = context.getMeanMotion() * auxiliaryElements.getSma() / auxiliaryElements.getB();
             final double Xdot = -naob * (auxiliaryElements.getH() + sinL);
             final double Ydot =  naob * (auxiliaryElements.getK() + cosL);
             final Vector3D vel = new Vector3D(Xdot, auxiliaryElements.getVectorF(), Ydot, auxiliaryElements.getVectorG());
@@ -772,7 +827,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                              PositionAngle.TRUE,
                                              shiftedOrbit.getFrame(),
                                              state.getDate(),
-                                             shiftedOrbit.getMu());
+                                             context.getMu());
 
                 // Get the corresponding attitude
                 final Attitude recomposedAttitude =

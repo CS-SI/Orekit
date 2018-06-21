@@ -17,6 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -35,16 +36,33 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
 
     /** 2 / (n² * a) . */
     protected T ton2a;
+
     /** 1 / A .*/
     protected T ooA;
+
     /** 1 / (A * B) .*/
     protected T ooAB;
+
     /** C / (2 * A * B) .*/
     protected T co2AB;
+
     /** 1 / (1 + B) .*/
     protected T ooBpo;
+
     /** 1 / μ .*/
-    protected double ooMu;
+    protected T ooMu;
+
+    /** A = sqrt(μ * a). */
+    private final T A;
+
+    /** Keplerian mean motion. */
+    private final T n;
+
+    /** Keplerian period. */
+    private final T period;
+
+    /** Central attraction coefficient. */
+    private T mu;
 
     // CHECKSTYLE: resume VisibilityModifier check
 
@@ -52,15 +70,29 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param parameters parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements)
+    public FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
 
+        // mu driver corresponds to the last term of parameters driver array
+        mu = parameters[parameters.length - 1];
+
+        // Keplerian mean motion
+        final T absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu.divide(absA)).divide(absA);
+
+        // Keplerian period
+        final T a = auxiliaryElements.getSma();
+        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+
+        // sqrt(μ * a)
+        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
         // 1 / A
-        ooA = auxiliaryElements.getA().reciprocal();
+        ooA = A.reciprocal();
         // 1 / AB
         ooAB = ooA.divide(auxiliaryElements.getB());
         // C / 2AB
@@ -68,10 +100,24 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
         // 1 / (1 + B)
         ooBpo = auxiliaryElements.getB().add(1.).reciprocal();
         // 2 / (n² * a)
-        ton2a = (auxiliaryElements.getMeanMotion().multiply(auxiliaryElements.getMeanMotion()).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
+        ton2a = (n.multiply(n).multiply(auxiliaryElements.getSma())).divide(2.).reciprocal();
         // 1 / mu
-        ooMu  = 1. / auxiliaryElements.getMu();
+        ooMu  = mu.reciprocal();
 
+    }
+
+    /** Get central attraction coefficient.
+     * @return mu
+     */
+    public T getMu() {
+        return mu;
+    }
+
+    /** Get A = sqrt(μ * a).
+     * @return A
+     */
+    public T getA() {
+        return A;
     }
 
     /** Get ooA = 1 / A.
@@ -112,8 +158,26 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
     /** Get ooMu = 1 / mu.
      * @return ooMu
      */
-    public double getOoMU() {
+    public T getOoMU() {
         return ooMu;
+    }
+
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public T getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public T getMeanMotion() {
+        return n;
     }
 
 }

@@ -61,7 +61,7 @@ public class DSSTAtmosphericDragTest {
         
         final Frame earthFrame = FramesFactory.getEME2000();
         final AbsoluteDate initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 0, TimeScalesFactory.getUTC());
-        
+        final double mu = 3.986004415E14;
         // a  = 7204535.84810944 m
         // ex = -0.001119677138261611
         // ey = 5.333650671984143E-4
@@ -77,7 +77,7 @@ public class DSSTAtmosphericDragTest {
                                                  PositionAngle.TRUE,
                                                  earthFrame,
                                                  initDate,
-                                                 3.986004415E14);
+                                                 mu);
 
          // Drag Force Model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
@@ -86,7 +86,7 @@ public class DSSTAtmosphericDragTest {
         final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
         final double cd = 2.0;
         final double area = 25.0;
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area);
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, mu);
 
         // Attitude of the satellite
         Rotation rotation =  new Rotation(1.0, 0.0, 0.0, 0.0, false);

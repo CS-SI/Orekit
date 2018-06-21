@@ -68,6 +68,13 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         }
     }
 
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu() {
+        return gmParameterDriver.getValue();
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly,
@@ -116,7 +123,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         // Container for attributes
         final DSSTNewtonianAttractionContext context = initializeStep(auxiliaryElements, parameters);
 
-        final double[] yDot = new double[6];
+        final double[] yDot = new double[7];
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
         orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
 
@@ -132,11 +139,11 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         throws OrekitException {
 
         // Field for array building
-        final Field<T> field = state.getDate().getField();
+        final Field<T> field = state.getMu().getField();
         // Container for attributes
         final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-        final T[] yDot = MathArrays.buildArray(field, 6);
+        final T[] yDot = MathArrays.buildArray(field, 7);
         final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
         orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
 

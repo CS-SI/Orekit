@@ -372,7 +372,7 @@ public class DSSTZonal implements DSSTForceModel {
             // (k² - h²) / 2.
             this.k2mh2o2 = k2mh2 / 2.;
             // 1 / (n² * a²) = 1 / (n * A)
-            this.oon2a2 = 1 / (auxiliaryElements.getA() * auxiliaryElements.getMeanMotion());
+            this.oon2a2 = 1 / (context.getA() * auxiliaryElements.getMeanMotion());
             // 1 / (n² * a) = a / (n * A)
             this.oon2a = auxiliaryElements.getSma() * oon2a2;
             // χ³ / (n² * a)

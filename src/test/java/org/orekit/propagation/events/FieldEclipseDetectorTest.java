@@ -104,7 +104,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getGCRF(), iniDate, mu);
+                                                                FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.resetInitialState(initialState);
@@ -133,7 +133,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getGCRF(), iniDate, mu);
+                                                                FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -167,7 +167,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getGCRF(), iniDate, mu);
+                                                                FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -208,7 +208,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                 FramesFactory.getGCRF(), iniDate, mu);
+                                                 FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -238,7 +238,7 @@ public class FieldEclipseDetectorTest {
                                                                                                                                                                           field.getZero().add(0),
                                                                                                                                                                           field.getZero().add(0)))),
                                                                                          FramesFactory.getGCRF(),
-                                                                                         mu));
+                                                                                         zero.add(mu)));
         Assert.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
@@ -248,7 +248,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getGCRF(), iniDate, mu);
+                                                                FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -280,7 +280,7 @@ public class FieldEclipseDetectorTest {
                                                                                                                                                                           field.getZero(),
                                                                                                                                                                           field.getOne()))),
                                                                                          FramesFactory.getGCRF(),
-                                                                                         mu));
+                                                                                         zero.add(mu)));
         Assert.assertEquals(FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
@@ -290,7 +290,7 @@ public class FieldEclipseDetectorTest {
         final FieldVector3D<T> velocity  = new FieldVector3D<>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
         FieldAbsoluteDate<T> iniDate = new FieldAbsoluteDate<>(field, 1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                FramesFactory.getGCRF(), iniDate, mu);
+                                                                FramesFactory.getGCRF(), iniDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
