@@ -703,14 +703,11 @@ public class AbsoluteDate
      * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
      * @param milliInWeek number of milliseconds since week start
      * @return a new instant
+     * @deprecated as of 9.3, replaced by {@link GPSDate#GPSDate(int, double)}.{@link GPSDate#getDate()}
      */
-    public static AbsoluteDate createGPSDate(final int weekNumber,
-                                             final double milliInWeek) {
-        final int day = (int) FastMath.floor(milliInWeek / (1000.0 * Constants.JULIAN_DAY));
-        final double secondsInDay = milliInWeek / 1000.0 - day * Constants.JULIAN_DAY;
-        return new AbsoluteDate(new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
-                                new TimeComponents(secondsInDay),
-                                TimeScalesFactory.getGPS());
+    @Deprecated
+    public static AbsoluteDate createGPSDate(final int weekNumber, final double milliInWeek) {
+        return new GPSDate(weekNumber, milliInWeek).getDate();
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).

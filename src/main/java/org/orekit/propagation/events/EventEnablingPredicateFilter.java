@@ -71,7 +71,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private final T rawDetector;
 
     /** Enabling predicate function. */
-    private final transient EnablingPredicate<T> enabler;
+    private final transient EnablingPredicate<? super T> enabler;
 
     /** Transformers of the g function. */
     private final transient Transformer[] transformers;
@@ -92,7 +92,8 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      * @param rawDetector event detector to wrap
      * @param enabler event enabling predicate function to use
      */
-    public EventEnablingPredicateFilter(final T rawDetector, final EnablingPredicate<T> enabler) {
+    public EventEnablingPredicateFilter(final T rawDetector,
+                                        final EnablingPredicate<? super T> enabler) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
              rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
              rawDetector, enabler);
@@ -113,7 +114,8 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      */
     private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
                                          final int maxIter, final EventHandler<? super EventEnablingPredicateFilter<T>> handler,
-                                         final T rawDetector, final EnablingPredicate<T> enabler) {
+                                         final T rawDetector,
+                                         final EnablingPredicate<? super T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;

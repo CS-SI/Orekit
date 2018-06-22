@@ -19,6 +19,7 @@ package org.orekit.gnss;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GPSDate;
 
 
 /**
@@ -118,7 +119,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
 
     @Override
     public AbsoluteDate getDate() {
-        return AbsoluteDate.createGPSDate(week, toa * 1000.);
+        return new GPSDate(week, toa * 1000.).getDate();
     }
 
     /**
