@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -121,6 +122,10 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      */
     public FieldAuxiliaryElements(final FieldOrbit<T> orbit, final int retrogradeFactor) {
 
+        final Field<T> field = orbit.getDate().getField();
+        final T zero = field.getZero();
+        final T pi = zero.add(FastMath.PI);
+
         // Date of the orbit
         date = orbit.getDate();
 
@@ -142,9 +147,9 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         h   = orbit.getEquinoctialEy();
         q   = orbit.getHx();
         p   = orbit.getHy();
-        lm  = normalizeAngle(orbit.getLM(), FastMath.PI);
-        lv  = normalizeAngle(orbit.getLv(), FastMath.PI);
-        le  = normalizeAngle(orbit.getLE(), FastMath.PI);
+        lm  = normalizeAngle(orbit.getLM(), pi);
+        lv  = normalizeAngle(orbit.getLv(), pi);
+        le  = normalizeAngle(orbit.getLE(), pi);
 
         // Retrograde factor [Eq. 2.1.2-(2)]
         I = retrogradeFactor;
@@ -155,7 +160,6 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
         final T p2 = p.multiply(p);
 
         // A, B, C parameters [Eq. 2.1.6-(1)]
-        //A = FastMath.sqrt(sma.multiply(mu));
         B = FastMath.sqrt(k2.add(h2).negate().add(1.));
         C = q2.add(p2).add(1);
 
@@ -192,7 +196,7 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      * @param center center of the desired 2&pi; interval for the result
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
      */
-    public T normalizeAngle(final T a, final double center) {
+    public T normalizeAngle(final T a, final T center) {
         return a.subtract(FastMath.floor((a.add(FastMath.PI).subtract(center)).divide(TWO_PI)).multiply(TWO_PI));
     }
 
@@ -309,13 +313,6 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
     public int getRetrogradeFactor() {
         return I;
     }
-
-    /** Get A = sqrt(μ * a).
-     * @return A
-     */
-//    public T getA() {
-//        return A;
-//    }
 
     /** Get B = sqrt(1 - e²).
      * @return B

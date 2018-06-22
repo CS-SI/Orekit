@@ -66,8 +66,6 @@ public class FieldAbstractGaussianContributionContext<T extends RealFieldElement
 
     // CHECKSTYLE: resume VisibilityModifier check
 
-    // CHECKSTYLE: resume VisibilityModifier check
-
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation

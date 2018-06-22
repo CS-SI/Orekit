@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -136,10 +137,13 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
                                                              final FieldAbstractGaussianContributionContext<T> context)
         throws OrekitException {
 
+        final Field<T> field = state.getDate().getField();
+        final T zero = field.getZero();
+
         // AuxiliaryElements auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
-        final T[] tab = MathArrays.buildArray(state.getDate().getField(), 2);
+        final T[] tab = MathArrays.buildArray(field, 2);
 
         final T perigee = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().negate().add(1.));
         // Trajectory entirely out of the atmosphere
@@ -149,8 +153,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final T apogee  = auxiliaryElements.getSma().multiply(auxiliaryElements.getEcc().add(1.));
         // Trajectory entirely within of the atmosphere
         if (apogee.getReal() < rbar) {
-            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), 0).subtract(FastMath.PI);
-            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), 0).add(FastMath.PI);
+            tab[0] = auxiliaryElements.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+            tab[1] = auxiliaryElements.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere

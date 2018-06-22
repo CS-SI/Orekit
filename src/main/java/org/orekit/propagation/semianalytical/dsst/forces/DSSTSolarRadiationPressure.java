@@ -454,12 +454,13 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
         final Field<T> field = state.getDate().getField();
-        final T zero =  field.getZero();
+        final T zero = field.getZero();
+        final T one  = field.getOne();
 
         // Default bounds without shadow [-PI, PI]
         final T[] ll = MathArrays.buildArray(field, 2);
-        ll[0] = auxiliaryElements.normalizeAngle(state.getLv(), 0).subtract(FastMath.PI);
-        ll[1] = auxiliaryElements.normalizeAngle(state.getLv(), 0).add(FastMath.PI);
+        ll[0] = auxiliaryElements.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+        ll[1] = auxiliaryElements.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
 
         // Direction cosines of the Sun in the equinoctial frame
         final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
@@ -468,7 +469,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
 
         // Compute limits only if the perigee is close enough from the central body to be in the shadow
-        if (FastMath.abs(gamma.multiply(auxiliaryElements.getSma()).multiply(auxiliaryElements.getEcc().negate().add(1.))).getReal() < ae) {
+        if (FastMath.abs(gamma.multiply(auxiliaryElements.getSma()).multiply(auxiliaryElements.getEcc().negate().add(one))).getReal() < ae) {
 
             // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)
             final T bet2 = beta.multiply(beta);
@@ -480,7 +481,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T bb = alpha.multiply(beta).add(m2.multiply(auxiliaryElements.getH()).multiply(auxiliaryElements.getK()));
             final T b2 = bb.multiply(bb);
             final T cc = alpha.multiply(alpha).subtract(bet2).add(m2.multiply(k2.subtract(h2)));
-            final T dd = bet2.add(m2.multiply(h2.add(1.))).negate().add(1.);
+            final T dd = bet2.add(m2.multiply(h2.add(1.))).negate().add(one);
             final T[] a = MathArrays.buildArray(field, 5);
             a[0] = b2.multiply(4.).add(cc.multiply(cc));
             a[1] = bb.multiply(8.).multiply(m2).multiply(auxiliaryElements.getH()).add(cc.multiply(4.).multiply(m2).multiply(auxiliaryElements.getK()));
@@ -497,14 +498,14 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 // Eliminate spurious roots
                 for (int i = 0; i < nbRoots; i++) {
                     final T cosL = roots[i];
-                    final T sL = FastMath.sqrt((cosL.negate().add(1.)).multiply(cosL.add(1.)));
+                    final T sL = FastMath.sqrt((cosL.negate().add(one)).multiply(cosL.add(one)));
                     // Check both angles: L and -L
                     for (int j = -1; j <= 1; j += 2) {
                         final T sinL = sL.multiply(j);
                         final T cPhi = cosL.multiply(alpha).add(sinL.multiply(beta));
                         // Is the angle on the shadow side of the central body (eq. 3.5-3) ?
                         if (cPhi.getReal() < 0.) {
-                            final T range = cosL.multiply(auxiliaryElements.getK()).add(sinL.multiply(auxiliaryElements.getH())).add(1.);
+                            final T range = cosL.multiply(auxiliaryElements.getK()).add(sinL.multiply(auxiliaryElements.getH())).add(one);
                             final T S  = (range.multiply(range).multiply(m2).add(cPhi.multiply(cPhi))).negate().add(1.);
                             // Is the shadow equation 3.5-1 satisfied ?
                             if (FastMath.abs(S).getReal() < S_ZERO) {
@@ -533,9 +534,9 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 if (ll[0].getReal() > ll[1].getReal()) {
                     // Keep the angles between [-2PI, 2PI]
                     if (ll[1].getReal() < 0.) {
-                        ll[1] = ll[1].add(2. * FastMath.PI);
+                        ll[1] = ll[1].add(zero.add(2. * FastMath.PI));
                     } else {
-                        ll[0] = ll[0].subtract(2. * FastMath.PI);
+                        ll[0] = ll[0].subtract(zero.add(2. * FastMath.PI));
                     }
                 }
             }

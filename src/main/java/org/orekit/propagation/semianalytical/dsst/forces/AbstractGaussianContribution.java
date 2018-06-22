@@ -531,11 +531,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(state.getDate().getField(), 6);
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
-            final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, stateVector, null);
+            final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.MEAN,
                                                                            state.getDate(),
                                                                            context.getMu(),
                                                                            state.getFrame());
+
             this.state = new FieldSpacecraftState<T>(fixedOrbit, state.getAttitude(), state.getMass());
         }
 
@@ -544,7 +545,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         public T[] value(final T x) {
 
             // Parameters for array building
-            final Field<T> field = state.getDate().getField();
+            final Field<T> field = auxiliaryElements.getLM().getField();
             final int dimension = 6;
 
             //Compute the time difference from the true longitude difference
@@ -577,8 +578,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                              shiftedOrbit.getEquinoctialEy(),
                                              shiftedOrbit.getHx(),
                                              shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
+                                             shiftedOrbit.getLM(),
+                                             PositionAngle.MEAN,
                                              shiftedOrbit.getFrame(),
                                              state.getDate(),
                                              context.getMu());
@@ -1432,11 +1433,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Node weights. */
         private final double[] nodeWeights;
 
+        /** Number of points. */
+        private final int numberOfPoints;
+
         /** Creates a Gauss integrator of the given order.
          *
          *  @param numberOfPoints Order of the integration rule.
          */
         GaussQuadrature(final int numberOfPoints) {
+
+            this.numberOfPoints = numberOfPoints;
 
             switch(numberOfPoints) {
                 case 12 :
@@ -1501,28 +1507,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                                             final T lowerBound, final T upperBound,
                                                             final FieldAbstractGaussianContributionContext<T> context) {
 
-            final int pointsLength  = nodePoints.length;
-            final int weightsLength = nodeWeights.length;
-
             final Field<T> field = context.getFieldAuxiliaryElements().getDate().getField();
             final T zero = field.getZero();
 
-            T[] adaptedPoints  = MathArrays.buildArray(field, pointsLength);
-            T[] adaptedWeights = MathArrays.buildArray(field, weightsLength);
+            final T[] adaptedPoints  = MathArrays.buildArray(field, numberOfPoints);
+            final T[] adaptedWeights = MathArrays.buildArray(field, numberOfPoints);
 
-            final T[] nodePoint  = MathArrays.buildArray(field, pointsLength);
-            final T[] nodeWeight = MathArrays.buildArray(field, weightsLength);
-
-            for (int i = 0; i < pointsLength; i++) {
-                nodePoint[i] = zero.add(nodePoints[i]);
+            for (int i = 0; i < numberOfPoints; i++) {
+                adaptedPoints[i]  = zero.add(nodePoints[i]);
+                adaptedWeights[i] = zero.add(nodeWeights[i]);
             }
 
-            for (int i = 0; i < weightsLength; i++) {
-                nodeWeight[i] = zero.add(nodeWeights[i]);
-            }
-
-            adaptedPoints  = nodePoint.clone();
-            adaptedWeights = nodeWeight.clone();
             transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);
             return basicIntegrate(f, adaptedPoints, adaptedWeights, context);
         }

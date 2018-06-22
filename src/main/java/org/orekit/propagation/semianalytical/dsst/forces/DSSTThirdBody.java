@@ -112,20 +112,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
                                                      body.getGM(), MU_SCALE,
                                                      0.0, Double.POSITIVE_INFINITY);
+            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                    mu, MU_SCALE,
+                                                    0.0, Double.POSITIVE_INFINITY);
 
         } catch (OrekitException e) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(e);
         }
 
-        try {
-            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    mu, MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
         this.body = body;
     }
 
