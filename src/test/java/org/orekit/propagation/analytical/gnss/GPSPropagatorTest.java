@@ -35,6 +35,7 @@ import org.orekit.gnss.SEMParser;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GPSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -220,8 +221,7 @@ public class GPSPropagatorTest {
         for (final GPSAlmanac almanac : almanacs) {
             GPSPropagator propagator = new GPSPropagator.Builder(almanac).build();
             GPSOrbitalElements elements = propagator.getGPSOrbitalElements();
-            AbsoluteDate t0 = AbsoluteDate.createGPSDate(elements.getWeek(),
-                                                           0.001 * elements.getTime());
+            AbsoluteDate t0 = new GPSDate(elements.getWeek(), 0.001 * elements.getTime()).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);

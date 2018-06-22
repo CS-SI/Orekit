@@ -298,6 +298,7 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    @Deprecated
     public void testGpsDate() {
         AbsoluteDate date = AbsoluteDate.createGPSDate(1387, 318677000.0);
         AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2006, 8, 9),

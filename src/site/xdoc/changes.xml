@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="480">
+        Added GPSDate class to convert back and forth with AbsoluteDate.
+        Fixes #480.
+      </action>
       <action dev="evan" type="fix" issue="476">
         Fix generics in EventEnablingPredicateFilter.
         Fixes #476.
