@@ -174,26 +174,15 @@ public class FieldDSSTSolarRadiationPressureTest {
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
         
-        final SpacecraftState state = new SpacecraftState(orbit);
-        
-        // Attitude
-        final Rotation rotation = new Rotation(0.9999999999999984,
-                                         1.653020584550675E-8,
-                                         -4.028108631990782E-8,
-                                         -3.539139805514139E-8,
-                                         false);
-        final AttitudeProvider attitudeProvider = new InertialProvider(rotation);
-        
+        final SpacecraftState state = new SpacecraftState(orbit);        
         
         // Force Model
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
-        // Register the attitude provider to the force model
-        srp.registerAttitudeProvider(attitudeProvider);
         
         // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(state, attitudeProvider);
+        final DSSTDSConverter converter = new DSSTDSConverter(state, InertialProvider.EME2000_ALIGNED);
         
         // Field parameters
         final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(srp);
