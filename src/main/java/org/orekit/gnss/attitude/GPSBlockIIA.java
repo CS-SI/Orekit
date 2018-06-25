@@ -19,6 +19,7 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -112,9 +113,15 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                         phiDot    = -FastMath.copySign(yawRate, beta);
                         linearPhi = phiStart + phiDot * dtStart;
                     }
+
+                    if ((MathUtils.normalizeAngle(context.yawAngle(), linearPhi) - linearPhi) * phiDot < 0) {
+                     // we are already back in nominal yaw mode
+                        return context.getNominalYaw();
+                    }
+
                 } else {
                     // midnight turn
-                    final double dtEnd = dtStart - context.getTurnDuration();
+                    final double dtEnd    = dtStart - context.getTurnDuration();
                     if (dtEnd < 0) {
                         // we are within the turn itself
                         phiDot    = yawRate;
