@@ -381,7 +381,7 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(28, covariances.getColumnDimension());
 
         // drag coefficient variance
-        Assert.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-5);
+        Assert.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-4);
 
         // leak-X constant term variance
         Assert.assertEquals(2.0540e-12, covariances.getEntry(7, 7), 1.0e-16);
