@@ -226,6 +226,8 @@ public class DSSTPartialDerivativesTest {
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
                                                             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             provider.getMu());
+        
+        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
 
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.MEAN,
@@ -238,10 +240,13 @@ public class DSSTPartialDerivativesTest {
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
 
         // compute state Jacobian using PartialDerivatives
-        DSSTPropagator propagator = setUpPropagator(orbit, dP, orbitType, zonal, tesseral, srp);
+        DSSTPropagator propagator = setUpPropagator(orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        propagator.setMu(provider.getMu());
         DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
         final SpacecraftState initialState =
                 partials.setInitialJacobians(new SpacecraftState(orbit));
+        final double[] stateVector = new double[6];
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         propagator.setInitialState(initialState, false);
         final DSSTJacobiansMapper mapper = partials.getMapper();
@@ -252,7 +257,8 @@ public class DSSTPartialDerivativesTest {
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        DSSTPropagator propagator2 = setUpPropagator(orbit, dP, orbitType, zonal, tesseral, srp);
+        DSSTPropagator propagator2 = setUpPropagator(orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        propagator2.setMu(provider.getMu());
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), false);
@@ -276,11 +282,10 @@ public class DSSTPartialDerivativesTest {
         }
 
         for (int i = 0; i < 6; ++i) {
- 
             for (int j = 0; j < 6; ++j) {
-                if (dYdY0Ref[i][j] != 0 && dYdY0[i][j] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                    Assert.assertEquals(0, error, 6.0e-2);
+                if (stateVector[i] != 0) {
+                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
+                    Assert.assertEquals(0, error, 7.0e-16);
                 }
             }
         }

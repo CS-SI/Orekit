@@ -98,7 +98,7 @@ public class AbstractGaussianContributionContext extends ForceModelContext {
         // 1 / (1 + B)
         ooBpo = 1. / (1. + auxiliaryElements.getB());
         // 2 / (n² * a)
-        ton2a = 2. / (auxiliaryElements.getMeanMotion() * auxiliaryElements.getMeanMotion() * auxiliaryElements.getSma());
+        ton2a = 2. / (n * n * auxiliaryElements.getSma());
         // 1 / mu
         ooMu  = 1. / mu;
 
