@@ -53,6 +53,9 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
     /** Initial yaw end at iterative search start. */
     private static final double YAW_END_ZERO = FastMath.toRadians(75.0);
 
+    /** No margin on turn end for Glonass. */
+    private final double END_MARGIN = 0.0;
+
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -91,8 +94,9 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI));
-            if (context.inTurnTimeRange(context.getDate(), 0)) {
+                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
+                                END_MARGIN);
+            if (context.inTurnTimeRange(context.getDate())) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();

@@ -82,8 +82,9 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
             final double absBeta = FastMath.abs(context.getBeta());
             context.setHalfSpan(context.inSunSide() ?
                                 absBeta * FastMath.sqrt(aNoon / absBeta - 1.0) :
-                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI));
-            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+                                context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
+                                END_MARGIN);
+            if (context.inTurnTimeRange(context.getDate())) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();

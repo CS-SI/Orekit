@@ -72,8 +72,8 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
             final double absBeta = FastMath.abs(context.getBeta());
-            context.setHalfSpan(absBeta * FastMath.sqrt(aNoon / absBeta - 1.0));
-            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+            context.setHalfSpan(absBeta * FastMath.sqrt(aNoon / absBeta - 1.0), END_MARGIN);
+            if (context.inTurnTimeRange(context.getDate())) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();

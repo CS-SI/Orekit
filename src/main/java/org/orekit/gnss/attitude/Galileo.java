@@ -80,8 +80,9 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 BETA_X :
-                                context.inOrbitPlaneAbsoluteAngle(BETA_X));
-            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+                                context.inOrbitPlaneAbsoluteAngle(BETA_X),
+                                END_MARGIN);
+            if (context.inTurnTimeRange(context.getDate())) {
 
                 // handling both noon and midnight turns at once
                 final DerivativeStructure beta     = context.getBetaDS();
