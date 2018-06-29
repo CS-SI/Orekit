@@ -96,12 +96,12 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                                 aNoon :
                                 context.inOrbitPlaneAbsoluteAngle(aNight - FastMath.PI),
                                 END_MARGIN);
-            if (context.inTurnTimeRange(context.getDate())) {
+            if (context.inTurnTimeRange()) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
-                final double dtStart  = context.timeSinceTurnStart(context.getDate());
+                final double dtStart  = context.timeSinceTurnStart();
 
                 final double phiDot;
                 final double linearPhi;
@@ -160,13 +160,14 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
             context.setHalfSpan(context.inSunSide() ?
                                 aNoon :
-                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)));
-            if (context.inTurnTimeRange(context.getDate(), 0)) {
+                                context.inOrbitPlaneAbsoluteAngle(aNight.subtract(FastMath.PI)),
+                                END_MARGIN);
+            if (context.inTurnTimeRange()) {
 
                 // we need to ensure beta sign does not change during the turn
                 final T beta     = context.getSecuredBeta();
                 final T phiStart = context.getYawStart(beta);
-                final T dtStart  = context.timeSinceTurnStart(context.getDate());
+                final T dtStart  = context.timeSinceTurnStart();
 
                 final T phiDot;
                 final T linearPhi;

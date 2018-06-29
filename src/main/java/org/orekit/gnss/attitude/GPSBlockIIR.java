@@ -73,12 +73,12 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
             final double absBeta = FastMath.abs(context.getBeta());
             context.setHalfSpan(absBeta * FastMath.sqrt(aNoon / absBeta - 1.0), END_MARGIN);
-            if (context.inTurnTimeRange(context.getDate())) {
+            if (context.inTurnTimeRange()) {
 
                 // we need to ensure beta sign does not change during the turn
                 final double beta     = context.getSecuredBeta();
                 final double phiStart = context.getYawStart(beta);
-                final double dtStart  = context.timeSinceTurnStart(context.getDate());
+                final double dtStart  = context.timeSinceTurnStart();
                 final double phiDot;
                 final double linearPhi;
 
@@ -121,13 +121,13 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
         if (context.setUpTurnRegion(cNight, cNoon)) {
 
             final T absBeta = FastMath.abs(context.getBeta());
-            context.setHalfSpan(absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))));
-            if (context.inTurnTimeRange(context.getDate(), END_MARGIN)) {
+            context.setHalfSpan(absBeta.multiply(FastMath.sqrt(aNoon.divide(absBeta).subtract(1.0))), END_MARGIN);
+            if (context.inTurnTimeRange()) {
 
                 // we need to ensure beta sign does not change during the turn
                 final T beta     = context.getSecuredBeta();
                 final T phiStart = context.getYawStart(beta);
-                final T dtStart  = context.timeSinceTurnStart(context.getDate());
+                final T dtStart  = context.timeSinceTurnStart();
                 final T phiDot;
                 final T linearPhi;
 

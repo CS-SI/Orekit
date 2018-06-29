@@ -16,9 +16,12 @@
  */
 package org.orekit.gnss.attitude;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
@@ -62,6 +65,9 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Turns already encountered. */
     private final SortedSet<TimeStamped> turns;
 
+    /** Turns already encountered. */
+    private final transient Map<Field<? extends RealFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
+
     /** Simple constructor.
      * @param validityStart start of validity for this provider
      * @param validityEnd end of validity for this provider
@@ -77,6 +83,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         this.sun           = sun;
         this.inertialFrame = inertialFrame;
         this.turns         = new TreeSet<>(new ChronologicalComparator());
+        this.fieldTurns    = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -129,7 +136,13 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         final TimeStampedFieldPVCoordinates<T> svPV  = pvProv.getPVCoordinates(date, inertialFrame);
 
         // compute yaw correction
-        final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(new GNSSFieldAttitudeContext<>(sunPV, svPV));
+        final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);
+        final GNSSFieldAttitudeContext<T>           context   = new GNSSFieldAttitudeContext<>(sunPV, svPV, turnSpan);
+        final TimeStampedFieldAngularCoordinates<T> corrected = correctedYaw(context);
+        if (turnSpan == null && context.getTurnSpan() != null) {
+            // we have encountered a new turn, store it
+            fieldTurns.get(date.getField()).add(context.getTurnSpan());
+        }
 
         return new FieldAttitude<>(inertialFrame, corrected).withReferenceFrame(frame);
 
@@ -147,6 +160,37 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
         if (!after.isEmpty()) {
             final TurnSpan ts = (TurnSpan) after.first();
             if (ts.inTurnTimeRange(date)) {
+                return ts;
+            }
+        }
+
+        // no turn covers the date
+        return null;
+
+    }
+
+    /** Get the turn span covering a date.
+     * @param date date to check
+     * @param <T> type of the field elements
+     * @return turn span covering the date, or null if no span covers this date
+     */
+    private <T extends RealFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
+
+        SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
+        if (sortedSet == null) {
+            // this is the first time we manage such a field, prepare a sorted set for it
+            sortedSet = new TreeSet<>(new ChronologicalComparator());
+            fieldTurns.put(date.getField(), sortedSet);
+        }
+
+        // as the reference date of the turn span is the end + margin date,
+        // the span to consider can only be the first span that is after date
+        final AbsoluteDate dateDouble = date.toAbsoluteDate();
+        final SortedSet<TimeStamped> after = sortedSet.tailSet(dateDouble);
+        if (!after.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            final FieldTurnSpan<T> ts = (FieldTurnSpan<T>) after.first();
+            if (ts.inTurnTimeRange(dateDouble)) {
                 return ts;
             }
         }

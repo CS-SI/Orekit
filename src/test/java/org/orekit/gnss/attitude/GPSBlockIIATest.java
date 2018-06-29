@@ -53,10 +53,14 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testCrossingBeta() throws OrekitException {
-        // TODO: these results are not good,
-        // however the reference data is also highly suspicious
-        // this needs to be investigated
-        doTestAxes("beta-crossing-BLOCK-IIA.txt", 2.2e-100, 2.2, 8.8e-16);
+        // the differences with the reference Kouba models are due to the following changes:
+        // - Orekit computes angular velocity taking eccentricity into account
+        //   Kouba assumes a perfectly circular orbit
+        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
+        //   Kouba uses projected planar geometry (μ² = α² - β²)
+        // - Orekit updates turn time span as new points are evaluated
+        //   Kouba computes turn time span once near turn start and never updates it
+        doTestAxes("beta-crossing-BLOCK-IIA.txt", 0.049, 0.049, 1.0e-15);
     }
 
     @Test

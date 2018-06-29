@@ -28,6 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.LOFType;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldPVCoordinates;
@@ -72,6 +73,9 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Constant Z axis. */
     private final FieldPVCoordinates<T> minusZ;
 
+    /** Context date. */
+    private final AbsoluteDate dateDouble;
+
     /** Spacecraft position-velocity in inertial frame. */
     private final TimeStampedFieldPVCoordinates<T> svPV;
 
@@ -102,26 +106,25 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Relative orbit angle to turn center. */
     private FieldDerivativeStructure<T> delta;
 
-    /** Half span of the turn region, as an angle in orbit plane. */
-    private T halfSpan;
-
-    /** Turn start date. */
-    private FieldAbsoluteDate<T> turnStart;
-
-    /** Turn end date. */
-    private FieldAbsoluteDate<T> turnEnd;
+    /** Turn time data. */
+    private FieldTurnSpan<T> turnSpan;
 
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
+     * @param turnSpan turn time data, if a turn has already been identified in the date neighborhood,
+     * null otherwise
      * @exception OrekitException if yaw cannot be corrected
      */
-    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV)
+    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV,
+                             final FieldTurnSpan<T> turnSpan)
         throws OrekitException {
 
         final Field<T> field = sunPV.getDate().getField();
         plusY  = new FieldPVCoordinates<>(field, PLUS_Y);
         minusZ = new FieldPVCoordinates<>(field, MINUS_Z);
+
+        this.dateDouble = svPV.getDate().toAbsoluteDate();
 
         final FieldPVCoordinates<FieldDerivativeStructure<T>> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
         this.svPV    = svPV;
@@ -145,12 +148,21 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
 
         this.muRate = svPV.getAngularVelocity().getNorm();
 
+        this.turnSpan = turnSpan;
+
     }
 
     /** {@inheritDoc} */
     @Override
     public FieldAbsoluteDate<T> getDate() {
         return svPV.getDate();
+    }
+
+    /** Get the turn span.
+     * @return turn span, may be null if context is outside of turn
+     */
+    public FieldTurnSpan<T> getTurnSpan() {
+        return turnSpan;
     }
 
     /** Get the cosine of the angle between spacecraft and Sun direction.
@@ -190,7 +202,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      */
     public T getSecuredBeta() {
         return FastMath.abs(beta.getReal()) < BETA_SIGN_CHANGE_PROTECTION ?
-               beta.taylor(timeSinceTurnStart(getDate()).negate()) :
+               beta.taylor(timeSinceTurnStart().negate()) :
                getBeta();
     }
 
@@ -230,19 +242,27 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     public boolean setUpTurnRegion(final double cosNight, final double cosNoon) {
         this.cNight = cosNight;
         this.cNoon  = cosNoon;
-        if (svbCos.getValue().getReal() < cNight) {
+
+        // update relative orbit angle
+        final FieldDerivativeStructure<T> absDelta;
+        if (svbCos.getValue().getReal() <= 0) {
             // in eclipse turn mode
-            final FieldDerivativeStructure<T> absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
-            delta = absDelta.copySign(absDelta.getPartialDerivative(1).negate());
-            return true;
-        } else if (svbCos.getValue().getReal() > cNoon) {
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
+        } else {
             // in noon turn mode
-            final FieldDerivativeStructure<T> absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
-            delta = absDelta.copySign(absDelta.getPartialDerivative(1).negate());
+            absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos());
+        }
+        delta = absDelta.copySign(absDelta.getPartialDerivative(1).negate());
+
+        if (svbCos.getValue().getReal() < cNight || svbCos.getValue().getReal() > cNoon) {
+            // we are within turn triggering zone
             return true;
         } else {
-            return false;
+            // we are outside of turn triggering zone,
+            // but we may still be trying to recover nominal attitude at the end of a turn
+            return inTurnTimeRange();
         }
+
     }
 
     /** Get the relative orbit angle to turn center.
@@ -273,6 +293,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return yaw at turn start
      */
     public T getYawStart(final T sunBeta) {
+        final T halfSpan = turnSpan.getTurnDuration().multiply(muRate).multiply(0.5);
         return computePhi(sunBeta, FastMath.copySign(halfSpan, svbCos.getValue()));
     }
 
@@ -283,6 +304,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
      * @return yaw at turn end
      */
     public T getYawEnd(final T sunBeta) {
+        final T halfSpan = turnSpan.getTurnDuration().multiply(muRate).multiply(0.5);
         return computePhi(sunBeta, FastMath.copySign(halfSpan, svbCos.getValue().negate()));
     }
 
@@ -344,36 +366,37 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
 
     /** Set turn half span and compute corresponding turn time range.
      * @param halfSpan half span of the turn region, as an angle in orbit plane
+     * @param endMargin margin in seconds after turn end
      */
-    public void setHalfSpan(final T halfSpan) {
-        this.halfSpan  = halfSpan;
-        this.turnStart = svPV.getDate().shiftedBy(delta.getValue().subtract(halfSpan).divide(muRate));
-        this.turnEnd   = svPV.getDate().shiftedBy(delta.getValue().add(halfSpan).divide(muRate));
+    public void setHalfSpan(final T halfSpan, final double endMargin) {
+        final FieldAbsoluteDate<T> start = svPV.getDate().shiftedBy(delta.getValue().subtract(halfSpan).divide(muRate));
+        final FieldAbsoluteDate<T> end   = svPV.getDate().shiftedBy(delta.getValue().add(halfSpan).divide(muRate));
+        if (turnSpan == null) {
+            turnSpan = new FieldTurnSpan<>(start, end, getDate().toAbsoluteDate(), endMargin);
+        } else {
+            turnSpan.update(start, end, getDate().toAbsoluteDate());
+        }
     }
 
-    /** Check if a date is within range.
-     * @param date date to check
-     * @param endMargin margin in seconds after turn end
-     * @return true if date is within range extended by end margin
+    /** Check if context is within turn range.
+     * @return true if context is within range extended by end margin
      */
-    public boolean inTurnTimeRange(final FieldAbsoluteDate<T> date, final double endMargin) {
-        return date.durationFrom(turnStart).getReal() > 0 &&
-               date.durationFrom(turnEnd).getReal()   < endMargin;
+    public boolean inTurnTimeRange() {
+        return turnSpan != null && turnSpan.inTurnTimeRange(dateDouble);
     }
 
     /** Get turn duration.
      * @return turn duration
      */
     public T getTurnDuration() {
-        return halfSpan.multiply(2).divide(muRate);
+        return turnSpan.getTurnDuration();
     }
 
     /** Get elapsed time since turn start.
-     * @param date date to check
      * @return elapsed time from turn start to specified date
      */
-    public T timeSinceTurnStart(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(turnStart);
+    public T timeSinceTurnStart() {
+        return turnSpan.timeSinceTurnStart(getDate());
     }
 
     /** Generate an attitude with turn-corrected yaw.

@@ -235,7 +235,7 @@ class GNSSAttitudeContext implements TimeStamped {
         } else {
             // we are outside of turn triggering zone,
             // but we may still be trying to recover nominal attitude at the end of a turn
-            return turnSpan != null && turnSpan.inTurnTimeRange(getDate());
+            return inTurnTimeRange();
         }
 
     }
@@ -357,12 +357,11 @@ class GNSSAttitudeContext implements TimeStamped {
         }
     }
 
-    /** Check if a date is within range.
-     * @param date date to check
-     * @return true if date is within range extended by end margin
+    /** Check if context is within turn range.
+     * @return true if context is within range extended by end margin
      */
-    public boolean inTurnTimeRange(final AbsoluteDate date) {
-        return turnSpan.inTurnTimeRange(date);
+    public boolean inTurnTimeRange() {
+        return turnSpan != null && turnSpan.inTurnTimeRange(getDate());
     }
 
     /** Get turn duration.
@@ -373,11 +372,10 @@ class GNSSAttitudeContext implements TimeStamped {
     }
 
     /** Get elapsed time since turn start.
-     * @param date date to check
      * @return elapsed time from turn start to specified date
      */
-    public double timeSinceTurnStart(final AbsoluteDate date) {
-        return turnSpan.timeSinceTurnStart(date);
+    public double timeSinceTurnStart() {
+        return turnSpan.timeSinceTurnStart(getDate());
     }
 
     /** Generate an attitude with turn-corrected yaw.
