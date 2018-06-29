@@ -389,7 +389,7 @@ public class DSSTModel implements ODModel {
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagators.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagators.resetInitialState(stateWithDerivatives);
+        propagators.setInitialState(stateWithDerivatives, false);
 
         return partials.getMapper();
 

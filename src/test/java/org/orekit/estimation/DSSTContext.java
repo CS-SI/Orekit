@@ -27,16 +27,13 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
@@ -44,24 +41,26 @@ import org.orekit.utils.PVCoordinates;
 
 public class DSSTContext {
 
-    public IERSConventions                      conventions;
-    public OneAxisEllipsoid                     earth;
-    public CelestialBody                        sun;
-    public CelestialBody                        moon;
-    public RadiationSensitive                   radiationSensitive;
-    public DragSensitive                        dragSensitive;
-    public TimeScale                            utc;
-    public UT1Scale                             ut1;
-    public EquinoctialOrbit                     initialOrbit;
-    public StationDisplacement[]                displacements;
-    public List<GroundStation>                  stations;
+    public IERSConventions                        conventions;
+    public OneAxisEllipsoid                       earth;
+    public CelestialBody                          sun;
+    public CelestialBody                          moon;
+    public RadiationSensitive                     radiationSensitive;
+    public DragSensitive                          dragSensitive;
+    public UnnormalizedSphericalHarmonicsProvider gravity;
+    public TimeScale                              utc;
+    public UT1Scale                               ut1;
+    public EquinoctialOrbit                       initialOrbit;
+    public StationDisplacement[]                  displacements;
+    public List<GroundStation>                    stations;
     // Stations for turn-around range
     // Map entry = master station
     // Map value = slave station associated
-    public Map<GroundStation, GroundStation>     TARstations;
+    public Map<GroundStation, GroundStation>      TARstations;
 
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,
-                                               final double minStep, final double maxStep, final double dP)
+                                               final double minStep, final double maxStep, final double dP,
+                                               final DSSTForce... forces)
         throws OrekitException {
 
         final EquinoctialOrbit startOrbit;
@@ -83,17 +82,9 @@ public class DSSTContext {
                         new DSSTPropagatorBuilder(startOrbit,
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   dP);
-        
-        final DSSTForceModel drag = new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), dragSensitive, initialOrbit.getMu());
-        //final DSSTForceModel srp  = new DSSTSolarRadiationPressure(sun, earth.getEquatorialRadius(), radiationSensitive);
-        
-        final DSSTForceModel moonForce = new DSSTThirdBody(moon, initialOrbit.getMu());
-        final DSSTForceModel sunForce  = new DSSTThirdBody(sun,  initialOrbit.getMu());
-        
-        propagatorBuilder.addForceModel(drag);
-        //propagatorBuilder.addForceModel(srp);
-        propagatorBuilder.addForceModel(moonForce);
-        propagatorBuilder.addForceModel(sunForce);
+        for (DSSTForce force : forces) {
+            propagatorBuilder.addForceModel(force.getForceModel(this));
+        }
 
         return propagatorBuilder;
 

@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.attitudes.Attitude;
@@ -26,7 +27,6 @@ import org.orekit.estimation.leastsquares.DSSTModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -66,7 +66,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * (typically set to the expected standard deviation of the position)
      * @exception OrekitException if parameters drivers cannot be scaled
      */
-    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
+    public DSSTPropagatorBuilder(final EquinoctialOrbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale)
         throws OrekitException {
@@ -77,11 +77,64 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         this.attProvider = Propagator.DEFAULT_LAW;
     }
 
+    /** Create a copy of a DSSTPropagatorBuilder object.
+     * @return Copied version of the DSSTPropagatorBuilder
+     * @throws OrekitException if parameters drivers cannot be scaled
+     */
+    public DSSTPropagatorBuilder copy() throws OrekitException {
+        final DSSTPropagatorBuilder copyBuilder =
+                        new DSSTPropagatorBuilder((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit()),
+                                                  builder,
+                                                  getPositionScale());
+        copyBuilder.setAttitudeProvider(attProvider);
+        copyBuilder.setMass(mass);
+        for (DSSTForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
+    }
+
+    /** Get the integrator builder.
+     * @return the integrator builder
+     * @since 9.2
+     */
+    public ODEIntegratorBuilder getIntegratorBuilder()
+    {
+        return builder;
+    }
+
+    /** Get the list of all force models.
+     * @return the list of all force models
+     * @since 9.2
+     */
+    public List<DSSTForceModel> getAllForceModels()
+    {
+        return Collections.unmodifiableList(forceModels);
+    }
+
+    /** Get the attitudeProvider.
+     * @return the attitude provider
+     * @since 9.2
+     */
+    public AttitudeProvider getAttitudeProvider()
+    {
+        return attProvider;
+    }
+
     /** Set the attitude provider.
      * @param attitudeProvider attitude provider
      */
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         this.attProvider = attitudeProvider;
+    }
+
+    /** Get the mass.
+     * @return the mass
+     * @since 9.2
+     */
+    public double getMass()
+    {
+        return mass;
     }
 
     /** Set the initial mass.
@@ -119,7 +172,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
-        propagator.resetInitialState(state);
+        propagator.setInitialState(state, false);
 
         return propagator;
     }

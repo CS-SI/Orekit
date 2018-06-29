@@ -50,7 +50,7 @@ public class DSSTPropagatorBuilderTest {
     private double[][] tolerance;
 
     private AbsoluteDate initDate;
-    private Orbit orbit;
+    private EquinoctialOrbit orbit;
     private DSSTPropagator propagator;
     private DSSTForceModel moon;
 

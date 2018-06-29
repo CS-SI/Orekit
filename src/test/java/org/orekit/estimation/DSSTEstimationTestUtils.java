@@ -40,6 +40,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.radiation.IsotropicRadiationClassicalConvention;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
@@ -89,12 +91,14 @@ public class DSSTEstimationTestUtils {
                                   context.sun, context.moon,
                                   context.conventions, false)
         };
- 
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
+
         Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
                                          0.250, 1.375, 0.0625, PositionAngle.MEAN,
                                          FramesFactory.getEME2000(),
                                          new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
-                                         3.986004415E14);
+                                         context.gravity.getMu());
 
         context.initialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
 
@@ -159,8 +163,11 @@ public class DSSTEstimationTestUtils {
         context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
         context.dragSensitive      = new IsotropicDrag(2.0, 1.2);
 
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
+        
         // semimajor axis for a geostationnary satellite
-        double da = FastMath.cbrt(3.986004415E14 / (omega * omega));
+        double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
 
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
@@ -179,7 +186,7 @@ public class DSSTEstimationTestUtils {
 
         // Satellite position and velocity in Station Frame
         final Vector3D sat_pos          = new Vector3D(0., 0., da-stationPositionEME.getNorm());
-        final Vector3D acceleration     = new Vector3D(-3.986004415E14, sat_pos);
+        final Vector3D acceleration     = new Vector3D(-context.gravity.getMu(), sat_pos);
         final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
 
         // satellite position in EME2000
@@ -189,7 +196,7 @@ public class DSSTEstimationTestUtils {
         context.initialOrbit = new EquinoctialOrbit(pv_sat_iner,
                                                     FramesFactory.getEME2000(),
                                                     new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
-                                                    3.986004415E14);
+                                                    context.gravity.getMu());
 
         context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
@@ -214,9 +221,9 @@ public class DSSTEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
-                                                         orbitArray, null);
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(initialOrbit,
+                                              PositionAngle.MEAN,
+                                              orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
@@ -251,6 +258,22 @@ public class DSSTEstimationTestUtils {
 
     }
 
+    /**
+     * Checker for batch LS estimator validation
+     * @param context DSSTContext used for the test
+     * @param estimator Batch LS estimator
+     * @param iterations Number of iterations expected
+     * @param evaluations Number of evaluations expected
+     * @param expectedRMS Expected RMS value
+     * @param rmsEps Tolerance on expected RMS
+     * @param expectedMax Expected weighted residual maximum
+     * @param maxEps Tolerance on weighted residual maximum
+     * @param expectedDeltaPos Expected position difference between estimated orbit and initial orbit
+     * @param posEps Tolerance on expected position difference
+     * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
+     * @param velEps Tolerance on expected velocity difference
+     * @throws OrekitException
+     */
     public static void checkFit(final DSSTContext context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,

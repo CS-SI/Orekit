@@ -37,16 +37,13 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 public class DSSTModelTest {
 
-    //@Test
+    @Test
     public void testPerfectValue() throws OrekitException {
 
         final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -57,16 +54,7 @@ public class DSSTModelTest {
 
         // create perfect PV measurements
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final String equationName = DSSTModel.class.getName() + "-derivatives";
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator);
-
-        // add the derivatives to the initial state
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagator.resetInitialState(stateWithDerivatives);
-        
-        propagator.propagate(context.initialOrbit.getDate().shiftedBy(context.initialOrbit.getKeplerianPeriod()));
+                                                                               propagatorBuilder);
 
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
