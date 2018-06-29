@@ -38,8 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * useful for example in orbit determination applications.
  * </p>
  * <p>
- * The partial derivatives with respect to initial state can be either dimension 6
- * (orbit only) or 7 (orbit and mass).
+ * The partial derivatives with respect to initial state are dimension 6 (orbit only).
  * </p>
  * <p>
  * The partial derivatives with respect to force models parameters has a dimension

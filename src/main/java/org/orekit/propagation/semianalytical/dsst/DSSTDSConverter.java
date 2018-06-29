@@ -59,8 +59,10 @@ class DSSTDSConverter extends AbstractDSConverter {
 
         super(FREE_STATE_PARAMETERS);
 
+        // prepare derivation variables
         final DSFactory factory = new DSFactory(FREE_STATE_PARAMETERS, 1);
 
+        // equinoctial parameters always has derivatives
         final DerivativeStructure sma  = factory.variable(0, state.getA());
         final DerivativeStructure ex   = factory.variable(1, state.getEquinoctialEx());
         final DerivativeStructure ey   = factory.variable(2, state.getEquinoctialEy());

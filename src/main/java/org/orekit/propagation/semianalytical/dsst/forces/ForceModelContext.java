@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
+/** Base class for dsst force models attributes containers.*/
 public abstract class ForceModelContext {
 
     /** Common parameters used by all DSST forces. */
@@ -30,7 +31,8 @@ public abstract class ForceModelContext {
         this.auxiliaryElements = auxiliaryElements;
     }
 
-    /** Method to get the auxiliary elements.
+    /** Method to get the auxiliary elements related to the {@link
+     * ForceModelContext}.
      * @return auxiliary elements
      */
     public AuxiliaryElements getAuxiliaryElements() {

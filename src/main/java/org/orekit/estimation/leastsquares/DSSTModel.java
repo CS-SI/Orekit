@@ -405,6 +405,10 @@ public class DSSTModel implements ODModel {
 
         // compute weighted residuals
         evaluations.put(observedMeasurement, evaluation);
+        if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
+            return;
+        }
+
         final double[] evaluated = evaluation.getEstimatedValue();
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();

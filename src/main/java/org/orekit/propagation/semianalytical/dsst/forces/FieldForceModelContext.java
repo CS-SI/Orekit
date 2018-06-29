@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.hipparchus.RealFieldElement;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 
+/** Base class for dsst force models attributes containers.*/
 public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
 
     /** Common parameters used by all DSST forces. */
@@ -31,7 +32,8 @@ public abstract class FieldForceModelContext<T extends RealFieldElement<T>> {
         this.auxiliaryElements = auxiliaryElements;
     }
 
-    /** Method to get the auxiliary elements.
+    /** Method to get the auxiliary elementsrelated to the {@link
+     * ForceModelContext}.
      * @return field auxiliary elements
      */
     public FieldAuxiliaryElements<T> getFieldAuxiliaryElements() {

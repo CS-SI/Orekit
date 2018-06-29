@@ -73,8 +73,8 @@ public abstract class AbstractJacobiansMapper {
 
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
      * <p>
-     * For {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same, so the Jocabian
-     * is simply the identity.
+     * For a {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same,
+     * so the Jocabian is simply the identity.
      * </p>
      * <p>
      * For {@link NumericalPropagator Numerical propagator}, parameters used for derivatives are cartesian

@@ -77,8 +77,8 @@ import org.orekit.utils.TimeSpanMap;
  * over the true longitude L possibly taking into account some limits.
  *
  * <p> To create a numerically averaged contribution, one needs only to provide a
- * {@link ForceModel} and to implement in the derived class the method:
- * {@link #getLLimits(SpacecraftState)}.
+ * {@link ForceModel} and to implement in the derived class the methods:
+ * {@link #getLLimits(SpacecraftState)} and {@link #getParametersDriversWithoutMu()}.
  * </p>
  * @author Pascal Parraud
  */
@@ -185,14 +185,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             index++;
         }
 
-        // We put mu driver at the end of the array
+        // We put central attraction coefficient driver at the end of the array
         drivers[driversWithoutMu.length] = gmParameterDriver;
         return drivers;
 
     }
 
-    /** Get the drivers for force model parameters.
-     * @return drivers for force model parameters
+    /** Get the drivers for force model parameters except the one for central attraction coefficient.
+     *  We add automatically the driver for central attraction coefficient at the last element of the {@link
+     *  ParameterDriver} array into {@link #getParametersDrivers()} method.
+     *  @return drivers for force model parameters
      */
     protected abstract ParameterDriver[] getParametersDriversWithoutMu();
 

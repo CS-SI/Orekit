@@ -74,6 +74,14 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private static final int I = 1;
 
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
 
@@ -136,7 +144,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         try {
             gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    provider.getMu(), FastMath.scalb(1.0, 32),
+                                                    provider.getMu(), MU_SCALE,
                                                     0.0, Double.POSITIVE_INFINITY);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception

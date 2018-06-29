@@ -377,7 +377,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /** Remove all perturbing force models from the global perturbation model.
+    /** Remove all perturbing force models from the global perturbation model
+     *  (except central attraction).
      *  <p>
      *  Once all perturbing forces have been removed (and as long as no new force model is added),
      *  the integrated orbit will follow a Keplerian evolution only.
