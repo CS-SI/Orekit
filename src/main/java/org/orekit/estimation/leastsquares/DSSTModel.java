@@ -421,8 +421,15 @@ public class DSSTModel implements ODModel {
 
             final int p = observedMeasurement.getPropagatorsIndices().get(k);
 
+            // partial derivatives of the current Cartesian coordinates with respect to current orbital state
+            final double[][] aCY = new double[6][6];
+            final Orbit currentOrbit = evaluationStates[k].getOrbit();
+            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngle(), aCY);
+            final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
+
             // Jacobian of the measurement with respect to current orbital state
-            final RealMatrix dMdY = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
+            final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
+            final RealMatrix dMdY = dMdC.multiply(dCdY);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];
