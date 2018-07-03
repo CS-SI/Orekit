@@ -217,7 +217,9 @@ class DSSTTesseralContext extends ForceModelContext {
         maxHansen = maxEccPow / 2;
 
         // Keplerian period
-        orbitPeriod = auxiliaryElements.getKeplerianPeriod();
+        final double a = auxiliaryElements.getSma();
+        orbitPeriod = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod / bodyPeriod;

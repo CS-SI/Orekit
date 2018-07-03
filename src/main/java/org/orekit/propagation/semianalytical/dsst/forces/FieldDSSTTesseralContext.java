@@ -225,7 +225,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         maxHansen = maxEccPow / 2;
 
         // Keplerian period
-        orbitPeriod = auxiliaryElements.getKeplerianPeriod();
+        final T a = auxiliaryElements.getSma();
+        orbitPeriod = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod.divide(bodyPeriod);
