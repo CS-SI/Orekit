@@ -55,7 +55,7 @@ First retrieve the geomagnetic field model for a desired year (e.g. WMM):
 The year has to be specified as a decimal year, which can be converted from a julian
 date like this:
 
-    double year = GeoMagneticField.getDecimalYear(2012, 6, 1);
+    double year = GeoMagneticField.getDecimalYear(1, 6, 2012);
 
 Finally we can calculate the magnetic field at a geodetic location (lat/lon in deg) and
 altitude (in km):
