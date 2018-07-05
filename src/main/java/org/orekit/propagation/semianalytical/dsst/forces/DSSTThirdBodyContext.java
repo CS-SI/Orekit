@@ -28,7 +28,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 
 /** This class is a container for the attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody DSSTThirdBody}.
@@ -128,10 +127,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** V<sub>ns</sub> coefficients. */
     private final TreeMap<NSKey, Double> Vns;
 
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s */
-    private final HansenThirdBodyLinear[] hansenObjects;
-
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
@@ -153,12 +148,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
         this.gm = parameters[0];
         this.factory = new DSFactory(1, 1);
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
-
-        //Initialise the HansenCoefficient generator
-        this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
-        for (int s = 0; s <= MAX_POWER; s++) {
-            this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
-        }
 
         // Distance from center of mass of the central body to the 3rd body
         final Vector3D bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -274,21 +263,6 @@ class DSSTThirdBodyContext extends ForceModelContext {
 
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
 
-    }
-
-    /** Compute init values for hansen objects.
-     * @param B = sqrt(1 - e²).
-     * @param element element of the array to compute the init values
-     */
-    public void computeHansenObjectsInitValues(final double B, final int element) {
-        hansenObjects[element].computeInitValues(B, BB, BBB);
-    }
-
-    /** Get the Hansen Objects.
-     * @return hansenObjects
-     */
-    public HansenThirdBodyLinear[] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).

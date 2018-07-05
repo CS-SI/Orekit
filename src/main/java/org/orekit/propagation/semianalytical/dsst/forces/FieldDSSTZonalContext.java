@@ -28,10 +28,9 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenZonalLinear;
 
 /** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal DSSTZonal}.
@@ -60,10 +59,6 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
     /** Truncation tolerance. */
     private static final double TRUNCATION_TOLERANCE = 1e-4;
-
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s*/
-    private FieldHansenZonalLinear<T>[] hansenObjects;
 
     /** Highest power of the eccentricity to be used in mean elements computations. */
     private int maxEccPowMeanElements;
@@ -109,23 +104,16 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param meanOnly create only the objects required for the mean contribution
      * @param provider provider for spherical harmonics
-     * @param maxEccPowShortPeriodics highest power of the eccentricity to be used in short periodic computations.
      * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    @SuppressWarnings("unchecked")
     public FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                 final boolean meanOnly,
                                  final UnnormalizedSphericalHarmonicsProvider provider,
-                                 final int maxEccPowShortPeriodics,
                                  final T[] parameters)
         throws OrekitException {
 
         super(auxiliaryElements);
-
-        final Field<T> field = auxiliaryElements.getDate().getField();
 
         this.provider              = provider;
         this.maxDegree             = provider.getMaxDegree();
@@ -160,35 +148,6 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
 
-        final int maxEccPow;
-        if (meanOnly) {
-            maxEccPow = maxEccPowMeanElements;
-            this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
-            for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s, field);
-            }
-        } else {
-            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-            this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
-            for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s, field);
-            }
-        }
-
-    }
-
-    /** Compute init values for hansen objects.
-     * @param element element of the array to compute the init values
-     */
-    public void computeHansenObjectsInitValues(final int element) {
-        hansenObjects[element].computeInitValues(X);
-    }
-
-    /** Get the Hansen Objects.
-     * @return hansenObjects
-     */
-    public FieldHansenZonalLinear<T>[] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).

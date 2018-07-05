@@ -78,21 +78,26 @@ public class DSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
+        // Force model parameters
+        final double[] parameters = tesseral.getParameters();
+
+        // Initialize force model
+        tesseral.initialize(auxiliaryElements, true, parameters);
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         
-        final double[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters());
+        final double[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
         
-        Assert.assertEquals(7.120011500375922E-5, elements[0], 1.e-20);
+        Assert.assertEquals(7.120011500375922E-5,   elements[0], 1.e-20);
         Assert.assertEquals(-1.109767646425212E-11, elements[1], 1.e-26);
         Assert.assertEquals(2.3036711391089307E-11, elements[2], 1.e-26);
-        Assert.assertEquals(2.499304852807308E-12, elements[3], 1.e-27);
+        Assert.assertEquals(2.499304852807308E-12,  elements[3], 1.e-27);
         Assert.assertEquals(1.3899097178558372E-13, elements[4], 1.e-28);
-        Assert.assertEquals(5.795522421338584E-12, elements[5], 1.e-27);
+        Assert.assertEquals(5.795522421338584E-12,  elements[5], 1.e-27);
         
     }
     

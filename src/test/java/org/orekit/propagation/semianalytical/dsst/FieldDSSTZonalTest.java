@@ -39,6 +39,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -86,6 +87,10 @@ public class FieldDSSTZonalTest {
         
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
+        // Initialize force model
+        zonal.initialize(new AuxiliaryElements(orbit.toOrbit(), 1),
+                         true, zonal.getParameters());
+
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         

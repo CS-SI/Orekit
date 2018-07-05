@@ -25,9 +25,8 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
+import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
 /** This class is a container for the attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal DSSTZonal}.
@@ -56,10 +55,6 @@ class DSSTZonalContext extends ForceModelContext {
 
     /** Truncation tolerance. */
     private static final double TRUNCATION_TOLERANCE = 1e-4;
-
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s*/
-    private HansenZonalLinear[] hansenObjects;
 
     /** Highest power of the eccentricity to be used in mean elements computations. */
     private int maxEccPowMeanElements;
@@ -105,15 +100,12 @@ class DSSTZonalContext extends ForceModelContext {
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param meanOnly create only the objects required for the mean contribution
      * @param provider provider for spherical harmonics
-     * @param maxEccPowShortPeriodics highest power of the eccentricity to be used in short periodic computations.
      * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    DSSTZonalContext(final AuxiliaryElements auxiliaryElements, final boolean meanOnly,
+    DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
                      final UnnormalizedSphericalHarmonicsProvider provider,
-                     final int maxEccPowShortPeriodics,
                      final double[] parameters)
         throws OrekitException {
 
@@ -152,35 +144,6 @@ class DSSTZonalContext extends ForceModelContext {
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
 
-        final int maxEccPow;
-        if (meanOnly) {
-            maxEccPow = maxEccPowMeanElements;
-            this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
-            for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
-            }
-        } else {
-            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-            this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
-            for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
-            }
-        }
-
-    }
-
-    /** Compute init values for hansen objects.
-     * @param element element of the array to compute the init values
-     */
-    public void computeHansenObjectsInitValues(final int element) {
-        hansenObjects[element].computeInitValues(X);
-    }
-
-    /** Get the Hansen Objects.
-     * @return hansenObjects
-     */
-    public HansenZonalLinear[] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).
@@ -271,6 +234,13 @@ class DSSTZonalContext extends ForceModelContext {
      * @return maxDegree
      */
     public int getMaxDegree() {
+        return maxDegree;
+    }
+
+    /** Get the maximal degree to consider for harmonics potential.
+     * @return maxDegree
+     */
+    public int getMaxOrder() {
         return maxDegree;
     }
 

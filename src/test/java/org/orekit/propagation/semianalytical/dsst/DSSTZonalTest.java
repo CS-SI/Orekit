@@ -72,17 +72,23 @@ public class DSSTZonalTest {
         
         final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
 
+        // Force model parameters
+        final double[] parameters = zonal.getParameters();
+
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
+        
+        // Initialize force model
+        zonal.initialize(auxiliaryElements, true, parameters);
         
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         
-        final double[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
+        final double[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
         
-        Assert.assertEquals(0.0, elements[0], 1.e-25);
+        Assert.assertEquals(0.0,                     elements[0], 1.e-25);
         Assert.assertEquals(1.3909396722346468E-11,  elements[1], 3.e-26);
         Assert.assertEquals(-2.0275977261372793E-13, elements[2], 3.e-27);
         Assert.assertEquals(3.087141512018238E-9,    elements[3], 1.e-24);

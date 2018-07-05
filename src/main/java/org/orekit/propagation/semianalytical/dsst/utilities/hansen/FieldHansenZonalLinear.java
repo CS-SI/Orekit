@@ -73,7 +73,7 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
     private int numSlices;
 
     /** 2<sup>s</sup>. */
-    private T twots;
+    private double twots;
 
     /** 2*s+1. */
     private int twosp1;
@@ -82,26 +82,24 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
     private int twos;
 
     /** (2*s+1) / 2<sup>s</sup>. */
-    private T twosp1otwots;
+    private double twosp1otwots;
 
     /**
      * Constructor.
      *
      * @param nMax the maximum (absolute) value of n coefficient
      * @param s s coefficient
-     * @param field field of elements
      */
-    public FieldHansenZonalLinear(final int nMax, final int s, final Field<T> field) {
-        final T zero = field.getZero();
+    public FieldHansenZonalLinear(final int nMax, final int s) {
         //Initialize fields
         this.offset = nMax + 1;
         this.Nmin = -nMax - 1;
         N0 = -(s + 2);
         this.s = s;
-        this.twots = FastMath.pow(zero.add(2.), s);
+        this.twots = FastMath.pow(2., s);
         this.twos = 2 * s;
         this.twosp1 = this.twos + 1;
-        this.twosp1otwots = this.twots.divide(this.twosp1).reciprocal();
+        this.twosp1otwots = (double) this.twosp1 / this.twots;
 
         // prepare structures for stored data
         final int size = nMax - s - 1;
@@ -109,8 +107,6 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
         mpvecDeriv = new PolynomialFunction[size][];
 
         this.numSlices  = FastMath.max((int) FastMath.ceil(((double) size) / SLICE), 1);
-        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
-        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
 
         // Prepare the data base of associated polynomials
         generatePolynomials();
@@ -235,13 +231,16 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
      * @param chi 1 / sqrt(1 - e²)
      */
     public void computeInitValues(final T chi) {
-        final T zero = chi.getField().getZero();
+        final Field<T> field = chi.getField();
+        final T zero = field.getZero();
+        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
+        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
         // compute the values for n=s and n=s+1
         // See Danielson 2.7.3-(6a,b)
         hansenRoot[0][0] = zero;
         hansenRoot[0][1] = FastMath.pow(chi, this.twosp1).divide(this.twots);
         hansenDerivRoot[0][0] = zero;
-        hansenDerivRoot[0][1] = this.twosp1otwots.multiply(FastMath.pow(chi, this.twos));
+        hansenDerivRoot[0][1] = FastMath.pow(chi, this.twos).multiply(this.twosp1otwots);
 
         final int st = -s - 1;
         for (int i = 1; i < numSlices; i++) {

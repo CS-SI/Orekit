@@ -46,6 +46,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenThirdBodyLinear;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -102,6 +104,12 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
+    /** Hansen objects. */
+    private HansenObjects hansen;
+
+    /** Hansen objects for field elements. */
+    private FieldHansenObjects fieldHansen;
+
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
@@ -122,6 +130,10 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
 
         this.body = body;
+
+        //Initialise the HansenCoefficient generator
+        initializeHansenObjects();
+        initializeFieldHansenObjects();
     }
 
     /** Get third body.
@@ -129,6 +141,16 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     public CelestialBody getBody() {
         return body;
+    }
+
+    /** Initialise the HansenCoefficient generator. */
+    private void initializeHansenObjects() {
+        hansen = new HansenObjects();
+    }
+
+    /** Initialise the HansenCoefficient generator. */
+    private void initializeFieldHansenObjects() {
+        fieldHansen = new FieldHansenObjects();
     }
 
     /** Computes the highest power of the eccentricity and the highest power
@@ -199,7 +221,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Container for attributes
         final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
         // Access to potential U derivatives
-        final UAnddU udu = new UAnddU(context);
+        final UAnddU udu = new UAnddU(context, hansen);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
@@ -228,14 +250,14 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                                   final T[] parameters)
         throws OrekitException {
 
-        // Container for attributes
-        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
-        // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(context);
-
         // Parameters for array building
         final Field<T> field = currentState.getDate().getField();
         final T        zero  = field.getZero();
+
+        // Container for attributes
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Access to potential U derivatives
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fieldHansen);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
@@ -277,8 +299,9 @@ public class DSSTThirdBody implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
+
             final GeneratingFunctionCoefficients gfCoefs =
-                            new GeneratingFunctionCoefficients(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context);
+                            new GeneratingFunctionCoefficients(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context, hansen);
 
             //Compute additional quantities
             // 2 * a / An
@@ -1362,26 +1385,29 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param sMax maximum value of s index
          * @param jMax maximum value of j index
          * @param context container for attributes
+         * @param hansen hansen objects
          */
-        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax, final DSSTThirdBodyContext context) {
+        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax,
+                                       final DSSTThirdBodyContext context, final HansenObjects hansen) {
             this.jMax = jMax;
             this.cjsjFourier = new FourierCjSjCoefficients(nMax, sMax, jMax, context);
             this.cjCoefs = new double[8][jMax + 1];
             this.sjCoefs = new double[8][jMax + 1];
 
-            computeGeneratingFunctionCoefficients(context);
+            computeGeneratingFunctionCoefficients(context, hansen);
         }
 
         /**
          * Compute the coefficients for the generating function S and its derivatives.
          * @param context container for attributes
+         * @param hansenObjects hansen objects
          */
-        private void computeGeneratingFunctionCoefficients(final DSSTThirdBodyContext context) {
+        private void computeGeneratingFunctionCoefficients(final DSSTThirdBodyContext context, final HansenObjects hansenObjects) {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             // Access to potential U derivatives
-            final UAnddU udu = new UAnddU(context);
+            final UAnddU udu = new UAnddU(context, hansenObjects);
 
             //Compute the C<sup>j</sup> coefficients
             for (int j = 1; j <= jMax; j++) {
@@ -1909,8 +1935,9 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** Simple constuctor.
          * @param context container for attributes
+         * @param hansen hansen objects
          */
-        UAnddU(final DSSTThirdBodyContext context) {
+        UAnddU(final DSSTThirdBodyContext context, final HansenObjects hansen) {
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
@@ -1931,7 +1958,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             for (int s = 0; s <= context.getMaxEccPow(); s++) {
 
                 // initialise the Hansen roots
-                context.computeHansenObjectsInitValues(auxiliaryElements.getB(), s);
+                hansen.computeHansenObjectsInitValues(context, auxiliaryElements.getB(), s);
 
                 // Get the current Gs coefficient
                 final double gs = GsHs[0][s];
@@ -1959,8 +1986,8 @@ public class DSSTThirdBody implements DSSTForceModel {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
                         // Extract data from previous computation :
-                        final double kns   = context.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
-                        final double dkns  = context.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+                        final double kns   = hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final double dkns  = hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
                         final double vns   = context.getVns().get(new NSKey(n, s));
                         final double coef0 = delta0s * context.getAoR3Pow()[n] * vns;
@@ -2079,8 +2106,10 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         /** Simple constuctor.
          * @param context container for attributes
+         * @param hansen hansen objects
          */
-        FieldUAnddU(final FieldDSSTThirdBodyContext<T> context) {
+        @SuppressWarnings("unchecked")
+        FieldUAnddU(final FieldDSSTThirdBodyContext<T> context, final FieldHansenObjects hansen) {
 
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
@@ -2106,7 +2135,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             for (int s = 0; s <= context.getMaxEccPow(); s++) {
                 // initialise the Hansen roots
-                context.computeHansenObjectsInitValues(auxiliaryElements.getB(), s, field);
+                hansen.computeHansenObjectsInitValues(context, auxiliaryElements.getB(), s);
 
                 // Get the current Gs coefficient
                 final T gs = GsHs[0][s];
@@ -2134,8 +2163,8 @@ public class DSSTThirdBody implements DSSTForceModel {
                     // (n - s) must be even
                     if ((n - s) % 2 == 0) {
                         // Extract data from previous computation :
-                        final T kns   = context.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
-                        final T dkns  = context.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
+                        final T kns   = (T) hansen.getHansenObjects()[s].getValue(n, auxiliaryElements.getB());
+                        final T dkns  = (T) hansen.getHansenObjects()[s].getDerivative(n, auxiliaryElements.getB());
 
                         final T vns   = zero.add(context.getVns().get(new NSKey(n, s)));
                         final T coef0 = delta0s.multiply(vns).multiply(context.getAoR3Pow()[n]);
@@ -2216,6 +2245,81 @@ public class DSSTThirdBody implements DSSTForceModel {
          */
         public T getdUdGa() {
             return dUdGa;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private class HansenObjects {
+
+        /** Max power for summation. */
+        private static final int    MAX_POWER = 22;
+
+        /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The index is s */
+        private final HansenThirdBodyLinear[] hansenObjects;
+
+        /** Simple constructor. */
+        HansenObjects() {
+            this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
+            for (int s = 0; s <= MAX_POWER; s++) {
+                this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
+            }
+        }
+
+        /** Compute init values for hansen objects.
+         * @param context container for attributes
+         * @param B = sqrt(1 - e²).
+         * @param element element of the array to compute the init values
+         */
+        public void computeHansenObjectsInitValues(final DSSTThirdBodyContext context, final double B, final int element) {
+            hansenObjects[element].computeInitValues(B, context.getBB(), context.getBBB());
+        }
+
+        /** Get the Hansen Objects.
+         * @return hansenObjects
+         */
+        public HansenThirdBodyLinear[] getHansenObjects() {
+            return hansenObjects;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private class FieldHansenObjects {
+
+        /** Max power for summation. */
+        private static final int    MAX_POWER = 22;
+
+        /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The index is s */
+        private final FieldHansenThirdBodyLinear[] hansenObjects;
+
+        /** Simple constructor. */
+        FieldHansenObjects() {
+            this.hansenObjects = new FieldHansenThirdBodyLinear[MAX_POWER + 1];
+            for (int s = 0; s <= MAX_POWER; s++) {
+                this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s);
+            }
+        }
+
+        /** Initialise the Hansen roots for third body problem.
+         * @param <T> type of the elements
+         * @param context container for attributes
+         * @param B = sqrt(1 - e²).
+         * @param element element of the array to compute the init values
+         */
+        @SuppressWarnings("unchecked")
+        public <T extends RealFieldElement<T>> void computeHansenObjectsInitValues(final FieldDSSTThirdBodyContext<T> context,
+                                                   final T B, final int element) {
+            hansenObjects[element].computeInitValues(B, context.getBB(), context.getBBB());
+        }
+
+        /** Get the Hansen Objects.
+         * @return hansenObjects
+         */
+        public FieldHansenThirdBodyLinear[] getHansenObjects() {
+            return hansenObjects;
         }
 
     }

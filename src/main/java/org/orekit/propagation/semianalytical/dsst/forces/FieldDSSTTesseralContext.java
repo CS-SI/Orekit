@@ -30,7 +30,6 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenTesseralLinear;
 
 /** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral DSSTTesseral}.
@@ -113,15 +112,8 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     /** Keplerian period. */
     private T orbitPeriod;
 
-    /** Maximal degree to consider for harmonics potential. */
-    private final int maxDegree;
-
     /** Maximal order to consider for harmonics potential. */
     private final int maxOrder;
-
-    /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The indexes are s + maxDegree and j */
-    private FieldHansenTesseralLinear<T>[][] hansenObjects;
 
     /** Ratio of satellite period to central body rotation period. */
     private T ratio;
@@ -144,7 +136,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    @SuppressWarnings("unchecked")
     public FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                     final boolean meanOnly,
                                     final Frame centralBodyFrame,
@@ -162,7 +153,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         this.maxEccPow = 0;
         this.maxHansen = 0;
         this.maxOrder  = provider.getMaxOrder();
-        this.maxDegree = provider.getMaxDegree();
         this.resOrders = new ArrayList<Integer>();
 
         this.factory = new FDSFactory<>(field, 1, 1);
@@ -246,66 +236,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
             }
         }
 
-        //Allocate the two dimensional array
-        final int rows     = 2 * maxDegree + 1;
-        final int columns  = maxFrequencyShortPeriodics + 1;
-        //context.setHansenObjects(rows, columns);
-        this.hansenObjects = new FieldHansenTesseralLinear[rows][columns];
-
-        if (meanOnly) {
-            // loop through the resonant orders
-            for (int m : resOrders) {
-                //Compute the corresponding j term
-                final int j = FastMath.max(1, (int) FastMath.round(ratio.multiply(m)));
-
-                //Compute the sMin and sMax values
-                final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-                final int sMax = FastMath.min(maxEccPow + j, maxDegree);
-
-                //loop through the s values
-                for (int s = 0; s <= sMax; s++) {
-                    //Compute the n0 value
-                    final int n0 = FastMath.max(FastMath.max(2, m), s);
-
-                    //Create the object for the pair j, s
-                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
-                    this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
-
-                    if (s > 0 && s <= sMin) {
-                        //Also create the object for the pair j, -s
-                        //context.getHansenObjects()[maxDegree - s][j] = new HansenTesseralLinear(maxDegree, -s, j, n0, context.getMaxHansen());
-                        this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, field);
-                    }
-                }
-            }
-        } else {
-            // create all objects
-            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
-                for (int s = -maxDegree; s <= maxDegree; s++) {
-                    //Compute the n0 value
-                    final int n0 = FastMath.max(2, FastMath.abs(s));
-
-                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
-                    this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
-                }
-            }
-        }
-
-    }
-
-    /** Compute init values for hansen objects.
-     * @param rows number of rows of the hansen matrix
-     * @param columns columns number of columns of the hansen matrix
-     */
-    public void computeHansenObjectsInitValues(final int rows, final int columns) {
-        hansenObjects[rows][columns].computeInitValues(e2, chi, chi2);
-    }
-
-    /** Get hansen object.
-     * @return hansenObjects
-     */
-    public FieldHansenTesseralLinear<T>[][] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).

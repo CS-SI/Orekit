@@ -163,6 +163,12 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
+    /** Hansen objects. */
+    private HansenObjects hansen;
+
+    /** Hansen objects for field elements. */
+    private FieldHansenObjects fieldHansen;
+
     /** Simple constructor.
      * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -258,6 +264,32 @@ public class DSSTTesseral implements DSSTForceModel {
         }
     }
 
+    /** Initialise the HansenCoefficient generator.
+      * @param ratio Ratio of satellite period to central body rotation period
+      * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
+      * @param resOrders List of resonant orders
+      * @param meanOnly create only the objects required for the mean contribution
+      */
+    private void initializeHansenObjects(final double ratio,
+                                         final int maxEccPow,
+                                         final List<Integer> resOrders,
+                                         final boolean meanOnly) {
+        hansen = new HansenObjects(ratio, maxEccPow, resOrders, meanOnly);
+    }
+
+    /** Initialise the HansenCoefficient generator.
+     * @param ratio Ratio of satellite period to central body rotation period
+     * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
+     * @param resOrders List of resonant orders
+     * @param meanOnly create only the objects required for the mean contribution
+     */
+    private void initializeFieldHansenObjects(final double ratio,
+                                              final int maxEccPow,
+                                              final List<Integer> resOrders,
+                                              final boolean meanOnly) {
+        fieldHansen = new FieldHansenObjects(ratio, maxEccPow, resOrders, meanOnly);
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
@@ -265,6 +297,15 @@ public class DSSTTesseral implements DSSTForceModel {
 
         // Initializes specific parameters.
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, meanOnly, parameters);
+
+        // The following terms are only used for hansen objects initialization
+        final double ratio            = context.getRatio();
+        final int maxEccPow           = context.getMaxEccPow();
+        final List<Integer> resOrders = context.getResOrders();
+
+        // Initializes Hansen Objects
+        initializeHansenObjects(ratio, maxEccPow, resOrders, meanOnly);
+        initializeFieldHansenObjects(ratio, maxEccPow, resOrders, meanOnly);
 
         // Compute the non resonant tesseral harmonic terms if not set by the user
         getNonResonantTerms(meanOnly, context);
@@ -326,7 +367,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, true, parameters);
 
         // Access to potential U derivatives
-        final UAnddU udu = new UAnddU(spacecraftState.getDate(), context);
+        final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, hansen);
 
         // Compute the cross derivative operator :
         final double UAlphaGamma   = auxiliaryElements.getAlpha() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdAl();
@@ -337,7 +378,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final double UhkmUabmdUdl  = Uhk - UAlphaBeta - udu.getdUdl();
 
         final double da =  context.getAx2oA() * udu.getdUdl();
-        final double dh =    context.getBoA() * udu.getdUdk() + auxiliaryElements.getK() * pUagmIqUbgoAB - auxiliaryElements.getH() * context.getBoABpo() * udu.getdUdl();
+        final double dh =  context.getBoA() * udu.getdUdk() + auxiliaryElements.getK() * pUagmIqUbgoAB - auxiliaryElements.getH() * context.getBoABpo() * udu.getdUdl();
         final double dk =  -(context.getBoA() * udu.getdUdh() + auxiliaryElements.getH() * pUagmIqUbgoAB + auxiliaryElements.getK() * context.getBoABpo() * udu.getdUdl());
         final double dp =  context.getCo2AB() * (auxiliaryElements.getP() * UhkmUabmdUdl - UBetaGamma);
         final double dq =  context.getCo2AB() * (auxiliaryElements.getQ() * UhkmUabmdUdl - I * UAlphaGamma);
@@ -357,7 +398,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, true, parameters);
 
         // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(spacecraftState.getDate(), context);
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(spacecraftState.getDate(), context, fieldHansen);
 
         // Compute the cross derivative operator :
         final T UAlphaGamma   = udu.getdUdGa().multiply(auxiliaryElements.getAlpha()).subtract(udu.getdUdAl().multiply(auxiliaryElements.getGamma()));
@@ -402,11 +443,11 @@ public class DSSTTesseral implements DSSTForceModel {
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
                 // coefficients with j == 0 are always needed
-                context.computeHansenObjectsInitValues(s + maxDegree, 0);
+                hansen.computeHansenObjectsInitValues(context, s + maxDegree, 0);
                 if (maxDegreeTesseralSP >= 0) {
                     // initialize other objects only if required
                     for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
-                        context.computeHansenObjectsInitValues(s + maxDegree, j);
+                        hansen.computeHansenObjectsInitValues(context, s + maxDegree, j);
                     }
                 }
             }
@@ -415,7 +456,7 @@ public class DSSTTesseral implements DSSTForceModel {
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Generate the fourrier coefficients
-                cjsjFourier.generateCoefficients(meanState.getDate(), context);
+                cjsjFourier.generateCoefficients(meanState.getDate(), context, hansen);
 
                 // the coefficient 3n / 2a
                 final double tnota = 1.5 * auxiliaryElements.getMeanMotion() / auxiliaryElements.getSma();
@@ -544,12 +585,14 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
      *  @param context container for attributes
+     *  @param hansenObjects initialization of hansen objects
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
-                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS, final DSSTTesseralContext context)
+                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS, final DSSTTesseralContext context,
+                                   final HansenObjects hansenObjects)
         throws OrekitException {
 
         // Auxiliary elements related to the current orbit
@@ -588,7 +631,7 @@ public class DSSTTesseral implements DSSTForceModel {
         //Get the corresponding Hansen object
         final int sIndex = maxDegree + (j < 0 ? -s : s);
         final int jIndex = FastMath.abs(j);
-        final HansenTesseralLinear hans = context.getHansenObjects()[sIndex][jIndex];
+        final HansenTesseralLinear hans = hansenObjects.getHansenObjects()[sIndex][jIndex];
 
         // n-SUM from nmin to N
         for (int n = nmin; n <= maxN; n++) {
@@ -690,13 +733,16 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
      *  @param context container for attributes
+     *  @param hansenObjects initialization of hansen objects
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
+    @SuppressWarnings("unchecked")
     private <T extends RealFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
                                    final int j, final int m, final int s, final int maxN, final T[] roaPow,
                                    final FieldGHmsjPolynomials<T> ghMSJ, final FieldGammaMnsFunction<T> gammaMNS,
-                                   final FieldDSSTTesseralContext<T> context)
+                                   final FieldDSSTTesseralContext<T> context,
+                                   final FieldHansenObjects hansenObjects)
         throws OrekitException {
 
         // Auxiliary elements related to the current orbit
@@ -738,7 +784,7 @@ public class DSSTTesseral implements DSSTForceModel {
         //Get the corresponding Hansen object
         final int sIndex = maxDegree + (j < 0 ? -s : s);
         final int jIndex = FastMath.abs(j);
-        final FieldHansenTesseralLinear<T> hans = context.getHansenObjects()[sIndex][jIndex];
+        final FieldHansenTesseralLinear<T> hans = hansenObjects.getHansenObjects()[sIndex][jIndex];
 
         // n-SUM from nmin to N
         for (int n = nmin; n <= maxN; n++) {
@@ -915,9 +961,11 @@ public class DSSTTesseral implements DSSTForceModel {
          * Generate the coefficients.
          * @param date the current date
          * @param context container for attributes
+         * @param hansenObjects initialization of hansen objects
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        public void generateCoefficients(final AbsoluteDate date, final DSSTTesseralContext context) throws OrekitException {
+        public void generateCoefficients(final AbsoluteDate date, final DSSTTesseralContext context,
+                                         final HansenObjects hansenObjects) throws OrekitException {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
             // Compute only if there is at least one non-resonant tesseral
@@ -937,7 +985,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 //generate the m-daily coefficients
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
-                    buildFourierCoefficients(date, m, 0, maxDegreeMdailyTesseralSP, context);
+                    buildFourierCoefficients(date, m, 0, maxDegreeMdailyTesseralSP, context, hansenObjects);
                 }
 
                 // generate the other coefficients only if required
@@ -946,7 +994,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final List<Integer> listJ = nonResOrders.get(m);
 
                         for (int j: listJ) {
-                            buildFourierCoefficients(date, m, j, maxDegreeTesseralSP, context);
+                            buildFourierCoefficients(date, m, j, maxDegreeTesseralSP, context, hansenObjects);
                         }
                     }
                 }
@@ -960,10 +1008,12 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param j j index
          * @param maxN  maximum value for n index
          * @param context container for attributes
+         * @param hansenObjects initialization of hansen objects
          * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final AbsoluteDate date,
-               final int m, final int j, final int maxN, final DSSTTesseralContext context) throws OrekitException {
+               final int m, final int j, final int maxN, final DSSTTesseralContext context,
+               final HansenObjects hansenObjects) throws OrekitException {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
@@ -990,7 +1040,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // n-SUM for s positive
                 final double[][] nSumSpos = computeNSum(date, j, m, s, maxN,
-                                                        roaPow, ghMSJ, gammaMNS, context);
+                                                        roaPow, ghMSJ, gammaMNS, context, hansenObjects);
                 dRdaCos  += nSumSpos[0][0];
                 dRdaSin  += nSumSpos[0][1];
                 dRdhCos  += nSumSpos[1][0];
@@ -1009,7 +1059,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 // n-SUM for s negative
                 if (s > 0 && s <= sMin) {
                     final double[][] nSumSneg = computeNSum(date, j, m, -s, maxN,
-                                                            roaPow, ghMSJ, gammaMNS, context);
+                                                            roaPow, ghMSJ, gammaMNS, context, hansenObjects);
                     dRdaCos  += nSumSneg[0][0];
                     dRdaSin  += nSumSneg[0][1];
                     dRdhCos  += nSumSneg[1][0];
@@ -1563,9 +1613,11 @@ public class DSSTTesseral implements DSSTForceModel {
         /** Simple constuctor.
          * @param date current date
          * @param context container for attributes
+         * @param hansen hansen objects
          * @throws OrekitException if some specific error occurs
          */
-        UAnddU(final AbsoluteDate date, final DSSTTesseralContext context) throws OrekitException {
+        UAnddU(final AbsoluteDate date, final DSSTTesseralContext context, final HansenObjects hansen)
+            throws OrekitException {
 
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
@@ -1627,11 +1679,11 @@ public class DSSTTesseral implements DSSTForceModel {
                     for (int s = 0; s <= sMax; s++) {
 
                         //Compute the initial values for Hansen coefficients using newComb operators
-                        context.computeHansenObjectsInitValues(s + maxDegree, j);
+                        hansen.computeHansenObjectsInitValues(context, s + maxDegree, j);
 
                         // n-SUM for s positive
                         final double[][] nSumSpos = computeNSum(date, j, m, s, maxDegree,
-                                                                roaPow, ghMSJ, gammaMNS, context);
+                                                                roaPow, ghMSJ, gammaMNS, context, hansen);
                         dUdaCos  += nSumSpos[0][0];
                         dUdaSin  += nSumSpos[0][1];
                         dUdhCos  += nSumSpos[1][0];
@@ -1650,10 +1702,10 @@ public class DSSTTesseral implements DSSTForceModel {
                         // n-SUM for s negative
                         if (s > 0 && s <= sMin) {
                             //Compute the initial values for Hansen coefficients using newComb operators
-                            context.computeHansenObjectsInitValues(maxDegree - s, j);
+                            hansen.computeHansenObjectsInitValues(context, maxDegree - s, j);
 
                             final double[][] nSumSneg = computeNSum(date, j, m, -s, maxDegree,
-                                                                    roaPow, ghMSJ, gammaMNS, context);
+                                                                    roaPow, ghMSJ, gammaMNS, context, hansen);
                             dUdaCos  += nSumSneg[0][0];
                             dUdaSin  += nSumSneg[0][1];
                             dUdhCos  += nSumSneg[1][0];
@@ -1782,9 +1834,11 @@ public class DSSTTesseral implements DSSTForceModel {
         /** Simple constuctor.
          * @param date current date
          * @param context container for attributes
+         * @param hansen hansen objects
          * @throws OrekitException if some specific error occurs
          */
-        FieldUAnddU(final FieldAbsoluteDate<T> date, final FieldDSSTTesseralContext<T> context) throws OrekitException {
+        FieldUAnddU(final FieldAbsoluteDate<T> date, final FieldDSSTTesseralContext<T> context,
+                    final FieldHansenObjects hansen) throws OrekitException {
 
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
@@ -1850,11 +1904,11 @@ public class DSSTTesseral implements DSSTForceModel {
                     for (int s = 0; s <= sMax; s++) {
 
                         //Compute the initial values for Hansen coefficients using newComb operators
-                        context.computeHansenObjectsInitValues(s + maxDegree, j);
+                        hansen.computeHansenObjectsInitValues(context, s + maxDegree, j);
 
                         // n-SUM for s positive
                         final T[][] nSumSpos = computeNSum(date, j, m, s, maxDegree,
-                                                                roaPow, ghMSJ, gammaMNS, context);
+                                                                roaPow, ghMSJ, gammaMNS, context, hansen);
                         dUdaCos  = dUdaCos.add(nSumSpos[0][0]);
                         dUdaSin  = dUdaSin.add(nSumSpos[0][1]);
                         dUdhCos  = dUdhCos.add(nSumSpos[1][0]);
@@ -1873,10 +1927,10 @@ public class DSSTTesseral implements DSSTForceModel {
                         // n-SUM for s negative
                         if (s > 0 && s <= sMin) {
                             //Compute the initial values for Hansen coefficients using newComb operators
-                            context.computeHansenObjectsInitValues(maxDegree - s, j);
+                            hansen.computeHansenObjectsInitValues(context, maxDegree - s, j);
 
                             final T[][] nSumSneg = computeNSum(date, j, m, -s, maxDegree,
-                                                                    roaPow, ghMSJ, gammaMNS, context);
+                                                                    roaPow, ghMSJ, gammaMNS, context, hansen);
                             dUdaCos  = dUdaCos.add(nSumSneg[0][0]);
                             dUdaSin  = dUdaSin.add(nSumSneg[0][1]);
                             dUdhCos  = dUdhCos.add(nSumSneg[1][0]);
@@ -1904,7 +1958,7 @@ public class DSSTTesseral implements DSSTForceModel {
                     dUdGa = dUdGa.add(dUdGaCos.multiply(cosPhi).add(dUdGaSin.multiply(sinPhi)));
                 }
 
-                dUda  = dUda.multiply(context.getMoa().divide(auxiliaryElements.getSma())).negate();
+                dUda  =  dUda.multiply(context.getMoa().divide(auxiliaryElements.getSma())).negate();
                 dUdh  =  dUdh.multiply(context.getMoa());
                 dUdk  =  dUdk.multiply(context.getMoa());
                 dUdl  =  dUdl.multiply(context.getMoa());
@@ -1963,6 +2017,169 @@ public class DSSTTesseral implements DSSTForceModel {
          */
         public T getdUdGa() {
             return dUdGa;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private class HansenObjects {
+
+        /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
+        private int maxHansen;
+
+        /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The indexes are s + maxDegree and j */
+        private HansenTesseralLinear[][] hansenObjects;
+
+        /** Simple constructor.
+         * @param ratio Ratio of satellite period to central body rotation period
+         * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
+         * @param resOrders List of resonant orders
+         * @param meanOnly create only the objects required for the mean contribution
+         */
+        HansenObjects(final double ratio,
+                      final int maxEccPow,
+                      final List<Integer> resOrders,
+                      final boolean meanOnly) {
+
+            // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+            maxHansen = maxEccPow / 2;
+
+            //Allocate the two dimensional array
+            final int rows     = 2 * maxDegree + 1;
+            final int columns  = maxFrequencyShortPeriodics + 1;
+            this.hansenObjects = new HansenTesseralLinear[rows][columns];
+
+            if (meanOnly) {
+                // loop through the resonant orders
+                for (int m : resOrders) {
+                    //Compute the corresponding j term
+                    final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+
+                    //Compute the sMin and sMax values
+                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+
+                    //loop through the s values
+                    for (int s = 0; s <= sMax; s++) {
+                        //Compute the n0 value
+                        final int n0 = FastMath.max(FastMath.max(2, m), s);
+
+                        //Create the object for the pair j, s
+                        this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+
+                        if (s > 0 && s <= sMin) {
+                            //Also create the object for the pair j, -s
+                            this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
+                        }
+                    }
+                }
+            } else {
+                // create all objects
+                for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                    for (int s = -maxDegree; s <= maxDegree; s++) {
+                        //Compute the n0 value
+                        final int n0 = FastMath.max(2, FastMath.abs(s));
+                        this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+                    }
+                }
+            }
+        }
+
+        /** Compute init values for hansen objects.
+         * @param context container for attributes
+         * @param rows number of rows of the hansen matrix
+         * @param columns columns number of columns of the hansen matrix
+         */
+        public void computeHansenObjectsInitValues(final DSSTTesseralContext context, final int rows, final int columns) {
+            hansenObjects[rows][columns].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
+        }
+
+        /** Get hansen object.
+         * @return hansenObjects
+         */
+        public HansenTesseralLinear[][] getHansenObjects() {
+            return hansenObjects;
+        }
+
+    }
+
+    /** Computes init values of the Hansen Objects. */
+    private class FieldHansenObjects {
+
+        /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
+         * The indexes are s + maxDegree and j */
+        private FieldHansenTesseralLinear[][] hansenObjects;
+
+        /** Simple constructor.
+         * @param ratio Ratio of satellite period to central body rotation period
+         * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
+         * @param resOrders List of resonant orders
+         * @param meanOnly create only the objects required for the mean contribution
+         */
+        FieldHansenObjects(final double ratio,
+                           final int maxEccPow,
+                           final List<Integer> resOrders,
+                           final boolean meanOnly) {
+
+            //Allocate the two dimensional array
+            final int rows     = 2 * maxDegree + 1;
+            final int columns  = maxFrequencyShortPeriodics + 1;
+            this.hansenObjects = new FieldHansenTesseralLinear[rows][columns];
+
+            if (meanOnly) {
+                // loop through the resonant orders
+                for (int m : resOrders) {
+                    //Compute the corresponding j term
+                    final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+
+                    //Compute the sMin and sMax values
+                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+
+                    //loop through the s values
+                    for (int s = 0; s <= sMax; s++) {
+                        //Compute the n0 value
+                        final int n0 = FastMath.max(FastMath.max(2, m), s);
+
+                        //Create the object for the pair j, s
+                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0);
+
+                        if (s > 0 && s <= sMin) {
+                            //Also create the object for the pair j, -s
+                            this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0);
+                        }
+                    }
+                }
+            } else {
+                // create all objects
+                for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                    for (int s = -maxDegree; s <= maxDegree; s++) {
+                        //Compute the n0 value
+                        final int n0 = FastMath.max(2, FastMath.abs(s));
+                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0);
+                    }
+                }
+            }
+        }
+
+        /** Compute init values for hansen objects.
+         * @param <T> type of the elements
+         * @param context container for attributes
+         * @param rows number of rows of the hansen matrix
+         * @param columns columns number of columns of the hansen matrix
+         */
+        @SuppressWarnings("unchecked")
+        public <T extends RealFieldElement<T>> void computeHansenObjectsInitValues(final FieldDSSTTesseralContext<T> context,
+                                                                                   final int rows, final int columns) {
+            hansenObjects[rows][columns].computeInitValues(context.getE2(), context.getChi(), context.getChi2(), context.getMaxHansen());
+        }
+
+        /** Get hansen object.
+         * @return hansenObjects
+         */
+        public FieldHansenTesseralLinear[][] getHansenObjects() {
+            return hansenObjects;
         }
 
     }

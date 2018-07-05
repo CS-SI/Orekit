@@ -32,7 +32,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenThirdBodyLinear;
 
 /** This class is a container for the field attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody DSSTThirdBody}.
@@ -127,10 +126,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** V<sub>ns</sub> coefficients. */
     private final TreeMap<NSKey, Double> Vns;
 
-    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The index is s */
-    private final FieldHansenThirdBodyLinear<T>[] hansenObjects;
-
     /** Factory for the DerivativeStructure instances. */
     private final FDSFactory<T> factory;
 
@@ -142,7 +137,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @param parameters values of the force model parameters
      * @throws OrekitException if some specific error occurs
      */
-    @SuppressWarnings("unchecked")
     public FieldDSSTThirdBodyContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                                      final CelestialBody thirdBody,
                                      final T[] parameters)
@@ -160,12 +154,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         this.gm = parameters[0];
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
         this.factory = new FDSFactory<>(field, 1, 1);
-
-        //Initialise the HansenCoefficient generator
-        this.hansenObjects = new FieldHansenThirdBodyLinear[MAX_POWER + 1];
-        for (int s = 0; s <= MAX_POWER; s++) {
-            this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s, field);
-        }
 
         // Distance from center of mass of the central body to the 3rd body
         final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -277,22 +265,6 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         maxEccPowShort = MAX_ECCPOWER_SP;
 
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-    }
-
-    /** Initialise the Hansen roots for third body problem.
-     * @param B = sqrt(1 - e²).
-     * @param element element of the array to compute the init values
-     * @param field field of elements
-     */
-    public void computeHansenObjectsInitValues(final T B, final int element, final Field<T> field) {
-        hansenObjects[element].computeInitValues(B, BB, BBB, field);
-    }
-
-    /** Get the Hansen Objects.
-     * @return hansenObjects
-     */
-    public FieldHansenThirdBodyLinear<T>[] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).

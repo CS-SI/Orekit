@@ -27,7 +27,6 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 
 /** This class is a container for the attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral DSSTTesseral}.
@@ -115,10 +114,6 @@ class DSSTTesseralContext extends ForceModelContext {
 
     /** Maximal order to consider for harmonics potential. */
     private final int maxOrder;
-
-    /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
-     * The indexes are s + maxDegree and j */
-    private HansenTesseralLinear[][] hansenObjects;
 
     /** Ratio of satellite period to central body rotation period. */
     private double ratio;
@@ -239,65 +234,6 @@ class DSSTTesseralContext extends ForceModelContext {
             }
         }
 
-        //Allocate the two dimensional array
-        final int rows     = 2 * maxDegree + 1;
-        final int columns  = maxFrequencyShortPeriodics + 1;
-        this.hansenObjects = new HansenTesseralLinear[rows][columns];
-
-        if (meanOnly) {
-            // loop through the resonant orders
-            for (int m : resOrders) {
-                //Compute the corresponding j term
-                final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
-
-                //Compute the sMin and sMax values
-                final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-                final int sMax = FastMath.min(maxEccPow + j, maxDegree);
-
-                //loop through the s values
-                for (int s = 0; s <= sMax; s++) {
-                    //Compute the n0 value
-                    final int n0 = FastMath.max(FastMath.max(2, m), s);
-
-                    //Create the object for the pair j, s
-                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
-                    this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
-
-                    if (s > 0 && s <= sMin) {
-                        //Also create the object for the pair j, -s
-                        //context.getHansenObjects()[maxDegree - s][j] = new HansenTesseralLinear(maxDegree, -s, j, n0, context.getMaxHansen());
-                        this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
-                    }
-                }
-            }
-        } else {
-            // create all objects
-            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
-                for (int s = -maxDegree; s <= maxDegree; s++) {
-                    //Compute the n0 value
-                    final int n0 = FastMath.max(2, FastMath.abs(s));
-
-                    //context.getHansenObjects()[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, context.getMaxHansen());
-                    this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
-                }
-            }
-        }
-
-    }
-
-    /** Compute init values for hansen objects.
-     * @param rows number of rows of the hansen matrix
-     * @param columns columns number of columns of the hansen matrix
-     */
-    public void computeHansenObjectsInitValues(final int rows, final int columns) {
-        hansenObjects[rows][columns].computeInitValues(e2, chi, chi2);
-    }
-
-    /** Get hansen object.
-     * @return hansenObjects
-     */
-    public HansenTesseralLinear[][] getHansenObjects() {
-        return hansenObjects;
     }
 
     /** Get A = sqrt(μ * a).

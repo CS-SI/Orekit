@@ -87,11 +87,8 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
      * @param s s parameter
      * @param j j parameter
      * @param n0 the minimum (absolute) value of n
-     * @param maxHansen maximum power of e2 in Hansen expansion
-     * @param field field element
      */
-    @SuppressWarnings("unchecked")
-    public FieldHansenTesseralLinear(final int nMax, final int s, final int j, final int n0, final int maxHansen, final Field<T> field) {
+    public FieldHansenTesseralLinear(final int nMax, final int s, final int j, final int n0) {
         //Initialize the fields
         this.offset = nMax + 1;
         this.Nmin = -nMax - 1;
@@ -99,18 +96,9 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
         this.s = s;
         this.j = j;
 
-        //Ensure that only the needed terms are computed
-        final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
-        this.hansenInit = new FieldHansenCoefficientsBySeries[maxRoots];
-        for (int i = 0; i < maxRoots; i++) {
-            this.hansenInit[i] = new FieldHansenCoefficientsBySeries<>(N0 - i + 3, s, j, maxHansen, field);
-        }
-
         // The first 4 values are computed with series. No linear combination is needed.
         final int size = N0 - Nmin;
         this.numSlices = (int) FastMath.max(FastMath.ceil(((double) size) / SLICE), 1);
-        hansenRoot = MathArrays.buildArray(field, numSlices, 4);
-        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 4);
         if (size > 0) {
             mpvec = new PolynomialFunction[size][];
             mpvecDeriv = new PolynomialFunction[size][];
@@ -321,13 +309,23 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
      * @param e2 e²
      * @param chi &Chi;
      * @param chi2 &Chi;²
+     * @param maxHansen maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
      */
-    public void computeInitValues(final T e2, final T chi, final T chi2) {
+    @SuppressWarnings("unchecked")
+    public void computeInitValues(final T e2, final T chi, final T chi2, final int maxHansen) {
         // compute the values for n, n+1, n+2 and n+3 by series
         // See Danielson 2.7.3-(10)
         //Ensure that only the needed terms are computed
+        final Field<T> field = e2.getField();
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
+
+        //Ensure that only the needed terms are computed
+        this.hansenInit = new FieldHansenCoefficientsBySeries[maxRoots];
+
+        hansenRoot = MathArrays.buildArray(field, numSlices, 4);
+        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 4);
         for (int i = 0; i < maxRoots; i++) {
+            this.hansenInit[i] = new FieldHansenCoefficientsBySeries<>(N0 - i + 3, s, j, maxHansen, field);
             final FieldDerivativeStructure<T> hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
             this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
