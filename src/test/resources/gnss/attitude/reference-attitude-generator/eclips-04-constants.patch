@@ -1,15 +1,18 @@
---- eclips_May2017.f	2018-07-09 10:45:24.385812759 +0200
-+++ eclips_May2017_patched.f	2018-07-09 10:58:18.273720745 +0200
-@@ -90,6 +90,8 @@
- C                                    EXACTLY AT NODE (AVOID NaNs) AND IMPROVE
- C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
+--- eclips_May2017.f	2018-07-09 15:01:04.755876514 +0200
++++ eclips_May2017_patched.f	2018-07-09 15:04:16.149129245 +0200
+@@ -92,8 +92,10 @@
  C                                    ORBITS (Luc Maisonobe)
+ C                      May 20, 2018  ENSURE WE USE THE DOUBLE PRECISION VERSION
+ C                                    OF ALL MATHEMATICAL FUNCTIONS (Luc Maisonobe)
+-C     PARAMETERS        DESCRIPTION
 +C                      Jun 08, 2018  ENSURE ALL LITTERAL CONSTANTS ARE DOUBLE
 +C                                    PRECISION (Luc Maisonobe)
- C     PARAMETERS        DESCRIPTION
  C
++C     PARAMETERS        DESCRIPTION
  C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
-@@ -368,7 +370,7 @@
+ C        IPRN           SV PRN NUMBER (.LE.32 FOR GPS, .GT.32 FOR GLONASS)
+ C        TTAG           OBSERVATION EPOCH TIME TAG (EG SEC OF GPS WEEK)
+@@ -372,7 +374,7 @@
  C Jan 16, 2015- end
         END IF 
         IF(NOON) THEN
@@ -18,7 +21,7 @@
  C Jan 16, 2015- start (NO IIR X-REVERSAL!)
  c        IF(IBLK(IPRN).EQ.4.OR.IBLK(IPRN).EQ.5) THEN
  c         IF(DABS(YANGLE).LT.90.d0) DET=-DET
-@@ -621,14 +623,14 @@
+@@ -625,14 +627,14 @@
       &         SIN((ttag-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
@@ -35,7 +38,7 @@
       &+0.5D0*(-SIGN(SIN(BETA0*DTR),BETAINI(IPRN))+SIN(BETADG*DTR))*
       &         COS(PI*ABS(YAWEND*COS(BETADG*DTR))/SIN(ANOON*DTR))
                   ENDIF
-@@ -701,14 +703,14 @@
+@@ -705,14 +707,14 @@
       &         PI +(TTAG-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
  C Jan 10, 2017
  C GAL ECLIPS MODEL: Shy => BETAE

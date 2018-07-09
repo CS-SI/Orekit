@@ -40,13 +40,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-GALILEO.txt", 5.9e-5, 5.9e-5, 4.3e-16);
+        doTestAxes("beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 4.3e-16);
     }
 
     @Test
@@ -59,13 +53,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
-        // the differences with the reference Kouba models are due to the following changes:
-        // - Orekit computes angular velocity taking eccentricity into account
-        //   Kouba assumes a perfectly circular orbit
-        // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
-        //   Kouba uses projected planar geometry (μ² = α² - β²)
-        // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-GALILEO.txt", 5.4e-5, 5.4e-5, 7.8e-16);
+        doTestAxes("beta-small-positive-GALILEO.txt", 4.0e-12, 4.0e-12, 7.8e-16);
     }
 
     @Test

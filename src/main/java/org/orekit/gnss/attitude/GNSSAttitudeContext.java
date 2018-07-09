@@ -16,6 +16,11 @@
  */
 package org.orekit.gnss.attitude;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Locale;
+
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -124,9 +129,7 @@ class GNSSAttitudeContext implements TimeStamped {
                                                           1.0e-9);
         this.nominalYawDS = nominalYaw.toDerivativeStructureRotation(ORDER);
 
-        // TODO: the Kouba model assumes perfectly circular orbit, it should really be:
-        // this.muRate = svPV.getAngularVelocity();
-        this.muRate = svPV.getVelocity().getNorm() / svPV.getPosition().getNorm();
+        this.muRate = svPV.getAngularVelocity().getNorm();
 
         this.turnSpan = turnSpan;
 
@@ -310,9 +313,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return angle projected into orbital plane, always positive
      */
     private DerivativeStructure inOrbitPlaneAbsoluteAngle(final DerivativeStructure angle) {
-        // TODO: the Kouba model assumes planar right-angle triangle resolution, it should really be:
-        //  return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
-        return angle.multiply(angle).subtract(beta.multiply(beta)).sqrt();
+        return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta)));
     }
 
     /** Project a spacecraft/Sun angle into orbital plane.
@@ -326,9 +327,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return angle projected into orbital plane, always positive
      */
     public double inOrbitPlaneAbsoluteAngle(final double angle) {
-        // TODO: the Kouba model assumes planar right-angle triangle resolution, it should really be:
-        // return FastMath.acos(FastMath.cos(angle) / FastMath.cos(beta.getReal()));
-        return FastMath.sqrt(angle * angle - beta.getReal() * beta.getReal());
+        return FastMath.acos(FastMath.cos(angle) / FastMath.cos(beta.getReal()));
     }
 
     /** Compute yaw.
@@ -350,6 +349,24 @@ class GNSSAttitudeContext implements TimeStamped {
     public void setHalfSpan(final double halfSpan, final double endMargin) {
         final AbsoluteDate start = svPV.getDate().shiftedBy((delta.getValue() - halfSpan) / muRate);
         final AbsoluteDate end   = svPV.getDate().shiftedBy((delta.getValue() + halfSpan) / muRate);
+        final double muDot   = delta.getPartialDerivative(1);
+        final double betaDot = getBetaDS().getPartialDerivative(1);
+        final double betaT0  = beta.taylor(delta.getValue() / muRate);
+        final double a = muDot * muDot + betaDot * betaDot;
+        final double b = betaDot * betaT0;
+        final double c = betaT0 * (betaT0 - muDot / FastMath.toRadians(0.1033));
+        try (FileOutputStream fos = new FileOutputStream("/home/luc/y.dat", true);
+             PrintWriter pw = new PrintWriter(fos)) {
+            final AbsoluteDate t0 = start.shiftedBy(0.5 * end.durationFrom(start));
+            final double s = FastMath.sqrt(b * b - a * c);
+            final AbsoluteDate newStart = t0.shiftedBy((-b - s) / a);
+            final AbsoluteDate newEnd   = t0.shiftedBy((-b + s) / a);
+            pw.format(Locale.US, "%s %s %s %s %s %s%n",
+                      getDate(), t0, start, end, newStart, newEnd);
+        } catch (IOException ioe) {
+            System.exit(1);
+        }
+
         if (turnSpan == null) {
             turnSpan = new TurnSpan(start, end, getDate(), endMargin);
         } else {

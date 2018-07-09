@@ -48,7 +48,7 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         // - Orekit updates turn time span as new points are evaluated
         //   Kouba computes turn time span once near turn start and never updates it
         // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 8.1e-4, 8.1e-4, 6.2e-16);
+        doTestAxes("beta-small-negative-BLOCK-IIA.txt", 8.1e-104, 8.1e-104, 6.2e-16);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         //   Kouba uses projected planar geometry (μ² = α² - β²)
         // - Orekit updates turn time span as new points are evaluated
         //   Kouba computes turn time span once near turn start and never updates it
-        doTestAxes("beta-crossing-BLOCK-IIA.txt", 0.049, 0.049, 1.0e-15);
+        doTestAxes("beta-crossing-BLOCK-IIA.txt", 0.049e-100, 0.049e-100, 1.0e-15);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class GPSBlockIIATest extends AbstractGNSSAttitudeProviderTest {
         // - Orekit updates turn time span as new points are evaluated
         //   Kouba computes turn time span once near turn start and never updates it
         // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-BLOCK-IIA.txt", 8.2e-4, 8.2e-4, 9.8e-16);
+        doTestAxes("beta-small-positive-BLOCK-IIA.txt", 8.2e-104, 8.2e-104, 9.8e-16);
     }
 
     @Test

@@ -40,32 +40,17 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-small-negative-BEIDOU-2M.txt", 0.0014, 8.9e-16, 4.8e-16);
+        doTestAxes("beta-small-negative-BEIDOU-2M.txt", 9.5e-16, 8.9e-16, 4.8e-16);
     }
 
     @Test
     public void testCrossingBeta() throws OrekitException {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-crossing-BEIDOU-2M.txt", 0.0018, 6.2e-16, 3.7e-16);
+        doTestAxes("beta-crossing-BEIDOU-2M.txt", 9.6e-16, 7.8e-16, 3.7e-16);
     }
 
     @Test
     public void testSmallPositiveBeta() throws OrekitException {
-        // the "large" error for the X axis (a few tenth of a degree)
-        // are due to the reference fortran program assuming perfect circular orbits
-        // whereas Orekit takes the non-orthogonality of position and velocity into account
-        // this can be seen as the Y and Z axes are almost perfect, hence the reference X
-        // does not really correspond to an orthogonal frame
-        doTestAxes("beta-small-positive-BEIDOU-2M.txt", 0.0013, 7.2e-16, 4.1e-16);
+        doTestAxes("beta-small-positive-BEIDOU-2M.txt", 8.8e-16, 7.7e-16, 4.1e-16);
     }
 
     @Test

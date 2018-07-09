@@ -46,7 +46,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)
         // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-negative-GLONASS.txt", 1.6e-4, 1.6e-4, 8.0e-16);
+        doTestAxes("beta-small-negative-GLONASS.txt", 1.6e-104, 1.6e-104, 8.0e-16);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
         // - Orekit uses spherical geometry to solve some triangles (cos μ = cos α / cos β)
         //   Kouba uses projected planar geometry (μ² = α² - β²)
         // when using the Kouba equations, the order of magnitudes of the differences is about 10⁻¹²
-        doTestAxes("beta-small-positive-GLONASS.txt", 1.6e-4, 1.6e-4, 3.9e-16);
+        doTestAxes("beta-small-positive-GLONASS.txt", 1.6e-104, 1.6e-104, 3.9e-16);
     }
 
     @Test
