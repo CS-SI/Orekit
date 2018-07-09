@@ -1,6 +1,17 @@
---- eclips_May2017.f	2018-02-08 18:05:06.479976742 +0100
-+++ eclips_May2017_patched.f	2018-02-08 18:11:18.234201454 +0100
-@@ -171,6 +171,7 @@
+--- eclips_May2017.f	2018-07-09 10:46:43.415904278 +0200
++++ eclips_May2017_patched.f	2018-07-09 10:45:24.385812759 +0200
+@@ -86,6 +86,10 @@
+ C                      Feb 02, 2018  FIXED NUMERICAL NOISE APPEARING AT
+ C                                    EXACT SUN ALIGNMENT AND LEADING TO
+ C                                    NaN BEING PRODUCED (Luc Maisonobe)
++C                      Feb 02, 2018  FIXED BODY-X UNIT VECTOR COMPUTATION
++C                                    EXACTLY AT NODE (AVOID NaNs) AND IMPROVE
++C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
++C                                    ORBITS (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -174,6 +178,7 @@
        REAL*8    ECLETM(MAXSAT,*)
        REAL*8    ANOON, ANIGHT
        REAL*8    CNOON, CNIGHT
@@ -8,7 +19,7 @@
        REAL*8    DTR, DTTAG
        REAL*8    XSV(*), SANTXYZ(*), VSVC(*), BETA, MURATE, YANGLE, DET,
  C Jan 10, 2017
-@@ -715,17 +716,15 @@
+@@ -718,17 +723,15 @@
             END IF
  C ROTATE X-VECTOR TO ECLIPSING YAW ANGLE PHI 
  C ECLIPSING (II/IIA) NOT TO BE USED  A HALF HR AFTER SHADOW !

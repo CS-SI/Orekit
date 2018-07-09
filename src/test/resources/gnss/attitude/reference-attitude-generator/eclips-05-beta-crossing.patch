@@ -1,6 +1,16 @@
---- eclips_May2017.f	2018-06-25 10:59:11.479616060 +0200
-+++ eclips_May2017_patched.f	2018-06-25 14:29:10.208349557 +0200
-@@ -312,7 +312,8 @@
+--- eclips_May2017.f	2018-07-09 10:58:18.273720745 +0200
++++ eclips_May2017_patched.f	2018-07-09 11:06:42.931079863 +0200
+@@ -92,6 +92,9 @@
+ C                                    ORBITS (Luc Maisonobe)
+ C                      Jun 08, 2018  ENSURE ALL LITTERAL CONSTANTS ARE DOUBLE
+ C                                    PRECISION (Luc Maisonobe)
++C                      Jun 25, 2018  FIXED TOO EARLY ABRUPT SWITCH BACK TO
++C                                    NOMINAL YAW WHEN BETA SIGN CHANGES DURING
++C                                    THE TURN (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -319,7 +322,8 @@
  C      IF(BETADG.LT.0.d0.AND.IBLK(IPRN).GE.4.AND.IBLK(IPRN).LE.5)
  C    &            YANGLE=-YANGLE
  c      IF(BETADG.GT.0.d0.AND.IBLK(IPRN).NE.4.AND.IBLK(IPRN).NE.5)

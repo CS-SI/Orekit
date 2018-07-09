@@ -1,6 +1,15 @@
---- eclips_May2017.f	2018-05-20 11:34:55.164789263 +0200
-+++ eclips_May2017_patched.f	2018-05-20 14:28:27.888601830 +0200
-@@ -180,6 +180,8 @@
+--- eclips_May2017.f	2018-07-09 10:45:24.385812759 +0200
++++ eclips_May2017_patched.f	2018-07-09 10:51:41.661051915 +0200
+@@ -90,6 +90,8 @@
+ C                                    EXACTLY AT NODE (AVOID NaNs) AND IMPROVE
+ C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
+ C                                    ORBITS (Luc Maisonobe)
++C                      May 20, 2018  ENSURE WE USE THE DOUBLE PRECISION VERSION
++C                                    OF ALL MATHEMATICAL FUNCTIONS (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -187,6 +189,8 @@
  C    &          SMTH, BETAE
       &          BETAE
        REAL*8    YAWEND

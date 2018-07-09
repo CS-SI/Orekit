@@ -1,6 +1,15 @@
---- eclips_May2017.f	2018-06-08 12:37:07.450891168 +0200
-+++ eclips_May2017_patched.f	2018-06-08 14:21:53.363714234 +0200
-@@ -363,7 +363,7 @@
+--- eclips_May2017.f	2018-07-09 10:45:24.385812759 +0200
++++ eclips_May2017_patched.f	2018-07-09 10:58:18.273720745 +0200
+@@ -90,6 +90,8 @@
+ C                                    EXACTLY AT NODE (AVOID NaNs) AND IMPROVE
+ C                                    ITS ACCURACY FOR NON-PERFECTLY CIRCULAR
+ C                                    ORBITS (Luc Maisonobe)
++C                      Jun 08, 2018  ENSURE ALL LITTERAL CONSTANTS ARE DOUBLE
++C                                    PRECISION (Luc Maisonobe)
+ C     PARAMETERS        DESCRIPTION
+ C
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -368,7 +370,7 @@
  C Jan 16, 2015- end
         END IF 
         IF(NOON) THEN
@@ -9,7 +18,7 @@
  C Jan 16, 2015- start (NO IIR X-REVERSAL!)
  c        IF(IBLK(IPRN).EQ.4.OR.IBLK(IPRN).EQ.5) THEN
  c         IF(DABS(YANGLE).LT.90.d0) DET=-DET
-@@ -616,14 +616,14 @@
+@@ -621,14 +623,14 @@
       &         SIN((ttag-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
  C Jan 10, 2017 - start
  C GAL ECLIPS MODEL: Shy => BETAE
@@ -26,7 +35,7 @@
       &+0.5D0*(-SIGN(SIN(BETA0*DTR),BETAINI(IPRN))+SIN(BETADG*DTR))*
       &         COS(PI*ABS(YAWEND*COS(BETADG*DTR))/SIN(ANOON*DTR))
                   ENDIF
-@@ -696,14 +696,14 @@
+@@ -701,14 +703,14 @@
       &         PI +(TTAG-(ECLSTM(IPRN,I)+ECLETM(IPRN,I))/2)*MURATE*DTR)
  C Jan 10, 2017
  C GAL ECLIPS MODEL: Shy => BETAE
