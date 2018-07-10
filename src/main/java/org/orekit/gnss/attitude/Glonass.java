@@ -18,6 +18,12 @@ package org.orekit.gnss.attitude;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.RealFieldUnivariateFunction;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.AllowedSolution;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -78,12 +84,14 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final double aNight   = NIGHT_TURN_LIMIT;
         double       aNoon    = FastMath.atan(muRate / YAW_RATE);
         if (FastMath.abs(realBeta) < aNoon) {
-            double       yawEnd = YAW_END_ZERO;
-            for (int i = 0; i < 3; ++i) {
-                final double delta = muRate * yawEnd / YAW_RATE;
-                yawEnd = 0.5 * FastMath.abs(context.computePhi(realBeta,  delta) -
-                                            context.computePhi(realBeta, -delta));
-            }
+            final UnivariateFunction f = yawEnd -> {
+                final double delta =  muRate * yawEnd / YAW_RATE;
+                return yawEnd - 0.5 * FastMath.abs(context.computePhi(realBeta,  delta) -
+                                                   context.computePhi(realBeta, -delta));
+            };
+            final double[] bracket = UnivariateSolverUtils.bracket(f, YAW_END_ZERO, 0.0, FastMath.PI);
+            final double yawEnd = new BracketingNthOrderBrentSolver(1.0e-14, 1.0e-8, 1.0e-15, 5).
+                                  solve(50, f, bracket[0], bracket[1], AllowedSolution.ANY_SIDE);
             aNoon = muRate * yawEnd / YAW_RATE;
         }
 
@@ -143,13 +151,19 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
         final T aNight   = field.getZero().add(NIGHT_TURN_LIMIT);
         T       aNoon    = FastMath.atan(muRate.divide(YAW_RATE));
         if (FastMath.abs(realBeta).getReal() < aNoon.getReal()) {
-            T       yawEnd = field.getZero().add(YAW_END_ZERO);
-            for (int i = 0; i < 3; ++i) {
+            final RealFieldUnivariateFunction<T> f = yawEnd -> {
                 final T delta = muRate.multiply(yawEnd).divide(YAW_RATE);
-                yawEnd = FastMath.abs(context.computePhi(realBeta, delta).
-                                      subtract(context.computePhi(realBeta, delta.negate()))).
-                         multiply(0.5);
-            }
+                return yawEnd.subtract(FastMath.abs(context.computePhi(realBeta, delta).
+                                                    subtract(context.computePhi(realBeta, delta.negate()))).
+                                       multiply(0.5));
+            };
+            final T[] bracket = UnivariateSolverUtils.bracket(f, field.getZero().add(YAW_END_ZERO),
+                                                              field.getZero(), field.getZero().add(FastMath.PI));
+            final T yawEnd = new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
+                                                                      field.getZero().add(1.0e-8),
+                                                                      field.getZero().add(1.0e-15),
+                                                                      5).
+                            solve(50, f, bracket[0], bracket[1], AllowedSolution.ANY_SIDE);
             aNoon = muRate.multiply(yawEnd).divide(YAW_RATE);
         }
 
