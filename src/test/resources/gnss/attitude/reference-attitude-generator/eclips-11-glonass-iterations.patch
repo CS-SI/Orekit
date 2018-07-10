@@ -1,0 +1,33 @@
+--- eclips_May2017.f	2018-07-10 16:54:16.487169238 +0200
++++ eclips_May2017_patched.f	2018-07-10 16:55:36.403166901 +0200
+@@ -109,6 +109,8 @@
+ C                                    COMPUTING ORBITAL ANGULAR RATE (Luc Maisonobe)
+ C                      Jul 10, 2018  FIXED MISSING COMPUTATION OF BODY-X VECTOR
+ C                                    AT END OF BLOCK-IIR TURN (Luc Maisonobe)
++C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
++C                                    ITERATIVE COMPUTATION (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -293,12 +295,15 @@
+ C GLONASS NOON TURN MODE ACORDING TO DILSSNER 2010 
+          YAWEND=75.D0
+ C  ITERATION FOR YAWEND OF THE GLONASS  NOON TURN
+-         DO J=1,3
+-           YAWEND=ABS(ATAN2(-TAN(BETADG*DTR),SIN(PI-
+-     &       DTR*MURATE*YAWEND/YRATE(IPRN)))/DTR -      
+-     &       ATAN2(-TAN(BETADG*DTR),SIN(PI+
+-     &       DTR*MURATE*YAWEND/YRATE(IPRN)))/DTR)/2.D0 
+-         END DO
++          J=0
++ 10       CONTINUE
++            J=J+1
++            TMP=YAWEND
++            YAWEND=ABS(ATAN2(-TAN(BETADG*DTR),SIN(PI-
++     &             DTR*MURATE*YAWEND/YRATE(IPRN)))/DTR -      
++     &             ATAN2(-TAN(BETADG*DTR),SIN(PI+
++     &             DTR*MURATE*YAWEND/YRATE(IPRN)))/DTR)/2.D0 
++          IF (J.LT.50 .AND. ABS(YAWEND-TMP).GT.1.0D-8) GOTO 10
+ C UPDATE ANOON, CNOON FOR NEW GLONASS NOON TURN LIMITS
+           ANOON= MURATE*YAWEND/YRATE(IPRN)
+           CNOON= DCOS(ANOON*DTR)

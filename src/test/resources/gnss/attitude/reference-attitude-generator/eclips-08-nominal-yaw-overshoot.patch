@@ -1,0 +1,23 @@
+--- eclips_May2017.f	2018-07-10 11:34:40.663729906 +0200
++++ eclips_May2017_patched.f	2018-07-10 11:38:25.091723345 +0200
+@@ -103,6 +103,8 @@
+ C                      Jul 09, 2018  IMPROVED ACCURACY BY REPLACING PROJECTED
+ C                                    PLANAR GEOMETRY WITH SPHERICAL TRIGONOMETRY
+ C                                    FOR SOLVING SOME TRIANGLES (Luc Maisonobe)
++C                      Jul 10, 2018  FIXED OVERSHOOT OF NOMINAL YAW AT THE END
++C                                    OF GPS TURN RECOVERY (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -598,7 +600,10 @@
+                    IF(ABS(SANTX).GT.180.D0) SANTX = SANTX -360.D0*
+      &               SANTX /ABS(SANTX )
+ C STOP! THE NOMINAL YAW (YANGLE) REACHED!
+-                  IF(ABS(SANTX).GT.ABS(YAWEND)) GOTO 1
++                  IF(ABS(SANTX).GT.ABS(YAWEND)) THEN
++                      PHI = YANGLE
++                      GOTO 1
++                  ENDIF
+                   IF(YAWEND.NE.0.D0.AND.((SANTX)/YAWEND).LT.0.D0) GOTO 1
+ C SET PHI <-180,+180>
+                    PHI= DMOD(PHI, 360.D0)

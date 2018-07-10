@@ -1,0 +1,20 @@
+--- eclips_May2017.f	2018-07-10 16:55:36.403166901 +0200
++++ eclips_May2017_patched.f	2018-07-10 17:00:05.023159047 +0200
+@@ -111,6 +111,8 @@
+ C                                    AT END OF BLOCK-IIR TURN (Luc Maisonobe)
+ C                      Jul 10, 2018  ENSURE CONVERGENCE OF GLONASS YAWEND
+ C                                    ITERATIVE COMPUTATION (Luc Maisonobe)
++C                      Jul 10, 2018  FIXED SPURIOUS SWITCH TO NOMINAL YAW IN THE
++C                                    MIDDLE OF A GLONASS TURN (Luc Maisonobe)
+ C
+ C     PARAMETERS        DESCRIPTION
+ C        IDIR           DIRECTION OF PROCESSING (1=FORWARD, -1=BACKWARD)
+@@ -633,7 +635,7 @@
+      &      +SIGN(YAWEND     ,BETADG)*(TTAG-ECLSTM(IPRN,I)) 
+ C YAWEND -YAW ANGLE AT THE (GLONASS) SHADOW EXIT
+                   YAWEND=ATAN2(-TAN(BETADG*DTR), SIN( DET*DTR))/DTR
+-                 IF((YAWEND/PHI).GE.1.d0.OR.(PHI/YAWEND).LT.0.d0) THEN  
++                 IF((YAWEND/PHI).GE.1.d0) THEN  
+                   PHI = YAWEND
+                  ENDIF
+                 ENDIF
