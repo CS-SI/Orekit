@@ -96,6 +96,34 @@ class DSSTZonalContext extends ForceModelContext {
     /** R / a .*/
     private double roa;
 
+    /** Keplerian mean motion. */
+    private final double n;
+
+    /** Keplerian period. */
+    private final double period;
+
+    // Short periodic terms
+    /** h * k. */
+    private double hk;
+    /** k² - h². */
+    private double k2mh2;
+    /** (k² - h²) / 2. */
+    private double k2mh2o2;
+    /** 1 / (n² * a²). */
+    private double oon2a2;
+    /** 1 / (n² * a) . */
+    private double oon2a;
+    /** χ³ / (n² * a). */
+    private double x3on2a;
+    /** χ / (n² * a²). */
+    private double xon2a2;
+    /** (C * χ) / ( 2 * n² * a² ). */
+    private double cxo2n2a2;
+    /** (χ²) / (n² * a² * (χ + 1 ) ). */
+    private double x2on2a2xp1;
+    /** B * B.*/
+    private double BB;
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
@@ -119,6 +147,14 @@ class DSSTZonalContext extends ForceModelContext {
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         final double mu = parameters[0];
+
+        // Keplerian Mean Motion
+        final double absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu / absA) / absA;
+
+        // Keplerian period
+        final double a = auxiliaryElements.getSma();
+        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
 
@@ -144,6 +180,28 @@ class DSSTZonalContext extends ForceModelContext {
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
 
+        // Short periodic termes
+
+        // h * k.
+        hk = auxiliaryElements.getH() * auxiliaryElements.getK();
+        // k² - h².
+        k2mh2 = auxiliaryElements.getK() * auxiliaryElements.getK() - auxiliaryElements.getH() * auxiliaryElements.getH();
+        // (k² - h²) / 2.
+        k2mh2o2 = k2mh2 / 2.;
+        // 1 / (n² * a²) = 1 / (n * A)
+        oon2a2 = 1 / (A * n);
+        // 1 / (n² * a) = a / (n * A)
+        oon2a = auxiliaryElements.getSma() * oon2a2;
+        // χ³ / (n² * a)
+        x3on2a = XXX * oon2a;
+        // χ / (n² * a²)
+        xon2a2 = X * oon2a2;
+        // (C * χ) / ( 2 * n² * a² )
+        cxo2n2a2 = xon2a2 * auxiliaryElements.getC() / 2;
+        // (χ²) / (n² * a² * (χ + 1 ) )
+        x2on2a2xp1 = xon2a2 * X / (X + 1);
+        // B * B
+        BB = auxiliaryElements.getB() * auxiliaryElements.getB();
     }
 
     /** Get A = sqrt(μ * a).
@@ -251,6 +309,94 @@ class DSSTZonalContext extends ForceModelContext {
         return Vns;
     }
 
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public double getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public double getMeanMotion() {
+        return n;
+    }
+
+    /** Get h * k.
+     * @return hk
+     */
+    public double getHK() {
+        return hk;
+    }
+
+    /** Get k² - h².
+     * @return k2mh2
+     */
+    public double getK2MH2() {
+        return k2mh2;
+    }
+
+    /** Get (k² - h²) / 2.
+     * @return k2mh2o2
+     */
+    public double getK2MH2O2() {
+        return k2mh2o2;
+    }
+
+    /** Get 1 / (n² * a²).
+     * @return oon2a2
+     */
+    public double getOON2A2() {
+        return oon2a2;
+    }
+
+    /** Get 1 / (n² * a).
+     * @return oon2a
+     */
+    public double getOON2A() {
+        return oon2a;
+    }
+
+    /** Get χ³ / (n² * a).
+     * @return x3on2a
+     */
+    public double getX3ON2A() {
+        return x3on2a;
+    }
+
+    /** Get χ / (n² * a²).
+     * @return xon2a2
+     */
+    public double getXON2A2() {
+        return xon2a2;
+    }
+
+    /** Get (C * χ) / ( 2 * n² * a² ).
+     * @return cxo2n2a2
+     */
+    public double getCXO2N2A2() {
+        return cxo2n2a2;
+    }
+
+    /** Get (χ²) / (n² * a² * (χ + 1 ) ).
+     * @return x2on2a2xp1
+     */
+    public double getX2ON2A2XP1() {
+        return x2on2a2xp1;
+    }
+
+    /** Get B * B.
+     * @return BB
+     */
+    public double getBB() {
+        return BB;
+    }
+
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
      * @param parameters values of the force model parameters
@@ -287,7 +433,7 @@ class DSSTZonalContext extends ForceModelContext {
 
             // Set highest power of e and degree of current spherical harmonic.
             maxEccPowMeanElements = 0;
-            int n = maxDegree;
+            int maxDeg = maxDegree;
             // Loop over n
             do {
                 // Set order of current spherical harmonic.
@@ -295,30 +441,30 @@ class DSSTZonalContext extends ForceModelContext {
                 // Loop over m
                 do {
                     // Compute magnitude of current spherical harmonic coefficient.
-                    final double cnm = harmonics.getUnnormalizedCnm(n, m);
-                    final double snm = harmonics.getUnnormalizedSnm(n, m);
+                    final double cnm = harmonics.getUnnormalizedCnm(maxDeg, m);
+                    final double snm = harmonics.getUnnormalizedSnm(maxDeg, m);
                     final double csnm = FastMath.hypot(cnm, snm);
                     if (csnm == 0.) break;
                     // Set magnitude of last spherical harmonic term.
                     double lastTerm = 0.;
                     // Set current power of e and related indices.
-                    int nsld2 = (n - maxEccPowMeanElements - 1) / 2;
-                    int l = n - 2 * nsld2;
+                    int nsld2 = (maxDeg - maxEccPowMeanElements - 1) / 2;
+                    int l = maxDeg - 2 * nsld2;
                     // Loop over l
                     double term = 0.;
                     do {
                         // Compute magnitude of current spherical harmonic term.
                         if (m < l) {
                             term =  csnm * xmuran *
-                                    (CombinatoricsUtils.factorialDouble(n - l) / (CombinatoricsUtils.factorialDouble(n - m))) *
-                                    (CombinatoricsUtils.factorialDouble(n + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * UpperBounds.getDnl(XX, chiPwr[l], n, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), n, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), n, l, m, -1, I));
+                                    (CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
+                                    (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
+                                    eccPwr[l] * UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I));
                         } else {
                             term =  csnm * xmuran *
-                                    (CombinatoricsUtils.factorialDouble(n + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(XX, chiPwr[l], n, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), n, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), n, m, l, -1, I));
+                                    (CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
+                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I));
                         }
                         // Is the current spherical harmonic term bigger than the truncation tolerance ?
                         if (term >= TRUNCATION_TOLERANCE) {
@@ -333,7 +479,7 @@ class DSSTZonalContext extends ForceModelContext {
                         lastTerm = term;
                         l += 2;
                         nsld2--;
-                    } while (l < n);
+                    } while (l < maxDeg);
                     // Is the current spherical harmonic term bigger than the truncation tolerance ?
                     if (term >= TRUNCATION_TOLERANCE) {
                         maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
@@ -341,11 +487,11 @@ class DSSTZonalContext extends ForceModelContext {
                     }
                     // Proceed to next order.
                     m++;
-                } while (m <= FastMath.min(n, maxOrder));
+                } while (m <= FastMath.min(maxDeg, maxOrder));
                 // Proceed to next degree.
                 xmuran *= ax2or;
-                n--;
-            } while (n > maxEccPowMeanElements + 2);
+                maxDeg--;
+            } while (maxDeg > maxEccPowMeanElements + 2);
 
             maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
         }

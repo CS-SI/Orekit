@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -44,6 +46,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldCjSjCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldGHIJjsPolynomials;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldLnsCoefficients;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.GHIJjsPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.LnsCoefficients;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
@@ -51,6 +57,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenZo
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -60,6 +67,9 @@ import org.orekit.utils.TimeSpanMap;
  *   @author Pascal Parraud
  */
 public class DSSTZonal implements DSSTForceModel {
+
+    /**  Name of the prefix for short period coefficients keys. */
+    public static final String SHORT_PERIOD_PREFIX = "DSST-central-body-zonal-";
 
     /** Retrograde factor I.
      *  <p>
@@ -108,26 +118,8 @@ public class DSSTZonal implements DSSTForceModel {
     /** Short period terms. */
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
 
-    /** h * k. */
-    private double hk;
-    /** k² - h². */
-    private double k2mh2;
-    /** (k² - h²) / 2. */
-    private double k2mh2o2;
-    /** 1 / (n² * a²). */
-    private double oon2a2;
-    /** 1 / (n² * a) . */
-    private double oon2a;
-    /** χ³ / (n² * a). */
-    private double x3on2a;
-    /** χ / (n² * a²). */
-    private double xon2a2;
-    /** (C * χ) / ( 2 * n² * a² ). */
-    private double cxo2n2a2;
-    /** (χ²) / (n² * a² * (χ + 1 ) ). */
-    private double x2on2a2xp1;
-    /** B * B.*/
-    private double BB;
+    /** Short period terms. */
+    private FieldZonalShortPeriodicCoefficients zonalFieldSPCoefs;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -242,6 +234,35 @@ public class DSSTZonal implements DSSTForceModel {
         list.add(zonalSPCoefs);
         return list;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                     final boolean meanOnly,
+                                                                                     final T[] parameters)
+        throws OrekitException {
+
+        final Field<T> field = auxiliaryElements.getDate().getField();
+
+        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
+        if (meanOnly) {
+            maxEccPow = context.getMaxEccPowMeanElements();
+        } else {
+            maxEccPow = FastMath.max(context.getMaxEccPowMeanElements(), maxEccPowShortPeriodics);
+        }
+
+        initializeHansenObjects();
+        initializeFieldHansenObjects();
+
+        final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
+        zonalFieldSPCoefs = new FieldZonalShortPeriodicCoefficients<T>(maxFrequencyShortPeriodics,
+                                                                      INTERPOLATION_POINTS,
+                                                                      new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(maxFrequencyShortPeriodics,
+                                                                                                                            INTERPOLATION_POINTS), field));
+        list.add(zonalFieldSPCoefs);
+        return list;
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -413,27 +434,6 @@ public class DSSTZonal implements DSSTForceModel {
 
             final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
 
-            // h * k.
-            this.hk = auxiliaryElements.getH() * auxiliaryElements.getK();
-            // k² - h².
-            this.k2mh2 = auxiliaryElements.getK() * auxiliaryElements.getK() - auxiliaryElements.getH() * auxiliaryElements.getH();
-            // (k² - h²) / 2.
-            this.k2mh2o2 = k2mh2 / 2.;
-            // 1 / (n² * a²) = 1 / (n * A)
-            this.oon2a2 = 1 / (context.getA() * auxiliaryElements.getMeanMotion());
-            // 1 / (n² * a) = a / (n * A)
-            this.oon2a = auxiliaryElements.getSma() * oon2a2;
-            // χ³ / (n² * a)
-            this.x3on2a = context.getXXX() * oon2a;
-            // χ / (n² * a²)
-            this.xon2a2 = context.getX() * oon2a2;
-            // (C * χ) / ( 2 * n² * a² )
-            this.cxo2n2a2 = xon2a2 * auxiliaryElements.getC() / 2;
-            // (χ²) / (n² * a² * (χ + 1 ) )
-            this.x2on2a2xp1 = xon2a2 * context.getX() / (context.getX() + 1);
-            // B * B
-            this.BB = auxiliaryElements.getB() * auxiliaryElements.getB();
-
             // Compute rhoj and sigmaj
             final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, context);
 
@@ -450,6 +450,41 @@ public class DSSTZonal implements DSSTForceModel {
             computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, hansen);
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+                                                                       final FieldSpacecraftState<T>... meanStates)
+        throws OrekitException {
+
+        final FieldSlot<T> slot = zonalFieldSPCoefs.createSlot(meanStates);
+        for (final FieldSpacecraftState<T> meanState : meanStates) {
+
+            // Field used by default
+            final Field<T> field = meanState.getDate().getField();
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
+
+            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+            // Compute rhoj and sigmaj
+            final T[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, context, field);
+
+            // Compute Di
+            computeDiCoefficients(meanState.getDate(), slot, context, field, fieldHansen);
+
+            // generate the Cij and Sij coefficients
+            final FieldFourierCjSjCoefficients<T> cjsj = new FieldFourierCjSjCoefficients<>(meanState.getDate(),
+                                                                                            maxDegreeShortPeriodics,
+                                                                                            maxEccPowShortPeriodics,
+                                                                                            maxFrequencyShortPeriodics,
+                                                                                            context,
+                                                                                            fieldHansen);
+
+            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, field, fieldHansen);
+        }
     }
 
     /** {@inheritDoc} */
@@ -471,8 +506,7 @@ public class DSSTZonal implements DSSTForceModel {
                                        final DSSTZonalContext context,
                                        final HansenObjects hansenObjects)
         throws OrekitException {
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
-        final double[] meanElementRates = computeMeanElementRates(date, context, hansen);
+        final double[] meanElementRates = computeMeanElementRates(date, context, hansenObjects);
 
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(date, context, hansenObjects);
@@ -481,10 +515,46 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Add the coefficients to the interpolation grid
         for (int i = 0; i < 6; i++) {
-            currentDi[i] = meanElementRates[i] / auxiliaryElements.getMeanMotion();
+            currentDi[i] = meanElementRates[i] / context.getMeanMotion();
 
             if (i == 5) {
-                currentDi[i] += -1.5 * 2 * udu.getU() * oon2a2;
+                currentDi[i] += -1.5 * 2 * udu.getU() * context.getOON2A2();
+            }
+
+        }
+
+        slot.di.addGridPoint(date, currentDi);
+
+    }
+
+    /** Generate the values for the D<sub>i</sub> coefficients.
+     * @param <T> type of the elements
+     * @param date target date
+     * @param slot slot to which the coefficients belong
+     * @param context container for attributes
+     * @param field field used by default
+     * @param hansenObjects initialization for hansen objects
+     * @throws OrekitException if an error occurs during the coefficient computation
+     */
+    private <T extends RealFieldElement<T>> void computeDiCoefficients(final FieldAbsoluteDate<T> date,
+                                                                       final FieldSlot<T> slot,
+                                                                       final FieldDSSTZonalContext<T> context,
+                                                                       final Field<T> field,
+                                                                       final FieldHansenObjects hansenObjects)
+        throws OrekitException {
+        final T[] meanElementRates = computeMeanElementRates(date, context, hansenObjects);
+
+        // Access to potential U derivatives
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(date, context, hansenObjects);
+
+        final T[] currentDi = MathArrays.buildArray(field, 6);
+
+        // Add the coefficients to the interpolation grid
+        for (int i = 0; i < 6; i++) {
+            currentDi[i] = meanElementRates[i].divide(context.getMeanMotion());
+
+            if (i == 5) {
+                currentDi[i] = currentDi[i].add(context.getOON2A2().multiply(udu.getU()).multiply(2.).multiply(-1.5));
             }
 
         }
@@ -526,8 +596,8 @@ public class DSSTZonal implements DSSTForceModel {
 
             // j == 1
             if (j == 1) {
-                final double coef1 = 4 * auxiliaryElements.getK() * udu.getU() - hk * cjsj.getCj(1) + k2mh2o2 * cjsj.getSj(1);
-                final double coef2 = 4 * auxiliaryElements.getH() * udu.getU() + k2mh2o2 * cjsj.getCj(1) + hk * cjsj.getSj(1);
+                final double coef1 = 4 * auxiliaryElements.getK() * udu.getU() - context.getHK() * cjsj.getCj(1) + context.getK2MH2O2() * cjsj.getSj(1);
+                final double coef2 = 4 * auxiliaryElements.getH() * udu.getU() + context.getK2MH2O2() * cjsj.getCj(1) + context.getHK() * cjsj.getSj(1);
                 final double coef3 = (auxiliaryElements.getK() * cjsj.getCj(1) + auxiliaryElements.getH() * cjsj.getSj(1)) / 4.;
                 final double coef4 = (8 * udu.getU() - auxiliaryElements.getH() * cjsj.getCj(1) + auxiliaryElements.getK() * cjsj.getSj(1)) / 4.;
 
@@ -550,8 +620,8 @@ public class DSSTZonal implements DSSTForceModel {
 
             // j == 2
             if (j == 2) {
-                final double coef1 = k2mh2 * udu.getU();
-                final double coef2 = 2 * hk * udu.getU();;
+                final double coef1 = context.getK2MH2() * udu.getU();
+                final double coef2 = 2 * context.getHK() * udu.getU();
                 final double coef3 = auxiliaryElements.getH() * udu.getU() / 2;
                 final double coef4 = auxiliaryElements.getK() * udu.getU() / 2;
 
@@ -574,8 +644,8 @@ public class DSSTZonal implements DSSTForceModel {
 
             // j between 1 and 2N-3
             if (isBetween(j, 1, 2 * nMax - 3) && j + 2 < cjsj.jMax) {
-                final double coef1 = ( j + 2 ) * (-hk * cjsj.getCj(j + 2) + k2mh2o2 * cjsj.getSj(j + 2));
-                final double coef2 = ( j + 2 ) * (k2mh2o2 * cjsj.getCj(j + 2) + hk * cjsj.getSj(j + 2));
+                final double coef1 = ( j + 2 ) * (-context.getHK() * cjsj.getCj(j + 2) + context.getK2MH2O2() * cjsj.getSj(j + 2));
+                final double coef2 = ( j + 2 ) * (context.getK2MH2O2() * cjsj.getCj(j + 2) + context.getHK() * cjsj.getSj(j + 2));
                 final double coef3 = ( j + 2 ) * (auxiliaryElements.getK() * cjsj.getCj(j + 2) + auxiliaryElements.getH() * cjsj.getSj(j + 2)) / 4;
                 final double coef4 = ( j + 2 ) * (auxiliaryElements.getH() * cjsj.getCj(j + 2) - auxiliaryElements.getK() * cjsj.getSj(j + 2)) / 4;
 
@@ -646,11 +716,11 @@ public class DSSTZonal implements DSSTForceModel {
 
             // j between 3 and 2N + 1
             if (isBetween(j, 3, 2 * nMax + 1) && j - 2 < cjsj.jMax) {
-                final double coef1 = ( j - 2 ) * (hk * cjsj.getCj(j - 2) + k2mh2o2 * cjsj.getSj(j - 2));
-                final double coef2 = ( j - 2 ) * (-k2mh2o2 * cjsj.getCj(j - 2) + hk * cjsj.getSj(j - 2));
+                final double coef1 = ( j - 2 ) * (context.getHK() * cjsj.getCj(j - 2) + context.getK2MH2O2() * cjsj.getSj(j - 2));
+                final double coef2 = ( j - 2 ) * (-context.getK2MH2O2() * cjsj.getCj(j - 2) + context.getHK() * cjsj.getSj(j - 2));
                 final double coef3 = ( j - 2 ) * (auxiliaryElements.getK() * cjsj.getCj(j - 2) - auxiliaryElements.getH() * cjsj.getSj(j - 2)) / 4;
                 final double coef4 = ( j - 2 ) * (auxiliaryElements.getH() * cjsj.getCj(j - 2) + auxiliaryElements.getK() * cjsj.getSj(j - 2)) / 4;
-                final double coef5 = ( j - 2 ) * (k2mh2o2 * cjsj.getCj(j - 2) - hk * cjsj.getSj(j - 2));
+                final double coef5 = ( j - 2 ) * (context.getK2MH2O2() * cjsj.getCj(j - 2) - context.getHK() * cjsj.getSj(j - 2));
 
                 //Coefficients for a
                 currentCij[0] += coef1;
@@ -671,17 +741,17 @@ public class DSSTZonal implements DSSTForceModel {
 
             //multiply by the common factor
             //for a (i == 0) -> χ³ / (n² * a)
-            currentCij[0] *= this.x3on2a;
-            currentSij[0] *= this.x3on2a;
+            currentCij[0] *= context.getX3ON2A();
+            currentSij[0] *= context.getX3ON2A();
             //for k (i == 1) -> χ / (n² * a²)
-            currentCij[1] *= this.xon2a2;
-            currentSij[1] *= this.xon2a2;
+            currentCij[1] *= context.getXON2A2();
+            currentSij[1] *= context.getXON2A2();
             //for h (i == 2) -> χ / (n² * a²)
-            currentCij[2] *= this.xon2a2;
-            currentSij[2] *= this.xon2a2;
+            currentCij[2] *= context.getXON2A2();
+            currentSij[2] *= context.getXON2A2();
             //for λ (i == 5) -> (χ²) / (n² * a² * (χ + 1 ) )
-            currentCij[5] *= this.x2on2a2xp1;
-            currentSij[5] *= this.x2on2a2xp1;
+            currentCij[5] *= context.getX2ON2A2XP1();
+            currentSij[5] *= context.getX2ON2A2XP1();
 
             // j is between 1 and 2 * N - 1
             if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
@@ -704,36 +774,303 @@ public class DSSTZonal implements DSSTForceModel {
                 final double SjHK   = auxiliaryElements.getH() * cjsj.getdSjdK(j) - auxiliaryElements.getK() * cjsj.getdSjdH(j);
 
                 //Coefficients for a
-                final double coef1 = this.x3on2a * (3 - BB) * j;
+                final double coef1 = context.getX3ON2A() * (3 - context.getBB()) * j;
                 currentCij[0] += coef1 * cjsj.getSj(j);
                 currentSij[0] -= coef1 * cjsj.getCj(j);
 
                 //Coefficients for k and h
                 final double coef2 = auxiliaryElements.getP() * CjAlphaGamma - I * auxiliaryElements.getQ() * CjBetaGamma;
                 final double coef3 = auxiliaryElements.getP() * SjAlphaGamma - I * auxiliaryElements.getQ() * SjBetaGamma;
-                currentCij[1] -= this.xon2a2 * (auxiliaryElements.getH() * coef2 + BB * cjsj.getdCjdH(j) - 1.5 * auxiliaryElements.getK() * j * cjsj.getSj(j));
-                currentSij[1] -= this.xon2a2 * (auxiliaryElements.getH() * coef3 + BB * cjsj.getdSjdH(j) + 1.5 * auxiliaryElements.getK() * j * cjsj.getCj(j));
-                currentCij[2] += this.xon2a2 * (auxiliaryElements.getK() * coef2 + BB * cjsj.getdCjdK(j) + 1.5 * auxiliaryElements.getH() * j * cjsj.getSj(j));
-                currentSij[2] += this.xon2a2 * (auxiliaryElements.getK() * coef3 + BB * cjsj.getdSjdK(j) - 1.5 * auxiliaryElements.getH() * j * cjsj.getCj(j));
+                currentCij[1] -= context.getXON2A2() * (auxiliaryElements.getH() * coef2 + context.getBB() * cjsj.getdCjdH(j) - 1.5 * auxiliaryElements.getK() * j * cjsj.getSj(j));
+                currentSij[1] -= context.getXON2A2() * (auxiliaryElements.getH() * coef3 + context.getBB() * cjsj.getdSjdH(j) + 1.5 * auxiliaryElements.getK() * j * cjsj.getCj(j));
+                currentCij[2] += context.getXON2A2() * (auxiliaryElements.getK() * coef2 + context.getBB() * cjsj.getdCjdK(j) + 1.5 * auxiliaryElements.getH() * j * cjsj.getSj(j));
+                currentSij[2] += context.getXON2A2() * (auxiliaryElements.getK() * coef3 + context.getBB() * cjsj.getdSjdK(j) - 1.5 * auxiliaryElements.getH() * j * cjsj.getCj(j));
 
                 //Coefficients for q and p
                 final double coef4 = CjHK - CjAlphaBeta - j * cjsj.getSj(j);
                 final double coef5 = SjHK - SjAlphaBeta + j * cjsj.getCj(j);
-                currentCij[3] = this.cxo2n2a2 * (-I * CjAlphaGamma + auxiliaryElements.getQ() * coef4);
-                currentSij[3] = this.cxo2n2a2 * (-I * SjAlphaGamma + auxiliaryElements.getQ() * coef5);
-                currentCij[4] = this.cxo2n2a2 * (-CjBetaGamma + auxiliaryElements.getP() * coef4);
-                currentSij[4] = this.cxo2n2a2 * (-SjBetaGamma + auxiliaryElements.getP() * coef5);
+                currentCij[3] = context.getCXO2N2A2() * (-I * CjAlphaGamma + auxiliaryElements.getQ() * coef4);
+                currentSij[3] = context.getCXO2N2A2() * (-I * SjAlphaGamma + auxiliaryElements.getQ() * coef5);
+                currentCij[4] = context.getCXO2N2A2() * (-CjBetaGamma + auxiliaryElements.getP() * coef4);
+                currentSij[4] = context.getCXO2N2A2() * (-SjBetaGamma + auxiliaryElements.getP() * coef5);
 
                 //Coefficients for λ
                 final double coef6 = auxiliaryElements.getH() * cjsj.getdCjdH(j) + auxiliaryElements.getK() * cjsj.getdCjdK(j);
                 final double coef7 = auxiliaryElements.getH() * cjsj.getdSjdH(j) + auxiliaryElements.getK() * cjsj.getdSjdK(j);
-                currentCij[5] += this.oon2a2 * (-2 * auxiliaryElements.getSma() * cjsj.getdCjdA(j) + coef6 / (context.getX() + 1) + context.getX() * coef2 - 3 * cjsj.getCj(j));
-                currentSij[5] += this.oon2a2 * (-2 * auxiliaryElements.getSma() * cjsj.getdSjdA(j) + coef7 / (context.getX() + 1) + context.getX() * coef3 - 3 * cjsj.getSj(j));
+                currentCij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdCjdA(j) + coef6 / (context.getX() + 1) + context.getX() * coef2 - 3 * cjsj.getCj(j));
+                currentSij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdSjdA(j) + coef7 / (context.getX() + 1) + context.getX() * coef3 - 3 * cjsj.getSj(j));
             }
 
             for (int i = 0; i < 6; i++) {
                 //Add the current coefficients contribution to C<sub>i</sub>⁰
                 currentCi0[i] -= currentCij[i] * rhoSigma[j][0] + currentSij[i] * rhoSigma[j][1];
+            }
+
+            // Add the coefficients to the interpolation grid
+            slot.cij[j].addGridPoint(date, currentCij);
+            slot.sij[j].addGridPoint(date, currentSij);
+
+        }
+
+        //Add C<sub>i</sub>⁰ to the interpolation grid
+        slot.cij[0].addGridPoint(date, currentCi0);
+
+    }
+
+    /**
+     * Generate the values for the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients.
+     * @param <T> type of the elements
+     * @param date date of computation
+     * @param slot slot to which the coefficients belong
+     * @param cjsj Fourier coefficients
+     * @param rhoSigma ρ<sub>j</sub> and σ<sub>j</sub>
+     * @param context container for attributes
+     * @param field field used by default
+     * @param hansenObjects initialization of hansen objects
+     * @throws OrekitException if an error occurs
+     */
+    private <T extends RealFieldElement<T>> void computeCijSijCoefficients(final FieldAbsoluteDate<T> date,
+                                                                           final FieldSlot<T> slot,
+                                                                           final FieldFourierCjSjCoefficients<T> cjsj,
+                                                                           final T[][] rhoSigma,
+                                                                           final FieldDSSTZonalContext<T> context,
+                                                                           final Field<T> field,
+                                                                           final FieldHansenObjects hansenObjects)
+        throws OrekitException {
+
+        // Zero
+        final T zero = field.getZero();
+
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+        // Access to potential U derivatives
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(date, context, hansenObjects);
+
+        final int nMax = maxDegreeShortPeriodics;
+
+        // The C<sub>i</sub>⁰ coefficients
+        final T[] currentCi0 = MathArrays.buildArray(field, 6);
+        Arrays.fill(currentCi0, zero);
+
+        for (int j = 1; j < slot.cij.length; j++) {
+
+            // Create local arrays
+            final T[] currentCij = MathArrays.buildArray(field, 6);
+            final T[] currentSij = MathArrays.buildArray(field, 6);
+
+            Arrays.fill(currentCij, zero);
+            Arrays.fill(currentSij, zero);
+
+            // j == 1
+            if (j == 1) {
+                final T coef1 = auxiliaryElements.getK().multiply(udu.getU()).multiply(4.).subtract(context.getHK().multiply(cjsj.getCj(1))).add(context.getK2MH2O2().multiply(cjsj.getSj(1)));
+                final T coef2 = auxiliaryElements.getH().multiply(udu.getU()).multiply(4.).add(context.getK2MH2O2().multiply(cjsj.getCj(1))).add(context.getHK().multiply(cjsj.getSj(1)));
+                final T coef3 = auxiliaryElements.getK().multiply(cjsj.getCj(1)).add(auxiliaryElements.getH().multiply(cjsj.getSj(1))).divide(4.);
+                final T coef4 = udu.getU().multiply(8.).subtract(auxiliaryElements.getH().multiply(cjsj.getCj(1))).add(auxiliaryElements.getK().multiply(cjsj.getSj(1))).divide(4.);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].add(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4);
+                currentSij[1] = currentSij[1].add(coef3);
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].subtract(coef3);
+                currentSij[2] = currentSij[2].add(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].subtract(coef2.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.divide(2.));
+            }
+
+            // j == 2
+            if (j == 2) {
+                final T coef1 = context.getK2MH2().multiply(udu.getU());
+                final T coef2 = context.getHK().multiply(udu.getU()).multiply(2.);
+                final T coef3 = auxiliaryElements.getH().multiply(udu.getU()).divide(2.);
+                final T coef4 = auxiliaryElements.getK().multiply(udu.getU()).divide(2.);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].add(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4);
+                currentSij[1] = currentSij[1].add(coef3);
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].subtract(coef3);
+                currentSij[2] = currentSij[2].add(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].subtract(coef2.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.divide(2.));
+            }
+
+            // j between 1 and 2N-3
+            if (isBetween(j, 1, 2 * nMax - 3) && j + 2 < cjsj.jMax) {
+                final T coef1 = context.getHK().negate().multiply(cjsj.getCj(j + 2)).add(context.getK2MH2O2().multiply(cjsj.getSj(j + 2))).multiply(j + 2);
+                final T coef2 = context.getK2MH2O2().multiply(cjsj.getCj(j + 2)).add(context.getHK().multiply(cjsj.getSj(j + 2))).multiply(j + 2);
+                final T coef3 = auxiliaryElements.getK().multiply(cjsj.getCj(j + 2)).add(auxiliaryElements.getH().multiply(cjsj.getSj(j + 2))).multiply(j + 2).divide(4.);
+                final T coef4 = auxiliaryElements.getH().multiply(cjsj.getCj(j + 2)).subtract(auxiliaryElements.getK().multiply(cjsj.getSj(j + 2))).multiply(j + 2).divide(4.);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].subtract(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4.negate());
+                currentSij[1] = currentSij[1].subtract(coef3);
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].subtract(coef3);
+                currentSij[2] = currentSij[2].add(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].subtract(coef2.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.negate().divide(2.));
+            }
+
+            // j between 1 and 2N-2
+            if (isBetween(j, 1, 2 * nMax - 2) && j + 1 < cjsj.jMax) {
+                final T coef1 = auxiliaryElements.getH().negate().multiply(cjsj.getCj(j + 1)).add(auxiliaryElements.getK().multiply(cjsj.getSj(j + 1))).multiply(2. * (j + 1));
+                final T coef2 = auxiliaryElements.getK().multiply(cjsj.getCj(j + 1)).add(auxiliaryElements.getH().multiply(cjsj.getSj(j + 1))).multiply(2. * (j + 1));
+                final T coef3 = cjsj.getCj(j + 1).multiply(j + 1);
+                final T coef4 = cjsj.getSj(j + 1).multiply(j + 1);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].subtract(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4);
+                currentSij[1] = currentSij[1].subtract(coef3);
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].subtract(coef3);
+                currentSij[2] = currentSij[2].subtract(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].subtract(coef2.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.negate().divide(2.));
+            }
+
+            // j between 2 and 2N
+            if (isBetween(j, 2, 2 * nMax) && j - 1 < cjsj.jMax) {
+                final T coef1 = auxiliaryElements.getH().multiply(cjsj.getCj(j - 1)).add(auxiliaryElements.getK().multiply(cjsj.getSj(j - 1))).multiply(2 * ( j - 1 ));
+                final T coef2 = auxiliaryElements.getK().multiply(cjsj.getCj(j - 1)).subtract(auxiliaryElements.getH().multiply(cjsj.getSj(j - 1))).multiply(2 * ( j - 1 ));
+                final T coef3 = cjsj.getCj(j - 1).multiply(j - 1);
+                final T coef4 = cjsj.getSj(j - 1).multiply(j - 1);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].subtract(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4);
+                currentSij[1] = currentSij[1].subtract(coef3);
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].add(coef3);
+                currentSij[2] = currentSij[2].add(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].add(coef2.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.divide(2.));
+            }
+
+            // j between 3 and 2N + 1
+            if (isBetween(j, 3, 2 * nMax + 1) && j - 2 < cjsj.jMax) {
+                final T coef1 = context.getHK().multiply(cjsj.getCj(j - 2)).add(context.getK2MH2O2().multiply(cjsj.getSj(j - 2))).multiply(j - 2);
+                final T coef2 = context.getK2MH2O2().negate().multiply(cjsj.getCj(j - 2)).add(context.getHK().multiply(cjsj.getSj(j - 2))).multiply(j - 2);
+                final T coef3 = auxiliaryElements.getK().multiply(cjsj.getCj(j - 2)).subtract(auxiliaryElements.getH().multiply(cjsj.getSj(j - 2))).multiply(j - 2).divide(4.);
+                final T coef4 = auxiliaryElements.getH().multiply(cjsj.getCj(j - 2)).add(auxiliaryElements.getK().multiply(cjsj.getSj(j - 2))).multiply(j - 2).divide(4.);
+                final T coef5 = context.getK2MH2O2().multiply(cjsj.getCj(j - 2)).subtract(context.getHK().multiply(cjsj.getSj(j - 2))).multiply(j - 2);
+
+                //Coefficients for a
+                currentCij[0] = currentCij[0].add(coef1);
+                currentSij[0] = currentSij[0].add(coef2);
+
+                //Coefficients for k
+                currentCij[1] = currentCij[1].add(coef4);
+                currentSij[1] = currentSij[1].add(coef3.negate());
+
+                //Coefficients for h
+                currentCij[2] = currentCij[2].add(coef3);
+                currentSij[2] = currentSij[2].add(coef4);
+
+                //Coefficients for λ
+                currentCij[5] = currentCij[5].add(coef5.divide(2.));
+                currentSij[5] = currentSij[5].add(coef1.divide(2.));
+            }
+
+            //multiply by the common factor
+            //for a (i == 0) -> χ³ / (n² * a)
+            currentCij[0] = currentCij[0].multiply(context.getX3ON2A());
+            currentSij[0] = currentSij[0].multiply(context.getX3ON2A());
+            //for k (i == 1) -> χ / (n² * a²)
+            currentCij[1] = currentCij[1].multiply(context.getXON2A2());
+            currentSij[1] = currentSij[1].multiply(context.getXON2A2());
+            //for h (i == 2) -> χ / (n² * a²)
+            currentCij[2] = currentCij[2].multiply(context.getXON2A2());
+            currentSij[2] = currentSij[2].multiply(context.getXON2A2());
+            //for λ (i == 5) -> (χ²) / (n² * a² * (χ + 1 ) )
+            currentCij[5] = currentCij[5].multiply(context.getX2ON2A2XP1());
+            currentSij[5] = currentSij[5].multiply(context.getX2ON2A2XP1());
+
+            // j is between 1 and 2 * N - 1
+            if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
+                // Compute cross derivatives
+                // Cj(alpha,gamma) = alpha * dC/dgamma - gamma * dC/dalpha
+                final T CjAlphaGamma = auxiliaryElements.getAlpha().multiply(cjsj.getdCjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdCjdAlpha(j)));
+                // Cj(alpha,beta) = alpha * dC/dbeta - beta * dC/dalpha
+                final T CjAlphaBeta  = auxiliaryElements.getAlpha().multiply(cjsj.getdCjdBeta(j)).subtract(auxiliaryElements.getBeta().multiply(cjsj.getdCjdAlpha(j)));
+                // Cj(beta,gamma) = beta * dC/dgamma - gamma * dC/dbeta
+                final T CjBetaGamma  = auxiliaryElements.getBeta().multiply(cjsj.getdCjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdCjdBeta(j)));
+                // Cj(h,k) = h * dC/dk - k * dC/dh
+                final T CjHK         = auxiliaryElements.getH().multiply(cjsj.getdCjdK(j)).subtract(auxiliaryElements.getK().multiply(cjsj.getdCjdH(j)));
+                // Sj(alpha,gamma) = alpha * dS/dgamma - gamma * dS/dalpha
+                final T SjAlphaGamma = auxiliaryElements.getAlpha().multiply(cjsj.getdSjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdSjdAlpha(j)));
+                // Sj(alpha,beta) = alpha * dS/dbeta - beta * dS/dalpha
+                final T SjAlphaBeta  = auxiliaryElements.getAlpha().multiply(cjsj.getdSjdBeta(j)).subtract(auxiliaryElements.getBeta().multiply(cjsj.getdSjdAlpha(j)));
+                // Sj(beta,gamma) = beta * dS/dgamma - gamma * dS/dbeta
+                final T SjBetaGamma  = auxiliaryElements.getBeta().multiply(cjsj.getdSjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdSjdBeta(j)));
+                // Sj(h,k) = h * dS/dk - k * dS/dh
+                final T SjHK         = auxiliaryElements.getH().multiply(cjsj.getdSjdK(j)).subtract(auxiliaryElements.getK().multiply(cjsj.getdSjdH(j)));
+
+                //Coefficients for a
+                final T coef1 = context.getX3ON2A().multiply(context.getBB().negate().add(3.)).multiply(j);
+                currentCij[0] = currentCij[0].add(coef1.multiply(cjsj.getSj(j)));
+                currentSij[0] = currentSij[0].subtract(coef1.multiply(cjsj.getCj(j)));
+
+                //Coefficients for k and h
+                final T coef2 = auxiliaryElements.getP().multiply(CjAlphaGamma).subtract(auxiliaryElements.getQ().multiply(CjBetaGamma).multiply(I));
+                final T coef3 = auxiliaryElements.getP().multiply(SjAlphaGamma).subtract(auxiliaryElements.getQ().multiply(SjBetaGamma).multiply(I));
+                currentCij[1] = currentCij[1].subtract(context.getXON2A2().multiply(auxiliaryElements.getH().multiply(coef2).add(context.getBB().multiply(cjsj.getdCjdH(j))).subtract(auxiliaryElements.getK().multiply(1.5).multiply(j).multiply(cjsj.getSj(j)))));
+                currentSij[1] = currentSij[1].subtract(context.getXON2A2().multiply(auxiliaryElements.getH().multiply(coef3).add(context.getBB().multiply(cjsj.getdSjdH(j))).add(auxiliaryElements.getK().multiply(1.5).multiply(j).multiply(cjsj.getCj(j)))));
+                currentCij[2] = currentCij[2].add(context.getXON2A2().multiply(auxiliaryElements.getK().multiply(coef2).add(context.getBB().multiply(cjsj.getdCjdK(j))).add(auxiliaryElements.getH().multiply(1.5).multiply(j).multiply(cjsj.getSj(j)))));
+                currentSij[2] = currentSij[2].add(context.getXON2A2().multiply(auxiliaryElements.getK().multiply(coef3).add(context.getBB().multiply(cjsj.getdSjdK(j))).subtract(auxiliaryElements.getH().multiply(1.5).multiply(j).multiply(cjsj.getCj(j)))));
+
+                //Coefficients for q and p
+                final T coef4 = CjHK.subtract(CjAlphaBeta).subtract(cjsj.getSj(j).multiply(j));
+                final T coef5 = SjHK.subtract(SjAlphaBeta).add(cjsj.getCj(j).multiply(j));
+                currentCij[3] = context.getCXO2N2A2().multiply(CjAlphaGamma.multiply(-I).add(auxiliaryElements.getQ().multiply(coef4)));
+                currentSij[3] = context.getCXO2N2A2().multiply(SjAlphaGamma.multiply(-I).add(auxiliaryElements.getQ().multiply(coef5)));
+                currentCij[4] = context.getCXO2N2A2().multiply(CjBetaGamma.negate().add(auxiliaryElements.getP().multiply(coef4)));
+                currentSij[4] = context.getCXO2N2A2().multiply(SjBetaGamma.negate().add(auxiliaryElements.getP().multiply(coef5)));
+
+                //Coefficients for λ
+                final T coef6 = auxiliaryElements.getH().multiply(cjsj.getdCjdH(j)).add(auxiliaryElements.getK().multiply(cjsj.getdCjdK(j)));
+                final T coef7 = auxiliaryElements.getH().multiply(cjsj.getdSjdH(j)).add(auxiliaryElements.getK().multiply(cjsj.getdSjdK(j)));
+                currentCij[5] = currentCij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdCjdA(j)).add(coef6.divide(context.getX().add(1.))).add(context.getX().multiply(coef2)).subtract(cjsj.getCj(j).multiply(3.))));
+                currentSij[5] = currentSij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdSjdA(j)).add(coef7.divide(context.getX().add(1.))).add(context.getX().multiply(coef3)).subtract(cjsj.getSj(j).multiply(3.))));
+            }
+
+            for (int i = 0; i < 6; i++) {
+                //Add the current coefficients contribution to C<sub>i</sub>⁰
+                currentCi0[i] = currentCi0[i].subtract(currentCij[i].multiply(rhoSigma[j][0]).add(currentSij[i].multiply(rhoSigma[j][1])));
             }
 
             // Add the coefficients to the interpolation grid
@@ -775,6 +1112,50 @@ public class DSSTZonal implements DSSTForceModel {
             final double coef  = (1 + j * auxiliaryElements.getB()) * mbtj;
             final double rho   = coef * cjsjKH.getCj(j);
             final double sigma = coef * cjsjKH.getSj(j);
+
+            // Add the coefficients to the interpolation grid
+            rhoSigma[j][0] = rho;
+            rhoSigma[j][1] = sigma;
+        }
+
+        return rhoSigma;
+
+    }
+
+    /**
+     * Compute the auxiliary quantities ρ<sub>j</sub> and σ<sub>j</sub>.
+     * <p>
+     * The expressions used are equations 2.5.3-(4) from the Danielson paper. <br/>
+     *  ρ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
+     *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
+     * </p>
+     * @param <T> type of the elements
+     * @param date target date
+     * @param slot slot to which the coefficients belong
+     * @param context container for attributes
+     * @param field field used by default
+     * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
+     */
+    private <T extends RealFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
+                                                                              final FieldSlot<T> slot,
+                                                                              final FieldDSSTZonalContext<T> context,
+                                                                              final Field<T> field) {
+        final T zero = field.getZero();
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+        final FieldCjSjCoefficient<T> cjsjKH = new FieldCjSjCoefficient<>(auxiliaryElements.getK(), auxiliaryElements.getH(), field);
+        final T b = auxiliaryElements.getB().add(1.).reciprocal();
+
+        // (-b)<sup>j</sup>
+        T mbtj = zero.add(1.);
+
+        final T[][] rhoSigma = MathArrays.buildArray(field, slot.cij.length, 2);
+        for (int j = 1; j < rhoSigma.length; j++) {
+
+            //Compute current rho and sigma;
+            mbtj = mbtj.multiply(b.negate());
+            final T coef  = mbtj.multiply(auxiliaryElements.getB().multiply(j).add(1.));
+            final T rho   = coef.multiply(cjsjKH.getCj(j));
+            final T sigma = coef.multiply(cjsjKH.getSj(j));
 
             // Add the coefficients to the interpolation grid
             rhoSigma[j][0] = rho;
@@ -882,7 +1263,7 @@ public class DSSTZonal implements DSSTForceModel {
         /** {@inheritDoc} */
         @Override
         public String getCoefficientsKeyPrefix() {
-            return "DSST-central-body-zonal-";
+            return DSSTZonal.SHORT_PERIOD_PREFIX;
         }
 
         /** {@inheritDoc}
@@ -1009,6 +1390,157 @@ public class DSSTZonal implements DSSTForceModel {
 
             }
 
+        }
+
+    }
+
+    /** The coefficients used to compute the short-periodic zonal contribution.
+    *
+    * <p>
+    * Those coefficients are given in Danielson paper by expressions 4.1-(20) to 4.1.-(25)
+    * </p>
+    * <p>
+    * The coefficients are: <br>
+    * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br>
+    * - ρ<sub>j</sub> and σ<sub>j</sub> <br>
+    * - C<sub>i</sub>⁰
+    * </p>
+    *
+    * @author Lucian Barbulescu
+    */
+    private static class FieldZonalShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151118L;
+
+        /** Maximum value for j index. */
+        private final int maxFrequencyShortPeriodics;
+
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
+
+        /** All coefficients slots. */
+        private final transient FieldTimeSpanMap<FieldSlot<T>, T> slots;
+
+       /** Constructor.
+        * @param maxFrequencyShortPeriodics maximum value for j index
+        * @param interpolationPoints number of points used in the interpolation process
+        * @param slots all coefficients slots
+        */
+        FieldZonalShortPeriodicCoefficients(final int maxFrequencyShortPeriodics, final int interpolationPoints,
+                                            final FieldTimeSpanMap<FieldSlot<T>, T> slots) {
+
+            // Save parameters
+            this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
+            this.interpolationPoints        = interpolationPoints;
+            this.slots                      = slots;
+
+        }
+
+       /** Get the slot valid for some date.
+        * @param meanStates mean states defining the slot
+        * @return slot valid at the specified date
+        */
+        @SuppressWarnings("unchecked")
+        public FieldSlot<T> createSlot(final FieldSpacecraftState<T>... meanStates) {
+            final FieldSlot<T>         slot  = new FieldSlot<>(maxFrequencyShortPeriodics, interpolationPoints);
+            final FieldAbsoluteDate<T> first = meanStates[0].getDate();
+            final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public T[] value(final FieldOrbit<T> meanOrbit) {
+
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(meanOrbit.getDate());
+
+            // Get the True longitude L
+            final T L = meanOrbit.getLv();
+
+            // Compute the center
+            final T center = L.subtract(meanOrbit.getLM());
+
+            // Initialize short periodic variations
+            final T[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());
+            final T[] d = slot.di.value(meanOrbit.getDate());
+            for (int i = 0; i < 6; i++) {
+                shortPeriodicVariation[i] = shortPeriodicVariation[i].add(center.multiply(d[i]));
+            }
+
+            for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
+                final T[] c = slot.cij[j].value(meanOrbit.getDate());
+                final T[] s = slot.sij[j].value(meanOrbit.getDate());
+                final T cos = FastMath.cos(L.multiply(j));
+                final T sin = FastMath.sin(L.multiply(j));
+                for (int i = 0; i < 6; i++) {
+                    // add corresponding term to the short periodic variation
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(cos));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sin));
+                }
+            }
+
+            return shortPeriodicVariation;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getCoefficientsKeyPrefix() {
+            return DSSTZonal.SHORT_PERIOD_PREFIX;
+        }
+
+       /** {@inheritDoc}
+        * <p>
+        * For zonal terms contributions,there are maxJ cj coefficients,
+        * maxJ sj coefficients and 2 dj coefficients, where maxJ depends
+        * on the orbit. The j index is the integer multiplier for the true
+        * longitude argument in the cj and sj coefficients and the degree
+        * in the polynomial dj coefficients.
+        * </p>
+        */
+        @Override
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected)
+               throws OrekitException {
+
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(date);
+
+            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * maxFrequencyShortPeriodics + 2);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
+            storeIfSelected(coefficients, selected, slot.di.value(date), "d", 1);
+            for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
+            }
+            return coefficients;
+
+        }
+
+       /** Put a coefficient in a map if selected.
+        * @param map map to populate
+        * @param selected set of coefficients that should be put in the map
+        * (empty set means all coefficients are selected)
+        * @param value coefficient value
+        * @param id coefficient identifier
+        * @param indices list of coefficient indices
+        */
+        private void storeIfSelected(final Map<String, T[]> map, final Set<String> selected,
+                                     final T[] value, final String id, final int... indices) {
+            final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+            keyBuilder.append(id);
+            for (int index : indices) {
+                keyBuilder.append('[').append(index).append(']');
+            }
+            final String key = keyBuilder.toString();
+            if (selected.isEmpty() || selected.contains(key)) {
+                map.put(key, value);
+            }
         }
 
     }
@@ -1314,8 +1846,8 @@ public class DSSTZonal implements DSSTForceModel {
                     //add first term
                     // J<sub>j</sub>
                     final double jj = -harmonics.getUnnormalizedCnm(j, 0);
-                    double kns = hansen.getHansenObjects()[0].getValue(-j - 1, context.getX());
-                    double dkns = hansen.getHansenObjects()[0].getDerivative(-j - 1, context.getX());
+                    double kns = hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getX());
+                    double dkns = hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getX());
 
                     double lns = lnsCoef.getLns(j, j);
                     //dlns is 0 because n == s == j
@@ -1826,6 +2358,828 @@ public class DSSTZonal implements DSSTForceModel {
         }
     }
 
+    /** Compute the C<sup>j</sup> and the S<sup>j</sup> coefficients.
+     *  <p>
+     *  Those coefficients are given in Danielson paper by expressions 4.1-(13) to 4.1.-(16b)
+     *  </p>
+     */
+    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+
+        /** The G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub> polynomials. */
+        private final FieldGHIJjsPolynomials<T> ghijCoef;
+
+        /** L<sub>n</sub><sup>s</sup>(γ). */
+        private final FieldLnsCoefficients<T> lnsCoef;
+
+        /** Maximum possible value for n. */
+        private final int nMax;
+
+        /** Maximum possible value for s. */
+        private final int sMax;
+
+        /** Maximum possible value for j. */
+        private final int jMax;
+
+        /** The C<sup>j</sup> coefficients and their derivatives.
+         * <p>
+         * Each column of the matrix contains the following values: <br/>
+         * - C<sup>j</sup> <br/>
+         * - dC<sup>j</sup> / da <br/>
+         * - dC<sup>j</sup> / dh <br/>
+         * - dC<sup>j</sup> / dk <br/>
+         * - dC<sup>j</sup> / dα <br/>
+         * - dC<sup>j</sup> / dβ <br/>
+         * - dC<sup>j</sup> / dγ <br/>
+         * </p>
+         */
+        private final T[][] cCoef;
+
+        /** The S<sup>j</sup> coefficients and their derivatives.
+         * <p>
+         * Each column of the matrix contains the following values: <br/>
+         * - S<sup>j</sup> <br/>
+         * - dS<sup>j</sup> / da <br/>
+         * - dS<sup>j</sup> / dh <br/>
+         * - dS<sup>j</sup> / dk <br/>
+         * - dS<sup>j</sup> / dα <br/>
+         * - dS<sup>j</sup> / dβ <br/>
+         * - dS<sup>j</sup> / dγ <br/>
+         * </p>
+         */
+        private final T[][] sCoef;
+
+        /** h * &Chi;³. */
+        private final T hXXX;
+        /** k * &Chi;³. */
+        private final T kXXX;
+
+        /** Create a set of C<sup>j</sup> and the S<sup>j</sup> coefficients.
+         *  @param date the current date
+         *  @param nMax maximum possible value for n
+         *  @param sMax maximum possible value for s
+         *  @param jMax maximum possible value for j
+         *  @param context container for attributes
+         *  @param hansenObjects initialization of hansen objects
+         * @throws OrekitException if an error occurs while generating the coefficients
+         */
+        FieldFourierCjSjCoefficients(final FieldAbsoluteDate<T> date,
+                                     final int nMax, final int sMax, final int jMax,
+                                     final FieldDSSTZonalContext<T> context,
+                                     final FieldHansenObjects hansenObjects)
+                throws OrekitException {
+
+            //Field used by default
+            final Field<T> field = date.getField();
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            this.ghijCoef = new FieldGHIJjsPolynomials<>(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta());
+            // Qns coefficients
+            final T[][] Qns = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
+
+            this.lnsCoef = new FieldLnsCoefficients<>(nMax, nMax, Qns, context.getVns(), context.getRoa(), field);
+            this.nMax = nMax;
+            this.sMax = sMax;
+            this.jMax = jMax;
+
+            // compute the common factors that depends on the mean elements
+            this.hXXX = auxiliaryElements.getH().multiply(context.getXXX());
+            this.kXXX = auxiliaryElements.getK().multiply(context.getXXX());
+
+            this.cCoef = MathArrays.buildArray(field, 7, jMax + 1);
+            this.sCoef = MathArrays.buildArray(field, 7, jMax + 1);
+
+            for (int s = 0; s <= sMax; s++) {
+                //Initialise the Hansen roots
+                hansenObjects.computeHansenObjectsInitValues(context, s);
+            }
+            generateCoefficients(date, context, hansenObjects, field);
+        }
+
+        /** Generate all coefficients.
+         * @param date the current date
+         * @param context container for attributes
+         * @param hansenObjects initialization of hansen objects
+         * @param field field used by default
+         * @throws OrekitException if an error occurs while generating the coefficients
+         */
+        @SuppressWarnings("unchecked")
+        private void generateCoefficients(final FieldAbsoluteDate<T> date,
+                                          final FieldDSSTZonalContext<T> context,
+                                          final FieldHansenObjects hansenObjects,
+                                          final Field<T> field)
+            throws OrekitException {
+            //Zero
+            final T zero = field.getZero();
+            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
+            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
+            for (int j = 1; j <= jMax; j++) {
+
+                //init arrays
+                for (int i = 0; i <= 6; i++) {
+                    cCoef[i][j] = zero;
+                    sCoef[i][j] = zero;
+                }
+
+                if (isBetween(j, 1, nMax - 1)) {
+
+                    //compute first double sum where s: j -> N-1 and n: s+1 -> N
+                    for (int s = j; s <= FastMath.min(nMax - 1, sMax); s++) {
+                        // j - s
+                        final int jms = j - s;
+                        // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                        final int d0smj = (s == j) ? 1 : 2;
+
+                        for (int n = s + 1; n <= nMax; n++) {
+                            // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                            if ((n + jms) % 2 == 0) {
+                                // (2 - delta(0,s-j)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                final T lns  = lnsCoef.getLns(n, -jms);
+                                final T dlns = lnsCoef.getdLnsdGamma(n, -jms);
+
+                                final T hjs        = ghijCoef.getHjs(s, -jms);
+                                final T dHjsdh     = ghijCoef.getdHjsdh(s, -jms);
+                                final T dHjsdk     = ghijCoef.getdHjsdk(s, -jms);
+                                final T dHjsdAlpha = ghijCoef.getdHjsdAlpha(s, -jms);
+                                final T dHjsdBeta  = ghijCoef.getdHjsdBeta(s, -jms);
+
+                                final T gjs        = ghijCoef.getGjs(s, -jms);
+                                final T dGjsdh     = ghijCoef.getdGjsdh(s, -jms);
+                                final T dGjsdk     = ghijCoef.getdGjsdk(s, -jms);
+                                final T dGjsdAlpha = ghijCoef.getdGjsdAlpha(s, -jms);
+                                final T dGjsdBeta  = ghijCoef.getdGjsdBeta(s, -jms);
+
+                                // J<sub>n</sub>
+                                final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                // K₀<sup>-n-1,s</sup>
+                                final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                final T coef0 = jn.multiply(d0smj);
+                                final T coef1 = coef0.multiply(lns);
+                                final T coef2 = coef1.multiply(kns);
+                                final T coef3 = coef2.multiply(hjs);
+                                final T coef4 = coef2.multiply(gjs);
+
+                                // Add the term to the coefficients
+                                cCoef[0][j] = cCoef[0][j].add(coef3);
+                                cCoef[1][j] = cCoef[1][j].add(coef3.multiply(n + 1));
+                                cCoef[2][j] = cCoef[2][j].add(coef1.multiply(kns.multiply(dHjsdh).add(hjs.multiply(hXXX).multiply(dkns))));
+                                cCoef[3][j] = cCoef[3][j].add(coef1.multiply(kns.multiply(dHjsdk).add(hjs.multiply(kXXX).multiply(dkns))));
+                                cCoef[4][j] = cCoef[4][j].add(coef2.multiply(dHjsdAlpha));
+                                cCoef[5][j] = cCoef[5][j].add(coef2.multiply(dHjsdBeta));
+                                cCoef[6][j] = cCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(hjs));
+
+                                sCoef[0][j] = sCoef[0][j].add(coef4);
+                                sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dGjsdh).add(gjs.multiply(hXXX).multiply(dkns))));
+                                sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dGjsdk).add(gjs.multiply(kXXX).multiply(dkns))));
+                                sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dGjsdAlpha));
+                                sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dGjsdBeta));
+                                sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(gjs));
+                            }
+                        }
+                    }
+
+                    //compute second double sum where s: 0 -> N-j and n: max(j+s, j+1) -> N
+                    for (int s = 0; s <= FastMath.min(nMax - j, sMax); s++) {
+                        // j + s
+                        final int jps = j + s;
+                        // Kronecker symbols (2 - delta(0,j+s))
+                        final double d0spj = (s == -j) ? 1 : 2;
+
+                        for (int n = FastMath.max(j + s, j + 1); n <= nMax; n++) {
+                            // if n + (j+s) is odd, then the term is equal to zero due to the factor Vn,s+j
+                            if ((n + jps) % 2 == 0) {
+                                // (2 - delta(0,s+j)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j+s</sup>
+                                final T lns  = lnsCoef.getLns(n, jps);
+                                final T dlns = lnsCoef.getdLnsdGamma(n, jps);
+
+                                final T hjs        = ghijCoef.getHjs(s, jps);
+                                final T dHjsdh     = ghijCoef.getdHjsdh(s, jps);
+                                final T dHjsdk     = ghijCoef.getdHjsdk(s, jps);
+                                final T dHjsdAlpha = ghijCoef.getdHjsdAlpha(s, jps);
+                                final T dHjsdBeta  = ghijCoef.getdHjsdBeta(s, jps);
+
+                                final T gjs        = ghijCoef.getGjs(s, jps);
+                                final T dGjsdh     = ghijCoef.getdGjsdh(s, jps);
+                                final T dGjsdk     = ghijCoef.getdGjsdk(s, jps);
+                                final T dGjsdAlpha = ghijCoef.getdGjsdAlpha(s, jps);
+                                final T dGjsdBeta  = ghijCoef.getdGjsdBeta(s, jps);
+
+                                // J<sub>n</sub>
+                                final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                // K₀<sup>-n-1,s</sup>
+                                final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                final T coef0 = jn.multiply(d0spj);
+                                final T coef1 = coef0.multiply(lns);
+                                final T coef2 = coef1.multiply(kns);
+
+                                final T coef3 = coef2.multiply(hjs);
+                                final T coef4 = coef2.multiply(gjs);
+
+                                // Add the term to the coefficients
+                                cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dHjsdh).add(hjs.multiply(hXXX).multiply(dkns))));
+                                cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dHjsdk).add(hjs.multiply(kXXX).multiply(dkns))));
+                                cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dHjsdAlpha));
+                                cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dHjsdBeta));
+                                cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(hjs));
+
+                                sCoef[0][j] = sCoef[0][j].add(coef4);
+                                sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dGjsdh).add(gjs.multiply(hXXX).multiply(dkns))));
+                                sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dGjsdk).add(gjs.multiply(kXXX).multiply(dkns))));
+                                sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dGjsdAlpha));
+                                sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dGjsdBeta));
+                                sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(gjs));
+                            }
+                        }
+                    }
+
+                    //compute third double sum where s: 1 -> j and  n: j+1 -> N
+                    for (int s = 1; s <= FastMath.min(j, sMax); s++) {
+                        // j - s
+                        final int jms = j - s;
+                        // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                        final int d0smj = (s == j) ? 1 : 2;
+
+                        for (int n = j + 1; n <= nMax; n++) {
+                            // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                            if ((n + jms) % 2 == 0) {
+                                // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                final T lns  = lnsCoef.getLns(n, jms);
+                                final T dlns = lnsCoef.getdLnsdGamma(n, jms);
+
+                                final T ijs        = ghijCoef.getIjs(s, jms);
+                                final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                                final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                                final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                                final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                                final T jjs        = ghijCoef.getJjs(s, jms);
+                                final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                                final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                                final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                                final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                                // J<sub>n</sub>
+                                final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                // K₀<sup>-n-1,s</sup>
+                                final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                final T coef0 = jn.multiply(d0smj);
+                                final T coef1 = coef0.multiply(lns);
+                                final T coef2 = coef1.multiply(kns);
+
+                                final T coef3 = coef2.multiply(ijs);
+                                final T coef4 = coef2.multiply(jjs);
+
+                                // Add the term to the coefficients
+                                cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                                cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                                cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                                cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                                cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                                sCoef[0][j] = sCoef[0][j].add(coef4);
+                                sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                                sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                                sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                                sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                                sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                            }
+                        }
+                    }
+                }
+
+                if (isBetween(j, 2, nMax)) {
+                    //add first term
+                    // J<sub>j</sub>
+                    final T jj = zero.subtract(harmonics.getUnnormalizedCnm(j, 0));
+                    T kns  = (T) hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getX());
+                    T dkns = (T) hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getX());
+
+                    T lns = lnsCoef.getLns(j, j);
+                    //dlns is 0 because n == s == j
+
+                    final T hjs        = ghijCoef.getHjs(0, j);
+                    final T dHjsdh     = ghijCoef.getdHjsdh(0, j);
+                    final T dHjsdk     = ghijCoef.getdHjsdk(0, j);
+                    final T dHjsdAlpha = ghijCoef.getdHjsdAlpha(0, j);
+                    final T dHjsdBeta  = ghijCoef.getdHjsdBeta(0, j);
+
+                    final T gjs        = ghijCoef.getGjs(0, j);
+                    final T dGjsdh     = ghijCoef.getdGjsdh(0, j);
+                    final T dGjsdk     = ghijCoef.getdGjsdk(0, j);
+                    final T dGjsdAlpha = ghijCoef.getdGjsdAlpha(0, j);
+                    final T dGjsdBeta  = ghijCoef.getdGjsdBeta(0, j);
+
+                    // 2 * J<sub>j</sub> * K₀<sup>-j-1,0</sup> * L<sub>j</sub><sup>j</sup>
+                    T coef0 = jj.multiply(2.);
+                    T coef1 = coef0.multiply(lns);
+                    T coef2 = coef1.multiply(kns);
+
+                    T coef3 = coef2.multiply(hjs);
+                    T coef4 = coef2.multiply(gjs);
+
+                    // Add the term to the coefficients
+                    cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                    cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(j + 1));
+                    cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dHjsdh).add(hjs.multiply(hXXX).multiply(dkns))));
+                    cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dHjsdk).add(hjs.multiply(kXXX).multiply(dkns))));
+                    cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dHjsdAlpha));
+                    cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dHjsdBeta));
+                    //no contribution to cCoef[6][j] because dlns is 0
+
+                    sCoef[0][j] = sCoef[0][j].add(coef4);
+                    sCoef[1][j] = sCoef[1][j].add(coef4.multiply(j + 1));
+                    sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dGjsdh).add(gjs.multiply(hXXX).multiply(dkns))));
+                    sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dGjsdk).add(gjs.multiply(kXXX).multiply(dkns))));
+                    sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dGjsdAlpha));
+                    sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dGjsdBeta));
+                    //no contribution to sCoef[6][j] because dlns is 0
+
+                    //compute simple sum where s: 1 -> j-1
+                    for (int s = 1; s <= FastMath.min(j - 1, sMax); s++) {
+                        // j - s
+                        final int jms = j - s;
+                        // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                        final int d0smj = (s == j) ? 1 : 2;
+
+                        // if s is odd, then the term is equal to zero due to the factor Vj,s-j
+                        if (s % 2 == 0) {
+                            // (2 - delta(0,j-s)) * J<sub>j</sub> * K₀<sup>-j-1,s</sup> * L<sub>j</sub><sup>j-s</sup>
+                            kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-j - 1, context.getX());
+                            dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-j - 1, context.getX());
+
+                            lns = lnsCoef.getLns(j, jms);
+                            final T dlns = lnsCoef.getdLnsdGamma(j, jms);
+
+                            final T ijs        = ghijCoef.getIjs(s, jms);
+                            final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                            final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                            final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                            final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                            final T jjs        = ghijCoef.getJjs(s, jms);
+                            final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                            final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                            final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                            final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                            coef0 = jj.multiply(d0smj);
+                            coef1 = coef0.multiply(lns);
+                            coef2 = coef1.multiply(kns);
+
+                            coef3 = coef2.multiply(ijs);
+                            coef4 = coef2.multiply(jjs);
+
+                            // Add the term to the coefficients
+                            cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                            cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(j + 1));
+                            cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                            cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                            cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                            cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                            cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                            sCoef[0][j] = sCoef[0][j].add(coef4);
+                            sCoef[1][j] = sCoef[1][j].add(coef4.multiply(j + 1));
+                            sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                            sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                            sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                            sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                            sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                        }
+                    }
+                }
+
+                if (isBetween(j, 3, 2 * nMax - 1)) {
+                    //compute uppercase sigma expressions
+
+                    //min(j-1,N)
+                    final int minjm1on = FastMath.min(j - 1, nMax);
+
+                    //if j is even
+                    if (j % 2 == 0) {
+                        //compute first double sum where s: j-min(j-1,N) -> j/2-1 and n: j-s -> min(j-1,N)
+                        for (int s = j - minjm1on; s <= FastMath.min(j / 2 - 1, sMax); s++) {
+                            // j - s
+                            final int jms = j - s;
+                            // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                            final int d0smj = (s == j) ? 1 : 2;
+
+                            for (int n = j - s; n <= minjm1on; n++) {
+                                // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                                if ((n + jms) % 2 == 0) {
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    final T lns  = lnsCoef.getLns(n, jms);
+                                    final T dlns = lnsCoef.getdLnsdGamma(n, jms);
+
+                                    final T ijs        = ghijCoef.getIjs(s, jms);
+                                    final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                                    final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                                    final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                                    final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                                    final T jjs        = ghijCoef.getJjs(s, jms);
+                                    final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                                    final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                                    final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                                    final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                                    // J<sub>n</sub>
+                                    final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                    // K₀<sup>-n-1,s</sup>
+                                    final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                    final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                    final T coef0 = jn.multiply(d0smj);
+                                    final T coef1 = coef0.multiply(lns);
+                                    final T coef2 = coef1.multiply(kns);
+
+                                    final T coef3 = coef2.multiply(ijs);
+                                    final T coef4 = coef2.multiply(jjs);
+
+                                    // Add the term to the coefficients
+                                    cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                    cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                    cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                                    cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                                    cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                                    cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                                    cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                                    sCoef[0][j] = sCoef[0][j].add(coef4);
+                                    sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                    sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                                    sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                                    sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                                    sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                                    sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                                }
+                            }
+                        }
+
+                        //compute second double sum where s: j/2 -> min(j-1,N)-1 and n: s+1 -> min(j-1,N)
+                        for (int s = j / 2; s <=  FastMath.min(minjm1on - 1, sMax); s++) {
+                            // j - s
+                            final int jms = j - s;
+                            // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                            final int d0smj = (s == j) ? 1 : 2;
+
+                            for (int n = s + 1; n <= minjm1on; n++) {
+                                // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                                if ((n + jms) % 2 == 0) {
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    final T lns  = lnsCoef.getLns(n, jms);
+                                    final T dlns = lnsCoef.getdLnsdGamma(n, jms);
+
+                                    final T ijs        = ghijCoef.getIjs(s, jms);
+                                    final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                                    final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                                    final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                                    final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                                    final T jjs        = ghijCoef.getJjs(s, jms);
+                                    final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                                    final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                                    final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                                    final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                                    // J<sub>n</sub>
+                                    final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                    // K₀<sup>-n-1,s</sup>
+                                    final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                    final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                    final T coef0 = jn.multiply(d0smj);
+                                    final T coef1 = coef0.multiply(lns);
+                                    final T coef2 = coef1.multiply(kns);
+
+                                    final T coef3 = coef2.multiply(ijs);
+                                    final T coef4 = coef2.multiply(jjs);
+
+                                    // Add the term to the coefficients
+                                    cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                    cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                    cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                                    cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                                    cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                                    cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                                    cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                                    sCoef[0][j] = sCoef[0][j].add(coef4);
+                                    sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                    sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                                    sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                                    sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                                    sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                                    sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                                }
+                            }
+                        }
+                    }
+
+                    //if j is odd
+                    else {
+                        //compute first double sum where s: (j-1)/2 -> min(j-1,N)-1 and n: s+1 -> min(j-1,N)
+                        for (int s = (j - 1) / 2; s <= FastMath.min(minjm1on - 1, sMax); s++) {
+                            // j - s
+                            final int jms = j - s;
+                            // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                            final int d0smj = (s == j) ? 1 : 2;
+
+                            for (int n = s + 1; n <= minjm1on; n++) {
+                                // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                                if ((n + jms) % 2 == 0) {
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    final T lns  = lnsCoef.getLns(n, jms);
+                                    final T dlns = lnsCoef.getdLnsdGamma(n, jms);
+
+                                    final T ijs        = ghijCoef.getIjs(s, jms);
+                                    final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                                    final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                                    final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                                    final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                                    final T jjs        = ghijCoef.getJjs(s, jms);
+                                    final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                                    final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                                    final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                                    final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                                    // J<sub>n</sub>
+                                    final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                    // K₀<sup>-n-1,s</sup>
+
+                                    final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                    final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                    final T coef0 = jn.multiply(d0smj);
+                                    final T coef1 = coef0.multiply(lns);
+                                    final T coef2 = coef1.multiply(kns);
+
+                                    final T coef3 = coef2.multiply(ijs);
+                                    final T coef4 = coef2.multiply(jjs);
+
+                                    // Add the term to the coefficients
+                                    cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                    cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                    cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                                    cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                                    cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                                    cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                                    cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                                    sCoef[0][j] = sCoef[0][j].add(coef4);
+                                    sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                    sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                                    sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                                    sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                                    sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                                    sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                                }
+                            }
+                        }
+
+                        //the second double sum is added only if N >= 4 and j between 5 and 2*N-3
+                        if (nMax >= 4 && isBetween(j, 5, 2 * nMax - 3)) {
+                            //compute second double sum where s: j-min(j-1,N) -> (j-3)/2 and n: j-s -> min(j-1,N)
+                            for (int s = j - minjm1on; s <= FastMath.min((j - 3) / 2, sMax); s++) {
+                                // j - s
+                                final int jms = j - s;
+                                // Kronecker symbols (2 - delta(0,s-j)) and (2 - delta(0,j-s))
+                                final int d0smj = (s == j) ? 1 : 2;
+
+                                for (int n = j - s; n <= minjm1on; n++) {
+                                    // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
+                                    if ((n + jms) % 2 == 0) {
+                                        // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                        final T lns  = lnsCoef.getLns(n, jms);
+                                        final T dlns = lnsCoef.getdLnsdGamma(n, jms);
+
+                                        final T ijs        = ghijCoef.getIjs(s, jms);
+                                        final T dIjsdh     = ghijCoef.getdIjsdh(s, jms);
+                                        final T dIjsdk     = ghijCoef.getdIjsdk(s, jms);
+                                        final T dIjsdAlpha = ghijCoef.getdIjsdAlpha(s, jms);
+                                        final T dIjsdBeta  = ghijCoef.getdIjsdBeta(s, jms);
+
+                                        final T jjs        = ghijCoef.getJjs(s, jms);
+                                        final T dJjsdh     = ghijCoef.getdJjsdh(s, jms);
+                                        final T dJjsdk     = ghijCoef.getdJjsdk(s, jms);
+                                        final T dJjsdAlpha = ghijCoef.getdJjsdAlpha(s, jms);
+                                        final T dJjsdBeta  = ghijCoef.getdJjsdBeta(s, jms);
+
+                                        // J<sub>n</sub>
+                                        final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
+
+                                        // K₀<sup>-n-1,s</sup>
+                                        final T kns   = (T) hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
+                                        final T dkns  = (T) hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+
+                                        final T coef0 = jn.multiply(d0smj);
+                                        final T coef1 = coef0.multiply(lns);
+                                        final T coef2 = coef1.multiply(kns);
+
+                                        final T coef3 = coef2.multiply(ijs);
+                                        final T coef4 = coef2.multiply(jjs);
+
+                                        // Add the term to the coefficients
+                                        cCoef[0][j] = cCoef[0][j].subtract(coef3);
+                                        cCoef[1][j] = cCoef[1][j].subtract(coef3.multiply(n + 1));
+                                        cCoef[2][j] = cCoef[2][j].subtract(coef1.multiply(kns.multiply(dIjsdh).add(ijs.multiply(hXXX).multiply(dkns))));
+                                        cCoef[3][j] = cCoef[3][j].subtract(coef1.multiply(kns.multiply(dIjsdk).add(ijs.multiply(kXXX).multiply(dkns))));
+                                        cCoef[4][j] = cCoef[4][j].subtract(coef2.multiply(dIjsdAlpha));
+                                        cCoef[5][j] = cCoef[5][j].subtract(coef2.multiply(dIjsdBeta));
+                                        cCoef[6][j] = cCoef[6][j].subtract(coef0.multiply(dlns).multiply(kns).multiply(ijs));
+
+                                        sCoef[0][j] = sCoef[0][j].add(coef4);
+                                        sCoef[1][j] = sCoef[1][j].add(coef4.multiply(n + 1));
+                                        sCoef[2][j] = sCoef[2][j].add(coef1.multiply(kns.multiply(dJjsdh).add(jjs.multiply(hXXX).multiply(dkns))));
+                                        sCoef[3][j] = sCoef[3][j].add(coef1.multiply(kns.multiply(dJjsdk).add(jjs.multiply(kXXX).multiply(dkns))));
+                                        sCoef[4][j] = sCoef[4][j].add(coef2.multiply(dJjsdAlpha));
+                                        sCoef[5][j] = sCoef[5][j].add(coef2.multiply(dJjsdBeta));
+                                        sCoef[6][j] = sCoef[6][j].add(coef0.multiply(dlns).multiply(kns).multiply(jjs));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                cCoef[0][j] = cCoef[0][j].multiply(context.getMuoa().divide(j).negate());
+                cCoef[1][j] = cCoef[1][j].multiply(context.getMuoa().divide(auxiliaryElements.getSma().multiply(j)));
+                cCoef[2][j] = cCoef[2][j].multiply(context.getMuoa().divide(j).negate());
+                cCoef[3][j] = cCoef[3][j].multiply(context.getMuoa().divide(j).negate());
+                cCoef[4][j] = cCoef[4][j].multiply(context.getMuoa().divide(j).negate());
+                cCoef[5][j] = cCoef[5][j].multiply(context.getMuoa().divide(j).negate());
+                cCoef[6][j] = cCoef[6][j].multiply(context.getMuoa().divide(j).negate());
+
+                sCoef[0][j] = sCoef[0][j].multiply(context.getMuoa().divide(j).negate());
+                sCoef[1][j] = sCoef[1][j].multiply(context.getMuoa().divide(auxiliaryElements.getSma().multiply(j)));
+                sCoef[2][j] = sCoef[2][j].multiply(context.getMuoa().divide(j).negate());
+                sCoef[3][j] = sCoef[3][j].multiply(context.getMuoa().divide(j).negate());
+                sCoef[4][j] = sCoef[4][j].multiply(context.getMuoa().divide(j).negate());
+                sCoef[5][j] = sCoef[5][j].multiply(context.getMuoa().divide(j).negate());
+                sCoef[6][j] = sCoef[6][j].multiply(context.getMuoa().divide(j).negate());
+
+            }
+        }
+
+        /** Check if an index is within the accepted interval.
+         *
+         * @param index the index to check
+         * @param lowerBound the lower bound of the interval
+         * @param upperBound the upper bound of the interval
+         * @return true if the index is between the lower and upper bounds, false otherwise
+         */
+        private boolean isBetween(final int index, final int lowerBound, final int upperBound) {
+            return index >= lowerBound && index <= upperBound;
+        }
+
+        /**Get the value of C<sup>j</sup>.
+         *
+         * @param j j index
+         * @return C<sup>j</sup>
+         */
+        public T getCj(final int j) {
+            return cCoef[0][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / da.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / da
+         */
+        public T getdCjdA(final int j) {
+            return cCoef[1][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / dh.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / dh
+         */
+        public T getdCjdH(final int j) {
+            return cCoef[2][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / dk.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / dk
+         */
+        public T getdCjdK(final int j) {
+            return cCoef[3][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / dα.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / dα
+         */
+        public T getdCjdAlpha(final int j) {
+            return cCoef[4][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / dβ.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / dβ
+         */
+        public T getdCjdBeta(final int j) {
+            return cCoef[5][j];
+        }
+
+        /**Get the value of dC<sup>j</sup> / dγ.
+         *
+         * @param j j index
+         * @return dC<sup>j</sup> / dγ
+         */
+        public T getdCjdGamma(final int j) {
+            return cCoef[6][j];
+        }
+
+        /**Get the value of S<sup>j</sup>.
+         *
+         * @param j j index
+         * @return S<sup>j</sup>
+         */
+        public T getSj(final int j) {
+            return sCoef[0][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> / da.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> / da
+         */
+        public T getdSjdA(final int j) {
+            return sCoef[1][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> / dh.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> / dh
+         */
+        public T getdSjdH(final int j) {
+            return sCoef[2][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> / dk.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> / dk
+         */
+        public T getdSjdK(final int j) {
+            return sCoef[3][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> / dα.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> / dα
+         */
+        public T getdSjdAlpha(final int j) {
+            return sCoef[4][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> / dβ.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> / dβ
+         */
+        public T getdSjdBeta(final int j) {
+            return sCoef[5][j];
+        }
+
+        /**Get the value of dS<sup>j</sup> /  dγ.
+         *
+         * @param j j index
+         * @return dS<sup>j</sup> /  dγ
+         */
+        public T getdSjdGamma(final int j) {
+            return sCoef[6][j];
+        }
+    }
+
     /** Coefficients valid for one time slot. */
     private static class Slot implements Serializable {
 
@@ -1895,6 +3249,76 @@ public class DSSTZonal implements DSSTForceModel {
 
     }
 
+    /** Coefficients valid for one time slot. */
+    private static class FieldSlot <T extends RealFieldElement<T>> implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160319L;
+
+        /**The coefficients D<sub>i</sub>.
+         * <p>
+         * i corresponds to the equinoctial element, as follows:
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T> di;
+
+        /** The coefficients C<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The constant term C<sub>i</sub>⁰ is also stored in this variable at index j = 0 <br>
+         * The index order is cij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] cij;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is sij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] sij;
+
+        /** Simple constructor.
+         *  @param maxFrequencyShortPeriodics maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        @SuppressWarnings("unchecked")
+        FieldSlot(final int maxFrequencyShortPeriodics, final int interpolationPoints) {
+
+            final int rows = maxFrequencyShortPeriodics + 1;
+            di  = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+            cij = new FieldShortPeriodicsInterpolatedCoefficient[rows];
+            sij = new FieldShortPeriodicsInterpolatedCoefficient[rows];
+
+            //Initialize the arrays
+            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                cij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+                sij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+            }
+
+        }
+
+    }
+
     /** Compute potential and potential derivatives with respect to orbital parameters. */
     private class UAnddU {
 
@@ -1903,7 +3327,7 @@ public class DSSTZonal implements DSSTForceModel {
         private double U;
 
         /** dU / da. */
-        private  double dUda;
+        private double dUda;
 
         /** dU / dk. */
         private double dUdk;
@@ -2226,6 +3650,13 @@ public class DSSTZonal implements DSSTForceModel {
             dUdBe = dUdBe.multiply(context.getMuoa()).negate();
             dUdGa = dUdGa.multiply(context.getMuoa()).negate();
 
+        }
+
+        /** Return value of U.
+         * @return U
+         */
+        public T getU() {
+            return U;
         }
 
          /** Return value of dU / da.

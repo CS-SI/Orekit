@@ -100,6 +100,34 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
     /** R / a .*/
     private T roa;
 
+    /** Keplerian mean motion. */
+    private final T n;
+
+    /** Keplerian period. */
+    private final T period;
+
+    // Short periodic terms
+    /** h * k. */
+    private T hk;
+    /** k² - h². */
+    private T k2mh2;
+    /** (k² - h²) / 2. */
+    private T k2mh2o2;
+    /** 1 / (n² * a²). */
+    private T oon2a2;
+    /** 1 / (n² * a) . */
+    private T oon2a;
+    /** χ³ / (n² * a). */
+    private T x3on2a;
+    /** χ / (n² * a²). */
+    private T xon2a2;
+    /** (C * χ) / ( 2 * n² * a² ). */
+    private T cxo2n2a2;
+    /** (χ²) / (n² * a² * (χ + 1 ) ). */
+    private T x2on2a2xp1;
+    /** B * B.*/
+    private T BB;
+
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
      * This method aims at being called before mean elements rates computation
@@ -124,6 +152,14 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
         final T mu = parameters[0];
 
+        // Keplerian mean motion
+        final T absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu.divide(absA)).divide(absA);
+
+        // Keplerian period
+        final T a = auxiliaryElements.getSma();
+        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
+
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
         // &Chi; = 1 / B
@@ -147,6 +183,29 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
         roa    = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
+
+        // Short periodic termes
+
+        // h * k.
+        hk = auxiliaryElements.getH().multiply(auxiliaryElements.getK());
+        // k² - h².
+        k2mh2 = auxiliaryElements.getK().multiply(auxiliaryElements.getK()).subtract(auxiliaryElements.getH().multiply(auxiliaryElements.getH()));
+        // (k² - h²) / 2.
+        k2mh2o2 = k2mh2.divide(2.);
+        // 1 / (n² * a²) = 1 / (n * A)
+        oon2a2 = (A.multiply(n)).reciprocal();
+        // 1 / (n² * a) = a / (n * A)
+        oon2a = auxiliaryElements.getSma().multiply(oon2a2);
+        // χ³ / (n² * a)
+        x3on2a = XXX.multiply(oon2a);
+        // χ / (n² * a²)
+        xon2a2 = X.multiply(oon2a2);
+        // (C * χ) / ( 2 * n² * a² )
+        cxo2n2a2 = xon2a2.multiply(auxiliaryElements.getC()).divide(2.);
+        // (χ²) / (n² * a² * (χ + 1 ) )
+        x2on2a2xp1 = xon2a2.multiply(X).divide(X.add(1.));
+        // B * B
+        BB = auxiliaryElements.getB().multiply(auxiliaryElements.getB());
 
     }
 
@@ -248,6 +307,94 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
         return Vns;
     }
 
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public T getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public T getMeanMotion() {
+        return n;
+    }
+
+    /** Get h * k.
+     * @return hk
+     */
+    public T getHK() {
+        return hk;
+    }
+
+    /** Get k² - h².
+     * @return k2mh2
+     */
+    public T getK2MH2() {
+        return k2mh2;
+    }
+
+    /** Get (k² - h²) / 2.
+     * @return k2mh2o2
+     */
+    public T getK2MH2O2() {
+        return k2mh2o2;
+    }
+
+    /** Get 1 / (n² * a²).
+     * @return oon2a2
+     */
+    public T getOON2A2() {
+        return oon2a2;
+    }
+
+    /** Get 1 / (n² * a).
+     * @return oon2a
+     */
+    public T getOON2A() {
+        return oon2a;
+    }
+
+    /** Get χ³ / (n² * a).
+     * @return x3on2a
+     */
+    public T getX3ON2A() {
+        return x3on2a;
+    }
+
+    /** Get χ / (n² * a²).
+     * @return xon2a2
+     */
+    public T getXON2A2() {
+        return xon2a2;
+    }
+
+    /** Get (C * χ) / ( 2 * n² * a² ).
+     * @return cxo2n2a2
+     */
+    public T getCXO2N2A2() {
+        return cxo2n2a2;
+    }
+
+    /** Get (χ²) / (n² * a² * (χ + 1 ) ).
+     * @return x2on2a2xp1
+     */
+    public T getX2ON2A2XP1() {
+        return x2on2a2xp1;
+    }
+
+    /** Get B * B.
+     * @return BB
+     */
+    public T getBB() {
+        return BB;
+    }
+
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
      * @param parameters values of the force model parameters
@@ -286,7 +433,7 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
 
             // Set highest power of e and degree of current spherical harmonic.
             maxEccPowMeanElements = 0;
-            int n = maxDegree;
+            int maxDeg = maxDegree;
             // Loop over n
             do {
                 // Set order of current spherical harmonic.
@@ -294,30 +441,30 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
                 // Loop over m
                 do {
                     // Compute magnitude of current spherical harmonic coefficient.
-                    final T cnm = zero.add(harmonics.getUnnormalizedCnm(n, m));
-                    final T snm = zero.add(harmonics.getUnnormalizedSnm(n, m));
+                    final T cnm = zero.add(harmonics.getUnnormalizedCnm(maxDeg, m));
+                    final T snm = zero.add(harmonics.getUnnormalizedSnm(maxDeg, m));
                     final T csnm = FastMath.hypot(cnm, snm);
                     if (csnm.getReal() == 0.) break;
                     // Set magnitude of last spherical harmonic term.
                     T lastTerm = zero;
                     // Set current power of e and related indices.
-                    int nsld2 = (n - maxEccPowMeanElements - 1) / 2;
-                    int l = n - 2 * nsld2;
+                    int nsld2 = (maxDeg - maxEccPowMeanElements - 1) / 2;
+                    int l = maxDeg - 2 * nsld2;
                     // Loop over l
                     T term = zero;
                     do {
                         // Compute magnitude of current spherical harmonic term.
                         if (m < l) {
                             term = csnm.multiply(xmuran).
-                                   multiply((CombinatoricsUtils.factorialDouble(n - l) / (CombinatoricsUtils.factorialDouble(n - m))) *
-                                   (CombinatoricsUtils.factorialDouble(n + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l)))).
-                                   multiply(eccPwr[l]).multiply(UpperBounds.getDnl(XX, chiPwr[l], n, l)).
-                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), n, l, m, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), n, l, m, -1, I)));
+                                   multiply((CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
+                                   (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l)))).
+                                   multiply(eccPwr[l]).multiply(UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I)));
                         } else {
                             term = csnm.multiply(xmuran).
-                                   multiply(CombinatoricsUtils.factorialDouble(n + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))).
-                                   multiply(eccPwr[l]).multiply(hafPwr[m - l]).multiply(UpperBounds.getDnl(XX, chiPwr[l], n, l)).
-                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), n, m, l, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), n, m, l, -1, I)));
+                                   multiply(CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))).
+                                   multiply(eccPwr[l]).multiply(hafPwr[m - l]).multiply(UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I)));
                         }
                         // Is the current spherical harmonic term bigger than the truncation tolerance ?
                         if (term.getReal() >= TRUNCATION_TOLERANCE) {
@@ -332,7 +479,7 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
                         lastTerm = term;
                         l += 2;
                         nsld2--;
-                    } while (l < n);
+                    } while (l < maxDeg);
                     // Is the current spherical harmonic term bigger than the truncation tolerance ?
                     if (term.getReal() >= TRUNCATION_TOLERANCE) {
                         maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
@@ -340,11 +487,11 @@ public class FieldDSSTZonalContext<T extends RealFieldElement<T>> extends FieldF
                     }
                     // Proceed to next order.
                     m++;
-                } while (m <= FastMath.min(n, maxOrder));
+                } while (m <= FastMath.min(maxDeg, maxOrder));
                 // Proceed to next degree.
                 xmuran = xmuran.multiply(ax2or);
-                n--;
-            } while (n > maxEccPowMeanElements + 2);
+                maxDeg--;
+            } while (maxDeg > maxEccPowMeanElements + 2);
 
             maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
         }

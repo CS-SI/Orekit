@@ -325,6 +325,16 @@ public class DSSTTesseral implements DSSTForceModel {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                     final boolean meanOnly,
+                                                                                     final T[] parameters)
+        throws OrekitException {
+        // This method shall be implemented when short period terms will have RFE equivalent
+        return Collections.emptyList();
+    }
+
     /** Performs initialization at each integration step for the current force model.
      *  <p>
      *  This method aims at being called before mean elements rates computation.
@@ -481,6 +491,14 @@ public class DSSTTesseral implements DSSTForceModel {
 
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+                                                                       final FieldSpacecraftState<T>... meanStates)
+        throws OrekitException {
     }
 
     /** {@inheritDoc} */
@@ -2183,4 +2201,5 @@ public class DSSTTesseral implements DSSTForceModel {
         }
 
     }
+
 }

@@ -41,6 +41,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -144,6 +145,14 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
+        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                         boolean meanOnly,
+                                                                                         T[] parameters)
+            throws OrekitException {
+            return new ArrayList<FieldShortPeriodTerms<T>>();
+        }
+        
+        @Override
         public double[] getMeanElementRate(SpacecraftState state,
                                            AuxiliaryElements auxiliaryElements,
                                            double[] parameters)
@@ -196,11 +205,18 @@ public class DSSTPartialDerivativesEquationsTest {
         public void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
             throws OrekitException {           
         }
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters,
+                                                                           FieldSpacecraftState<T>... meanStates)
+            throws OrekitException {
+        }
 
         @Override
         public ParameterDriver[] getParametersDrivers() {
             return new ParameterDriver[0];
         }
-        
+
     }
 }

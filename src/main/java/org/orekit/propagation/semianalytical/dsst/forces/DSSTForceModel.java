@@ -75,6 +75,21 @@ public interface DSSTForceModel {
     List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly, double[] parameters)
         throws OrekitException;
 
+    /** Performs initialization prior to propagation for the current force model.
+     *  <p>
+     *  This method aims at being called at the very beginning of a propagation.
+     *  </p>
+     *  @param <T> type of the elements
+     *  @param auxiliaryElements auxiliary elements related to the current orbit
+     *  @param meanOnly only mean elements are used during the propagation
+     *  @param parameters values of the force model parameters
+     *  @return a list of objects that will hold short period terms (the objects
+     *  are also retained by the force model, which will update them during propagation)
+     *  @throws OrekitException if some specific error occurs
+     */
+    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements, boolean meanOnly, T[] parameters)
+        throws OrekitException;
+
     /** Get force model parameters.
      * @return force model parameters
      * @since 9.0
@@ -151,6 +166,21 @@ public interface DSSTForceModel {
      * @throws OrekitException if some specific error occurs
      */
     void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
+        throws OrekitException;
+
+    /** Update the short period terms.
+     * <p>
+     * The {@link ShortPeriodTerms short period terms} that will be updated
+     * are the ones that were returned during the call to {@link
+     * #initialize(AuxiliaryElements, boolean)}.
+     * </p>
+     * @param <T> type of the elements
+     * @param parameters values of the force model parameters
+     * @param meanStates mean states information: date, kinematics, attitude
+     * @throws OrekitException if some specific error occurs
+     */
+    @SuppressWarnings("unchecked")
+    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates)
         throws OrekitException;
 
     /** Get the drivers for force model parameters.

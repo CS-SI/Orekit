@@ -83,6 +83,15 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         return Collections.emptyList();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                     final boolean meanOnly,
+                                                                                     final T[] parameters)
+        throws OrekitException {
+        return Collections.emptyList();
+    }
+
     /** Performs initialization at each integration step for the current force model.
      *  <p>
      *  This method aims at being called before mean elements rates computation.
@@ -168,6 +177,14 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                        final SpacecraftState... meanStates)
         throws OrekitException {
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+                                                                       final FieldSpacecraftState<T>... meanStates)
+        throws OrekitException {
     }
 
     /** {@inheritDoc} */

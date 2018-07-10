@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +211,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         list.add(gaussianSPCoefs);
         return list;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                     final boolean meanOnly,
+                                                                                     final T[] parameters)
+        throws OrekitException {
+        // This method shall be implemented when short period terms will have RFE equivalent
+        return Collections.emptyList();
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -456,6 +467,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma());
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
+                                                                       final FieldSpacecraftState<T>... meanStates)
+        throws OrekitException {
     }
 
     /**

@@ -18,8 +18,11 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +38,11 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
 public class DSSTZonalTest {
@@ -97,9 +103,58 @@ public class DSSTZonalTest {
         
     }
     
+    @Test
+    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+        final SpacecraftState meanState = getGEOState();
+        
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
+        final DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
+        
+        //Create the auxiliary object
+        final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
+
+        // Set the force models
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+
+        zonal.registerAttitudeProvider(null);
+        shortPeriodTerms.addAll(zonal.initialize(aux, false, zonal.getParameters()));
+        zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
+
+        double[] y = new double[6];
+        for (final ShortPeriodTerms spt : shortPeriodTerms) {
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                y[i] += shortPeriodic[i];
+            }
+        }
+        
+        Assert.assertEquals(35.005618980090276,     y[0], 1.e-15);
+        Assert.assertEquals(3.75891551882889E-5,    y[1], 1.e-20);
+        Assert.assertEquals(3.929119925563796E-6,   y[2], 1.e-21);
+        Assert.assertEquals(-1.1781951949124315E-8, y[3], 1.e-24);
+        Assert.assertEquals(-3.2134924513679615E-8, y[4], 1.e-24);
+        Assert.assertEquals(-1.1607392915997098E-6, y[5], 1.e-21);
+    }
+
+    private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
+        // No shadow at this date
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit = new EquinoctialOrbit(42164000,
+                                                 10e-3,
+                                                 10e-3,
+                                                 FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+        return new SpacecraftState(orbit);
+    }
+    
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
-    
+
 }
