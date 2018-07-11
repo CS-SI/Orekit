@@ -32,9 +32,9 @@
 -     & (V(2)-V(3)*R(2)/R(3))
 +          C  = COS((PHI-YANGLE)*DTR)
 +          S  = SIN((PHI-YANGLE)*DTR)
-+          QX = C*SANTXYZ(1)+S*(R(2)*SANTXYZ(3)-R(3)*SANTXYZ(2))
-+          QY = C*SANTXYZ(2)+S*(R(3)*SANTXYZ(1)-R(1)*SANTXYZ(3))
-+          QZ = C*SANTXYZ(3)+S*(R(1)*SANTXYZ(2)-R(2)*SANTXYZ(1))
++          QX = C*SANTXYZ(1)-S*(R(2)*SANTXYZ(3)-R(3)*SANTXYZ(2))
++          QY = C*SANTXYZ(2)-S*(R(3)*SANTXYZ(1)-R(1)*SANTXYZ(3))
++          QZ = C*SANTXYZ(3)-S*(R(1)*SANTXYZ(2)-R(2)*SANTXYZ(1))
  C THE BODY-X UNIT VECTOR ROTATED BY (PHI-YANGLE) RETURNED
 -          SANTXYZ(1)= SANTX
 -          SANTXYZ(2)= SANTY
