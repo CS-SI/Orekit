@@ -103,14 +103,17 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
     /** ecc². */
     private T e2;
 
+    /** Keplerian mean motion. */
+    private final T n;
+
+    /** Keplerian period. */
+    private final T period;
+
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
 
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
     private int maxHansen;
-
-    /** Keplerian period. */
-    private T orbitPeriod;
 
     /** Maximal order to consider for harmonics potential. */
     private final int maxOrder;
@@ -126,7 +129,7 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
 
     /** Simple constructor.
      * Performs initialization at each integration step for the current force model.
-     * This method aims at being called before mean elements rates computation
+     * This class aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param meanOnly create only the objects required for the mean contribution
      * @param centralBodyFrame rotating body frame
@@ -158,6 +161,14 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         this.factory = new FDSFactory<>(field, 1, 1);
 
         final T mu = parameters[0];
+
+        // Keplerian mean motion
+        final T absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu.divide(absA)).divide(absA);
+
+        // Keplerian period
+        final T a = auxiliaryElements.getSma();
+        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 
@@ -214,16 +225,12 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
 
-        // Keplerian period
-        final T a = auxiliaryElements.getSma();
-        orbitPeriod = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
-
         // Ratio of satellite to central body periods to define resonant terms
-        ratio = orbitPeriod.divide(bodyPeriod);
+        ratio = period.divide(bodyPeriod);
 
         // Compute natural resonant terms
         final T tolerance = FastMath.max(zero.add(MIN_PERIOD_IN_SAT_REV),
-                                                   orbitPeriod.divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
+                                                   period.divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
 
         // Search the resonant orders in the tesseral harmonic field
         resOrders.clear();
@@ -343,11 +350,22 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
         return maxHansen;
     }
 
-    /** Get keplerian period.
-     * @return orbitPeriod
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
      */
     public T getOrbitPeriod() {
-        return orbitPeriod;
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public T getMeanMotion() {
+        return n;
     }
 
     /** Factory for the DerivativeStructure instances.

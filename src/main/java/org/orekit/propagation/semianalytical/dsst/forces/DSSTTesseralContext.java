@@ -106,8 +106,11 @@ class DSSTTesseralContext extends ForceModelContext {
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
     private int maxHansen;
 
+    /** Keplerian mean motion. */
+    private final double n;
+
     /** Keplerian period. */
-    private double orbitPeriod;
+    private final double period;
 
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
@@ -155,6 +158,14 @@ class DSSTTesseralContext extends ForceModelContext {
         this.resOrders = new ArrayList<Integer>();
 
         final double mu = parameters[0];
+
+        // Keplerian Mean Motion
+        final double absA = FastMath.abs(auxiliaryElements.getSma());
+        n = FastMath.sqrt(mu / absA) / absA;
+
+        // Keplerian period
+        final double a = auxiliaryElements.getSma();
+        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         A = FastMath.sqrt(mu * auxiliaryElements.getSma());
 
@@ -211,17 +222,12 @@ class DSSTTesseralContext extends ForceModelContext {
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
 
-        // Keplerian period
-        final double a = auxiliaryElements.getSma();
-        orbitPeriod = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
-
-
         // Ratio of satellite to central body periods to define resonant terms
-        ratio = orbitPeriod / bodyPeriod;
+        ratio = period / bodyPeriod;
 
         // Compute natural resonant terms
         final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
-                                                   MIN_PERIOD_IN_SECONDS / orbitPeriod);
+                                                   MIN_PERIOD_IN_SECONDS / period);
 
         // Search the resonant orders in the tesseral harmonic field
         resOrders.clear();
@@ -341,11 +347,22 @@ class DSSTTesseralContext extends ForceModelContext {
         return maxHansen;
     }
 
-    /** Get keplerian period.
-     * @return orbitPeriod
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
      */
     public double getOrbitPeriod() {
-        return orbitPeriod;
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public double getMeanMotion() {
+        return n;
     }
 
     /** Get the maximal degree to consider for harmonics potential.

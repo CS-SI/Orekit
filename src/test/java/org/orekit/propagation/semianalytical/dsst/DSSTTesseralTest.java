@@ -18,28 +18,36 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class DSSTTesseralTest {
 
@@ -101,6 +109,58 @@ public class DSSTTesseralTest {
         
     }
     
+    @Test
+    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+        
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        int earthDegree = 36;
+        int earthOrder  = 36;
+        int eccPower    = 4;
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
+        final org.orekit.frames.Frame earthFrame =
+                FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
+        final DSSTForceModel force =
+                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                 earthDegree, earthOrder, eccPower, earthDegree + eccPower,
+                                 earthDegree, earthOrder, eccPower);
+
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
+        Frame eci = FramesFactory.getGCRF();
+        KeplerianOrbit orbit = new KeplerianOrbit(
+                7120000.0, 1.0e-3, FastMath.toRadians(60.0),
+                FastMath.toRadians(120.0), FastMath.toRadians(47.0),
+                FastMath.toRadians(12.0),
+                PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+        
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+        
+        //Create the auxiliary object
+        final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
+       
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+
+        force.registerAttitudeProvider(null);
+        shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+        force.updateShortPeriodTerms(force.getParameters(), meanState);
+        
+        double[] y = new double[6];
+        for (final ShortPeriodTerms spt : shortPeriodTerms) {
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                y[i] += shortPeriodic[i];
+            }
+        }
+        
+        Assert.assertEquals(-72.9028792607815,     y[0], 1.e-13);
+        Assert.assertEquals(2.1249447786897624E-6, y[1], 1.e-21);
+        Assert.assertEquals(-6.974560212491233E-6, y[2], 1.e-21);
+        Assert.assertEquals(-1.997990379590397E-6, y[3], 1.e-21);
+        Assert.assertEquals(9.602513303108225E-6,  y[4], 1.e-21);
+        Assert.assertEquals(4.538526372438945E-5,  y[5], 1.e-20);
+    }
 
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
