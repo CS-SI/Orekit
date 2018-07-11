@@ -75,7 +75,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
     private double[][] Qns;
 
     /** Standard gravitational parameter μ for the body in m³/s². */
-    private final double           gm;
+    private final double gm;
 
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
@@ -124,6 +124,12 @@ class DSSTThirdBodyContext extends ForceModelContext {
     /** k * &Chi;³. */
     private double kXXX;
 
+    /** Keplerian mean motion. */
+    private final double motion;
+
+    /** Keplerian period. */
+    private final double period;
+
     /** V<sub>ns</sub> coefficients. */
     private final TreeMap<NSKey, Double> Vns;
 
@@ -148,6 +154,14 @@ class DSSTThirdBodyContext extends ForceModelContext {
         this.gm = parameters[0];
         this.factory = new DSFactory(1, 1);
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
+
+        // Keplerian Mean Motion
+        final double absA = FastMath.abs(auxiliaryElements.getSma());
+        motion = FastMath.sqrt(mu / absA) / absA;
+
+        // Keplerian period
+        final double a = auxiliaryElements.getSma();
+        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
 
         // Distance from center of mass of the central body to the 3rd body
         final Vector3D bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -438,6 +452,24 @@ class DSSTThirdBodyContext extends ForceModelContext {
      */
     public int getMaxEccPowShort() {
         return maxEccPowShort;
+    }
+
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public double getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public double getMeanMotion() {
+        return motion;
     }
 
     /** Get the value of Qns coefficients.

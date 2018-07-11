@@ -56,22 +56,22 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     private static final int    MAX_ECCPOWER_SP = 4;
 
     /** Max power for a/R3 in the serie expansion. */
-    private int    maxAR3Pow;
+    private int maxAR3Pow;
 
     /** Max power for e in the serie expansion. */
-    private int    maxEccPow;
+    private int maxEccPow;
 
     /** a / R3 up to power maxAR3Pow. */
     private T[] aoR3Pow;
 
     /** Max power for e in the serie expansion (for short periodics). */
-    private int    maxEccPowShort;
+    private int maxEccPowShort;
 
     /** Max frequency of F. */
-    private int    maxFreqF;
+    private int maxFreqF;
 
     /** Qns coefficients. */
-    private T[][]  Qns;
+    private T[][] Qns;
 
     /** Standard gravitational parameter μ for the body in m³/s². */
     private final T gm;
@@ -123,6 +123,12 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     /** k * &Chi;³. */
     private final T kXXX;
 
+    /** Keplerian mean motion. */
+    private final T motion;
+
+    /** Keplerian period. */
+    private final T period;
+
     /** V<sub>ns</sub> coefficients. */
     private final TreeMap<NSKey, Double> Vns;
 
@@ -154,6 +160,14 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
         this.gm = parameters[0];
         this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
         this.factory = new FDSFactory<>(field, 1, 1);
+
+        // Keplerian mean motion
+        final T absA = FastMath.abs(auxiliaryElements.getSma());
+        motion = FastMath.sqrt(mu.divide(absA)).divide(absA);
+
+        // Keplerian period
+        final T a = auxiliaryElements.getSma();
+        period = (a.getReal() < 0) ? auxiliaryElements.getSma().getField().getZero().add(Double.POSITIVE_INFINITY) : a.multiply(2 * FastMath.PI).multiply(a.divide(mu).sqrt());
 
         // Distance from center of mass of the central body to the 3rd body
         final FieldVector3D<T> bodyPos = thirdBody.getPVCoordinates(auxiliaryElements.getDate(), auxiliaryElements.getFrame()).getPosition();
@@ -441,6 +455,25 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     public int getMaxEccPowShort() {
         return maxEccPowShort;
     }
+
+    /** Get the Keplerian period.
+     * <p>The Keplerian period is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian period in seconds, or positive infinity for hyperbolic orbits
+     */
+    public T getKeplerianPeriod() {
+        return period;
+    }
+
+    /** Get the Keplerian mean motion.
+     * <p>The Keplerian mean motion is computed directly from semi major axis
+     * and central acceleration constant.</p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public T getMeanMotion() {
+        return motion;
+    }
+
     /** Get the value of Qns coefficients.
      * @return aoR3Pow
      */
