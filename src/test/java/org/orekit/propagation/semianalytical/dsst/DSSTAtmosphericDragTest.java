@@ -18,9 +18,12 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,25 +32,33 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class DSSTAtmosphericDragTest {
@@ -119,6 +130,69 @@ public class DSSTAtmosphericDragTest {
     
     }
     
+    @Test
+    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+ 
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+
+        final Orbit orbit = new EquinoctialOrbit(7069219.9806427825,
+                                                 -4.5941811292223825E-4,
+                                                 1.309932339472599E-4,
+                                                 -1.002996107003202,
+                                                 0.570979900577994,
+                                                 2.62038786211518,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+
+        final CelestialBody    sun   = CelestialBodyFactory.getSun();
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                                  true));
+        
+        final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0,
+                                                                                     sun,
+                                                                                     50.0, Vector3D.PLUS_J,
+                                                                                     2.0, 0.1,
+                                                                                     0.2, 0.6);
+        
+        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
+        final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
+                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                0.0, 0.0, 0.0);
+
+        final DSSTForceModel drag = new DSSTAtmosphericDrag(atmosphere, boxAndWing, meanState.getMu());
+        
+        //Create the auxiliary object
+        final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), 1);
+
+        // Set the force models
+        final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+
+        drag.registerAttitudeProvider(attitudeProvider);
+        shortPeriodTerms.addAll(drag.initialize(aux, false, drag.getParameters()));
+        drag.updateShortPeriodTerms(drag.getParameters(), meanState);
+
+        double[] y = new double[6];
+        for (final ShortPeriodTerms spt : shortPeriodTerms) {
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                y[i] += shortPeriodic[i];
+            }
+        }
+        
+        Assert.assertEquals(0.03966657233280967,    y[0], 1.e-15);
+        Assert.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
+        Assert.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
+        Assert.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
+        Assert.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
+        Assert.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
+    }
+
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");

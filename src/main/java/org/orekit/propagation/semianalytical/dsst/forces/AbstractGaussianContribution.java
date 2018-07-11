@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +51,12 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldCjSjCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -141,6 +144,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Short period terms. */
     private GaussianShortPeriodicCoefficients gaussianSPCoefs;
 
+    /** Short period terms. */
+    private FieldGaussianShortPeriodicCoefficients gaussianFieldSPCoefs;
+
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
 
@@ -215,12 +221,20 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final boolean meanOnly,
                                                                                      final T[] parameters)
         throws OrekitException {
-        // This method shall be implemented when short period terms will have RFE equivalent
-        return Collections.emptyList();
+
+        final Field<T> field = auxiliaryElements.getDate().getField();
+
+        final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
+        gaussianFieldSPCoefs = new FieldGaussianShortPeriodicCoefficients<>(coefficientsKeyPrefix,
+                                                                         JMAX, INTERPOLATION_POINTS,
+                                                                         new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(JMAX, INTERPOLATION_POINTS), field));
+        list.add(gaussianFieldSPCoefs);
+        return list;
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -475,6 +489,23 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates)
         throws OrekitException {
+
+        final FieldSlot<T> slot = gaussianFieldSPCoefs.createSlot(meanStates);
+        for (final FieldSpacecraftState<T> meanState : meanStates) {
+
+            // Field used by default
+            final Field<T> field = meanState.getDate().getField();
+
+            final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
+
+            final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+            final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context, field);
+            final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX, context, parameters, field);
+            final FieldUijVijCoefficients<T> uijvij = new FieldUijVijCoefficients<>(currentRhoSigmaj, fourierCjSj, JMAX, field);
+            gaussianFieldSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma(), field);
+        }
+
     }
 
     /**
@@ -504,6 +535,44 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double coef = (1 + j * auxiliaryElements.getB()) * mbtj;
             currentRhoSigmaj[0][j] = coef * cjsjKH.getCj(j);
             currentRhoSigmaj[1][j] = coef * cjsjKH.getSj(j);
+        }
+        return currentRhoSigmaj;
+    }
+
+    /**
+     * Compute the auxiliary quantities ρ<sub>j</sub> and σ<sub>j</sub>.
+     * <p>
+     * The expressions used are equations 2.5.3-(4) from the Danielson paper. <br/>
+     *  ρ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
+     *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
+     * </p>
+     * @param <T> type of the elements
+     * @param date current date
+     * @param context container for attributes
+     * @param field field used by default
+     * @return computed coefficients
+     */
+    private <T extends RealFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
+                                                                              final FieldAbstractGaussianContributionContext<T> context,
+                                                                              final Field<T> field) {
+        // zero
+        final T zero = field.getZero();
+
+        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+        final T[][] currentRhoSigmaj = MathArrays.buildArray(field, 2, 3 * JMAX + 1);
+        final FieldCjSjCoefficient<T> cjsjKH = new FieldCjSjCoefficient<>(auxiliaryElements.getK(), auxiliaryElements.getH(), field);
+        final T b = auxiliaryElements.getB().add(1.).reciprocal();
+
+        // (-b)<sup>j</sup>
+        T mbtj = zero.add(1.);
+
+        for (int j = 1; j <= 3 * JMAX; j++) {
+
+            //Compute current rho and sigma;
+            mbtj = mbtj.multiply(b.negate());
+            final T coef = mbtj.multiply(auxiliaryElements.getB().multiply(j).add(1.));
+            currentRhoSigmaj[0][j] = coef.multiply(cjsjKH.getCj(j));
+            currentRhoSigmaj[1][j] = coef.multiply(cjsjKH.getSj(j));
         }
         return currentRhoSigmaj;
     }
@@ -1784,6 +1853,128 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
     }
 
+    /** Compute the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients.
+     *  <p>
+     *  Those coefficients are given in Danielson paper by expression 4.4-(6)
+     *  </p>
+     *  @author Petre Bazavan
+     *  @author Lucian Barbulescu
+     */
+    private class FieldFourierCjSjCoefficients <T extends RealFieldElement<T>> {
+
+        /** Maximum possible value for j. */
+        private final int jMax;
+
+        /** The C<sub>i</sub><sup>j</sup> coefficients.
+         * <p>
+         * the index i corresponds to the following elements: <br/>
+         * - 0 for a <br>
+         * - 1 for k <br>
+         * - 2 for h <br>
+         * - 3 for q <br>
+         * - 4 for p <br>
+         * - 5 for λ <br>
+         * </p>
+         */
+        private final T[][] cCoef;
+
+        /** The C<sub>i</sub><sup>j</sup> coefficients.
+         * <p>
+         * the index i corresponds to the following elements: <br/>
+         * - 0 for a <br>
+         * - 1 for k <br>
+         * - 2 for h <br>
+         * - 3 for q <br>
+         * - 4 for p <br>
+         * - 5 for λ <br>
+         * </p>
+         */
+        private final T[][] sCoef;
+
+        /** Standard constructor.
+         * @param state the current state
+         * @param jMax maximum value for j
+         * @param context container for attributes
+         * @param parameters values of the force model parameters
+         * @param field field used by default
+         * @throws OrekitException in case of an error
+         */
+        FieldFourierCjSjCoefficients(final FieldSpacecraftState<T> state, final int jMax,
+                                     final FieldAbstractGaussianContributionContext<T> context,
+                                     final T[] parameters,
+                                     final Field<T> field)
+            throws OrekitException {
+            //Initialise the fields
+            this.jMax = jMax;
+
+            //Allocate the arrays
+            final int rows = jMax + 1;
+            cCoef = MathArrays.buildArray(field, rows, 6);
+            sCoef = MathArrays.buildArray(field, rows, 6);
+
+            //Compute the coefficients
+            computeCoefficients(state, context, parameters, field);
+        }
+
+        /**
+         * Compute the Fourrier coefficients.
+         * <p>
+         * Only the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients need to be computed
+         * as D<sub>i</sub><sup>m</sup> is always 0.
+         * </p>
+         * @param state the current state
+         * @param context container for attributes
+         * @param parameters values of the force model parameters
+         * @param field field used by default
+         * @throws OrekitException in case of an error
+         */
+        private void computeCoefficients(final FieldSpacecraftState<T> state,
+                                         final FieldAbstractGaussianContributionContext<T> context,
+                                         final T[] parameters,
+                                         final Field<T> field)
+            throws OrekitException {
+            // Zero
+            final T zero = field.getZero();
+            // Computes the limits for the integral
+            final T[] ll = getLLimits(state, context);
+            // Computes integrated mean element rates if Llow < Lhigh
+            if (ll[0].getReal() < ll[1].getReal()) {
+                //Compute 1 / PI
+                final T ooPI = zero.add(FastMath.PI).reciprocal();
+
+                // loop through all values of j
+                for (int j = 0; j <= jMax; j++) {
+                    final T[] curentCoefficients =
+                            integrator.integrate(new FieldIntegrableFunction<>(state, false, j, parameters, field), ll[0], ll[1], field);
+
+                    //divide by PI and set the values for the coefficients
+                    for (int i = 0; i < 6; i++) {
+                        cCoef[j][i] = curentCoefficients[i].multiply(ooPI);
+                        sCoef[j][i] = curentCoefficients[i + 6].multiply(ooPI);
+                    }
+                }
+            }
+        }
+
+        /** Get the coefficient C<sub>i</sub><sup>j</sup>.
+         * @param i i index - corresponds to the required variation
+         * @param j j index
+         * @return the coefficient C<sub>i</sub><sup>j</sup>
+         */
+        public T getCij(final int i, final int j) {
+            return cCoef[j][i];
+        }
+
+        /** Get the coefficient S<sub>i</sub><sup>j</sup>.
+         * @param i i index - corresponds to the required variation
+         * @param j j index
+         * @return the coefficient S<sub>i</sub><sup>j</sup>
+         */
+        public T getSij(final int i, final int j) {
+            return sCoef[j][i];
+        }
+    }
+
     /** This class handles the short periodic coefficients described in Danielson 2.5.3-26.
      *
      * <p>
@@ -2128,6 +2319,277 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
+     /** This class handles the short periodic coefficients described in Danielson 2.5.3-26.
+     *
+     * <p>
+     * The value of M is 0. Also, since the values of the Fourier coefficient D<sub>i</sub><sup>m</sup> is 0
+     * then the values of the coefficients D<sub>i</sub><sup>m</sup> for m &gt; 2 are also 0.
+     * </p>
+     * @author Petre Bazavan
+     * @author Lucian Barbulescu
+     *
+     */
+    private static class FieldGaussianShortPeriodicCoefficients <T extends RealFieldElement<T>> implements FieldShortPeriodTerms<T> {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151118L;
+
+        /** Maximum value for j index. */
+        private final int jMax;
+
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
+
+        /** Prefix for coefficients keys. */
+        private final String coefficientsKeyPrefix;
+
+        /** All coefficients slots. */
+        private final transient FieldTimeSpanMap<FieldSlot<T>, T> slots;
+
+        /** Constructor.
+         *  @param coefficientsKeyPrefix prefix for coefficients keys
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         *  @param slots all coefficients slots
+         */
+        FieldGaussianShortPeriodicCoefficients(final String coefficientsKeyPrefix,
+                                               final int jMax, final int interpolationPoints,
+                                               final FieldTimeSpanMap<FieldSlot<T>, T> slots) {
+            //Initialize fields
+            this.jMax                  = jMax;
+            this.interpolationPoints   = interpolationPoints;
+            this.coefficientsKeyPrefix = coefficientsKeyPrefix;
+            this.slots                 = slots;
+        }
+
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        @SuppressWarnings("unchecked")
+        public FieldSlot<T> createSlot(final FieldSpacecraftState<T>... meanStates) {
+            final FieldSlot<T>         slot  = new FieldSlot<>(jMax, interpolationPoints);
+            final FieldAbsoluteDate<T> first = meanStates[0].getDate();
+            final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
+        }
+
+        /** Compute the short periodic coefficients.
+         *
+         * @param state current state information: date, kinematics, attitude
+         * @param slot coefficients slot
+         * @param fourierCjSj Fourier coefficients
+         * @param uijvij U and V coefficients
+         * @param n Keplerian mean motion
+         * @param a semi major axis
+         * @param field field used by default
+         * @throws OrekitException if an error occurs
+         */
+        private void computeCoefficients(final FieldSpacecraftState<T> state, final FieldSlot<T> slot,
+                                         final FieldFourierCjSjCoefficients<T> fourierCjSj,
+                                         final FieldUijVijCoefficients<T> uijvij,
+                                         final T n, final T a,
+                                         final Field<T> field)
+            throws OrekitException {
+
+            // Zero
+            final T zero = field.getZero();
+
+            // get the current date
+            final FieldAbsoluteDate<T> date = state.getDate();
+
+            // compute the k₂⁰ coefficient
+            final T k20 = computeK20(jMax, uijvij.currentRhoSigmaj, field);
+
+            // 1. / n
+            final T oon = n.reciprocal();
+            // 3. / (2 * a * n)
+            final T to2an = oon.multiply(1.5).divide(a);
+            // 3. / (4 * a * n)
+            final T to4an = to2an.divide(2.);
+
+            // Compute the coefficients for each element
+            final int size = jMax + 1;
+            final T[]   di1        = MathArrays.buildArray(field, 6);
+            final T[]   di2        = MathArrays.buildArray(field, 6);
+            final T[][] currentCij = MathArrays.buildArray(field, size, 6);
+            final T[][] currentSij = MathArrays.buildArray(field, size, 6);
+            for (int i = 0; i < 6; i++) {
+
+                // compute D<sub>i</sub>¹ and D<sub>i</sub>² (all others are 0)
+                di1[i] = oon.negate().multiply(fourierCjSj.getCij(i, 0));
+                if (i == 5) {
+                    di1[i] = di1[i].add(to2an.multiply(uijvij.getU1(0, 0)));
+                }
+                di2[i] = zero;
+                if (i == 5) {
+                    di2[i] = di2[i].add(to4an.negate().multiply(fourierCjSj.getCij(0, 0)));
+                }
+
+                //the C<sub>i</sub>⁰ is computed based on all others
+                currentCij[0][i] = di2[i].negate().multiply(k20);
+
+                for (int j = 1; j <= jMax; j++) {
+                    // compute the current C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup>
+                    currentCij[j][i] = oon.multiply(uijvij.getU1(j, i));
+                    if (i == 5) {
+                        currentCij[j][i] = currentCij[j][i].add(to2an.negate().multiply(uijvij.getU2(j)));
+                    }
+                    currentSij[j][i] = oon.multiply(uijvij.getV1(j, i));
+                    if (i == 5) {
+                        currentSij[j][i] = currentSij[j][i].add(to2an.negate().multiply(uijvij.getV2(j)));
+                    }
+
+                    // add the computed coefficients to C<sub>i</sub>⁰
+                    currentCij[0][i] = currentCij[0][i].add(currentCij[j][i].multiply(uijvij.currentRhoSigmaj[0][j]).add(currentSij[j][i].multiply(uijvij.currentRhoSigmaj[1][j])).negate());
+                }
+
+            }
+
+            // add the values to the interpolators
+            slot.cij[0].addGridPoint(date, currentCij[0]);
+            slot.dij[1].addGridPoint(date, di1);
+            slot.dij[2].addGridPoint(date, di2);
+            for (int j = 1; j <= jMax; j++) {
+                slot.cij[j].addGridPoint(date, currentCij[j]);
+                slot.sij[j].addGridPoint(date, currentSij[j]);
+            }
+
+        }
+
+        /** Compute the coefficient k₂⁰ by using the equation
+         * 2.5.3-(9a) from Danielson.
+         * <p>
+         * After inserting 2.5.3-(8) into 2.5.3-(9a) the result becomes:<br>
+         * k₂⁰ = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k²) * (σ<sub>k</sub>² + ρ<sub>k</sub>²)]
+         * </p>
+         * @param kMax max value fot k index
+         * @param currentRhoSigmaj the current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients
+         * @param field field used by default
+         * @return the coefficient k₂⁰
+         */
+        private T computeK20(final int kMax, final T[][] currentRhoSigmaj, final Field<T> field) {
+            final T zero = field.getZero();
+            T k20 = zero;
+
+            for (int kIndex = 1; kIndex <= kMax; kIndex++) {
+                // After inserting 2.5.3-(8) into 2.5.3-(9a) the result becomes:
+                //k₂⁰ = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k²) * (σ<sub>k</sub>² + ρ<sub>k</sub>²)]
+                T currentTerm = currentRhoSigmaj[1][kIndex].multiply(currentRhoSigmaj[1][kIndex]).
+                                add(currentRhoSigmaj[0][kIndex].multiply(currentRhoSigmaj[0][kIndex]));
+
+                //multiply by 2 / k²
+                currentTerm = currentTerm.multiply(2. / (kIndex * kIndex));
+
+                // add the term to the result
+                k20 = k20.add(currentTerm);
+            }
+
+            return k20;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public T[] value(final FieldOrbit<T> meanOrbit) {
+
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(meanOrbit.getDate());
+
+            // Get the True longitude L
+            final T L = meanOrbit.getLv();
+
+            // Compute the center (l - λ)
+            final T center =  L.subtract(meanOrbit.getLM());
+            // Compute (l - λ)²
+            final T center2 = center.multiply(center);
+
+            // Initialize short periodic variations
+            final T[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());
+            final T[] d1 = slot.dij[1].value(meanOrbit.getDate());
+            final T[] d2 = slot.dij[2].value(meanOrbit.getDate());
+            for (int i = 0; i < 6; i++) {
+                shortPeriodicVariation[i] = shortPeriodicVariation[i].add(center.multiply(d1[i]).add(center2.multiply(d2[i])));
+            }
+
+            for (int j = 1; j <= JMAX; j++) {
+                final T[] c = slot.cij[j].value(meanOrbit.getDate());
+                final T[] s = slot.sij[j].value(meanOrbit.getDate());
+                final T cos = FastMath.cos(L.multiply(j));
+                final T sin = FastMath.sin(L.multiply(j));
+                for (int i = 0; i < 6; i++) {
+                    // add corresponding term to the short periodic variation
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(cos));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sin));
+                }
+            }
+
+            return shortPeriodicVariation;
+
+        }
+
+        /** {@inheritDoc} */
+        public String getCoefficientsKeyPrefix() {
+            return coefficientsKeyPrefix;
+        }
+
+        /** {@inheritDoc}
+         * <p>
+         * For Gaussian forces, there are JMAX cj coefficients,
+         * JMAX sj coefficients and 3 dj coefficients. As JMAX = 12,
+         * this sums up to 27 coefficients. The j index is the integer
+         * multiplier for the true longitude argument in the cj and sj
+         * coefficients and to the degree in  the polynomial dj coefficients.
+         * </p>
+         */
+        @Override
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected)
+            throws OrekitException {
+
+            // select the coefficients slot
+            final FieldSlot<T> slot = slots.get(date);
+
+            final Map<String, T[]> coefficients = new HashMap<String, T[]>(2 * JMAX + 3);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
+            storeIfSelected(coefficients, selected, slot.dij[1].value(date), "d", 1);
+            storeIfSelected(coefficients, selected, slot.dij[2].value(date), "d", 2);
+            for (int j = 1; j <= JMAX; j++) {
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
+            }
+
+            return coefficients;
+
+        }
+
+        /** Put a coefficient in a map if selected.
+         * @param map map to populate
+         * @param selected set of coefficients that should be put in the map
+         * (empty set means all coefficients are selected)
+         * @param value coefficient value
+         * @param id coefficient identifier
+         * @param indices list of coefficient indices
+         */
+        private void storeIfSelected(final Map<String, T[]> map, final Set<String> selected,
+                                     final T[] value, final String id, final int... indices) {
+            final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+            keyBuilder.append(id);
+            for (int index : indices) {
+                keyBuilder.append('[').append(index).append(']');
+            }
+            final String key = keyBuilder.toString();
+            if (selected.isEmpty() || selected.contains(key)) {
+                map.put(key, value);
+            }
+        }
+
+    }
+
+
     /** The U<sub>i</sub><sup>j</sup> and V<sub>i</sub><sup>j</sup> coefficients described by
      * equations 2.5.3-(21) and 2.5.3-(22) from Danielson.
      * <p>
@@ -2410,6 +2872,298 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
     }
 
+    /** The U<sub>i</sub><sup>j</sup> and V<sub>i</sub><sup>j</sup> coefficients described by
+     * equations 2.5.3-(21) and 2.5.3-(22) from Danielson.
+     * <p>
+     * The index i takes only the values 1 and 2<br>
+     * For U only the index 0 for j is used.
+     * </p>
+     *
+     * @author Petre Bazavan
+     * @author Lucian Barbulescu
+     */
+    private static class FieldUijVijCoefficients <T extends RealFieldElement<T>> {
+
+        /** The U₁<sup>j</sup> coefficients.
+         * <p>
+         * The first index identifies the Fourier coefficients used<br>
+         * Those coefficients are computed for all Fourier C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup><br>
+         * The only exception is when j = 0 when only the coefficient for fourier index = 1 (i == 0) is needed.<br>
+         * Also, for fourier index = 1 (i == 0), the coefficients up to 2 * jMax are computed, because are required
+         * to compute the coefficients U₂<sup>j</sup>
+         * </p>
+         */
+        private final T[][] u1ij;
+
+        /** The V₁<sup>j</sup> coefficients.
+         * <p>
+         * The first index identifies the Fourier coefficients used<br>
+         * Those coefficients are computed for all Fourier C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup><br>
+         * for fourier index = 1 (i == 0), the coefficients up to 2 * jMax are computed, because are required
+         * to compute the coefficients V₂<sup>j</sup>
+         * </p>
+         */
+        private final T[][] v1ij;
+
+        /** The U₂<sup>j</sup> coefficients.
+         * <p>
+         * Only the coefficients that use the Fourier index = 1 (i == 0) are computed as they are the only ones required.
+         * </p>
+         */
+        private final T[] u2ij;
+
+        /** The V₂<sup>j</sup> coefficients.
+         * <p>
+         * Only the coefficients that use the Fourier index = 1 (i == 0) are computed as they are the only ones required.
+         * </p>
+         */
+        private final T[] v2ij;
+
+        /** The current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients. */
+        private final T[][] currentRhoSigmaj;
+
+        /** The C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> Fourier coefficients. */
+        private final FieldFourierCjSjCoefficients<T> fourierCjSj;
+
+        /** The maximum value for j index. */
+        private final int jMax;
+
+        /** Constructor.
+         * @param currentRhoSigmaj the current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients
+         * @param fourierCjSj the fourier coefficients C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup>
+         * @param jMax maximum value for j index
+         * @param field field used by default
+         */
+        FieldUijVijCoefficients(final T[][] currentRhoSigmaj,
+                                final FieldFourierCjSjCoefficients<T> fourierCjSj,
+                                final int jMax,
+                                final Field<T> field) {
+            this.currentRhoSigmaj = currentRhoSigmaj;
+            this.fourierCjSj = fourierCjSj;
+            this.jMax = jMax;
+
+            // initialize the internal arrays.
+            this.u1ij = MathArrays.buildArray(field, 6, 2 * jMax + 1);
+            this.v1ij = MathArrays.buildArray(field, 6, 2 * jMax + 1);
+            this.u2ij = MathArrays.buildArray(field, jMax + 1);
+            this.v2ij = MathArrays.buildArray(field, jMax + 1);
+
+            //compute the coefficients
+            computeU1V1Coefficients(field);
+            computeU2V2Coefficients(field);
+        }
+
+        /** Build the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients.
+         * @param field field used by default
+         */
+        private void computeU1V1Coefficients(final Field<T> field) {
+            // Zero
+            final T zero = field.getZero();
+
+            // generate the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients
+            // for j >= 1
+            // also the U₁⁰ for Fourier index = 1 (i == 0) coefficient will be computed
+            u1ij[0][0] = zero;
+            for (int j = 1; j <= jMax; j++) {
+                // compute 1 / j
+                final double ooj = 1. / j;
+
+                for (int i = 0; i < 6; i++) {
+                    //j is aready between 1 and J
+                    u1ij[i][j] = fourierCjSj.getSij(i, j);
+                    v1ij[i][j] = fourierCjSj.getCij(i, j);
+
+                    // 1 - δ<sub>1j</sub> is 1 for all j > 1
+                    if (j > 1) {
+                        // k starts with 1 because j-J is less than or equal to 0
+                        for (int kIndex = 1; kIndex <= j - 1; kIndex++) {
+                            // C<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub>
+                            u1ij[i][j] = u1ij[i][j].add(fourierCjSj.getCij(i, j - kIndex).multiply(currentRhoSigmaj[1][kIndex]).
+                                         add(fourierCjSj.getSij(i, j - kIndex).multiply(currentRhoSigmaj[0][kIndex])));
+
+                            // C<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub> -
+                            // S<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub>
+                            v1ij[i][j] = v1ij[i][j].add(fourierCjSj.getCij(i, j - kIndex).multiply(currentRhoSigmaj[0][kIndex]).
+                                         subtract(fourierCjSj.getSij(i, j - kIndex).multiply(currentRhoSigmaj[1][kIndex])));
+                        }
+                    }
+
+                    // since j must be between 1 and J-1 and is already between 1 and J
+                    // the following sum is skiped only for j = jMax
+                    if (j != jMax) {
+                        for (int kIndex = 1; kIndex <= jMax - j; kIndex++) {
+                            // -C<sub>i</sub><sup>j+k</sup> * σ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j+k</sup> * ρ<sub>k</sub>
+                            u1ij[i][j] = u1ij[i][j].add(fourierCjSj.getCij(i, j + kIndex).negate().multiply(currentRhoSigmaj[1][kIndex]).
+                                         add(fourierCjSj.getSij(i, j + kIndex).multiply(currentRhoSigmaj[0][kIndex])));
+
+                            // C<sub>i</sub><sup>j+k</sup> * ρ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j+k</sup> * σ<sub>k</sub>
+                            v1ij[i][j] = v1ij[i][j].add(fourierCjSj.getCij(i, j + kIndex).multiply(currentRhoSigmaj[0][kIndex]).
+                                         add(fourierCjSj.getSij(i, j + kIndex).multiply(currentRhoSigmaj[1][kIndex])));
+                        }
+                    }
+
+                    for (int kIndex = 1; kIndex <= jMax; kIndex++) {
+                        // C<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub> -
+                        // S<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub>
+                        u1ij[i][j] = u1ij[i][j].add(fourierCjSj.getCij(i, kIndex).negate().multiply(currentRhoSigmaj[1][j + kIndex]).
+                                     subtract(fourierCjSj.getSij(i, kIndex).multiply(currentRhoSigmaj[0][j + kIndex])));
+
+                        // C<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub> +
+                        // S<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub>
+                        v1ij[i][j] = v1ij[i][j].add(fourierCjSj.getCij(i, kIndex).multiply(currentRhoSigmaj[0][j + kIndex]).
+                                     add(fourierCjSj.getSij(i, kIndex).multiply(currentRhoSigmaj[1][j + kIndex])));
+                    }
+
+                    // divide by 1 / j
+                    u1ij[i][j] = u1ij[i][j].multiply(-ooj);
+                    v1ij[i][j] = v1ij[i][j].multiply(ooj);
+
+                    // if index = 1 (i == 0) add the computed terms to U₁⁰
+                    if (i == 0) {
+                        //- (U₁<sup>j</sup> * ρ<sub>j</sub> + V₁<sup>j</sup> * σ<sub>j</sub>
+                        u1ij[0][0] = u1ij[0][0].add(u1ij[0][j].negate().multiply(currentRhoSigmaj[0][j]).subtract(v1ij[0][j].multiply(currentRhoSigmaj[1][j])));
+                    }
+                }
+            }
+
+            // Terms with j > jMax are required only when computing the coefficients
+            // U₂<sup>j</sup> and V₂<sup>j</sup>
+            // and those coefficients are only required for Fourier index = 1 (i == 0).
+            for (int j = jMax + 1; j <= 2 * jMax; j++) {
+                // compute 1 / j
+                final double ooj = 1. / j;
+                //the value of i is 0
+                u1ij[0][j] = zero;
+                v1ij[0][j] = zero;
+
+                //k starts from j-J as it is always greater than or equal to 1
+                for (int kIndex = j - jMax; kIndex <= j - 1; kIndex++) {
+                    // C<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub> +
+                    // S<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub>
+                    u1ij[0][j] = u1ij[0][j].add(fourierCjSj.getCij(0, j - kIndex).multiply(currentRhoSigmaj[1][kIndex]).
+                                 add(fourierCjSj.getSij(0, j - kIndex).multiply(currentRhoSigmaj[0][kIndex])));
+
+                    // C<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub> -
+                    // S<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub>
+                    v1ij[0][j] = v1ij[0][j].add(fourierCjSj.getCij(0, j - kIndex).multiply(currentRhoSigmaj[0][kIndex]).
+                                 subtract(fourierCjSj.getSij(0, j - kIndex).multiply(currentRhoSigmaj[1][kIndex])));
+                }
+                for (int kIndex = 1; kIndex <= jMax; kIndex++) {
+                    // C<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub> -
+                    // S<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub>
+                    u1ij[0][j] = u1ij[0][j].add(fourierCjSj.getCij(0, kIndex).negate().multiply(currentRhoSigmaj[1][j + kIndex]).
+                                 subtract(fourierCjSj.getSij(0, kIndex).multiply(currentRhoSigmaj[0][j + kIndex])));
+
+                    // C<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub> +
+                    // S<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub>
+                    v1ij[0][j] = v1ij[0][j].add(fourierCjSj.getCij(0, kIndex).multiply(currentRhoSigmaj[0][j + kIndex]).add(
+                                 fourierCjSj.getSij(0, kIndex).multiply(currentRhoSigmaj[1][j + kIndex])));
+                }
+
+                // divide by 1 / j
+                u1ij[0][j] = u1ij[0][j].multiply(-ooj);
+                v1ij[0][j] = v1ij[0][j].multiply(ooj);
+            }
+        }
+
+        /** Build the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients.
+         * <p>
+         * Only the coefficients for Fourier index = 1 (i == 0) are required.
+         * </p>
+         * @param field field used by default
+         */
+        private void computeU2V2Coefficients(final Field<T> field) {
+            for (int j = 1; j <= jMax; j++) {
+                // compute 1 / j
+                final double ooj = 1. / j;
+
+                // only the values for i == 0 are computed
+                u2ij[j] = v1ij[0][j];
+                v2ij[j] = u1ij[0][j];
+
+                // 1 - δ<sub>1j</sub> is 1 for all j > 1
+                if (j > 1) {
+                    for (int l = 1; l <= j - 1; l++) {
+                        // U₁<sup>j-l</sup> * σ<sub>l</sub> +
+                        // V₁<sup>j-l</sup> * ρ<sub>l</sub>
+                        u2ij[j] = u2ij[j].add(u1ij[0][j - l].multiply(currentRhoSigmaj[1][l]).
+                                  add(v1ij[0][j - l].multiply(currentRhoSigmaj[0][l])));
+
+                        // U₁<sup>j-l</sup> * ρ<sub>l</sub> -
+                        // V₁<sup>j-l</sup> * σ<sub>l</sub>
+                        v2ij[j] = v2ij[j].add(u1ij[0][j - l].multiply(currentRhoSigmaj[0][l]).
+                                  subtract(v1ij[0][j - l].multiply(currentRhoSigmaj[1][l])));
+                    }
+                }
+
+                for (int l = 1; l <= jMax; l++) {
+                    // -U₁<sup>j+l</sup> * σ<sub>l</sub> +
+                    // U₁<sup>l</sup> * σ<sub>j+l</sub> +
+                    // V₁<sup>j+l</sup> * ρ<sub>l</sub> -
+                    // V₁<sup>l</sup> * ρ<sub>j+l</sub>
+                    u2ij[j] = u2ij[j].add(u1ij[0][j + l].negate().multiply(currentRhoSigmaj[1][l]).
+                              add(u1ij[0][l].multiply(currentRhoSigmaj[1][j + l])).
+                              add(v1ij[0][j + l].multiply(currentRhoSigmaj[0][l])).
+                              subtract(v1ij[0][l].multiply(currentRhoSigmaj[0][j + l])));
+
+                    // U₁<sup>j+l</sup> * ρ<sub>l</sub> +
+                    // U₁<sup>l</sup> * ρ<sub>j+l</sub> +
+                    // V₁<sup>j+l</sup> * σ<sub>l</sub> +
+                    // V₁<sup>l</sup> * σ<sub>j+l</sub>
+                    u2ij[j] = u2ij[j].add(u1ij[0][j + l].multiply(currentRhoSigmaj[0][l]).
+                              add(u1ij[0][l].multiply(currentRhoSigmaj[0][j + l])).
+                              add(v1ij[0][j + l].multiply(currentRhoSigmaj[1][l])).
+                              add(v1ij[0][l].multiply(currentRhoSigmaj[1][j + l])));
+                }
+
+                // divide by 1 / j
+                u2ij[j] = u2ij[j].multiply(-ooj);
+                v2ij[j] = v2ij[j].multiply(ooj);
+            }
+        }
+
+        /** Get the coefficient U₁<sup>j</sup> for Fourier index i.
+         *
+         * @param j j index
+         * @param i Fourier index (starts at 0)
+         * @return the coefficient U₁<sup>j</sup> for the given Fourier index i
+         */
+        public T getU1(final int j, final int i) {
+            return u1ij[i][j];
+        }
+
+        /** Get the coefficient V₁<sup>j</sup> for Fourier index i.
+         *
+         * @param j j index
+         * @param i Fourier index (starts at 0)
+         * @return the coefficient V₁<sup>j</sup> for the given Fourier index i
+         */
+        public T getV1(final int j, final int i) {
+            return v1ij[i][j];
+        }
+
+        /** Get the coefficient U₂<sup>j</sup> for Fourier index = 1 (i == 0).
+         *
+         * @param j j index
+         * @return the coefficient U₂<sup>j</sup> for Fourier index = 1 (i == 0)
+         */
+        public T getU2(final int j) {
+            return u2ij[j];
+        }
+
+        /** Get the coefficient V₂<sup>j</sup> for Fourier index = 1 (i == 0).
+         *
+         * @param j j index
+         * @return the coefficient V₂<sup>j</sup> for Fourier index = 1 (i == 0)
+         */
+        public T getV2(final int j) {
+            return v2ij[j];
+        }
+    }
+
     /** Coefficients valid for one time slot. */
     private static class Slot implements Serializable {
 
@@ -2477,6 +3231,81 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 // Initialize only the non-zero D<sub>i</sub><sup>j</sup> coefficients
                 if (j == 1 || j == 2) {
                     dij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                }
+            }
+
+        }
+
+    }
+
+    /** Coefficients valid for one time slot. */
+    private static class FieldSlot <T extends RealFieldElement<T>> implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160319L;
+
+        /**The coefficients D<sub>i</sub><sup>j</sup>.
+         * <p>
+         * Only for j = 1 and j = 2 the coefficients are not 0. <br>
+         * i corresponds to the equinoctial element, as follows:
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] dij;
+
+        /** The coefficients C<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is cij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] cij;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is sij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final FieldShortPeriodicsInterpolatedCoefficient<T>[] sij;
+
+        /** Simple constructor.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        @SuppressWarnings("unchecked")
+        FieldSlot(final int jMax, final int interpolationPoints) {
+
+            dij = new FieldShortPeriodicsInterpolatedCoefficient[3];
+            cij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            sij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
+
+            // Initialize the C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup> and D<sub>i</sub><sup>j</sup> coefficients
+            for (int j = 0; j <= jMax; j++) {
+                cij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+                if (j > 0) {
+                    sij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
+                }
+                // Initialize only the non-zero D<sub>i</sub><sup>j</sup> coefficients
+                if (j == 1 || j == 2) {
+                    dij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
                 }
             }
 

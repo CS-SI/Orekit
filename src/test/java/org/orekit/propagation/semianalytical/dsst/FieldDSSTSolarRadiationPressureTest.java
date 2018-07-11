@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -28,6 +30,8 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -39,13 +43,17 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -61,10 +69,13 @@ import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContrib
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldAbstractGaussianContributionContext;
+import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
@@ -146,6 +157,76 @@ public class FieldDSSTSolarRadiationPressureTest {
         Assert.assertEquals(-2.3346333406116967E-14, elements[4].getReal(), 8.5e-22);
         Assert.assertEquals(1.6087485237156322E-11,  elements[5].getReal(), 1.7e-18);
 
+    }
+
+    @Test
+    public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
+        doTestShortPeriodTerms(Decimal64Field.getInstance());
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends RealFieldElement<T>> void doTestShortPeriodTerms(final Field<T> field)
+        throws IllegalArgumentException, OrekitException {
+ 
+        final T zero = field.getZero();
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(7069219.9806427825),
+                                                                zero.add(-4.5941811292223825E-4),
+                                                                zero.add(1.309932339472599E-4),
+                                                                zero.add(-1.002996107003202),
+                                                                zero.add(0.570979900577994),
+                                                                zero.add(2.62038786211518),
+                                                                PositionAngle.TRUE,
+                                                                FramesFactory.getEME2000(),
+                                                                initDate,
+                                                                zero.add(3.986004415E14));
+
+        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit);
+
+        final CelestialBody    sun   = CelestialBodyFactory.getSun();
+        
+        final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0,
+                                                                                     sun,
+                                                                                     50.0, Vector3D.PLUS_J,
+                                                                                     2.0, 0.1,
+                                                                                     0.2, 0.6);
+        
+        final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
+                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                0.0, 0.0, 0.0);
+
+        final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
+                                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                   boxAndWing,
+                                                                   meanState.getMu().getReal());
+        
+        //Create the auxiliary object
+        final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
+
+        // Set the force models
+        final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
+
+        srp.registerAttitudeProvider(attitudeProvider);
+        shortPeriodTerms.addAll(srp.initialize(aux, false, srp.getParameters(field)));
+        srp.updateShortPeriodTerms(srp.getParameters(field), meanState);
+
+        T[] y = MathArrays.buildArray(field, 6);
+        Arrays.fill(y, zero);
+        
+        for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
+            final T[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                y[i] = y[i].add(shortPeriodic[i]);
+            }
+        }
+
+        Assert.assertEquals(0.36637346843285684,     y[0].getReal(), 0.5e-12);
+        Assert.assertEquals(-2.4294913010512626E-10, y[1].getReal(), 2.6e-20);
+        Assert.assertEquals(-3.858954680824408E-9,   y[2].getReal(), 7.e-20);
+        Assert.assertEquals(-3.0648619902684686E-9,  y[3].getReal(), 0.9e-21);
+        Assert.assertEquals(-4.9023731169635814E-9,  y[4].getReal(), 1.1e-19);
+        Assert.assertEquals(-2.385357916413363E-9,   y[5].getReal(), 1.3e-20);
     }
 
     @Test
