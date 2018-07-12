@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ParameterDriver;
@@ -146,6 +147,14 @@ public interface DSSTForceModel {
      * related to any discrete events
      */
     EventDetector[] getEventsDetectors();
+
+    /** Get the discrete events related to the model.
+     * @param <T> type of the elements
+     * @param field field used by default
+     * @return array of events detectors or null if the model is not
+     * related to any discrete events
+     */
+    <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
 
     /** Register an attitude provider.
      * <p>

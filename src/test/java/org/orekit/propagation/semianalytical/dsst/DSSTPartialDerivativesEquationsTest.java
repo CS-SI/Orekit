@@ -40,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
@@ -195,6 +196,11 @@ public class DSSTPartialDerivativesEquationsTest {
         @Override
         public EventDetector[] getEventsDetectors() {
             return new EventDetector[0];
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field) {
+            return null;
         }
 
         @Override
