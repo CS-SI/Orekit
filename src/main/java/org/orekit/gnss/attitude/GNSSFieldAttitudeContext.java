@@ -419,7 +419,7 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final TimeStampedFieldAngularCoordinates<T> correction =
                         new TimeStampedFieldAngularCoordinates<>(nominalYaw.getDate(),
                                                                  new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
-                                                                                     yaw.subtract(nominalAngle),
+                                                                                     nominalAngle.subtract(yaw),
                                                                                      RotationConvention.VECTOR_OPERATOR));
 
         // combine the two parts of the attitude

@@ -16,11 +16,6 @@
  */
 package org.orekit.gnss.attitude;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Locale;
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -347,25 +342,9 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param endMargin margin in seconds after turn end
      */
     public void setHalfSpan(final double halfSpan, final double endMargin) {
+
         final AbsoluteDate start = svPV.getDate().shiftedBy((delta.getValue() - halfSpan) / muRate);
         final AbsoluteDate end   = svPV.getDate().shiftedBy((delta.getValue() + halfSpan) / muRate);
-        final double muDot   = delta.getPartialDerivative(1);
-        final double betaDot = getBetaDS().getPartialDerivative(1);
-        final double betaT0  = beta.taylor(delta.getValue() / muRate);
-        final double a = muDot * muDot + betaDot * betaDot;
-        final double b = betaDot * betaT0;
-        final double c = betaT0 * (betaT0 - muDot / FastMath.toRadians(0.1033));
-        try (FileOutputStream fos = new FileOutputStream("/home/luc/y.dat", true);
-             PrintWriter pw = new PrintWriter(fos)) {
-            final AbsoluteDate t0 = start.shiftedBy(0.5 * end.durationFrom(start));
-            final double s = FastMath.sqrt(b * b - a * c);
-            final AbsoluteDate newStart = t0.shiftedBy((-b - s) / a);
-            final AbsoluteDate newEnd   = t0.shiftedBy((-b + s) / a);
-            pw.format(Locale.US, "%s %s %s %s %s %s%n",
-                      getDate(), t0, start, end, newStart, newEnd);
-        } catch (IOException ioe) {
-            System.exit(1);
-        }
 
         if (turnSpan == null) {
             turnSpan = new TurnSpan(start, end, getDate(), endMargin);
@@ -415,7 +394,7 @@ class GNSSAttitudeContext implements TimeStamped {
         final TimeStampedAngularCoordinates correction =
                         new TimeStampedAngularCoordinates(nominalYaw.getDate(),
                                                           new FieldRotation<>(FieldVector3D.getPlusK(nominalAngle.getField()),
-                                                                              yaw.subtract(nominalAngle),
+                                                                              nominalAngle.subtract(yaw),
                                                                               RotationConvention.VECTOR_OPERATOR));
 
         // combine the two parts of the attitude
