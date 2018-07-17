@@ -29,6 +29,7 @@ import java.util.SortedSet;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
@@ -54,6 +55,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldShortPeriodicsI
 import org.orekit.propagation.semianalytical.dsst.utilities.GHIJjsPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.LnsCoefficients;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.FieldHansenZonalLinear;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
@@ -87,6 +89,12 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private static final int I = 1;
 
+    /** Number of points for interpolation. */
+    private static final int INTERPOLATION_POINTS = 3;
+
+    /** Truncation tolerance. */
+    private static final double TRUNCATION_TOLERANCE = 1e-4;
+
     /** Central attraction scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -94,9 +102,6 @@ public class DSSTZonal implements DSSTForceModel {
      * </p>
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
-
-    /** Number of points for interpolation. */
-    private static final int INTERPOLATION_POINTS = 3;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -110,11 +115,14 @@ public class DSSTZonal implements DSSTForceModel {
     /** Highest power of the eccentricity to be used in short periodic computations. */
     private final int maxEccPowShortPeriodics;
 
-    /** Highest power of the eccentricity. */
-    private int maxEccPow;
-
     /** Maximum frequency in true longitude for short periodic computations. */
     private final int maxFrequencyShortPeriodics;
+
+    /** Highest power of the eccentricity to be used in mean elements computations. */
+    private int maxEccPowMeanElements;
+
+    /** Highest power of the eccentricity. */
+    private int maxEccPow;
 
     /** Short period terms. */
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
@@ -170,6 +178,8 @@ public class DSSTZonal implements DSSTForceModel {
         checkIndexRange(maxFrequencyShortPeriodics, 1, 2 * maxDegreeShortPeriodics + 1);
         this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
 
+        // Initialize default values
+        this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
     }
 
     /** Check an index range.
@@ -217,11 +227,12 @@ public class DSSTZonal implements DSSTForceModel {
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
         throws OrekitException {
 
-        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        computeMeanElementsTruncations(auxiliaryElements, parameters);
+
         if (meanOnly) {
-            maxEccPow = context.getMaxEccPowMeanElements();
+            maxEccPow = maxEccPowMeanElements;
         } else {
-            maxEccPow = FastMath.max(context.getMaxEccPowMeanElements(), maxEccPowShortPeriodics);
+            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
         }
 
         initializeHansenObjects();
@@ -247,11 +258,12 @@ public class DSSTZonal implements DSSTForceModel {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
+        computeMeanElementsTruncations(auxiliaryElements, parameters, field);
+
         if (meanOnly) {
-            maxEccPow = context.getMaxEccPowMeanElements();
+            maxEccPow = maxEccPowMeanElements;
         } else {
-            maxEccPow = FastMath.max(context.getMaxEccPowMeanElements(), maxEccPowShortPeriodics);
+            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
         }
 
         initializeHansenObjects();
@@ -264,6 +276,213 @@ public class DSSTZonal implements DSSTForceModel {
                                                                                                                             INTERPOLATION_POINTS), field));
         list.add(zonalFieldSPCoefs);
         return list;
+    }
+
+    /** Compute indices truncations for mean elements computations.
+     * @param auxiliaryElements auxiliary elements
+     * @param parameters values of the force model parameters
+     * @throws OrekitException if an error occurs
+     */
+    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters)
+        throws OrekitException {
+
+        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        //Compute the max eccentricity power for the mean element rate expansion
+        if (maxDegree == 2) {
+            maxEccPowMeanElements = 0;
+        } else {
+            // Initializes specific parameters.
+            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(auxiliaryElements.getDate());
+
+            // Utilities for truncation
+            final double ax2or = 2. * auxiliaryElements.getSma() / provider.getAe();
+            double xmuran = parameters[0] / auxiliaryElements.getSma();
+            // Set a lower bound for eccentricity
+            final double eo2  = FastMath.max(0.0025, auxiliaryElements.getEcc() / 2.);
+            final double x2o2 = context.getXX() / 2.;
+            final double[] eccPwr = new double[maxDegree + 1];
+            final double[] chiPwr = new double[maxDegree + 1];
+            final double[] hafPwr = new double[maxDegree + 1];
+            eccPwr[0] = 1.;
+            chiPwr[0] = context.getX();
+            hafPwr[0] = 1.;
+            for (int i = 1; i <= maxDegree; i++) {
+                eccPwr[i] = eccPwr[i - 1] * eo2;
+                chiPwr[i] = chiPwr[i - 1] * x2o2;
+                hafPwr[i] = hafPwr[i - 1] * 0.5;
+                xmuran  /= ax2or;
+            }
+
+            // Set highest power of e and degree of current spherical harmonic.
+            maxEccPowMeanElements = 0;
+            int maxDeg = maxDegree;
+            // Loop over n
+            do {
+                // Set order of current spherical harmonic.
+                int m = 0;
+                // Loop over m
+                do {
+                    // Compute magnitude of current spherical harmonic coefficient.
+                    final double cnm = harmonics.getUnnormalizedCnm(maxDeg, m);
+                    final double snm = harmonics.getUnnormalizedSnm(maxDeg, m);
+                    final double csnm = FastMath.hypot(cnm, snm);
+                    if (csnm == 0.) break;
+                    // Set magnitude of last spherical harmonic term.
+                    double lastTerm = 0.;
+                    // Set current power of e and related indices.
+                    int nsld2 = (maxDeg - maxEccPowMeanElements - 1) / 2;
+                    int l = maxDeg - 2 * nsld2;
+                    // Loop over l
+                    double term = 0.;
+                    do {
+                        // Compute magnitude of current spherical harmonic term.
+                        if (m < l) {
+                            term =  csnm * xmuran *
+                                    (CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
+                                    (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
+                                    eccPwr[l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I));
+                        } else {
+                            term =  csnm * xmuran *
+                                    (CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
+                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I));
+                        }
+                        // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                        if (term >= TRUNCATION_TOLERANCE) {
+                            maxEccPowMeanElements = l;
+                        } else {
+                            // Is the current term smaller than the last term ?
+                            if (term < lastTerm) {
+                                break;
+                            }
+                        }
+                        // Proceed to next power of e.
+                        lastTerm = term;
+                        l += 2;
+                        nsld2--;
+                    } while (l < maxDeg);
+                    // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                    if (term >= TRUNCATION_TOLERANCE) {
+                        maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
+                        return;
+                    }
+                    // Proceed to next order.
+                    m++;
+                } while (m <= FastMath.min(maxDeg, provider.getMaxOrder()));
+                // Proceed to next degree.
+                xmuran *= ax2or;
+                maxDeg--;
+            } while (maxDeg > maxEccPowMeanElements + 2);
+
+            maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
+        }
+    }
+
+    /** Compute indices truncations for mean elements computations.
+     * @param <T> type of the elements
+     * @param auxiliaryElements auxiliary elements
+     * @param parameters values of the force model parameters
+     * @param field field used by default
+     * @throws OrekitException if an error occurs
+     */
+    private <T extends RealFieldElement<T>> void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                final T[] parameters,
+                                                                                final Field<T> field)
+        throws OrekitException {
+
+        final T zero = field.getZero();
+        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
+        //Compute the max eccentricity power for the mean element rate expansion
+        if (maxDegree == 2) {
+            maxEccPowMeanElements = 0;
+        } else {
+            // Initializes specific parameters.
+            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(auxiliaryElements.getDate().toAbsoluteDate());
+
+            // Utilities for truncation
+            final T ax2or = auxiliaryElements.getSma().multiply(2.).divide(provider.getAe());
+            T xmuran = parameters[0].divide(auxiliaryElements.getSma());
+            // Set a lower bound for eccentricity
+            final T eo2  = FastMath.max(zero.add(0.0025), auxiliaryElements.getEcc().divide(2.));
+            final T x2o2 = context.getXX().divide(2.);
+            final T[] eccPwr = MathArrays.buildArray(field, maxDegree + 1);
+            final T[] chiPwr = MathArrays.buildArray(field, maxDegree + 1);
+            final T[] hafPwr = MathArrays.buildArray(field, maxDegree + 1);
+            eccPwr[0] = zero.add(1.);
+            chiPwr[0] = context.getX();
+            hafPwr[0] = zero.add(1.);
+            for (int i = 1; i <= maxDegree; i++) {
+                eccPwr[i] = eccPwr[i - 1].multiply(eo2);
+                chiPwr[i] = chiPwr[i - 1].multiply(x2o2);
+                hafPwr[i] = hafPwr[i - 1].multiply(0.5);
+                xmuran  = xmuran.divide(ax2or);
+            }
+
+            // Set highest power of e and degree of current spherical harmonic.
+            maxEccPowMeanElements = 0;
+            int maxDeg = maxDegree;
+            // Loop over n
+            do {
+                // Set order of current spherical harmonic.
+                int m = 0;
+                // Loop over m
+                do {
+                    // Compute magnitude of current spherical harmonic coefficient.
+                    final T cnm = zero.add(harmonics.getUnnormalizedCnm(maxDeg, m));
+                    final T snm = zero.add(harmonics.getUnnormalizedSnm(maxDeg, m));
+                    final T csnm = FastMath.hypot(cnm, snm);
+                    if (csnm.getReal() == 0.) break;
+                    // Set magnitude of last spherical harmonic term.
+                    T lastTerm = zero;
+                    // Set current power of e and related indices.
+                    int nsld2 = (maxDeg - maxEccPowMeanElements - 1) / 2;
+                    int l = maxDeg - 2 * nsld2;
+                    // Loop over l
+                    T term = zero;
+                    do {
+                        // Compute magnitude of current spherical harmonic term.
+                        if (m < l) {
+                            term = csnm.multiply(xmuran).
+                                   multiply((CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
+                                   (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l)))).
+                                   multiply(eccPwr[l]).multiply(UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I)));
+                        } else {
+                            term = csnm.multiply(xmuran).
+                                   multiply(CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))).
+                                   multiply(eccPwr[l]).multiply(hafPwr[m - l]).multiply(UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I)));
+                        }
+                        // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                        if (term.getReal() >= TRUNCATION_TOLERANCE) {
+                            maxEccPowMeanElements = l;
+                        } else {
+                            // Is the current term smaller than the last term ?
+                            if (term.getReal() < lastTerm.getReal()) {
+                                break;
+                            }
+                        }
+                        // Proceed to next power of e.
+                        lastTerm = term;
+                        l += 2;
+                        nsld2--;
+                    } while (l < maxDeg);
+                    // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                    if (term.getReal() >= TRUNCATION_TOLERANCE) {
+                        maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
+                        return;
+                    }
+                    // Proceed to next order.
+                    m++;
+                } while (m <= FastMath.min(maxDeg, provider.getMaxOrder()));
+                // Proceed to next degree.
+                xmuran = xmuran.multiply(ax2or);
+                maxDeg--;
+            } while (maxDeg > maxEccPowMeanElements + 2);
+
+            maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
+        }
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -3371,9 +3590,9 @@ public class DSSTZonal implements DSSTForceModel {
             U = 0.;
 
             // Gs and Hs coefficients
-            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getMaxEccPowMeanElements());
+            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements);
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), context.getMaxEccPowMeanElements());
+            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), maxEccPowMeanElements);
 
             final double[] roaPow = new double[context.getMaxDegree() + 1];
             roaPow[0] = 1.;
@@ -3389,7 +3608,7 @@ public class DSSTZonal implements DSSTForceModel {
             dUdBe = 0.;
             dUdGa = 0.;
 
-            for (int s = 0; s <= context.getMaxEccPowMeanElements(); s++) {
+            for (int s = 0; s <= maxEccPowMeanElements; s++) {
                 //Initialize the Hansen roots
                 hansen.computeHansenObjectsInitValues(context, s);
 
@@ -3569,9 +3788,9 @@ public class DSSTZonal implements DSSTForceModel {
             U = zero;
 
             // Gs and Hs coefficients
-            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), context.getMaxEccPowMeanElements(), field);
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements, field);
             // Qns coefficients
-            final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), context.getMaxEccPowMeanElements());
+            final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), context.getMaxDegree(), maxEccPowMeanElements);
 
             final T[] roaPow = MathArrays.buildArray(field, context.getMaxDegree() + 1);
             roaPow[0] = zero.add(1.);
@@ -3587,7 +3806,7 @@ public class DSSTZonal implements DSSTForceModel {
             dUdBe = zero;
             dUdGa = zero;
 
-            for (int s = 0; s <= context.getMaxEccPowMeanElements(); s++) {
+            for (int s = 0; s <= maxEccPowMeanElements; s++) {
                 //Initialize the Hansen roots
                 hansen.computeHansenObjectsInitValues(context, s);
 
@@ -3753,7 +3972,7 @@ public class DSSTZonal implements DSSTForceModel {
         FieldHansenObjects() {
             this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
             for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s);
+                this.hansenObjects[s] = new FieldHansenZonalLinear(maxDegree, s);
             }
         }
 

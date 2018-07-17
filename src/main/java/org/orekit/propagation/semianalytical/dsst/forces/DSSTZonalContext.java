@@ -18,15 +18,12 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.TreeMap;
 
-import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
-import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 
 /** This class is a container for the attributes of
  * {@link org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal DSSTZonal}.
@@ -38,35 +35,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  */
 class DSSTZonalContext extends ForceModelContext {
 
-    /** Retrograde factor I.
-     *  <p>
-     *  DSST model needs equinoctial orbit as internal representation.
-     *  Classical equinoctial elements have discontinuities when inclination
-     *  is close to zero. In this representation, I = +1. <br>
-     *  To avoid this discontinuity, another representation exists and equinoctial
-     *  elements can be expressed in a different way, called "retrograde" orbit.
-     *  This implies I = -1. <br>
-     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
-     *  But for the sake of consistency with the theory, the retrograde factor
-     *  has been kept in the formulas.
-     *  </p>
-     */
-    private static final int I = 1;
-
-    /** Truncation tolerance. */
-    private static final double TRUNCATION_TOLERANCE = 1e-4;
-
-    /** Highest power of the eccentricity to be used in mean elements computations. */
-    private int maxEccPowMeanElements;
-
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
-
-    /** Maximal degree to consider for harmonics potential in short periodic computations. */
-    private final int maxOrder;
-
-    /** Provider for spherical harmonics. */
-    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
@@ -102,7 +72,7 @@ class DSSTZonalContext extends ForceModelContext {
     /** Keplerian period. */
     private final double period;
 
-    // Short periodic terms
+    // Short period terms
     /** h * k. */
     private double hk;
     /** k² - h². */
@@ -139,10 +109,8 @@ class DSSTZonalContext extends ForceModelContext {
 
         super(auxiliaryElements);
 
-        this.provider              = provider;
-        this.maxDegree             = provider.getMaxDegree();
-        this.maxOrder              = provider.getMaxOrder();
-        this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
+        this.maxDegree = provider.getMaxDegree();
+
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
@@ -178,9 +146,7 @@ class DSSTZonalContext extends ForceModelContext {
         // R / a
         roa    = provider.getAe() / auxiliaryElements.getSma();
 
-        computeMeanElementsTruncations(auxiliaryElements, parameters);
-
-        // Short periodic termes
+        // Short period terms
 
         // h * k.
         hk = auxiliaryElements.getH() * auxiliaryElements.getK();
@@ -281,24 +247,10 @@ class DSSTZonalContext extends ForceModelContext {
         return roa;
     }
 
-    /** Get highest power of the eccentricity to be used in mean elements computations.
-     * @return maxEccPowMeanElements
-     */
-    public int getMaxEccPowMeanElements() {
-        return maxEccPowMeanElements;
-    }
-
     /** Get the maximal degree to consider for harmonics potential.
      * @return maxDegree
      */
     public int getMaxDegree() {
-        return maxDegree;
-    }
-
-    /** Get the maximal degree to consider for harmonics potential.
-     * @return maxDegree
-     */
-    public int getMaxOrder() {
         return maxDegree;
     }
 
@@ -397,103 +349,4 @@ class DSSTZonalContext extends ForceModelContext {
         return BB;
     }
 
-    /** Compute indices truncations for mean elements computations.
-     * @param auxiliaryElements auxiliary elements
-     * @param parameters values of the force model parameters
-     * @throws OrekitException if an error occurs
-     */
-    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
-
-        //Compute the max eccentricity power for the mean element rate expansion
-        if (maxDegree == 2) {
-            maxEccPowMeanElements = 0;
-        } else {
-            // Initializes specific parameters.
-            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(auxiliaryElements.getDate());
-
-            // Utilities for truncation
-            final double ax2or = 2. * auxiliaryElements.getSma() / provider.getAe();
-            double xmuran = parameters[0] / auxiliaryElements.getSma();
-            // Set a lower bound for eccentricity
-            final double eo2  = FastMath.max(0.0025, auxiliaryElements.getEcc() / 2.);
-            final double x2o2 = XX / 2.;
-            final double[] eccPwr = new double[maxDegree + 1];
-            final double[] chiPwr = new double[maxDegree + 1];
-            final double[] hafPwr = new double[maxDegree + 1];
-            eccPwr[0] = 1.;
-            chiPwr[0] = X;
-            hafPwr[0] = 1.;
-            for (int i = 1; i <= maxDegree; i++) {
-                eccPwr[i] = eccPwr[i - 1] * eo2;
-                chiPwr[i] = chiPwr[i - 1] * x2o2;
-                hafPwr[i] = hafPwr[i - 1] * 0.5;
-                xmuran  /= ax2or;
-            }
-
-            // Set highest power of e and degree of current spherical harmonic.
-            maxEccPowMeanElements = 0;
-            int maxDeg = maxDegree;
-            // Loop over n
-            do {
-                // Set order of current spherical harmonic.
-                int m = 0;
-                // Loop over m
-                do {
-                    // Compute magnitude of current spherical harmonic coefficient.
-                    final double cnm = harmonics.getUnnormalizedCnm(maxDeg, m);
-                    final double snm = harmonics.getUnnormalizedSnm(maxDeg, m);
-                    final double csnm = FastMath.hypot(cnm, snm);
-                    if (csnm == 0.) break;
-                    // Set magnitude of last spherical harmonic term.
-                    double lastTerm = 0.;
-                    // Set current power of e and related indices.
-                    int nsld2 = (maxDeg - maxEccPowMeanElements - 1) / 2;
-                    int l = maxDeg - 2 * nsld2;
-                    // Loop over l
-                    double term = 0.;
-                    do {
-                        // Compute magnitude of current spherical harmonic term.
-                        if (m < l) {
-                            term =  csnm * xmuran *
-                                    (CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
-                                    (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I));
-                        } else {
-                            term =  csnm * xmuran *
-                                    (CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(XX, chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I));
-                        }
-                        // Is the current spherical harmonic term bigger than the truncation tolerance ?
-                        if (term >= TRUNCATION_TOLERANCE) {
-                            maxEccPowMeanElements = l;
-                        } else {
-                            // Is the current term smaller than the last term ?
-                            if (term < lastTerm) {
-                                break;
-                            }
-                        }
-                        // Proceed to next power of e.
-                        lastTerm = term;
-                        l += 2;
-                        nsld2--;
-                    } while (l < maxDeg);
-                    // Is the current spherical harmonic term bigger than the truncation tolerance ?
-                    if (term >= TRUNCATION_TOLERANCE) {
-                        maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
-                        return;
-                    }
-                    // Proceed to next order.
-                    m++;
-                } while (m <= FastMath.min(maxDeg, maxOrder));
-                // Proceed to next degree.
-                xmuran *= ax2or;
-                maxDeg--;
-            } while (maxDeg > maxEccPowMeanElements + 2);
-
-            maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
-        }
-    }
 }
