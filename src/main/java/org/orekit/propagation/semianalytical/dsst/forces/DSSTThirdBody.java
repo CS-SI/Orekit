@@ -1637,14 +1637,14 @@ public class DSSTThirdBody implements DSSTForceModel {
                     JacobiPolynomials.getValue(l, absJmS, absJpS, context.getFactory().variable(0, context.getX()));
 
             // the derivative of coef1 by c
-            final T dcoef1dc = coef1.negate().multiply(2.).multiply(c).multiply(opc2tn[1].divide((double) n).reciprocal().add(omc2tn[1].divide((double) l).reciprocal()));
+            final T dcoef1dc = coef1.negate().multiply(2.).multiply(c).multiply(opc2tn[1].reciprocal().multiply(n).add(omc2tn[1].reciprocal().multiply(l)));
             // the derivative of coef1 by h
             final T dcoef1dh = dcoef1dc.multiply(dcdh);
             // the derivative of coef1 by k
             final T dcoef1dk = dcoef1dc.multiply(dcdk);
 
             // the derivative of coef2 by b
-            final T dcoef2db = absJmS == 0 ? zero : sign.multiply((double) absJmS).multiply(btjms[absJmS - 1]);
+            final T dcoef2db = absJmS == 0 ? zero : sign.multiply(absJmS).multiply(btjms[absJmS - 1]);
             // the derivative of coef2 by h
             final T dcoef2dh = dcoef2db.multiply(dbdh);
             // the derivative of coef2 by k
