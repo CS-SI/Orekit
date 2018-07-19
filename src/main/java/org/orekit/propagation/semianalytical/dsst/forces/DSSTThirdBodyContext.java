@@ -427,7 +427,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
     }
 
     /** Get the value of max power for e in the serie expansion.
-     * @return maxAR3Pow
+     * @return maxEccPow
      */
     public int getMaxEccPow() {
         return maxEccPow;
@@ -441,14 +441,14 @@ class DSSTThirdBodyContext extends ForceModelContext {
     }
 
    /** Get the value of max frequency of F.
-     * @return aoR3Pow
+     * @return maxFreqF
      */
     public int getMaxFreqF() {
         return maxFreqF;
     }
 
     /** Get the value of max power for e in the serie expansion (for short periodics).
-     * @return aoR3Pow
+     * @return maxEccPowShort
      */
     public int getMaxEccPowShort() {
         return maxEccPowShort;
@@ -473,7 +473,7 @@ class DSSTThirdBodyContext extends ForceModelContext {
     }
 
     /** Get the value of Qns coefficients.
-     * @return aoR3Pow
+     * @return Qns
      */
     public double[][] getQns() {
         return Qns;

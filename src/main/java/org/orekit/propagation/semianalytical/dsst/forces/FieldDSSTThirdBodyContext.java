@@ -429,7 +429,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     }
 
     /** Get the value of max power for e in the serie expansion.
-     * @return maxAR3Pow
+     * @return maxEccPow
      */
     public int getMaxEccPow() {
         return maxEccPow;
@@ -443,14 +443,14 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     }
 
    /** Get the value of max frequency of F.
-     * @return aoR3Pow
+     * @return maxFreqF
      */
     public int getMaxFreqF() {
         return maxFreqF;
     }
 
     /** Get the value of max power for e in the serie expansion (for short periodics).
-     * @return aoR3Pow
+     * @return maxEccPowShort
      */
     public int getMaxEccPowShort() {
         return maxEccPowShort;
@@ -475,7 +475,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
     }
 
     /** Get the value of Qns coefficients.
-     * @return aoR3Pow
+     * @return Qns
      */
     public T[][] getQns() {
         return Qns;
