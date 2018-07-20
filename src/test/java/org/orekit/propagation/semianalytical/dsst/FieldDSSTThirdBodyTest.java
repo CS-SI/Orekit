@@ -190,50 +190,57 @@ public class FieldDSSTThirdBodyTest {
         final SpacecraftState meanState = new SpacecraftState(orbit);
         
         // Force model
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
-        final double[] parameters    = moon.getParameters();
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        forces.add(moon);
+        forces.add(sun);
                         
         // Converter for derivatives
         final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
-        
-        // Field parameters
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(moon);
-        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, moon);
-        
-        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
-        
-        // Zero
-        final DerivativeStructure zero = dsState.getDate().getField().getZero();
-        
-        // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(moon.initialize(fieldAuxiliaryElements, false, dsParameters));
-        moon.updateShortPeriodTerms(dsParameters, dsState);
-        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
-        Arrays.fill(shortPeriod, zero);
-        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
-            for (int i = 0; i < spVariation .length; i++) {
-                shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
-            }
-        }
-        
-        final double[][] shortPeriodJacobian = new double[6][6];
-      
-        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
 
-        // Update Jacobian with respect to state
-        addToRow(derivativesASP,  0, shortPeriodJacobian);
-        addToRow(derivativesExSP, 1, shortPeriodJacobian);
-        addToRow(derivativesEySP, 2, shortPeriodJacobian);
-        addToRow(derivativesHxSP, 3, shortPeriodJacobian);
-        addToRow(derivativesHySP, 4, shortPeriodJacobian);
-        addToRow(derivativesLSP,  5, shortPeriodJacobian);
+        // Compute state Jacobian using directly the method
+        final double[][] shortPeriodJacobian = new double[6][6];
+        for (DSSTForceModel force : forces) {
+            
+            // Field parameters
+            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(force);
+            final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, force);
+            
+            final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+            
+            // Array for short period terms
+            final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+            final DerivativeStructure zero = dsState.getA().getField().getZero();
+            Arrays.fill(shortPeriod, zero);
+            
+            final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, false, dsParameters));
+            force.updateShortPeriodTerms(dsParameters, dsState);
+            
+            for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
+                final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+                for (int i = 0; i < spVariation .length; i++) {
+                    shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
+                }
+            }
+            
+            final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
+            final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
+            final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
+            final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
+            final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
+            final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+
+            // Update Jacobian with respect to state
+            addToRow(derivativesASP,  0, shortPeriodJacobian);
+            addToRow(derivativesExSP, 1, shortPeriodJacobian);
+            addToRow(derivativesEySP, 2, shortPeriodJacobian);
+            addToRow(derivativesHxSP, 3, shortPeriodJacobian);
+            addToRow(derivativesHySP, 4, shortPeriodJacobian);
+            addToRow(derivativesLSP,  5, shortPeriodJacobian);
+            
+        }
         
         // Compute reference state Jacobian using finite differences
         double[][] shortPeriodJacobianRef = new double[6][6];
@@ -242,108 +249,28 @@ public class FieldDSSTThirdBodyTest {
         for (int i = 0; i < 6; i++) {
             
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsM4 = new AuxiliaryElements(stateM4.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsM4 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsM4.addAll(moon.initialize(auxiliaryElementsM4, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateM4);
-            final double[] shortPeriodM4 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsM4) {
-                final double[] spVariation = spt.value(stateM4.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodM4[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, forces);
             
             SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsM3 = new AuxiliaryElements(stateM3.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsM3 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsM3.addAll(moon.initialize(auxiliaryElementsM3, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateM3);
-            final double[] shortPeriodM3 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsM3) {
-                final double[] spVariation = spt.value(stateM3.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodM3[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, forces);
             
             SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsM2 = new AuxiliaryElements(stateM2.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsM2 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsM2.addAll(moon.initialize(auxiliaryElementsM2, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateM2);
-            final double[] shortPeriodM2 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsM2) {
-                final double[] spVariation = spt.value(stateM2.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodM2[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, forces);
  
             SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsM1 = new AuxiliaryElements(stateM1.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsM1 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsM1.addAll(moon.initialize(auxiliaryElementsM1, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateM1);
-            final double[] shortPeriodM1 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsM1) {
-                final double[] spVariation = spt.value(stateM1.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodM1[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, forces);
             
             SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsP1 = new AuxiliaryElements(stateP1.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsP1 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsP1.addAll(moon.initialize(auxiliaryElementsP1, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateP1);
-            final double[] shortPeriodP1 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsP1) {
-                final double[] spVariation = spt.value(stateP1.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodP1[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, forces);
             
             SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsP2 = new AuxiliaryElements(stateP2.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsP2 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsP2.addAll(moon.initialize(auxiliaryElementsP2, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateP2);
-            final double[] shortPeriodP2 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsP2) {
-                final double[] spVariation = spt.value(stateP2.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodP2[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, forces);
             
             SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsP3 = new AuxiliaryElements(stateP3.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsP3 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsP3.addAll(moon.initialize(auxiliaryElementsP3, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateP3);
-            final double[] shortPeriodP3 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsP3) {
-                final double[] spVariation = spt.value(stateP3.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodP3[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, forces);
             
             SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
-            final AuxiliaryElements auxiliaryElementsP4 = new AuxiliaryElements(stateP4.getOrbit(), 1);
-            final List<ShortPeriodTerms> shortPeriodTermsP4 = new ArrayList<ShortPeriodTerms>();
-            shortPeriodTermsP4.addAll(moon.initialize(auxiliaryElementsP4, false, parameters));
-            moon.updateShortPeriodTerms(parameters, stateP4);
-            final double[] shortPeriodP4 = new double[6];
-            for (final ShortPeriodTerms spt : shortPeriodTermsP4) {
-                final double[] spVariation = spt.value(stateP4.getOrbit());
-                for (int j = 0; j < spVariation .length; j++) {
-                    shortPeriodP4[j] += spVariation[j];
-                }
-            }
+            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, forces);
             
             fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
@@ -378,6 +305,31 @@ public class FieldDSSTThirdBodyTest {
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
         return new FieldSpacecraftState<>(orbit);
+    }
+
+    private double[] computeShortPeriodTerms(SpacecraftState state,
+                                             Collection<DSSTForceModel> forces)
+        throws OrekitException {
+        
+        AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
+        
+        List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        for (final DSSTForceModel force : forces) {
+            double[] parameters = force.getParameters();
+            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+            force.updateShortPeriodTerms(parameters, state);
+        }
+        
+        double[] shortPeriod = new double[6];
+        for (ShortPeriodTerms spt : shortPeriodTerms) {
+            double[] spVariation = spt.value(state.getOrbit());
+            for (int i = 0; i < spVariation.length; i++) {
+                shortPeriod[i] += spVariation[i];
+            }
+        }
+        
+        return shortPeriod;
+        
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
