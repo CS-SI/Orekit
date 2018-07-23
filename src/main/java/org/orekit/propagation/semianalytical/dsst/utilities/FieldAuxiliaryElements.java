@@ -89,9 +89,6 @@ public class FieldAuxiliaryElements<T extends RealFieldElement<T>> {
      */
     private final int    I;
 
-    /** A = sqrt(μ * a). */
-    //private final T A;
-
     /** B = sqrt(1 - h² - k²). */
     private final T B;
 

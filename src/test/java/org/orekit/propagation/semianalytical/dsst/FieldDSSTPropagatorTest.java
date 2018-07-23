@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.utilities;
+package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -82,6 +82,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -278,7 +279,7 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));
 
         // Check results
-        final T n = FastMath.sqrt(state.getMu().divide(state.getA())).divide(state.getA());
+        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
         Assert.assertEquals(state.getA().getReal(),                      finalState.getA().getReal(), 0.);
         Assert.assertEquals(state.getEquinoctialEx().getReal(),          finalState.getEquinoctialEx().getReal(), 0.);
         Assert.assertEquals(state.getEquinoctialEy().getReal(),          finalState.getEquinoctialEy().getReal(), 0.);
@@ -311,7 +312,7 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> s = ephem.propagate(state.getDate().shiftedBy(dt));
 
         // Check results
-        final T n = FastMath.sqrt(state.getMu().divide(state.getA())).divide(state.getA());
+        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
         Assert.assertEquals(state.getA().getReal(),                      s.getA().getReal(), 0.);
         Assert.assertEquals(state.getEquinoctialEx().getReal(),          s.getEquinoctialEx().getReal(), 0.);
         Assert.assertEquals(state.getEquinoctialEy().getReal(),          s.getEquinoctialEy().getReal(), 0.);
@@ -367,7 +368,7 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  -0.3399607878
         // q/hx =   0.3971568634
         // lM   = 140.6375352°
-        Assert.assertEquals(26559920.81, state.getA().getReal(), 1.e-1);
+        Assert.assertEquals(2.655992081E7, state.getA().getReal(), 1.e2);
         Assert.assertEquals(0.2731622444E-03, state.getEquinoctialEx().getReal(), 2.e-8);
         Assert.assertEquals(0.4164167597E-02, state.getEquinoctialEy().getReal(), 2.e-8);
         Assert.assertEquals(-0.3399607878, state.getHx().getReal(), 5.e-8);
@@ -626,7 +627,7 @@ public class FieldDSSTPropagatorTest {
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));
         checking.assertEvent(true);
-        final T n = FastMath.sqrt(state.getMu().divide(state.getA())).divide(state.getA());
+        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
         Assert.assertEquals(state.getA().getReal(), finalState.getA().getReal(), 1.0e-10);
         Assert.assertEquals(state.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-10);
         Assert.assertEquals(state.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1.0e-10);
@@ -1051,15 +1052,15 @@ public class FieldDSSTPropagatorTest {
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
                                                                                   TimeScalesFactory.getUTC());
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(42164000),
-                                                                            zero.add(10e-3),
-                                                                            zero.add(10e-3),
-                                                                            zero.add(FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3)),
-                                                                            zero.add(FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3)),
-                                                                            zero.add(0.1),
-                                                                            PositionAngle.TRUE,
-                                                                            FramesFactory.getEME2000(),
-                                                                            initDate,
-                                                                            zero.add(3.986004415E14));
+                                                                zero.add(10e-3),
+                                                                zero.add(10e-3),
+                                                                zero.add(FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3)),
+                                                                zero.add(FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3)),
+                                                                zero.add(0.1),
+                                                                PositionAngle.TRUE,
+                                                                FramesFactory.getEME2000(),
+                                                                initDate,
+                                                                zero.add(3.986004415E14));
         return new FieldSpacecraftState<>(orbit);
     }
 
