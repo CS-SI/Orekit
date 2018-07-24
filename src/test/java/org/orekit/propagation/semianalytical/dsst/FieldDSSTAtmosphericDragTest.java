@@ -47,6 +47,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
+import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -65,6 +66,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -76,6 +78,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 public class FieldDSSTAtmosphericDragTest {
@@ -263,7 +267,6 @@ public class FieldDSSTAtmosphericDragTest {
         final double area = 25.0;
         final DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, 3.986004415E14);
         drag.registerAttitudeProvider(attitudeProvider);
-        final double[] parameters    = drag.getParameters();
                         
         // Converter for derivatives
         final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
@@ -314,28 +317,28 @@ public class FieldDSSTAtmosphericDragTest {
         for (int i = 0; i < 6; i++) {
             
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
-            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, parameters, drag);
+            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, drag);
             
             SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
-            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, parameters, drag);
+            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, drag);
             
             SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
-            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, parameters, drag);
+            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, drag);
  
             SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
-            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, parameters, drag);
+            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, drag);
             
             SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
-            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, parameters, drag);
+            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, drag);
             
             SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
-            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, parameters, drag);
+            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, drag);
             
             SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
-            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, parameters, drag);
+            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, drag);
             
             SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
-            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, parameters, drag);
+            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, drag);
             
             fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
@@ -352,14 +355,166 @@ public class FieldDSSTAtmosphericDragTest {
 
     }
     
+    @Test
+    public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestShortPeriodTermsParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 4.8e-14);
+    }
+
+    @Test
+    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3.7e-9);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance)
+        throws OrekitException {
+      
+        // Initial spacecraft state
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
+
+        final Orbit orbit = new EquinoctialOrbit(7204535.84810944,
+                                                 -0.001119677138261611,
+                                                 5.333650671984143E-4,
+                                                 0.847841707880348,
+                                                 0.7998014061193262,
+                                                 3.897842092486239,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+        
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+       
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+        
+        // Attitude
+        final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
+                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                0.0, 0.0, 0.0);
+        
+        // Force model
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            CelestialBodyFactory.getEarth().getBodyOrientedFrame());
+        final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
+        final double cd = 2.0;
+        final double area = 25.0;
+        final DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, 3.986004415E14);
+        drag.registerAttitudeProvider(attitudeProvider);
+      
+        for (final ParameterDriver driver : drag.getParametersDrivers()) {
+            driver.setValue(driver.getReferenceValue());
+            driver.setSelected(driver.getName().equals(parameterName));
+        }
+      
+        // Converter for derivatives
+        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+      
+        // Field parameters
+        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(drag);
+        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, drag);
+      
+        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+      
+        // Zero
+        final DerivativeStructure zero = dsState.getDate().getField().getZero();
+      
+        // Compute Jacobian using directly the method
+        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+        shortPeriodTerms.addAll(drag.initialize(fieldAuxiliaryElements, false, dsParameters));
+        drag.updateShortPeriodTerms(dsParameters, dsState);
+        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+        Arrays.fill(shortPeriod, zero);
+        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
+            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+            for (int i = 0; i < spVariation .length; i++) {
+                shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
+            }
+        }
+
+        final double[][] shortPeriodJacobian = new double[6][1];
+    
+        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
+        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
+        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
+        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
+        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
+        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+      
+        int index = converter.getFreeStateParameters();
+        for (ParameterDriver driver : drag.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++index;
+                shortPeriodJacobian[0][0] += derivativesASP[index];
+                shortPeriodJacobian[1][0] += derivativesExSP[index];
+                shortPeriodJacobian[2][0] += derivativesEySP[index];
+                shortPeriodJacobian[3][0] += derivativesHxSP[index];
+                shortPeriodJacobian[4][0] += derivativesHySP[index];
+                shortPeriodJacobian[5][0] += derivativesLSP[index];
+            }
+        }
+      
+        // Compute reference Jacobian using finite differences
+        double[][] shortPeriodJacobianRef = new double[6][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final ParameterDriver driver : drag.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+      
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+      
+        selected.setValue(p0 - 4 * h);
+        final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, drag);
+  
+        selected.setValue(p0 - 3 * h);
+        final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 - 2 * h);
+        final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 - 1 * h);
+        final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 + 1 * h);
+        final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 + 2 * h);
+        final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 + 3 * h);
+        final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, drag);
+      
+        selected.setValue(p0 + 4 * h);
+        final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, drag);
+      
+        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
+                           shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
+                           shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
+        
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+                                shortPeriodJacobian[i][0],
+                                FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
+        }
+      
+    }
+
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             double[] parameters,
                                              DSSTForceModel force)
         throws OrekitException {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        double[] parameters = force.getParameters();
         shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
         force.updateShortPeriodTerms(parameters, state);
         

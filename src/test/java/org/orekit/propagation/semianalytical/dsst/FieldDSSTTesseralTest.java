@@ -19,9 +19,10 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -36,6 +37,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
@@ -45,10 +47,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class FieldDSSTTesseralTest {
 
@@ -126,30 +128,31 @@ public class FieldDSSTTesseralTest {
         throws IllegalArgumentException, OrekitException {
         
         final T zero = field.getZero();
-        Utils.setDataRoot("regular-data:potential/grgs-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        int earthDegree = 36;
-        int earthOrder  = 36;
-        int eccPower    = 4;
-        final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
-        final org.orekit.frames.Frame earthFrame =
-                FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
-        final DSSTForceModel force =
-                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                 earthDegree, earthOrder, eccPower, earthDegree + eccPower,
-                                 earthDegree, earthOrder, eccPower);
-
-        TimeScale tai = TimeScalesFactory.getTAI();
-        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, "2015-07-01", tai);
-        Frame eci = FramesFactory.getGCRF();
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(
-                        zero.add(7120000.0), zero.add(1.0e-3), zero.add(FastMath.toRadians(60.0)),
-                        zero.add(FastMath.toRadians(120.0)), zero.add(FastMath.toRadians(47.0)),
-                        zero.add(FastMath.toRadians(12.0)),
-                PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(13378000),
+                                                        zero.add(0.05),
+                                                        zero, 
+                                                        zero,
+                                                        zero.add(FastMath.PI),
+                                                        zero, 
+                                                        PositionAngle.MEAN,
+                                                        FramesFactory.getTOD(false),
+                                                        new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
+                                                        zero.add(nshp.getMu()));
         
-        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        
+        // Force model
+        final DSSTForceModel force = new DSSTTesseral(earth.getBodyFrame(),
+                                                      Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                      nshp, 8, 8, 4, 12, 8, 8, 4);
+        
+        // Initial state
+        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit, zero.add(45.0));
         
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
@@ -169,17 +172,17 @@ public class FieldDSSTTesseralTest {
             }
         }
         
-        Assert.assertEquals(-72.9028792607815,     y[0].getReal(), 1.5e-12);
-        Assert.assertEquals(2.1249447786897624E-6, y[1].getReal(), 2.0e-19);
-        Assert.assertEquals(-6.974560212491233E-6, y[2].getReal(), 4.0e-18);
-        Assert.assertEquals(-1.997990379590397E-6, y[3].getReal(), 1.5e-18);
-        Assert.assertEquals(9.602513303108225E-6,  y[4].getReal(), 1.2e-18);
-        Assert.assertEquals(4.538526372438945E-5,  y[5].getReal(), 5.5e-18);
+        Assert.assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
+        Assert.assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
+        Assert.assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
+        Assert.assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-23);
+        Assert.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-23);
+        Assert.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-22);
     }
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -207,8 +210,6 @@ public class FieldDSSTTesseralTest {
                         new DSSTTesseral(earthFrame,
                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                          4, 4, 4, 8, 4, 4, 2);
-        
-        final double[] parameters = tesseral.getParameters();
                         
         // Converter for derivatives
         final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
@@ -259,28 +260,28 @@ public class FieldDSSTTesseralTest {
         for (int i = 0; i < 6; i++) {
             
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
-            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, parameters, tesseral);
+            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, tesseral);
             
             SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
-            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, parameters, tesseral);
+            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, tesseral);
             
             SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
-            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, parameters, tesseral);
+            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, tesseral);
  
             SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
-            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, parameters, tesseral);
+            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, tesseral);
             
             SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
-            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, parameters, tesseral);
+            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, tesseral);
             
             SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
-            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, parameters, tesseral);
+            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, tesseral);
             
             SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
-            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, parameters, tesseral);
+            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, tesseral);
             
             SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
-            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, parameters, tesseral);
+            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, tesseral);
             
             fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
@@ -297,14 +298,149 @@ public class FieldDSSTTesseralTest {
 
     }
     
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testShortPeriodTermsMuParametersDerivatives() throws OrekitException {
+      
+        // Initial spacecraft state
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
+
+        final Orbit orbit = new EquinoctialOrbit(42164000,
+                                                 10e-3,
+                                                 10e-3,
+                                                 FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+        
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+       
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+        
+        // Force model
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final DSSTForceModel tesseral =
+                        new DSSTTesseral(earthFrame,
+                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                         4, 4, 4, 8, 4, 4, 2);
+      
+        for (final ParameterDriver driver : tesseral.getParametersDrivers()) {
+            driver.setValue(driver.getReferenceValue());
+            driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
+        }
+      
+        // Converter for derivatives
+        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+      
+        // Field parameters
+        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(tesseral);
+        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, tesseral);
+      
+        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+      
+        // Zero
+        final DerivativeStructure zero = dsState.getDate().getField().getZero();
+      
+        // Compute Jacobian using directly the method
+        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+        shortPeriodTerms.addAll(tesseral.initialize(fieldAuxiliaryElements, false, dsParameters));
+        tesseral.updateShortPeriodTerms(dsParameters, dsState);
+        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+        Arrays.fill(shortPeriod, zero);
+        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
+            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+            for (int i = 0; i < spVariation .length; i++) {
+                shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
+            }
+        }
+
+        final double[][] shortPeriodJacobian = new double[6][1];
+    
+        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
+        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
+        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
+        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
+        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
+        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+      
+        int index = converter.getFreeStateParameters();
+        for (ParameterDriver driver : tesseral.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++index;
+                shortPeriodJacobian[0][0] += derivativesASP[index];
+                shortPeriodJacobian[1][0] += derivativesExSP[index];
+                shortPeriodJacobian[2][0] += derivativesEySP[index];
+                shortPeriodJacobian[3][0] += derivativesHxSP[index];
+                shortPeriodJacobian[4][0] += derivativesHySP[index];
+                shortPeriodJacobian[5][0] += derivativesLSP[index];
+            }
+        }
+      
+        // Compute reference Jacobian using finite differences
+        double[][] shortPeriodJacobianRef = new double[6][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final ParameterDriver driver : tesseral.getParametersDrivers()) {
+            if (driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+      
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+      
+        selected.setValue(p0 - 4 * h);
+        final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, tesseral);
+  
+        selected.setValue(p0 - 3 * h);
+        final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 - 2 * h);
+        final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 - 1 * h);
+        final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 + 1 * h);
+        final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 + 2 * h);
+        final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 + 3 * h);
+        final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, tesseral);
+      
+        selected.setValue(p0 + 4 * h);
+        final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, tesseral);
+      
+        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
+                           shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
+                           shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
+        
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+                                shortPeriodJacobian[i][0],
+                                FastMath.abs(shortPeriodJacobianRef[i][0] * 2e-10));
+        }
+      
+    }
+
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             double[] parameters,
                                              DSSTForceModel force)
         throws OrekitException {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        double[] parameters = force.getParameters();
         shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
         force.updateShortPeriodTerms(parameters, state);
         

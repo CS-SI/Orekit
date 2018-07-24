@@ -49,6 +49,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
@@ -59,6 +60,8 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class FieldDSSTThirdBodyTest {
     
@@ -169,7 +172,7 @@ public class FieldDSSTThirdBodyTest {
   
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -285,6 +288,148 @@ public class FieldDSSTThirdBodyTest {
             }
         }
 
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testShortPeriodTermsMuParametersDerivatives() throws OrekitException {
+      
+        // Initial spacecraft state
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
+
+        final Orbit orbit = new EquinoctialOrbit(42164000,
+                                                 10e-3,
+                                                 10e-3,
+                                                 FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+        
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+       
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+        
+        // Force model
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        forces.add(moon);
+        forces.add(sun);
+      
+        for (final DSSTForceModel forceModel : forces) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                driver.setValue(driver.getReferenceValue());
+                driver.setSelected(driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT));
+            }
+        }
+      
+        // Converter for derivatives
+        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        
+        final double[][] shortPeriodJacobian = new double[6][1];
+      
+        for (final DSSTForceModel forceModel : forces) {
+            
+            // Field parameters
+            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
+            final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, forceModel);
+          
+            final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+          
+            // Zero
+            final DerivativeStructure zero = dsState.getDate().getField().getZero();
+          
+            // Compute Jacobian using directly the method
+            final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, false, dsParameters));
+            forceModel.updateShortPeriodTerms(dsParameters, dsState);
+            final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+            Arrays.fill(shortPeriod, zero);
+            for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
+                final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+                for (int i = 0; i < spVariation .length; i++) {
+                    shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
+                }
+            }
+        
+            final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
+            final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
+            final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
+            final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
+            final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
+            final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+          
+            int index = converter.getFreeStateParameters();
+            for (ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    ++index;
+                    shortPeriodJacobian[0][0] += derivativesASP[index];
+                    shortPeriodJacobian[1][0] += derivativesExSP[index];
+                    shortPeriodJacobian[2][0] += derivativesEySP[index];
+                    shortPeriodJacobian[3][0] += derivativesHxSP[index];
+                    shortPeriodJacobian[4][0] += derivativesHySP[index];
+                    shortPeriodJacobian[5][0] += derivativesLSP[index];
+                }
+            }
+        }
+      
+        // Compute reference Jacobian using finite differences
+        double[][] shortPeriodJacobianRef = new double[6][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final DSSTForceModel forceModel : forces) {
+            for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                if (driver.getName().equals(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT)) {
+                    driver.setSelected(true);
+                    bound.add(driver);
+                } else {
+                    driver.setSelected(false);
+                }
+            }
+        }
+      
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double[] parameters = new double[1];
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+      
+        selected.setValue(p0 - 4 * h);
+        final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, forces);
+  
+        selected.setValue(p0 - 3 * h);
+        final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 - 2 * h);
+        final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 - 1 * h);
+        final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 + 1 * h);
+        final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 + 2 * h);
+        final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 + 3 * h);
+        parameters[0] = selected.getValue();
+        final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, forces);
+      
+        selected.setValue(p0 + 4 * h);
+        final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, forces);
+      
+        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
+                           shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
+                           shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
+        
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+                                shortPeriodJacobian[i][0],
+                                FastMath.abs(shortPeriodJacobianRef[i][0] * 2.5e-11));
+        }
+      
     }
 
     private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field)

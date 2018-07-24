@@ -28,9 +28,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -44,10 +45,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
 public class DSSTTesseralTest {
 
@@ -112,30 +111,25 @@ public class DSSTTesseralTest {
     @Test
     public void testShortPeriodTerms() throws IllegalArgumentException, OrekitException {
         
-        Utils.setDataRoot("regular-data:potential/grgs-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        int earthDegree = 36;
-        int earthOrder  = 36;
-        int eccPower    = 4;
-        final UnnormalizedSphericalHarmonicsProvider provider =
-                GravityFieldFactory.getUnnormalizedProvider(earthDegree, earthOrder);
-        final org.orekit.frames.Frame earthFrame =
-                FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame
-        final DSSTForceModel force =
-                new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                 earthDegree, earthOrder, eccPower, earthDegree + eccPower,
-                                 earthDegree, earthOrder, eccPower);
-
-        TimeScale tai = TimeScalesFactory.getTAI();
-        AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
-        Frame eci = FramesFactory.getGCRF();
-        KeplerianOrbit orbit = new KeplerianOrbit(
-                7120000.0, 1.0e-3, FastMath.toRadians(60.0),
-                FastMath.toRadians(120.0), FastMath.toRadians(47.0),
-                FastMath.toRadians(12.0),
-                PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
         
-        final SpacecraftState meanState = new SpacecraftState(orbit);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        
+        // Force model
+        final DSSTForceModel force = new DSSTTesseral(earth.getBodyFrame(),
+                                                      Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                      nshp, 8, 8, 4, 12, 8, 8, 4);
+        
+        // Initial state
+        final SpacecraftState meanState = new SpacecraftState(orbit, 45.0);
         
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
@@ -154,12 +148,12 @@ public class DSSTTesseralTest {
             }
         }
         
-        Assert.assertEquals(-72.9028792607815,     y[0], 1.e-13);
-        Assert.assertEquals(2.1249447786897624E-6, y[1], 1.e-21);
-        Assert.assertEquals(-6.974560212491233E-6, y[2], 1.e-21);
-        Assert.assertEquals(-1.997990379590397E-6, y[3], 1.e-21);
-        Assert.assertEquals(9.602513303108225E-6,  y[4], 1.e-21);
-        Assert.assertEquals(4.538526372438945E-5,  y[5], 1.e-20);
+        Assert.assertEquals(5.192409957353236,      y[0], 1.e-15);
+        Assert.assertEquals(9.660364749662076E-7,   y[1], 1.e-22);
+        Assert.assertEquals(1.542008987162059E-6,   y[2], 1.e-21);
+        Assert.assertEquals(-4.9944146013126755E-8, y[3], 1.e-23);
+        Assert.assertEquals(-4.500974242661177E-8,  y[4], 1.e-23);
+        Assert.assertEquals(-2.785213556107612E-7,  y[5], 1.e-22);
     }
 
     @Before

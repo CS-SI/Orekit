@@ -51,6 +51,7 @@ import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -67,6 +68,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContribution;
 import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContributionContext;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldAbstractGaussianContributionContext;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
@@ -79,6 +81,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 public class FieldDSSTSolarRadiationPressureTest {
@@ -341,7 +345,7 @@ public class FieldDSSTSolarRadiationPressureTest {
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsDerivatives() throws OrekitException {
+    public void testShortPeriodTermsStateDerivatives() throws OrekitException {
         
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -372,7 +376,6 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                   provider.getMu());
         srp.registerAttitudeProvider(attitudeProvider);
-        final double[] parameters    = srp.getParameters();
                         
         // Converter for derivatives
         final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
@@ -423,28 +426,28 @@ public class FieldDSSTSolarRadiationPressureTest {
         for (int i = 0; i < 6; i++) {
             
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
-            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, parameters, srp);
+            double[]  shortPeriodM4 = computeShortPeriodTerms(stateM4, srp);
             
             SpacecraftState stateM3 = shiftState(meanState, orbitType, -3 * steps[i], i);
-            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, parameters, srp);
+            double[]  shortPeriodM3 = computeShortPeriodTerms(stateM3, srp);
             
             SpacecraftState stateM2 = shiftState(meanState, orbitType, -2 * steps[i], i);
-            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, parameters, srp);
+            double[]  shortPeriodM2 = computeShortPeriodTerms(stateM2, srp);
  
             SpacecraftState stateM1 = shiftState(meanState, orbitType, -1 * steps[i], i);
-            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, parameters, srp);
+            double[]  shortPeriodM1 = computeShortPeriodTerms(stateM1, srp);
             
             SpacecraftState stateP1 = shiftState(meanState, orbitType, 1 * steps[i], i);
-            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, parameters, srp);
+            double[]  shortPeriodP1 = computeShortPeriodTerms(stateP1, srp);
             
             SpacecraftState stateP2 = shiftState(meanState, orbitType, 2 * steps[i], i);
-            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, parameters, srp);
+            double[]  shortPeriodP2 = computeShortPeriodTerms(stateP2, srp);
             
             SpacecraftState stateP3 = shiftState(meanState, orbitType, 3 * steps[i], i);
-            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, parameters, srp);
+            double[]  shortPeriodP3 = computeShortPeriodTerms(stateP3, srp);
             
             SpacecraftState stateP4 = shiftState(meanState, orbitType, 4 * steps[i], i);
-            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, parameters, srp);
+            double[]  shortPeriodP4 = computeShortPeriodTerms(stateP4, srp);
             
             fillJacobianColumn(shortPeriodJacobianRef, i, orbitType, steps[i],
                                shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
@@ -460,15 +463,163 @@ public class FieldDSSTSolarRadiationPressureTest {
         }
 
     }
+    
+    @Test
+    public void testSRPParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestShortPeriodTermsParametersDerivatives(RadiationSensitive.REFLECTION_COEFFICIENT, 9.e-15);
+    }
+
+    @Test
+    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-11);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void doTestShortPeriodTermsParametersDerivatives(String parameterName, double tolerance)
+        throws OrekitException {
+      
+        // Initial spacecraft state
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
+
+        final Orbit orbit = new EquinoctialOrbit(42164000,
+                                                 10e-3,
+                                                 10e-3,
+                                                 FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
+                                                 PositionAngle.TRUE,
+                                                 FramesFactory.getEME2000(),
+                                                 initDate,
+                                                 3.986004415E14);
+        
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+       
+        final SpacecraftState meanState = new SpacecraftState(orbit);
+        
+        // Attitude
+        final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
+                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                0.0, 0.0, 0.0);
+
+        // Force model
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        final DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
+                                                                  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                  provider.getMu());
+        srp.registerAttitudeProvider(attitudeProvider);
+      
+        for (final ParameterDriver driver : srp.getParametersDrivers()) {
+            driver.setValue(driver.getReferenceValue());
+            driver.setSelected(driver.getName().equals(parameterName));
+        }
+      
+        // Converter for derivatives
+        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+      
+        // Field parameters
+        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(srp);
+        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, srp);
+      
+        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+      
+        // Zero
+        final DerivativeStructure zero = dsState.getDate().getField().getZero();
+      
+        // Compute Jacobian using directly the method
+        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, false, dsParameters));
+        srp.updateShortPeriodTerms(dsParameters, dsState);
+        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+        Arrays.fill(shortPeriod, zero);
+        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
+            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+            for (int i = 0; i < spVariation .length; i++) {
+                shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
+            }
+        }
+
+        final double[][] shortPeriodJacobian = new double[6][1];
+    
+        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
+        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
+        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
+        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
+        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
+        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+      
+        int index = converter.getFreeStateParameters();
+        for (ParameterDriver driver : srp.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++index;
+                shortPeriodJacobian[0][0] += derivativesASP[index];
+                shortPeriodJacobian[1][0] += derivativesExSP[index];
+                shortPeriodJacobian[2][0] += derivativesEySP[index];
+                shortPeriodJacobian[3][0] += derivativesHxSP[index];
+                shortPeriodJacobian[4][0] += derivativesHySP[index];
+                shortPeriodJacobian[5][0] += derivativesLSP[index];
+            }
+        }
+      
+        // Compute reference Jacobian using finite differences
+        double[][] shortPeriodJacobianRef = new double[6][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final ParameterDriver driver : srp.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+      
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+      
+        selected.setValue(p0 - 4 * h);
+        final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, srp);
+  
+        selected.setValue(p0 - 3 * h);
+        final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 - 2 * h);
+        final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 - 1 * h);
+        final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 + 1 * h);
+        final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 + 2 * h);
+        final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 + 3 * h);
+        final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, srp);
+      
+        selected.setValue(p0 + 4 * h);
+        final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, srp);
+      
+        fillJacobianColumn(shortPeriodJacobianRef, 0, orbitType, h,
+                           shortPeriodM4, shortPeriodM3, shortPeriodM2, shortPeriodM1,
+                           shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
+        
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(shortPeriodJacobianRef[i][0],
+                                shortPeriodJacobian[i][0],
+                                FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
+        }
+      
+    }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,
-                                             double[] parameters,
                                              DSSTForceModel force)
         throws OrekitException {
         
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
+        double[] parameters = force.getParameters();
         shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
