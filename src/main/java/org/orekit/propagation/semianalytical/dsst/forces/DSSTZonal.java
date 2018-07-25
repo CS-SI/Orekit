@@ -139,6 +139,9 @@ public class DSSTZonal implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private FieldHansenObjects fieldHansen;
 
+    /** Flag for force model initialization with field elements. */
+    private boolean pendingInitialization;
+
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
@@ -180,6 +183,8 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Initialize default values
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
+
+        pendingInitialization = true;
     }
 
     /** Check an index range.
@@ -248,7 +253,17 @@ public class DSSTZonal implements DSSTForceModel {
 
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     *  <p>
+     *  Computes the highest power of the eccentricity to appear in the truncated
+     *  analytical power series expansion.
+     *  </p>
+     *  <p>
+     *  This method computes the upper value for the central body potential and
+     *  determines the maximal power for the eccentricity producing potential
+     *  terms bigger than a defined tolerance.
+     *  </p>
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
@@ -258,19 +273,23 @@ public class DSSTZonal implements DSSTForceModel {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        computeMeanElementsTruncations(auxiliaryElements, parameters, field);
+        if (pendingInitialization == true) {
+            computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
-        if (meanOnly) {
-            maxEccPow = maxEccPowMeanElements;
-        } else {
-            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+            if (meanOnly) {
+                maxEccPow = maxEccPowMeanElements;
+            } else {
+                maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+            }
+
+            initializeHansenObjects();
+            initializeFieldHansenObjects();
+
+            pendingInitialization = false;
         }
 
-        initializeHansenObjects();
-        initializeFieldHansenObjects();
-
         final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
-        zonalFieldSPCoefs = new FieldZonalShortPeriodicCoefficients<T>(maxFrequencyShortPeriodics,
+        zonalFieldSPCoefs = new FieldZonalShortPeriodicCoefficients<>(maxFrequencyShortPeriodics,
                                                                       INTERPOLATION_POINTS,
                                                                       new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(maxFrequencyShortPeriodics,
                                                                                                                             INTERPOLATION_POINTS), field));

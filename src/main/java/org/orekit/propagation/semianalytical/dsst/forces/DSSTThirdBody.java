@@ -124,6 +124,9 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private FieldHansenObjects fieldHansen;
 
+    /** Flag for force model initialization with field elements. */
+    private boolean pendingInitialization;
+
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
@@ -148,6 +151,8 @@ public class DSSTThirdBody implements DSSTForceModel {
         //Initialise the HansenCoefficient generator
         initializeHansenObjects();
         initializeFieldHansenObjects();
+
+        pendingInitialization = true;
     }
 
     /** Get third body.
@@ -208,14 +213,17 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        // Initializes specific parameters.
-        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+        if (pendingInitialization == true) {
+            // Initializes specific parameters.
+            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-        final int jMax = context.getMaxAR3Pow() + 1;
-        fieldShortPeriods = new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
-                                                                          context.getMaxFreqF(), body.getName(),
-                                                                          new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(jMax,
-                                                                                                                INTERPOLATION_POINTS), field));
+            final int jMax = context.getMaxAR3Pow() + 1;
+            fieldShortPeriods = new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
+                                                                              context.getMaxFreqF(), body.getName(),
+                                                                              new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(jMax,
+                                                                                                                    INTERPOLATION_POINTS), field));
+            pendingInitialization = false;
+        }
 
         final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
         list.add(fieldShortPeriods);

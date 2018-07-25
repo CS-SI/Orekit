@@ -188,6 +188,9 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private FieldHansenObjects fieldHansen;
 
+    /** Flag for force model initialization with field elements. */
+    private boolean pendingInitialization;
+
     /** Simple constructor.
      * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -268,6 +271,7 @@ public class DSSTTesseral implements DSSTForceModel {
         // Initialize default values
         this.nonResOrders = new TreeMap<Integer, List <Integer> >();
 
+        pendingInitialization = true;
     }
 
     /** Check an index range.
@@ -351,25 +355,30 @@ public class DSSTTesseral implements DSSTForceModel {
                                                                                      final T[] parameters)
         throws OrekitException {
 
-        // Initializes specific parameters.
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, meanOnly, parameters);
-
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        // The following terms are only used for hansen objects initialization
-        final T      ratio            = context.getRatio();
-        final int maxEccPow           = context.getMaxEccPow();
-        final List<Integer> resOrders = context.getResOrders();
+        if (pendingInitialization == true) {
+            // Initializes specific parameters.
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, meanOnly, parameters);
 
-        // Initializes Hansen Objects
-        initializeHansenObjects(ratio.getReal(), maxEccPow, resOrders, meanOnly);
-        initializeFieldHansenObjects(ratio.getReal(), maxEccPow, resOrders, meanOnly);
+            // The following terms are only used for hansen objects initialization
+            final T      ratio            = context.getRatio();
+            final int maxEccPow           = context.getMaxEccPow();
+            final List<Integer> resOrders = context.getResOrders();
 
-        // Compute the non resonant tesseral harmonic terms if not set by the user
-        getNonResonantTerms(meanOnly, context, field);
+            // Initializes Hansen Objects
+            initializeHansenObjects(ratio.getReal(), maxEccPow, resOrders, meanOnly);
+            initializeFieldHansenObjects(ratio.getReal(), maxEccPow, resOrders, meanOnly);
 
-        mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
+            // Compute the non resonant tesseral harmonic terms if not set by the user
+            getNonResonantTerms(meanOnly, context, field);
+
+            mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
+
+            pendingInitialization = false;
+        }
+
 
         fieldShortPeriodTerms = new FieldTesseralShortPeriodicCoefficients<>(bodyFrame, maxOrderMdailyTesseralSP,
                                                                  maxDegreeTesseralSP < 0, nonResOrders,
