@@ -81,6 +81,9 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     /** Flag for Jacobian matrices initialization. */
     private boolean initialized;
 
+    /** Type of the orbit used for the propagation.*/
+    private DSSTPropagationType propagationType;
+
     /** Simple constructor.
      * <p>
      * Upon construction, this set of equations is <em>automatically</em> added to
@@ -90,15 +93,19 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @throws OrekitException if a set of equations with the same name is already present
      */
-    public DSSTPartialDerivativesEquations(final String name, final DSSTPropagator propagator)
+    public DSSTPartialDerivativesEquations(final String name,
+                                           final DSSTPropagator propagator,
+                                           final DSSTPropagationType propagationType)
         throws OrekitException {
         this.name                   = name;
         this.selected               = null;
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
+        this.propagationType        = propagationType;
         propagator.addAdditionalEquations(this);
     }
 
@@ -243,7 +250,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new DSSTJacobiansMapper(name, selected);
+        return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
     }
 
     /** Get the selected parameters, in Jacobian matrix column order.

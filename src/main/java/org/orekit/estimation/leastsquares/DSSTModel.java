@@ -44,6 +44,7 @@ import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -113,17 +114,22 @@ public class DSSTModel implements ODModel {
     /** Model function Jacobian. */
     private RealMatrix jacobian;
 
+    /** Type of the orbit used for the propagation.*/
+    private DSSTPropagationType propagationType;
+
     /** Simple constructor.
      * @param builders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @exception OrekitException if some propagator parameter cannot be set properly
      */
     public DSSTModel(final IntegratedPropagatorBuilder[] builders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer)
+                     final ModelObserver observer,
+                     final DSSTPropagationType propagationType)
         throws OrekitException {
 
         this.builders                        = builders;
@@ -134,6 +140,7 @@ public class DSSTModel implements ODModel {
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
         this.mappers                         = new DSSTJacobiansMapper[builders.length];
+        this.propagationType                 = propagationType;
 
         // allocate vector and matrix
         int rows = 0;
@@ -384,7 +391,7 @@ public class DSSTModel implements ODModel {
 
         final String equationName = DSSTModel.class.getName() + "-derivatives";
 
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, propagators);
+        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, propagators, propagationType);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagators.getInitialState();
@@ -430,6 +437,9 @@ public class DSSTModel implements ODModel {
             // Jacobian of the measurement with respect to current orbital state
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
+
+            // short period derivatives
+            mappers[p].setShortPeriodJacobians(evaluationStates[k]);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];

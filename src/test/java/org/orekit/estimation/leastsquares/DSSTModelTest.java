@@ -38,6 +38,7 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -86,7 +87,7 @@ public class DSSTModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, DSSTPropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -147,7 +148,7 @@ public class DSSTModelTest {
                 // Do nothing here 
             }
         };
-        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, DSSTPropagationType.MEAN);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }

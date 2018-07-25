@@ -34,6 +34,7 @@ import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
@@ -81,7 +82,9 @@ public class DSSTContext {
         final DSSTPropagatorBuilder propagatorBuilder =
                         new DSSTPropagatorBuilder(startOrbit,
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                  dP);
+                                                  dP,
+                                                  DSSTPropagationType.MEAN,
+                                                  DSSTPropagationType.MEAN);
         for (DSSTForce force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }

@@ -23,6 +23,7 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.leastsquares.DSSTModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -31,6 +32,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.utils.ParameterDriver;
@@ -51,6 +53,12 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     /** Attitude provider. */
     private AttitudeProvider attProvider;
 
+    /** Type of the orbit used for the propagation.*/
+    private DSSTPropagationType propagationType;
+
+    /** Type of the elements used to define the orbital state.*/
+    private DSSTPropagationType stateType;
+
     /** Build a new instance.
      * <p>
      * The reference orbit is used as a model to {@link
@@ -64,17 +72,23 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * @param builder first order integrator builder
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
+     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      * @exception OrekitException if parameters drivers cannot be scaled
      */
     public DSSTPropagatorBuilder(final EquinoctialOrbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
-                                 final double positionScale)
+                                 final double positionScale,
+                                 final DSSTPropagationType propagationType,
+                                 final DSSTPropagationType stateType)
         throws OrekitException {
         super(referenceOrbit, PositionAngle.MEAN, positionScale, true);
-        this.builder     = builder;
-        this.forceModels = new ArrayList<DSSTForceModel>();
-        this.mass        = Propagator.DEFAULT_MASS;
-        this.attProvider = Propagator.DEFAULT_LAW;
+        this.builder           = builder;
+        this.forceModels       = new ArrayList<DSSTForceModel>();
+        this.mass              = Propagator.DEFAULT_MASS;
+        this.attProvider       = Propagator.DEFAULT_LAW;
+        this.propagationType   = propagationType;
+        this.stateType         = stateType;
     }
 
     /** Create a copy of a DSSTPropagatorBuilder object.
@@ -85,7 +99,9 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         final DSSTPropagatorBuilder copyBuilder =
                         new DSSTPropagatorBuilder((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit()),
                                                   builder,
-                                                  getPositionScale());
+                                                  getPositionScale(),
+                                                  propagationType,
+                                                  stateType);
         copyBuilder.setAttitudeProvider(attProvider);
         copyBuilder.setMass(mass);
         for (DSSTForceModel model : forceModels) {
@@ -167,12 +183,33 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         final Attitude         attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
 
-        final DSSTPropagator propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL));
+        DSSTPropagator propagator = null;
+        switch (propagationType) {
+            case MEAN :
+                propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), true);
+                break;
+            case OSCULATING :
+                propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), false);
+                break;
+            default:
+                throw new OrekitInternalError(null);
+        }
+
         propagator.setAttitudeProvider(attProvider);
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
-        propagator.setInitialState(state, false);
+
+        switch (stateType) {
+            case MEAN :
+                propagator.setInitialState(state, false);
+                break;
+            case OSCULATING :
+                propagator.setInitialState(state, true);
+                break;
+            default:
+                throw new OrekitInternalError(null);
+        }
 
         return propagator;
     }
@@ -183,7 +220,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer)
         throws OrekitException {
-        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer);
+        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer, propagationType);
     }
 
 }

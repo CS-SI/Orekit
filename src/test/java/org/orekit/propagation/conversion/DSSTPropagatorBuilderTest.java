@@ -34,6 +34,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
@@ -153,7 +154,9 @@ public class DSSTPropagatorBuilderTest {
         // We shall have the same results than before
         DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   foiBuilder,
-                                                                  1.0);
+                                                                  1.0,
+                                                                  DSSTPropagationType.MEAN,
+                                                                  DSSTPropagationType.MEAN);
         
         builder.addForceModel(moon);
         builder.setMass(1000.);

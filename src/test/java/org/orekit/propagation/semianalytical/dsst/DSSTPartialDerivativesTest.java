@@ -66,16 +66,22 @@ public class DSSTPartialDerivativesTest {
 
     @Test
     public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
-        doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.EQUINOCTIAL);
+        doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
+                                    2.4e-3,
+                                    DSSTPropagationType.MEAN,
+                                    OrbitType.EQUINOCTIAL);
     }
 
     @Test
     public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
-        doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-3,
+        doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                    5.e-3,
+                                    DSSTPropagationType.MEAN,
                                     OrbitType.EQUINOCTIAL);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
+                                             DSSTPropagationType type,
                                              OrbitType... orbitTypes)
         throws OrekitException {
 
@@ -107,7 +113,7 @@ public class DSSTPartialDerivativesTest {
             final Orbit initialOrbit = orbitType.convertType(baseOrbit);
 
             DSSTPropagator propagator =
-                            setUpPropagator(initialOrbit, dP, orbitType, zonal, tesseral, drag);
+                            setUpPropagator(type, initialOrbit, dP, orbitType, zonal, tesseral, drag);
             propagator.setMu(provider.getMu());
             for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
@@ -116,7 +122,7 @@ public class DSSTPartialDerivativesTest {
                 }
             }
 
-            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+            DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
             final SpacecraftState initialState =
                     partials.setInitialJacobians(new SpacecraftState(initialOrbit));
             propagator.setInitialState(initialState, false);
@@ -128,7 +134,7 @@ public class DSSTPartialDerivativesTest {
 
             // compute reference Jacobian using finite differences
             double[][] dYdPRef = new double[6][1];
-            DSSTPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, zonal, tesseral, drag);
+            DSSTPropagator propagator2 = setUpPropagator(type, initialOrbit, dP, orbitType, zonal, tesseral, drag);
             propagator2.setMu(provider.getMu());
             ParameterDriversList bound = new ParameterDriversList();
             for (final DSSTForceModel forceModel : propagator2.getAllForceModels()) {
@@ -212,7 +218,18 @@ public class DSSTPartialDerivativesTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() throws OrekitException, FileNotFoundException, UnsupportedEncodingException {
+    public void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+        doTestPropagation(DSSTPropagationType.MEAN, 7.0e-16);
+    }
+
+    @Test
+    public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+        doTestPropagation(DSSTPropagationType.OSCULATING, 4.0e-7);
+    }
+    
+    private void doTestPropagation(DSSTPropagationType type,
+                                  double tolerance)
+        throws OrekitException, FileNotFoundException, UnsupportedEncodingException {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         
@@ -240,9 +257,9 @@ public class DSSTPartialDerivativesTest {
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
 
         // compute state Jacobian using PartialDerivatives
-        DSSTPropagator propagator = setUpPropagator(orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagator = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagator.setMu(provider.getMu());
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
         final SpacecraftState initialState =
                 partials.setInitialJacobians(new SpacecraftState(orbit));
         final double[] stateVector = new double[6];
@@ -257,7 +274,7 @@ public class DSSTPartialDerivativesTest {
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        DSSTPropagator propagator2 = setUpPropagator(orbit, dP, orbitType, srp, tesseral, zonal, moon);
+        DSSTPropagator propagator2 = setUpPropagator(type, orbit, dP, orbitType, srp, tesseral, zonal, moon);
         propagator2.setMu(provider.getMu());
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
@@ -285,7 +302,7 @@ public class DSSTPartialDerivativesTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, 7.0e-16);
+                    Assert.assertEquals(0, error, tolerance);
                 }
             }
         }
@@ -301,8 +318,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator).getMapper();
+                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN).getMapper();
      }
     
     @Test(expected=OrekitException.class)
@@ -315,8 +332,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[5][6], new double[6][2]);
      }
@@ -331,8 +348,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
@@ -347,8 +364,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
@@ -365,9 +382,9 @@ public class DSSTPartialDerivativesTest {
         DSSTForceModel sunAttraction  = new DSSTThirdBody(CelestialBodyFactory.getSun(), Constants.EIGEN5C_EARTH_MU);
         DSSTForceModel moonAttraction = new DSSTThirdBody(CelestialBodyFactory.getMoon(), Constants.EIGEN5C_EARTH_MU);
         DSSTPropagator propagator =
-                setUpPropagator(orbit, dP, OrbitType.EQUINOCTIAL,
+                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
                                 sunAttraction, moonAttraction);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
         try {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
@@ -426,7 +443,7 @@ public class DSSTPartialDerivativesTest {
           return new SpacecraftState(orbit, attitude);
       }
 
-    private DSSTPropagator setUpPropagator(Orbit orbit, double dP,
+    private DSSTPropagator setUpPropagator(DSSTPropagationType type, Orbit orbit, double dP,
                                            OrbitType orbitType,
                                            DSSTForceModel... models)
         throws OrekitException {
@@ -434,9 +451,21 @@ public class DSSTPartialDerivativesTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
+        boolean meanOnly = true;
+        switch (type) {
+            case MEAN:
+                meanOnly = true;
+                break;
+
+            case OSCULATING:
+                meanOnly = false;
+            default:
+                break;
+        }
+        
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =
-            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
+            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), meanOnly);
         for (DSSTForceModel model : models) {
             propagator.addForceModel(model);
         }
@@ -492,6 +521,7 @@ public class DSSTPartialDerivativesTest {
 
             Assert.assertEquals(1, interpolated.getAdditionalStates().size());
             Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
+            mapper.setShortPeriodJacobians(interpolated);
             mapper.getStateJacobian(interpolated, dYdY0);
             mapper.getParametersJacobian(interpolated, dYdP);
 
