@@ -2076,7 +2076,7 @@ public class DSSTTesseral implements DSSTForceModel {
          */
         @SuppressWarnings("unchecked")
         public FieldSlot<T> createSlot(final FieldSpacecraftState<T>... meanStates) {
-            final FieldSlot<T>         slot  = new FieldSlot(mMax, jMax, interpolationPoints);
+            final FieldSlot<T>         slot  = new FieldSlot<>(mMax, jMax, interpolationPoints);
             final FieldAbsoluteDate<T> first = meanStates[0].getDate();
             final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
             if (first.compareTo(last) <= 0) {
