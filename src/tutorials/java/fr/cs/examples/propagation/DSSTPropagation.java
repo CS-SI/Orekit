@@ -568,6 +568,7 @@ public class DSSTPropagation {
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = unnormalized.getAe();
+        final double mu = unnormalized.getMu();
 
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
@@ -592,12 +593,12 @@ public class DSSTPropagation {
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
-            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), mu));
         }
 
         // 3rd body (MOON)
         if (parser.containsKey(ParameterKey.THIRD_BODY_MOON) && parser.getBoolean(ParameterKey.THIRD_BODY_MOON)) {
-            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu));
         }
 
         // Drag
@@ -606,14 +607,15 @@ public class DSSTPropagation {
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
-                                                           parser.getDouble(ParameterKey.DRAG_SF)));
+                                                           parser.getDouble(ParameterKey.DRAG_SF),
+                                                           mu));
         }
 
         // Solar Radiation Pressure
         if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
             dsstProp.addForceModel(new DSSTSolarRadiationPressure(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR),
                                                                   parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
-                                                                  CelestialBodyFactory.getSun(), ae));
+                                                                  CelestialBodyFactory.getSun(), ae, mu));
         }
     }
 

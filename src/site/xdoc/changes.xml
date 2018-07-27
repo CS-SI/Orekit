@@ -21,6 +21,21 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="480">
+        Added GPSDate class to convert back and forth with AbsoluteDate.
+        Fixes #480.
+      </action>
+      <action dev="evan" type="fix" issue="476">
+        Fix generics in EventEnablingPredicateFilter.
+        Fixes #476.
+      </action>
+      <action dev="maxime" type="fix">
+        Fixed wrong values of radec generated in AngularRaDecMeasurementCreator.
+        Fixed wrong values of range rate generated in RangeRateMeasurementCreator.
+        Added tests that check the values of measurements for each type of measurement.
+        Upgraded precision in Kalman and batch least-squares OD tests that are using range-rate and radec measurements.
+        Fixes issue #473.
+      </action>
       <action dev="luc" type="fix">
         Derivatives with respect to mass are not computed anymore since several versions,
         some remnants of former computation remained and have now been removed.

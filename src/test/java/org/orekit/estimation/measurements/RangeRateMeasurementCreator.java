@@ -122,7 +122,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
                                               deltaVr.dotProduct(receptionLOS);
 
-                                          addMeasurement(new RangeRate(station, date,
+                                          addMeasurement(new RangeRate(station, receptionDate,
                                                                        rr,
                                                                        1.0, 10, twoWay));
             }

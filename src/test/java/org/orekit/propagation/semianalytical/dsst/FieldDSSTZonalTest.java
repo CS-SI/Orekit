@@ -107,8 +107,8 @@ public class FieldDSSTZonalTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
         // Initialize force model
-        zonal.initialize(new AuxiliaryElements(orbit.toOrbit(), 1),
-                         true, zonal.getParameters());
+        zonal.initialize(auxiliaryElements,
+                         true, zonal.getParameters(field));
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);

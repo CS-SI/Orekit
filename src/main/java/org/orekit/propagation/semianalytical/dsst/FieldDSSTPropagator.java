@@ -1058,7 +1058,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
                         interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
                                                         interpolator.getCurrentState().getTime());
 
-                final FieldSpacecraftState[] meanStates = new FieldSpacecraftState[interpolationPoints.length];
+                final FieldSpacecraftState<T>[] meanStates = new FieldSpacecraftState[interpolationPoints.length];
                 for (int i = 0; i < interpolationPoints.length; ++i) {
 
                     // Build the mean state interpolated at grid point
