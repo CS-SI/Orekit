@@ -388,6 +388,17 @@ public class EventEnablingPredicateFilterTest {
 
     }
 
+    @Test
+    public void testGenerics() {
+        // setup
+        DateDetector detector = new DateDetector(orbit.getDate());
+        EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
+
+        // action + verify. Just make sure it compiles with generics
+        EventEnablingPredicateFilter<DateDetector> filter =
+                new EventEnablingPredicateFilter<>(detector, predicate);
+    }
+
     @Before
     public void setUp() throws OrekitException {
 

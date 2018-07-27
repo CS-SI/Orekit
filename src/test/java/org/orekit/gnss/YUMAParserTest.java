@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GPSDate;
 
 
 public class YUMAParserTest {
@@ -100,7 +100,7 @@ public class YUMAParserTest {
         Assert.assertEquals(-1, alm.getURA());
         Assert.assertEquals(-1, alm.getSatConfiguration());
         Assert.assertEquals("YUMA", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(862, 319488 * 1000.)) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(new GPSDate(862, 319488 * 1000.).getDate()) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);
@@ -141,7 +141,7 @@ public class YUMAParserTest {
         Assert.assertEquals(-1, alm.getURA());
         Assert.assertEquals(-1, alm.getSatConfiguration());
         Assert.assertEquals("YUMA", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(866, 589824 * 1000.)) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(new GPSDate(866, 589824 * 1000.).getDate()) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);

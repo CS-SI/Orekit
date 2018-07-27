@@ -47,6 +47,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GPSDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -111,19 +112,19 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         double maxErrorY = 0;
         double maxErrorZ = 0;
         for (final List<ParsedLine> dataBlock : dataBlocks) {
-            final AbsoluteDate validityStart = dataBlock.get(0).date;
-            final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).date;
+            final AbsoluteDate validityStart = dataBlock.get(0).gpsDate.getDate();
+            final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).gpsDate.getDate();
             final int          prnNumber     = dataBlock.get(0).prnNumber;
             final ExtendedPVCoordinatesProvider fakedSun = new FakedSun(dataBlock);
             final GNSSAttitudeProvider attitudeProvider =
                             createProvider(validityStart, validityEnd, fakedSun, eme2000, prnNumber);
-            Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).date);
-            Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).date);
+            Assert.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
+            Assert.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
             for (final ParsedLine parsedLine : dataBlock) {
 
                 // test on primitive double
-                final Attitude attitude1 = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.date, parsedLine.orbit.getFrame());
+                final Attitude attitude1 = attitudeProvider.getAttitude(parsedLine.orbit, parsedLine.gpsDate.getDate(), parsedLine.orbit.getFrame());
                 final Vector3D x = parsedLine.eclipsX;
                 final Vector3D z = parsedLine.orbit.getPVCoordinates().getPosition().normalize().negate();
                 maxErrorX = FastMath.max(maxErrorX, CheckAxis.X_AXIS.error(attitude1, x, z));
@@ -133,7 +134,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 // test on field
                 final Field<Decimal64> field = Decimal64Field.getInstance();
                 final FieldPVCoordinates<Decimal64> pv64 = new FieldPVCoordinates<>(field, parsedLine.orbit.getPVCoordinates());
-                final FieldAbsoluteDate<Decimal64> date64 =  new FieldAbsoluteDate<>(field, parsedLine.date);
+                final FieldAbsoluteDate<Decimal64> date64 =  new FieldAbsoluteDate<>(field, parsedLine.gpsDate.getDate());
                 final FieldCartesianOrbit<Decimal64> orbit64 = new FieldCartesianOrbit<>(pv64,
                                                                                          parsedLine.orbit.getFrame(),
                                                                                          date64,
@@ -174,7 +175,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                 parsedLine = new ParsedLine(line, eme2000, itrf);
                 if (previous != null &&
                     (parsedLine.prnNumber != previous.prnNumber ||
-                     parsedLine.date.durationFrom(previous.date) > 3600)) {
+                     parsedLine.gpsDate.getDate().durationFrom(previous.gpsDate.getDate()) > 3600)) {
                     dataBlocks.add(new ArrayList<>());
                 }
                 dataBlocks.get(dataBlocks.size() - 1).add(parsedLine);
@@ -203,9 +204,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                         CartesianDerivativesFilter.USE_P,
                                                         parsedLines.stream().
                                                         filter(parsedLine ->
-                                                        FastMath.abs(date.durationFrom(parsedLine.date)) < 300).
+                                                        FastMath.abs(date.durationFrom(parsedLine.gpsDate.getDate())) < 300).
                                                         map(parsedLine ->
-                                                            new TimeStampedPVCoordinates(parsedLine.date,
+                                                            new TimeStampedPVCoordinates(parsedLine.gpsDate.getDate(),
                                                                                          parsedLine.sunP,
                                                                                          Vector3D.ZERO,
                                                                                          Vector3D.ZERO)));
@@ -219,9 +220,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                              CartesianDerivativesFilter.USE_P,
                                                              parsedLines.stream().
                                                              filter(parsedLine ->
-                                                             FastMath.abs(date.durationFrom(parsedLine.date)).getReal() < 300).
+                                                             FastMath.abs(date.durationFrom(parsedLine.gpsDate.getDate())).getReal() < 300).
                                                              map(parsedLine ->
-                                                                 new TimeStampedFieldPVCoordinates<>(parsedLine.date,
+                                                                 new TimeStampedFieldPVCoordinates<>(parsedLine.gpsDate.getDate(),
                                                                                                      new FieldVector3D<>(field, parsedLine.sunP),
                                                                                                      FieldVector3D.getZero(field),
                                                                                                      FieldVector3D.getZero(field))));
@@ -231,19 +232,18 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     private static class ParsedLine {
 
-        final AbsoluteDate date;
-        final int          prnNumber;
-        final Orbit        orbit;
-        final Vector3D     sunP;
-        final Vector3D     eclipsX;
+        final GPSDate  gpsDate;
+        final int      prnNumber;
+        final Orbit    orbit;
+        final Vector3D sunP;
+        final Vector3D eclipsX;
 
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) throws OrekitException {
             final String[] fields = line.split("\\s+");
-            date       = AbsoluteDate.createGPSDate(Integer.parseInt(fields[1]),
-                                                    Double.parseDouble(fields[2]));
-            final Transform t = itrf.getTransformTo(eme2000, date);
+            gpsDate    = new GPSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]));
+            final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());
             prnNumber  = Integer.parseInt(fields[3].substring(1));
-            orbit      = new CartesianOrbit(new TimeStampedPVCoordinates(date,
+            orbit      = new CartesianOrbit(new TimeStampedPVCoordinates(gpsDate.getDate(),
                                                                          t.transformPosition(new Vector3D(Double.parseDouble(fields[ 6]),
                                                                                                           Double.parseDouble(fields[ 7]),
                                                                                                           Double.parseDouble(fields[ 8]))),

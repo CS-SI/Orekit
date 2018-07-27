@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -39,16 +40,67 @@ import org.orekit.utils.StateFunction;
 
 public class AngularRaDecTest {
 
+    /** Test the values of radec measurements.
+     *  Added after bug 473 was reported by John Grimes.
+     */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testBug473OnValues() throws OrekitException {
 
-        Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect azimuth-elevation measurements
+        // Create perfect right-ascension/declination measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new AngularRaDecMeasurementCreator(context),
+                                                               0.25, 3.0, 600.0);
+
+        propagator.setSlaveMode();
+
+        // Prepare statistics for right-ascension/declination values difference
+        final StreamingStatistics raDiffStat  = new StreamingStatistics();
+        final StreamingStatistics decDiffStat = new StreamingStatistics();
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+            
+            // Estimate the RADEC value
+            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            
+            // Store the difference between estimated and observed values in the stats
+            raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
+            decDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[1] - measurement.getObservedValue()[1]));
+        }
+
+        // Mean and std errors check
+        Assert.assertEquals(0.0, raDiffStat.getMean(), 6.9e-11);
+        Assert.assertEquals(0.0, raDiffStat.getStandardDeviation(), 8.5e-11);
+        
+        Assert.assertEquals(0.0, decDiffStat.getMean(), 4.5e-11);
+        Assert.assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
+    }
+    
+    /** Test the values of the state derivatives using a numerical.
+     * finite differences calculation as a reference
+     */
+    @Test
+    public void testStateDerivatives() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect right-ascension/declination measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
@@ -131,15 +183,18 @@ public class AngularRaDecTest {
             }
         }
 
-        // median errors on Azimuth
+        // median errors on right-ascension
         Assert.assertEquals(0.0, new Median().evaluate(RaerrorsP), 4.8e-11);
         Assert.assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
 
-        // median errors on Elevation
+        // median errors on declination
         Assert.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.5e-11);
         Assert.assertEquals(0.0, new Median().evaluate(DecerrorsV), 5.4e-6);
            }
 
+    /** Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference
+     */
     @Test
     public void testParameterDerivatives() throws OrekitException {
 
@@ -149,7 +204,7 @@ public class AngularRaDecTest {
                         context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
-        // create perfect azimuth-elevation measurements
+        // create perfect right-ascension/declination measurements
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);

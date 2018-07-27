@@ -797,11 +797,11 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.6e-2,
-                                     0.0, 3.4e-2,
-                                     0.0, 170.0,  // we only have range rate...
-                                     0.0, 6.5e-2);
+        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+                                     0.0, 5.3e-7,
+                                     0.0, 1.3e-6,
+                                     0.0, 8.4e-4,
+                                     0.0, 5.1e-7);
     }
 
     /**
@@ -847,10 +847,10 @@ public class BatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         EstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 0.16,
-                                     0.0, 0.40,
-                                     0.0, 2.1e-3,
-                                     0.0, 8.1e-7);
+                                     0.0, 4.6e7,
+                                     0.0, 1.4e-6,
+                                     0.0, 5.9e-7,
+                                     0.0, 2.7e-10);
     }
 
 }
