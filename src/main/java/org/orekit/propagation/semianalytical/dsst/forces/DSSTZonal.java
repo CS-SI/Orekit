@@ -18,8 +18,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +130,7 @@ public class DSSTZonal implements DSSTForceModel {
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
 
     /** Short period terms. */
-    private FieldZonalShortPeriodicCoefficients zonalFieldSPCoefs;
+    private Map<Field<?>, FieldZonalShortPeriodicCoefficients<?>> zonalFieldSPCoefs;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -137,7 +139,7 @@ public class DSSTZonal implements DSSTForceModel {
     private HansenObjects hansen;
 
     /** Hansen objects for field elements. */
-    private FieldHansenObjects fieldHansen;
+    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Simple constructor.
      * @param provider provider for spherical harmonics
@@ -180,6 +182,10 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Initialize default values
         this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
+
+        zonalFieldSPCoefs = new HashMap<>();
+        fieldHansen       = new HashMap<>();
+
     }
 
     /** Check an index range.
@@ -193,16 +199,6 @@ public class DSSTZonal implements DSSTForceModel {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
-    }
-
-    /** Initialise the HansenCoefficient generator. */
-    private void initializeHansenObjects() {
-        hansen = new HansenObjects();
-    }
-
-    /** Initialise the HansenCoefficient generator. */
-    private void initializeFieldHansenObjects() {
-        fieldHansen = new FieldHansenObjects();
     }
 
     /** Get the spherical harmonics provider.
@@ -235,8 +231,7 @@ public class DSSTZonal implements DSSTForceModel {
             maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
         }
 
-        initializeHansenObjects();
-        initializeFieldHansenObjects();
+        hansen = new HansenObjects();
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxFrequencyShortPeriodics,
@@ -250,7 +245,6 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final boolean meanOnly,
                                                                                      final T[] parameters)
@@ -266,16 +260,16 @@ public class DSSTZonal implements DSSTForceModel {
             maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
         }
 
-        initializeHansenObjects();
-        initializeFieldHansenObjects();
+        fieldHansen.put(field, new FieldHansenObjects<>());
 
-        final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
-        zonalFieldSPCoefs = new FieldZonalShortPeriodicCoefficients<T>(maxFrequencyShortPeriodics,
-                                                                      INTERPOLATION_POINTS,
-                                                                      new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(maxFrequencyShortPeriodics,
-                                                                                                                            INTERPOLATION_POINTS), field));
-        list.add(zonalFieldSPCoefs);
-        return list;
+        final FieldZonalShortPeriodicCoefficients<T> fzspc =
+                        new FieldZonalShortPeriodicCoefficients<>(maxFrequencyShortPeriodics,
+                                                                  INTERPOLATION_POINTS,
+                                                                  new FieldTimeSpanMap<>(new FieldSlot<>(maxFrequencyShortPeriodics,
+                                                                                                         INTERPOLATION_POINTS),
+                                                                                         field));
+        zonalFieldSPCoefs.put(field, fzspc);
+        return Collections.singletonList(fzspc);
     }
 
     /** Compute indices truncations for mean elements computations.
@@ -530,7 +524,10 @@ public class DSSTZonal implements DSSTForceModel {
                                                                   final T[] parameters)
         throws OrekitException {
         final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
-        return computeMeanElementRates(spacecraftState.getDate(), context, fieldHansen);
+        final Field<T> field = auxiliaryElements.getDate().getField();
+        @SuppressWarnings("unchecked")
+        final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
+        return computeMeanElementRates(spacecraftState.getDate(), context, fho);
     }
 
     /** {@inheritDoc} */
@@ -592,7 +589,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private <T extends RealFieldElement<T>> T[] computeMeanElementRates(final FieldAbsoluteDate<T> date,
                                                                         final FieldDSSTZonalContext<T> context,
-                                                                        final FieldHansenObjects hansenObjects)
+                                                                        final FieldHansenObjects<T> hansenObjects)
         throws OrekitException {
 
         // Auxiliary elements related to the current orbit
@@ -685,11 +682,12 @@ public class DSSTZonal implements DSSTForceModel {
                                                                        final FieldSpacecraftState<T>... meanStates)
         throws OrekitException {
 
-        final FieldSlot<T> slot = zonalFieldSPCoefs.createSlot(meanStates);
-        for (final FieldSpacecraftState<T> meanState : meanStates) {
+        // Field used by default
+        final Field<T> field = meanStates[0].getDate().getField();
 
-            // Field used by default
-            final Field<T> field = meanState.getDate().getField();
+        final FieldZonalShortPeriodicCoefficients<T> fzspc = (FieldZonalShortPeriodicCoefficients<T>) zonalFieldSPCoefs.get(field);
+        final FieldSlot<T> slot = fzspc.createSlot(meanStates);
+        for (final FieldSpacecraftState<T> meanState : meanStates) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
@@ -699,7 +697,8 @@ public class DSSTZonal implements DSSTForceModel {
             final T[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, context, field);
 
             // Compute Di
-            computeDiCoefficients(meanState.getDate(), slot, context, field, fieldHansen);
+            final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
+            computeDiCoefficients(meanState.getDate(), slot, context, field, fho);
 
             // generate the Cij and Sij coefficients
             final FieldFourierCjSjCoefficients<T> cjsj = new FieldFourierCjSjCoefficients<>(meanState.getDate(),
@@ -707,9 +706,9 @@ public class DSSTZonal implements DSSTForceModel {
                                                                                             maxEccPowShortPeriodics,
                                                                                             maxFrequencyShortPeriodics,
                                                                                             context,
-                                                                                            fieldHansen);
+                                                                                            fho);
 
-            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, field, fieldHansen);
+            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, field, fho);
         }
     }
 
@@ -766,7 +765,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                                        final FieldSlot<T> slot,
                                                                        final FieldDSSTZonalContext<T> context,
                                                                        final Field<T> field,
-                                                                       final FieldHansenObjects hansenObjects)
+                                                                       final FieldHansenObjects<T> hansenObjects)
         throws OrekitException {
         final T[] meanElementRates = computeMeanElementRates(date, context, hansenObjects);
 
@@ -1061,7 +1060,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                                            final T[][] rhoSigma,
                                                                            final FieldDSSTZonalContext<T> context,
                                                                            final Field<T> field,
-                                                                           final FieldHansenObjects hansenObjects)
+                                                                           final FieldHansenObjects<T> hansenObjects)
         throws OrekitException {
 
         // Zero
@@ -2651,7 +2650,7 @@ public class DSSTZonal implements DSSTForceModel {
         FieldFourierCjSjCoefficients(final FieldAbsoluteDate<T> date,
                                      final int nMax, final int sMax, final int jMax,
                                      final FieldDSSTZonalContext<T> context,
-                                     final FieldHansenObjects hansenObjects)
+                                     final FieldHansenObjects<T> hansenObjects)
                 throws OrekitException {
 
             //Field used by default
@@ -2689,10 +2688,9 @@ public class DSSTZonal implements DSSTForceModel {
          * @param field field used by default
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        @SuppressWarnings("unchecked")
         private void generateCoefficients(final FieldAbsoluteDate<T> date,
                                           final FieldDSSTZonalContext<T> context,
-                                          final FieldHansenObjects hansenObjects,
+                                          final FieldHansenObjects<T> hansenObjects,
                                           final Field<T> field)
             throws OrekitException {
             //Zero
@@ -3768,10 +3766,9 @@ public class DSSTZonal implements DSSTForceModel {
           *  @param hansen initialization of hansen objects
           *  @throws OrekitException if an error occurs in hansen computation
           */
-        @SuppressWarnings("unchecked")
         FieldUAnddU(final FieldAbsoluteDate<T> date,
                     final FieldDSSTZonalContext<T> context,
-                    final FieldHansenObjects hansen)
+                    final FieldHansenObjects<T> hansen)
             throws OrekitException {
 
             // Zero for initialization
@@ -3961,35 +3958,37 @@ public class DSSTZonal implements DSSTForceModel {
 
     }
 
-    /** Computes init values of the Hansen Objects. */
-    private class FieldHansenObjects {
+    /** Computes init values of the Hansen Objects.
+     * @param <T> type of the elements
+     */
+    private class FieldHansenObjects<T extends RealFieldElement<T>> {
 
         /** An array that contains the objects needed to build the Hansen coefficients. <br/>
          * The index is s*/
-        private FieldHansenZonalLinear[] hansenObjects;
+        private FieldHansenZonalLinear<T>[] hansenObjects;
 
-        /** Simple constructor. */
+        /** Simple constructor.
+         */
+        @SuppressWarnings("unchecked")
         FieldHansenObjects() {
-            this.hansenObjects = new FieldHansenZonalLinear[maxEccPow + 1];
+            this.hansenObjects = (FieldHansenZonalLinear<T>[]) Array.newInstance(FieldHansenZonalLinear.class, maxEccPow + 1);
             for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear(maxDegree, s);
+                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s);
             }
         }
 
         /** Compute init values for hansen objects.
-         * @param <T> type of the elements
          * @param context container for attributes
          * @param element element of the array to compute the init values
          */
-        @SuppressWarnings("unchecked")
-        public <T extends RealFieldElement<T>> void computeHansenObjectsInitValues(final FieldDSSTZonalContext<T> context, final int element) {
+        public void computeHansenObjectsInitValues(final FieldDSSTZonalContext<T> context, final int element) {
             hansenObjects[element].computeInitValues(context.getX());
         }
 
         /** Get the Hansen Objects.
          * @return hansenObjects
          */
-        public FieldHansenZonalLinear[] getHansenObjects() {
+        public FieldHansenZonalLinear<T>[] getHansenObjects() {
             return hansenObjects;
         }
 
