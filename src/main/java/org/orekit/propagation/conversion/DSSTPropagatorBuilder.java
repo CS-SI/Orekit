@@ -27,6 +27,7 @@ import org.orekit.estimation.leastsquares.DSSTModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -66,7 +67,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * (typically set to the expected standard deviation of the position)
      * @exception OrekitException if parameters drivers cannot be scaled
      */
-    public DSSTPropagatorBuilder(final EquinoctialOrbit referenceOrbit,
+    public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale)
         throws OrekitException {
