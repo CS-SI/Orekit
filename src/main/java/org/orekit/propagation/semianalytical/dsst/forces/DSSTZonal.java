@@ -538,8 +538,14 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
         throws OrekitException {
+
+        // Container of attributes
         final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
-        return computeMeanElementRates(spacecraftState.getDate(), context, hansen);
+        // Access to potential U derivatives
+        final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, auxiliaryElements, hansen);
+
+        return computeMeanElementRates(spacecraftState.getDate(), context, udu);
+
     }
 
     /** {@inheritDoc} */
@@ -548,8 +554,14 @@ public class DSSTZonal implements DSSTForceModel {
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                   final T[] parameters)
         throws OrekitException {
+
+        // Container of attributes
         final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
-        return computeMeanElementRates(spacecraftState.getDate(), context, fieldHansen);
+        // Access to potential U derivatives
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(spacecraftState.getDate(), context, auxiliaryElements, fieldHansen);
+
+        return computeMeanElementRates(spacecraftState.getDate(), context, udu);
+
     }
 
     /** {@inheritDoc} */
@@ -567,20 +579,17 @@ public class DSSTZonal implements DSSTForceModel {
     /** Compute the mean element rates.
      * @param date current date
      * @param context container for attributes
-     * @param hansenObjects initialization of hansen objects
+     * @param udu derivatives of the gravitational potential U
      * @return the mean element rates
      * @throws OrekitException if an error occurs in hansen computation
      */
     private double[] computeMeanElementRates(final AbsoluteDate date,
                                              final DSSTZonalContext context,
-                                             final HansenObjects hansenObjects)
+                                             final UAnddU udu)
         throws OrekitException {
 
         // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
-
-        // Access to potential U derivatives
-        final UAnddU udu = new UAnddU(date, context, hansenObjects);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
@@ -605,20 +614,17 @@ public class DSSTZonal implements DSSTForceModel {
      * @param <T> type of the elements
      * @param date current date
      * @param context container for attributes
-     * @param hansenObjects initialization of hansen objects
+     * @param udu derivatives of the gravitational potential U
      * @return the mean element rates
      * @throws OrekitException if an error occurs in hansen computation
      */
     private <T extends RealFieldElement<T>> T[] computeMeanElementRates(final FieldAbsoluteDate<T> date,
                                                                         final FieldDSSTZonalContext<T> context,
-                                                                        final FieldHansenObjects hansenObjects)
+                                                                        final FieldUAnddU<T> udu)
         throws OrekitException {
 
         // Auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
-
-        // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(date, context, hansenObjects);
 
         // Parameter for array building
         final Field<T> field = date.getField();
@@ -675,15 +681,20 @@ public class DSSTZonal implements DSSTForceModel {
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
 
+            // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
+            // Container of attributes
             final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
 
+            // Access to potential U derivatives
+            final UAnddU udu = new UAnddU(meanState.getDate(), context, auxiliaryElements, hansen);
+
             // Compute rhoj and sigmaj
-            final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, context);
+            final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, auxiliaryElements);
 
             // Compute Di
-            computeDiCoefficients(meanState.getDate(), slot, context, hansen);
+            computeDiCoefficients(meanState.getDate(), slot, context, udu);
 
             // generate the Cij and Sij coefficients
             final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(),
@@ -692,7 +703,8 @@ public class DSSTZonal implements DSSTForceModel {
                                                                              maxFrequencyShortPeriodics,
                                                                              context,
                                                                              hansen);
-            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, hansen);
+
+            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, auxiliaryElements, udu);
         }
 
     }
@@ -710,15 +722,20 @@ public class DSSTZonal implements DSSTForceModel {
             // Field used by default
             final Field<T> field = meanState.getDate().getField();
 
+            // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
+            // Container of attributes
             final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
 
+            // Access to potential U derivatives
+            final FieldUAnddU<T> udu = new FieldUAnddU<>(meanState.getDate(), context, auxiliaryElements, fieldHansen);
+
             // Compute rhoj and sigmaj
-            final T[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, context, field);
+            final T[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot, auxiliaryElements, field);
 
             // Compute Di
-            computeDiCoefficients(meanState.getDate(), slot, context, field, fieldHansen);
+            computeDiCoefficients(meanState.getDate(), slot, context, field, udu);
 
             // generate the Cij and Sij coefficients
             final FieldFourierCjSjCoefficients<T> cjsj = new FieldFourierCjSjCoefficients<>(meanState.getDate(),
@@ -728,7 +745,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                                                             context,
                                                                                             fieldHansen);
 
-            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, field, fieldHansen);
+            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma, context, auxiliaryElements, field, udu);
         }
     }
 
@@ -743,18 +760,16 @@ public class DSSTZonal implements DSSTForceModel {
      * @param date target date
      * @param slot slot to which the coefficients belong
      * @param context container for attributes
-     * @param hansenObjects initialization for hansen objects
+     * @param udu derivatives of the gravitational potential U
      * @throws OrekitException if an error occurs during the coefficient computation
      */
     private void computeDiCoefficients(final AbsoluteDate date,
                                        final Slot slot,
                                        final DSSTZonalContext context,
-                                       final HansenObjects hansenObjects)
+                                       final UAnddU udu)
         throws OrekitException {
-        final double[] meanElementRates = computeMeanElementRates(date, context, hansenObjects);
 
-        // Access to potential U derivatives
-        final UAnddU udu = new UAnddU(date, context, hansenObjects);
+        final double[] meanElementRates = computeMeanElementRates(date, context, udu);
 
         final double[] currentDi = new double[6];
 
@@ -778,19 +793,17 @@ public class DSSTZonal implements DSSTForceModel {
      * @param slot slot to which the coefficients belong
      * @param context container for attributes
      * @param field field used by default
-     * @param hansenObjects initialization for hansen objects
+     * @param udu derivatives of the gravitational potential U
      * @throws OrekitException if an error occurs during the coefficient computation
      */
     private <T extends RealFieldElement<T>> void computeDiCoefficients(final FieldAbsoluteDate<T> date,
                                                                        final FieldSlot<T> slot,
                                                                        final FieldDSSTZonalContext<T> context,
                                                                        final Field<T> field,
-                                                                       final FieldHansenObjects hansenObjects)
+                                                                       final FieldUAnddU<T> udu)
         throws OrekitException {
-        final T[] meanElementRates = computeMeanElementRates(date, context, hansenObjects);
 
-        // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(date, context, hansenObjects);
+        final T[] meanElementRates = computeMeanElementRates(date, context, udu);
 
         final T[] currentDi = MathArrays.buildArray(field, 6);
 
@@ -815,19 +828,16 @@ public class DSSTZonal implements DSSTForceModel {
      * @param cjsj Fourier coefficients
      * @param rhoSigma ρ<sub>j</sub> and σ<sub>j</sub>
      * @param context container for attributes
-     * @param hansenObjects initialization of hansen objects
+     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param udu derivatives of the gravitational potential U
      * @throws OrekitException if an error occurs
      */
     private void computeCijSijCoefficients(final AbsoluteDate date, final Slot slot,
                                            final FourierCjSjCoefficients cjsj,
                                            final double[][] rhoSigma, final DSSTZonalContext context,
-                                           final HansenObjects hansenObjects)
+                                           final AuxiliaryElements auxiliaryElements,
+                                           final UAnddU udu)
         throws OrekitException {
-
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
-
-        // Access to potential U derivatives
-        final UAnddU udu = new UAnddU(date, context, hansenObjects);
 
         final int nMax = maxDegreeShortPeriodics;
 
@@ -1070,8 +1080,9 @@ public class DSSTZonal implements DSSTForceModel {
      * @param cjsj Fourier coefficients
      * @param rhoSigma ρ<sub>j</sub> and σ<sub>j</sub>
      * @param context container for attributes
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param field field used by default
-     * @param hansenObjects initialization of hansen objects
+     * @param udu derivatives of the gravitational potential U
      * @throws OrekitException if an error occurs
      */
     private <T extends RealFieldElement<T>> void computeCijSijCoefficients(final FieldAbsoluteDate<T> date,
@@ -1079,17 +1090,13 @@ public class DSSTZonal implements DSSTForceModel {
                                                                            final FieldFourierCjSjCoefficients<T> cjsj,
                                                                            final T[][] rhoSigma,
                                                                            final FieldDSSTZonalContext<T> context,
+                                                                           final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                            final Field<T> field,
-                                                                           final FieldHansenObjects hansenObjects)
+                                                                           final FieldUAnddU<T> udu)
         throws OrekitException {
 
         // Zero
         final T zero = field.getZero();
-
-        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
-
-        // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(date, context, hansenObjects);
 
         final int nMax = maxDegreeShortPeriodics;
 
@@ -1338,11 +1345,13 @@ public class DSSTZonal implements DSSTForceModel {
      * </p>
      * @param date target date
      * @param slot slot to which the coefficients belong
-     * @param context container for attributes
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
      */
-    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final Slot slot, final DSSTZonalContext context) {
-        final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date,
+                                                   final Slot slot,
+                                                   final AuxiliaryElements auxiliaryElements) {
+
         final CjSjCoefficient cjsjKH = new CjSjCoefficient(auxiliaryElements.getK(), auxiliaryElements.getH());
         final double b = 1. / (1 + auxiliaryElements.getB());
 
@@ -1377,16 +1386,16 @@ public class DSSTZonal implements DSSTForceModel {
      * @param <T> type of the elements
      * @param date target date
      * @param slot slot to which the coefficients belong
-     * @param context container for attributes
+     * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param field field used by default
      * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
      */
     private <T extends RealFieldElement<T>> T[][] computeRhoSigmaCoefficients(final FieldAbsoluteDate<T> date,
                                                                               final FieldSlot<T> slot,
-                                                                              final FieldDSSTZonalContext<T> context,
+                                                                              final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                               final Field<T> field) {
         final T zero = field.getZero();
-        final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
+
         final FieldCjSjCoefficient<T> cjsjKH = new FieldCjSjCoefficient<>(auxiliaryElements.getK(), auxiliaryElements.getH(), field);
         final T b = auxiliaryElements.getB().add(1.).reciprocal();
 
@@ -1881,20 +1890,21 @@ public class DSSTZonal implements DSSTForceModel {
                 //Initialise the Hansen roots
                 hansenObjects.computeHansenObjectsInitValues(context, s);
             }
-            generateCoefficients(date, context, hansenObjects);
+            generateCoefficients(date, context, auxiliaryElements, hansenObjects);
         }
 
         /** Generate all coefficients.
          * @param date the current date
          * @param context container for attributes
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param hansenObjects initialization of hansen objects
          * @throws OrekitException if an error occurs while generating the coefficients
          */
         private void generateCoefficients(final AbsoluteDate date,
                                           final DSSTZonalContext context,
+                                          final AuxiliaryElements auxiliaryElements,
                                           final HansenObjects hansenObjects)
             throws OrekitException {
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
             for (int j = 1; j <= jMax; j++) {
@@ -2698,25 +2708,27 @@ public class DSSTZonal implements DSSTForceModel {
                 //Initialise the Hansen roots
                 hansenObjects.computeHansenObjectsInitValues(context, s);
             }
-            generateCoefficients(date, context, hansenObjects, field);
+            generateCoefficients(date, context, auxiliaryElements, hansenObjects, field);
         }
 
         /** Generate all coefficients.
          * @param date the current date
          * @param context container for attributes
          * @param hansenObjects initialization of hansen objects
+         * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param field field used by default
          * @throws OrekitException if an error occurs while generating the coefficients
          */
         @SuppressWarnings("unchecked")
         private void generateCoefficients(final FieldAbsoluteDate<T> date,
                                           final FieldDSSTZonalContext<T> context,
+                                          final FieldAuxiliaryElements<T> auxiliaryElements,
                                           final FieldHansenObjects hansenObjects,
                                           final Field<T> field)
             throws OrekitException {
+
             //Zero
             final T zero = field.getZero();
-            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
             for (int j = 1; j <= jMax; j++) {
@@ -3592,16 +3604,15 @@ public class DSSTZonal implements DSSTForceModel {
         /** Simple constuctor.
          *  @param date current date
          *  @param context container for attributes
+         *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @param hansen initialization of hansen objects
          *  @throws OrekitException if an error occurs in hansen computation
          */
         UAnddU(final AbsoluteDate date,
                final DSSTZonalContext context,
+               final AuxiliaryElements auxiliaryElements,
                final HansenObjects hansen)
             throws OrekitException {
-
-            // Auxiliary elements related to the current orbit
-            final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
@@ -3784,21 +3795,20 @@ public class DSSTZonal implements DSSTForceModel {
          /** Simple constuctor.
           *  @param date current date
           *  @param context container for attributes
+          *  @param auxiliaryElements auxiliary elements related to the current orbit
           *  @param hansen initialization of hansen objects
           *  @throws OrekitException if an error occurs in hansen computation
           */
         @SuppressWarnings("unchecked")
         FieldUAnddU(final FieldAbsoluteDate<T> date,
                     final FieldDSSTZonalContext<T> context,
+                    final FieldAuxiliaryElements<T> auxiliaryElements,
                     final FieldHansenObjects hansen)
             throws OrekitException {
 
             // Zero for initialization
             final Field<T> field = date.getField();
             final T zero = field.getZero();
-
-            // Auxiliary elements related to the current orbit
-            final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
             //spherical harmonics
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
