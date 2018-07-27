@@ -40,7 +40,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testSmallNegativeBeta() throws OrekitException {
-        doTestAxes("beta-small-negative-GALILEO.txt", 2.9e-12, 2.9e-12, 4.3e-16);
+        doTestAxes("beta-small-negative-GALILEO.txt", 2.8e-12, 2.8e-12, 5.5e-16);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
         // TODO: these results are not good,
         // however the reference data is also highly suspicious
         // this needs to be investigated
-        doTestAxes("beta-crossing-GALILEO.txt", 2.0, 2.0, 4.5e-16);
+        doTestAxes("beta-crossing-GALILEO.txt", 2.0e-100, 2.0e-100, 5.8e-16);
     }
 
     @Test
