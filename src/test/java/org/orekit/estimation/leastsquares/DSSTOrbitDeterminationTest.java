@@ -1828,7 +1828,7 @@ public class DSSTOrbitDeterminationTest {
         public void add(EstimatedMeasurement<T> evaluation) {
             ++total;
             double max = 0;
-            for (final double w : evaluation.getCurrentWeight()) {
+            for (final double w : evaluation.getObservedMeasurement().getBaseWeight()) {
                 max = FastMath.max(max, w);
             }
             if (max > 0) {
