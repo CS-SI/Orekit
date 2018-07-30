@@ -108,7 +108,12 @@ public class DSSTAtmosphericDragTest {
         
         final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
-        
+
+        // Force model parameters
+        final double[] parameters = drag.getParameters();
+        // Initialize force model
+        drag.initialize(auxiliaryElements, true, parameters);
+
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider );
@@ -116,7 +121,7 @@ public class DSSTAtmosphericDragTest {
         // Compute the mean element rate
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
-        final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, drag.getParameters());
+        final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

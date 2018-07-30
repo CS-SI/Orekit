@@ -79,10 +79,16 @@ public class DSSTThirdBodyTest {
         
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
+        // Force model parameters
+        final double[] parameters = moon.getParameters();
+
+        // Initialize force model
+        moon.initialize(auxiliaryElements, true, parameters);
+
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
         
-        final double[] daidt = moon.getMeanElementRate(state, auxiliaryElements, moon.getParameters());
+        final double[] daidt = moon.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

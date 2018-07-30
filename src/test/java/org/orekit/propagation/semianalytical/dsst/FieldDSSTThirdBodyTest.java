@@ -105,11 +105,16 @@ public class FieldDSSTThirdBodyTest {
         
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
+        // Force model parameters
+        final T[] parameters = moon.getParameters(field);
+        // Initialize force model
+        moon.initialize(auxiliaryElements,
+                        true, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = moon.getMeanElementRate(state, auxiliaryElements, moon.getParameters(field));
+        final T[] daidt = moon.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

@@ -106,14 +106,16 @@ public class FieldDSSTZonalTest {
         
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
+        // Force model parameters
+        final T[] parameters = zonal.getParameters(field);
         // Initialize force model
         zonal.initialize(auxiliaryElements,
-                         true, zonal.getParameters(field));
+                         true, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
+        final T[] daidt = zonal.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

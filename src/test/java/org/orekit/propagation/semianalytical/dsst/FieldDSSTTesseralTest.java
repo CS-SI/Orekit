@@ -94,17 +94,19 @@ public class FieldDSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        
-        // Initialize force model
-        tesseral.initialize(new AuxiliaryElements(orbit.toOrbit(), 1),
-                            true, tesseral.getParameters());
 
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
-        
+
+        // Force model parameters
+        final T[] parameters = tesseral.getParameters(field);
+        // Initialize force model
+        tesseral.initialize(auxiliaryElements,
+                            true, parameters);
+
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
         
-        final T[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters(field));
+        final T[] daidt = tesseral.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

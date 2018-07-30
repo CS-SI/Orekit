@@ -18,7 +18,9 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +147,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     private GaussianShortPeriodicCoefficients gaussianSPCoefs;
 
     /** Short period terms. */
-    private FieldGaussianShortPeriodicCoefficients gaussianFieldSPCoefs;
+    private Map<Field<?>, FieldGaussianShortPeriodicCoefficients<?>> gaussianFieldSPCoefs;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -175,6 +177,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         this.threshold             = threshold;
         this.integrator            = new GaussQuadrature(GAUSS_ORDER[MAX_ORDER_RANK]);
         this.isDirty               = true;
+
+        gaussianFieldSPCoefs       = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -221,7 +225,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final boolean meanOnly,
                                                                                      final T[] parameters)
@@ -229,12 +232,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
-        gaussianFieldSPCoefs = new FieldGaussianShortPeriodicCoefficients<>(coefficientsKeyPrefix,
-                                                                         JMAX, INTERPOLATION_POINTS,
-                                                                         new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(JMAX, INTERPOLATION_POINTS), field));
-        list.add(gaussianFieldSPCoefs);
-        return list;
+        final FieldGaussianShortPeriodicCoefficients<T> fgspc =
+                        new FieldGaussianShortPeriodicCoefficients<>(coefficientsKeyPrefix,
+                                                                     JMAX, INTERPOLATION_POINTS,
+                                                                     new FieldTimeSpanMap<>(new FieldSlot<>(JMAX,
+                                                                                                            INTERPOLATION_POINTS),
+                                                                                            field));
+        gaussianFieldSPCoefs.put(field, fgspc);
+        return Collections.singletonList(fgspc);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -471,14 +476,23 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
 
+            // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
+            // Container of attributes
             final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
 
+            // Compute rhoj and sigmaj
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context);
+
+            // Generate the Cij and Sij coefficients
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, context, parameters);
+
+            // Generate the Uij and Vij coefficients
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
+
             gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma());
+
         }
 
     }
@@ -490,20 +504,30 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                                                        final FieldSpacecraftState<T>... meanStates)
         throws OrekitException {
 
-        final FieldSlot<T> slot = gaussianFieldSPCoefs.createSlot(meanStates);
+        // Field used by default
+        final Field<T> field = meanStates[0].getDate().getField();
+
+        final FieldGaussianShortPeriodicCoefficients<T> fgspc = (FieldGaussianShortPeriodicCoefficients<T>) gaussianFieldSPCoefs.get(field);
+        final FieldSlot<T> slot = fgspc.createSlot(meanStates);
         for (final FieldSpacecraftState<T> meanState : meanStates) {
 
-            // Field used by default
-            final Field<T> field = meanState.getDate().getField();
-
+            // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
+            // Container of attributes
             final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
 
+            // Compute rhoj and sigmaj
             final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context, field);
+
+            // Generate the Cij and Sij coefficients
             final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX, context, parameters, field);
+
+            // Generate the Uij and Vij coefficients
             final FieldUijVijCoefficients<T> uijvij = new FieldUijVijCoefficients<>(currentRhoSigmaj, fourierCjSj, JMAX, field);
-            gaussianFieldSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma(), field);
+
+            fgspc.computeCoefficients(meanState, slot, fourierCjSj, uijvij, context.getMeanMotion(), auxiliaryElements.getSma(), field);
+
         }
 
     }
@@ -655,7 +679,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T Y    = r.multiply(sinL);
             final T naob = context.getMeanMotion().multiply(auxiliaryElements.getSma()).divide(auxiliaryElements.getB());
             final T Xdot = naob.multiply(auxiliaryElements.getH().add(sinL)).negate();
-            final T Ydot =  naob.multiply(auxiliaryElements.getK().add(cosL));
+            final T Ydot = naob.multiply(auxiliaryElements.getK().add(cosL));
             final FieldVector3D<T> vel = new FieldVector3D<>(Xdot, auxiliaryElements.getVectorF(), Ydot, auxiliaryElements.getVectorG());
 
             // Compute acceleration
@@ -3293,9 +3317,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         @SuppressWarnings("unchecked")
         FieldSlot(final int jMax, final int interpolationPoints) {
 
-            dij = new FieldShortPeriodicsInterpolatedCoefficient[3];
-            cij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
-            sij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            dij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, 3);
+            cij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
+            sij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
 
             // Initialize the C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup> and D<sub>i</sub><sup>j</sup> coefficients
             for (int j = 0; j <= jMax; j++) {

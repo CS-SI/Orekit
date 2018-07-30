@@ -146,10 +146,16 @@ public class FieldDSSTSolarRadiationPressureTest {
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, att, mass);
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
         
+        // Force model parameters
+        final T[] parameters = srp.getParameters(field);
+        // Initialize force model
+        srp.initialize(auxiliaryElements,
+                        true, parameters);
+
         // Compute the mean element rate
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
-        final T[] daidt = srp.getMeanElementRate(state, auxiliaryElements, srp.getParameters(field));
+        final T[] daidt = srp.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

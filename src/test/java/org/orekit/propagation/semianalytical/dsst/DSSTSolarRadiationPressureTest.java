@@ -102,6 +102,11 @@ public class DSSTSolarRadiationPressureTest {
         final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
+        // Force model parameters
+        final double[] parameters = srp.getParameters();
+        // Initialize force model
+        srp.initialize(auxiliaryElements, true, parameters);
+
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
         srp.registerAttitudeProvider(attitudeProvider );
@@ -109,7 +114,7 @@ public class DSSTSolarRadiationPressureTest {
         // Compute the mean element rate
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
-        final double[] daidt = srp.getMeanElementRate(state, auxiliaryElements, srp.getParameters());
+        final double[] daidt = srp.getMeanElementRate(state, auxiliaryElements, parameters);
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }

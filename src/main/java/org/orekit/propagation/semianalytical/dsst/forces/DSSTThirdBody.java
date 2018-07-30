@@ -18,8 +18,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +112,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
     /** Short period terms. */
-    private FieldThirdBodyShortPeriodicCoefficients fieldShortPeriods;
+    private Map<Field<?>, FieldThirdBodyShortPeriodicCoefficients<?>> fieldShortPeriods;
 
     /** Drivers for third body attraction coefficient. */
     private final ParameterDriver bodyParameterDriver;
@@ -122,7 +124,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private HansenObjects hansen;
 
     /** Hansen objects for field elements. */
-    private FieldHansenObjects fieldHansen;
+    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
@@ -148,11 +150,10 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         this.body = body;
 
-        //Initialise the HansenCoefficient generator
-        initializeHansenObjects();
-        initializeFieldHansenObjects();
-
         pendingInitialization = true;
+
+        fieldShortPeriods = new HashMap<>();
+        fieldHansen       = new HashMap<>();
     }
 
     /** Get third body.
@@ -160,16 +161,6 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     public CelestialBody getBody() {
         return body;
-    }
-
-    /** Initialise the HansenCoefficient generator. */
-    private void initializeHansenObjects() {
-        hansen = new HansenObjects();
-    }
-
-    /** Initialise the HansenCoefficient generator. */
-    private void initializeFieldHansenObjects() {
-        fieldHansen = new FieldHansenObjects();
     }
 
     /** Computes the highest power of the eccentricity and the highest power
@@ -192,6 +183,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
         final int jMax = context.getMaxAR3Pow() + 1;
+
+        hansen = new HansenObjects();
+
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               context.getMaxFreqF(), body.getName(),
                                                               new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
@@ -204,7 +198,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final boolean meanOnly,
                                                                                      final T[] parameters)
@@ -213,21 +206,25 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        if (pendingInitialization == true) {
-            // Initializes specific parameters.
-            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+        // Initializes specific parameters.
+        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-            final int jMax = context.getMaxAR3Pow() + 1;
-            fieldShortPeriods = new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
-                                                                              context.getMaxFreqF(), body.getName(),
-                                                                              new FieldTimeSpanMap<FieldSlot<T>, T>(new FieldSlot<>(jMax,
-                                                                                                                    INTERPOLATION_POINTS), field));
+        final int jMax = context.getMaxAR3Pow() + 1;
+
+        if (pendingInitialization == true) {
             pendingInitialization = false;
         }
 
-        final List<FieldShortPeriodTerms<T>> list = new ArrayList<FieldShortPeriodTerms<T>>();
-        list.add(fieldShortPeriods);
-        return list;
+        fieldHansen.put(field, new FieldHansenObjects<>());
+
+        final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
+                        new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
+                                                                      context.getMaxFreqF(), body.getName(),
+                                                                      new FieldTimeSpanMap<>(new FieldSlot<>(jMax,
+                                                                                                             INTERPOLATION_POINTS),
+                                                                                             field));
+        fieldShortPeriods.put(field, ftbspc);
+        return Collections.singletonList(ftbspc);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -303,8 +300,12 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         // Container for attributes
         final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+        @SuppressWarnings("unchecked")
+        final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
+
         // Access to potential U derivatives
-        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fieldHansen);
+        final FieldUAnddU<T> udu = new FieldUAnddU<>(context, fho);
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
@@ -343,8 +344,10 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         for (final SpacecraftState meanState : meanStates) {
 
+            // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
+            // Container of attributes
             final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
             final GeneratingFunctionCoefficients gfCoefs =
@@ -426,19 +429,24 @@ public class DSSTThirdBody implements DSSTForceModel {
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
                                                                        final FieldSpacecraftState<T>... meanStates)
         throws OrekitException {
-        final FieldSlot<T> slot = fieldShortPeriods.createSlot(meanStates);
 
+        // Field used by default
+        final Field<T> field = meanStates[0].getDate().getField();
+
+        final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc = (FieldThirdBodyShortPeriodicCoefficients<T>) fieldShortPeriods.get(field);
+        final FieldSlot<T> slot = ftbspc.createSlot(meanStates);
         for (final FieldSpacecraftState<T> meanState : meanStates) {
 
+            // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
+            // Container of attributes
             final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-            // Field used by default
-            final Field<T> field = auxiliaryElements.getDate().getField();
+            final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
 
             final FieldGeneratingFunctionCoefficients<T> gfCoefs =
-                            new FieldGeneratingFunctionCoefficients<>(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context, fieldHansen, field);
+                            new FieldGeneratingFunctionCoefficients<>(context.getMaxAR3Pow(), MAX_ECCPOWER_SP, context.getMaxAR3Pow() + 1, context, fho, field);
 
             //Compute additional quantities
             // 2 * a / An
@@ -2793,7 +2801,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          */
         FieldGeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax,
                                             final FieldDSSTThirdBodyContext<T> context,
-                                            final FieldHansenObjects hansen,
+                                            final FieldHansenObjects<T> hansen,
                                             final Field<T> field) {
             this.jMax = jMax;
             this.cjsjFourier = new FieldFourierCjSjCoefficients<>(nMax, sMax, jMax, context, field);
@@ -2809,7 +2817,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param hansenObjects hansen objects
          */
         private void computeGeneratingFunctionCoefficients(final FieldDSSTThirdBodyContext<T> context,
-                                                           final FieldHansenObjects hansenObjects) {
+                                                           final FieldHansenObjects<T> hansenObjects) {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
@@ -3504,8 +3512,8 @@ public class DSSTThirdBody implements DSSTForceModel {
         @SuppressWarnings("unchecked")
         FieldSlot(final int jMax, final int interpolationPoints) {
             // allocate the coefficients arrays
-            cij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
-            sij = new FieldShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            cij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
+            sij = (FieldShortPeriodicsInterpolatedCoefficient<T>[]) Array.newInstance(FieldShortPeriodicsInterpolatedCoefficient.class, jMax + 1);
             for (int j = 0; j <= jMax; j++) {
                 cij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
                 sij[j] = new FieldShortPeriodicsInterpolatedCoefficient<>(interpolationPoints);
@@ -3544,7 +3552,8 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param context container for attributes
          * @param hansen hansen objects
          */
-        UAnddU(final DSSTThirdBodyContext context, final HansenObjects hansen) {
+        UAnddU(final DSSTThirdBodyContext context,
+               final HansenObjects hansen) {
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
@@ -3715,8 +3724,8 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param context container for attributes
          * @param hansen hansen objects
          */
-        @SuppressWarnings("unchecked")
-        FieldUAnddU(final FieldDSSTThirdBodyContext<T> context, final FieldHansenObjects hansen) {
+        FieldUAnddU(final FieldDSSTThirdBodyContext<T> context,
+                    final FieldHansenObjects<T> hansen) {
 
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
@@ -3900,31 +3909,30 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     /** Computes init values of the Hansen Objects. */
-    private class FieldHansenObjects {
+    private class FieldHansenObjects<T extends RealFieldElement<T>> {
 
         /** Max power for summation. */
         private static final int    MAX_POWER = 22;
 
         /** An array that contains the objects needed to build the Hansen coefficients. <br/>
          * The index is s */
-        private final FieldHansenThirdBodyLinear[] hansenObjects;
+        private final FieldHansenThirdBodyLinear<T>[] hansenObjects;
 
         /** Simple constructor. */
+        @SuppressWarnings("unchecked")
         FieldHansenObjects() {
-            this.hansenObjects = new FieldHansenThirdBodyLinear[MAX_POWER + 1];
+            this.hansenObjects = (FieldHansenThirdBodyLinear<T>[]) Array.newInstance(FieldHansenThirdBodyLinear.class, MAX_POWER + 1);
             for (int s = 0; s <= MAX_POWER; s++) {
                 this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s);
             }
         }
 
         /** Initialise the Hansen roots for third body problem.
-         * @param <T> type of the elements
          * @param context container for attributes
          * @param B = sqrt(1 - e²).
          * @param element element of the array to compute the init values
          */
-        @SuppressWarnings("unchecked")
-        public <T extends RealFieldElement<T>> void computeHansenObjectsInitValues(final FieldDSSTThirdBodyContext<T> context,
+        public void computeHansenObjectsInitValues(final FieldDSSTThirdBodyContext<T> context,
                                                    final T B, final int element) {
             hansenObjects[element].computeInitValues(B, context.getBB(), context.getBBB());
         }
@@ -3932,7 +3940,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         /** Get the Hansen Objects.
          * @return hansenObjects
          */
-        public FieldHansenThirdBodyLinear[] getHansenObjects() {
+        public FieldHansenThirdBodyLinear<T>[] getHansenObjects() {
             return hansenObjects;
         }
 
