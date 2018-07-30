@@ -212,10 +212,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         final int jMax = context.getMaxAR3Pow() + 1;
 
         if (pendingInitialization == true) {
+            fieldHansen.put(field, new FieldHansenObjects<>());
             pendingInitialization = false;
         }
-
-        fieldHansen.put(field, new FieldHansenObjects<>());
 
         final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
                         new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,

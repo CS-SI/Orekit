@@ -334,26 +334,26 @@ public class DSSTTesseral implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        // Initializes specific parameters.
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, meanOnly, parameters);
-
         if (pendingInitialization == true) {
+
+            // Initializes specific parameters.
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, meanOnly, parameters);
 
             // Compute the non resonant tesseral harmonic terms if not set by the user
             getNonResonantTerms(meanOnly, context, field);
 
+            // The following terms are only used for hansen objects initialization
+            final T      ratio            = context.getRatio();
+            final int maxEccPow           = context.getMaxEccPow();
+            final List<Integer> resOrders = context.getResOrders();
+
+
+            mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
+
+            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, meanOnly));
+
             pendingInitialization = false;
         }
-
-        // The following terms are only used for hansen objects initialization
-        final T      ratio            = context.getRatio();
-        final int maxEccPow           = context.getMaxEccPow();
-        final List<Integer> resOrders = context.getResOrders();
-
-
-        mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
-
-        fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, meanOnly));
 
         final FieldTesseralShortPeriodicCoefficients<T> ftspc =
                         new FieldTesseralShortPeriodicCoefficients<>(bodyFrame, maxOrderMdailyTesseralSP,

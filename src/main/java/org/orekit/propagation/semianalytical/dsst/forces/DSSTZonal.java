@@ -278,10 +278,10 @@ public class DSSTZonal implements DSSTForceModel {
                 maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
             }
 
+            fieldHansen.put(field, new FieldHansenObjects<>());
+
             pendingInitialization = false;
         }
-
-        fieldHansen.put(field, new FieldHansenObjects<>());
 
         final FieldZonalShortPeriodicCoefficients<T> fzspc =
                         new FieldZonalShortPeriodicCoefficients<>(maxFrequencyShortPeriodics,
