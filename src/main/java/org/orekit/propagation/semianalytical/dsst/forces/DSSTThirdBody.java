@@ -212,7 +212,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         final int jMax = context.getMaxAR3Pow() + 1;
 
         if (pendingInitialization == true) {
-            fieldHansen.put(field, new FieldHansenObjects<>());
+            fieldHansen.put(field, new FieldHansenObjects<>(field));
             pendingInitialization = false;
         }
 
@@ -3917,12 +3917,14 @@ public class DSSTThirdBody implements DSSTForceModel {
          * The index is s */
         private final FieldHansenThirdBodyLinear<T>[] hansenObjects;
 
-        /** Simple constructor. */
+        /** Simple constructor.
+         * @param field field used by default
+         */
         @SuppressWarnings("unchecked")
-        FieldHansenObjects() {
+        FieldHansenObjects(final Field<T> field) {
             this.hansenObjects = (FieldHansenThirdBodyLinear<T>[]) Array.newInstance(FieldHansenThirdBodyLinear.class, MAX_POWER + 1);
             for (int s = 0; s <= MAX_POWER; s++) {
-                this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s);
+                this.hansenObjects[s] = new FieldHansenThirdBodyLinear<>(MAX_POWER, s, field);
             }
         }
 

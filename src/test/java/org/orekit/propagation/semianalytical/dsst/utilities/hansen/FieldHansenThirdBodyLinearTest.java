@@ -114,7 +114,7 @@ public class FieldHansenThirdBodyLinearTest {
         final FieldHansenThirdBodyLinear<T>[] htbl = new FieldHansenThirdBodyLinear[N + 1];
 
         for (int s = 0; s <= N; s++) {
-            htbl[s] = new FieldHansenThirdBodyLinear<>(N, s);
+            htbl[s] = new FieldHansenThirdBodyLinear<>(N, s, field);
             htbl[s].computeInitValues(chi.reciprocal(), (chi.multiply(chi)).reciprocal(), (chi.multiply(chi).multiply(chi)).reciprocal());
         }
 

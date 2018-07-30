@@ -350,7 +350,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
-            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, meanOnly));
+            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, meanOnly, field));
 
             pendingInitialization = false;
         }
@@ -2910,6 +2910,9 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Computes init values of the Hansen Objects. */
     private class FieldHansenObjects<T extends RealFieldElement<T>> {
 
+        /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
+        private int maxHansen;
+
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */
         private FieldHansenTesseralLinear<T>[][] hansenObjects;
@@ -2919,12 +2922,17 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
          * @param resOrders List of resonant orders
          * @param meanOnly create only the objects required for the mean contribution
+         * @param field field used by default.
          */
         @SuppressWarnings("unchecked")
         FieldHansenObjects(final T ratio,
                            final int maxEccPow,
                            final List<Integer> resOrders,
-                           final boolean meanOnly) {
+                           final boolean meanOnly,
+                           final Field<T> field) {
+
+            // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+            maxHansen = maxEccPow / 2;
 
             //Allocate the two dimensional array
             final int rows     = 2 * maxDegree + 1;
@@ -2947,11 +2955,11 @@ public class DSSTTesseral implements DSSTForceModel {
                         final int n0 = FastMath.max(FastMath.max(2, m), s);
 
                         //Create the object for the pair j, s
-                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0);
+                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
 
                         if (s > 0 && s <= sMin) {
                             //Also create the object for the pair j, -s
-                            this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0);
+                            this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, field);
                         }
                     }
                 }
@@ -2961,7 +2969,7 @@ public class DSSTTesseral implements DSSTForceModel {
                     for (int s = -maxDegree; s <= maxDegree; s++) {
                         //Compute the n0 value
                         final int n0 = FastMath.max(2, FastMath.abs(s));
-                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0);
+                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
                     }
                 }
             }
@@ -2974,7 +2982,7 @@ public class DSSTTesseral implements DSSTForceModel {
          */
         public void computeHansenObjectsInitValues(final FieldDSSTTesseralContext<T> context,
                                                    final int rows, final int columns) {
-            hansenObjects[rows][columns].computeInitValues(context.getE2(), context.getChi(), context.getChi2(), context.getMaxHansen());
+            hansenObjects[rows][columns].computeInitValues(context.getE2(), context.getChi(), context.getChi2());
         }
 
         /** Get hansen object.

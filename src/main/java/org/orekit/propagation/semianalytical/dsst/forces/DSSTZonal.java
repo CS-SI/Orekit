@@ -278,7 +278,7 @@ public class DSSTZonal implements DSSTForceModel {
                 maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
             }
 
-            fieldHansen.put(field, new FieldHansenObjects<>());
+            fieldHansen.put(field, new FieldHansenObjects<>(field));
 
             pendingInitialization = false;
         }
@@ -4007,12 +4007,13 @@ public class DSSTZonal implements DSSTForceModel {
         private FieldHansenZonalLinear<T>[] hansenObjects;
 
         /** Simple constructor.
+         * @param field field used by default
          */
         @SuppressWarnings("unchecked")
-        FieldHansenObjects() {
+        FieldHansenObjects(final Field<T> field) {
             this.hansenObjects = (FieldHansenZonalLinear<T>[]) Array.newInstance(FieldHansenZonalLinear.class, maxEccPow + 1);
             for (int s = 0; s <= maxEccPow; s++) {
-                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s);
+                this.hansenObjects[s] = new FieldHansenZonalLinear<>(maxDegree, s, field);
             }
         }
 

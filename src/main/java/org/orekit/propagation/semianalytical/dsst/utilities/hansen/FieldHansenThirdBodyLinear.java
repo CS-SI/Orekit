@@ -82,8 +82,9 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
      *
      * @param nMax the maximum value of n
      * @param s the value of s
+     * @param field field used by default
      */
-    public FieldHansenThirdBodyLinear(final int nMax, final int s) {
+    public FieldHansenThirdBodyLinear(final int nMax, final int s, final Field<T> field) {
         // initialise fields
         this.nMax = nMax;
         N0 = s;
@@ -108,6 +109,9 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
         mpvecDeriv = new PolynomialFunction[this.nMax + 1][];
 
         this.numSlices  = FastMath.max(1, (nMax - s + SLICE - 2) / SLICE);
+
+        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
+        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
 
         // Prepare the database of the associated polynomials
         generatePolynomials();
@@ -279,8 +283,6 @@ public class FieldHansenThirdBodyLinear <T extends RealFieldElement<T>> {
     public void computeInitValues(final T chitm1, final T chitm2, final T chitm3) {
         final Field<T> field = chitm2.getField();
         final T zero = field.getZero();
-        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
-        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
         this.hansenRoot[0][0] = zero.add(twosp1dfosp1f);
         this.hansenRoot[0][1] = (chitm2.negate().add(this.twosp3)).multiply(this.twosp1dfosp2f);
         this.hansenDerivRoot[0][0] = zero;

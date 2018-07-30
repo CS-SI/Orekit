@@ -89,8 +89,9 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
      *
      * @param nMax the maximum (absolute) value of n coefficient
      * @param s s coefficient
+     * @param field field used by default
      */
-    public FieldHansenZonalLinear(final int nMax, final int s) {
+    public FieldHansenZonalLinear(final int nMax, final int s, final Field<T> field) {
         //Initialize fields
         this.offset = nMax + 1;
         this.Nmin = -nMax - 1;
@@ -107,6 +108,8 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
         mpvecDeriv = new PolynomialFunction[size][];
 
         this.numSlices  = FastMath.max((int) FastMath.ceil(((double) size) / SLICE), 1);
+        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
+        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
 
         // Prepare the data base of associated polynomials
         generatePolynomials();
@@ -233,8 +236,6 @@ public class FieldHansenZonalLinear <T extends RealFieldElement<T>> {
     public void computeInitValues(final T chi) {
         final Field<T> field = chi.getField();
         final T zero = field.getZero();
-        hansenRoot      = MathArrays.buildArray(field, numSlices, 2);
-        hansenDerivRoot = MathArrays.buildArray(field, numSlices, 2);
         // compute the values for n=s and n=s+1
         // See Danielson 2.7.3-(6a,b)
         hansenRoot[0][0] = zero;
