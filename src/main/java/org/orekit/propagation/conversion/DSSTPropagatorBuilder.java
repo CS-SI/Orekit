@@ -31,9 +31,9 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.utils.ParameterDriver;
@@ -55,10 +55,10 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     private AttitudeProvider attProvider;
 
     /** Type of the orbit used for the propagation.*/
-    private DSSTPropagationType propagationType;
+    private PropagationType propagationType;
 
     /** Type of the elements used to define the orbital state.*/
-    private DSSTPropagationType stateType;
+    private PropagationType stateType;
 
     /** Build a new instance.
      * <p>
@@ -80,8 +80,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     public DSSTPropagatorBuilder(final Orbit referenceOrbit,
                                  final ODEIntegratorBuilder builder,
                                  final double positionScale,
-                                 final DSSTPropagationType propagationType,
-                                 final DSSTPropagationType stateType)
+                                 final PropagationType propagationType,
+                                 final PropagationType stateType)
         throws OrekitException {
         super(referenceOrbit, PositionAngle.MEAN, positionScale, true);
         this.builder           = builder;

@@ -45,6 +45,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -68,7 +69,7 @@ public class DSSTPartialDerivativesTest {
     public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
                                     2.4e-3,
-                                    DSSTPropagationType.MEAN,
+                                    PropagationType.MEAN,
                                     OrbitType.EQUINOCTIAL);
     }
 
@@ -76,12 +77,12 @@ public class DSSTPartialDerivativesTest {
     public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
         doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                     5.e-3,
-                                    DSSTPropagationType.MEAN,
+                                    PropagationType.MEAN,
                                     OrbitType.EQUINOCTIAL);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
-                                             DSSTPropagationType type,
+                                             PropagationType type,
                                              OrbitType... orbitTypes)
         throws OrekitException {
 
@@ -219,15 +220,15 @@ public class DSSTPartialDerivativesTest {
 
     @Test
     public void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
-        doTestPropagation(DSSTPropagationType.MEAN, 7.0e-16);
+        doTestPropagation(PropagationType.MEAN, 7.0e-16);
     }
 
     @Test
     public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
-        doTestPropagation(DSSTPropagationType.OSCULATING, 4.0e-7);
+        doTestPropagation(PropagationType.OSCULATING, 4.0e-7);
     }
     
-    private void doTestPropagation(DSSTPropagationType type,
+    private void doTestPropagation(PropagationType type,
                                   double tolerance)
         throws OrekitException, FileNotFoundException, UnsupportedEncodingException {
 
@@ -318,8 +319,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN).getMapper();
+                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN).getMapper();
      }
     
     @Test(expected=OrekitException.class)
@@ -332,8 +333,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
+                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[5][6], new double[6][2]);
      }
@@ -348,8 +349,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
+                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[8][6], new double[6][2]);
      }
@@ -364,8 +365,8 @@ public class DSSTPartialDerivativesTest {
 
         double dP = 0.001;
         DSSTPropagator propagator =
-                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
+                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
         partials.setInitialJacobians(new SpacecraftState(orbit),
                                      new double[6][6], new double[7][2]);
      }
@@ -382,9 +383,9 @@ public class DSSTPartialDerivativesTest {
         DSSTForceModel sunAttraction  = new DSSTThirdBody(CelestialBodyFactory.getSun(), Constants.EIGEN5C_EARTH_MU);
         DSSTForceModel moonAttraction = new DSSTThirdBody(CelestialBodyFactory.getMoon(), Constants.EIGEN5C_EARTH_MU);
         DSSTPropagator propagator =
-                setUpPropagator(DSSTPropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
+                setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.EQUINOCTIAL,
                                 sunAttraction, moonAttraction);
-        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, DSSTPropagationType.MEAN);
+        DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, PropagationType.MEAN);
         try {
             partials.setInitialJacobians(new SpacecraftState(orbit),
                                          new double[6][6], new double[6][3]);
@@ -443,7 +444,7 @@ public class DSSTPartialDerivativesTest {
           return new SpacecraftState(orbit, attitude);
       }
 
-    private DSSTPropagator setUpPropagator(DSSTPropagationType type, Orbit orbit, double dP,
+    private DSSTPropagator setUpPropagator(PropagationType type, Orbit orbit, double dP,
                                            OrbitType orbitType,
                                            DSSTForceModel... models)
         throws OrekitException {

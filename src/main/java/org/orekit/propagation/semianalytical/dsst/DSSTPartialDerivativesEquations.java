@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -83,7 +84,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
     private boolean initialized;
 
     /** Type of the orbit used for the propagation.*/
-    private DSSTPropagationType propagationType;
+    private PropagationType propagationType;
 
     /** Simple constructor.
      * <p>
@@ -99,7 +100,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
      */
     public DSSTPartialDerivativesEquations(final String name,
                                            final DSSTPropagator propagator,
-                                           final DSSTPropagationType propagationType)
+                                           final PropagationType propagationType)
         throws OrekitException {
         this.name                   = name;
         this.selected               = null;

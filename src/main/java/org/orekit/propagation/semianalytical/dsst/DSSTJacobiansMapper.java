@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -83,7 +84,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     private double[] shortPeriodDerivatives;
 
     /** Type of the orbit used for the propagation.*/
-    private DSSTPropagationType propagationType;
+    private PropagationType propagationType;
 
     /** Simple constructor.
      * @param name name of the Jacobians
@@ -96,7 +97,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                         final ParameterDriversList parameters,
                         final DSSTPropagator propagator,
                         final Map<ParameterDriver, Integer> map,
-                        final DSSTPropagationType propagationType) {
+                        final PropagationType propagationType) {
 
         super(name, parameters);
 

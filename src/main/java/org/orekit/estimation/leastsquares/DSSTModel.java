@@ -37,6 +37,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -44,7 +45,6 @@ import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -115,7 +115,7 @@ public class DSSTModel implements ODModel {
     private RealMatrix jacobian;
 
     /** Type of the orbit used for the propagation.*/
-    private DSSTPropagationType propagationType;
+    private PropagationType propagationType;
 
     /** Simple constructor.
      * @param builders builders to use for propagation
@@ -129,7 +129,7 @@ public class DSSTModel implements ODModel {
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer,
-                     final DSSTPropagationType propagationType)
+                     final PropagationType propagationType)
         throws OrekitException {
 
         this.builders                        = builders;

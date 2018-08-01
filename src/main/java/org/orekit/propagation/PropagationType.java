@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst;
+package org.orekit.propagation;
 
-/** Enumerate to define the propagation type used
- *  by the {@link DSSTPropagator DSST propagator} .*/
-public enum DSSTPropagationType {
+/** Enumerate to define the propagation type used by the propagator.*/
+public enum PropagationType {
 
     /** Mean propagation. */
     MEAN,
