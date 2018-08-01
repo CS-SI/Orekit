@@ -25,7 +25,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -117,12 +116,12 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagationType;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
@@ -136,19 +135,19 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class DSSTOrbitDeterminationTest {
+public class DSSTOrbitDeterminationMeanElementsOnlyTest {
     
-    //@Test
-    // Orbit determination for Lageos2 based on SLR (range) measurements
+    @Test
+    // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
+    // For better accuracy, adding short period terms is necessary
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = DSSTOrbitDeterminationMeanElementsOnlyTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
@@ -156,44 +155,30 @@ public class DSSTOrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odLageos2 = run(DSSTPropagationType.MEAN, input, true);
+        ResultOD odLageos2 = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 0.1;
-        final double velocityAccuracy = 1e-4;
+        final double distanceAccuracy = 579;
+        final double velocityAccuracy = 1.4;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 4;
+        final int numberOfIte  = 9;
+        final int numberOfEval = 9;
 
-        //Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
-        System.out.println(estimatedPos);
-        System.out.println(estimatedVel);
+
         //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
         //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
         final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
         final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
-        //test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(odLageos2.measurementsParameters.getDrivers());
-        sortParametersChanges(list);
-        //final double[] stationOffSet = { -1.351682,  -2.180542,  -5.278784 };
-        //final double rangeBias = -7.923393;
-        final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
-        final double rangeBias = -0.286275;
-        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 258;
@@ -208,13 +193,14 @@ public class DSSTOrbitDeterminationTest {
     }
 
     @Test
-    // Orbit determination for GNSS satellite based on range measurements
+    // Orbit determination using only mean elements for GNSS satellite based on range measurements
+    // For better accuracy, adding short period terms is necessary
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
+        final String inputPath = DSSTOrbitDeterminationMeanElementsOnlyTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
@@ -222,32 +208,25 @@ public class DSSTOrbitDeterminationTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultOD odGNSS = run(DSSTPropagationType.OSCULATING, input, true);
+        ResultOD odGNSS = run(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 13.0;
-        final double velocityAccuracy = 5.0e-3;
+        final double distanceAccuracy = 1169;
+        final double velocityAccuracy = 1.6e-1;
 
         //test on the convergence
-        final int numberOfIte  = 11;//final int numberOfIte  = 8;
-        final int numberOfEval = 12;//final int numberOfEval = 9;
+        final int numberOfIte  = 11;
+        final int numberOfEval = 12;
 
-//        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-//        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
-        System.out.println(estimatedPos.getX());
-        System.out.println(estimatedPos.getY());
-        System.out.println(estimatedPos.getZ());
-        System.out.println(estimatedVel.getX());
-        System.out.println(estimatedVel.getY());
-        System.out.println(estimatedVel.getZ());
         final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
-        System.out.println(Vector3D.distance(refVel, estimatedVel));
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
@@ -255,148 +234,11 @@ public class DSSTOrbitDeterminationTest {
         final long nbRange = 4009;
         final double[] RefStatRange = { -2.555, 2.830, 0.0, 0.750 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               8.5);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               16);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 3);
 
-    }
-
-    //@Test
-    // Orbit determination for range, azimuth elevation measurements
-    public void testW3B()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-              OrekitException, ParseException {
-
-        // input in tutorial resources directory/output
-        final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
-        final File input  = new File(inputPath);
-
-        // configure Orekit data access
-        Utils.setDataRoot("orbit-determination/W3B:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        //orbit determination run.
-        ResultOD odsatW3 = run(DSSTPropagationType.MEAN, input, true);
-
-        //test
-        //definition of the accuracy for the test
-        final double distanceAccuracy = 0.1;
-        final double velocityAccuracy = 1e-4;
-        final double angleAccuracy    = 1e-5;
-
-        //test on the convergence (with some margins)
-//        Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
-//        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
-
-        //test on the estimated position and velocity
-        final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = odsatW3.getEstimatedPV().getVelocity();
-        final Vector3D refPos = new Vector3D(-40541446.255, -9905357.41, 206777.413);
-        final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.793);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
-
-        //test on propagator parameters
-        final double dragCoef  = -0.2154;
-        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
-        final Vector3D leakAcceleration0 =
-                        new Vector3D(odsatW3.propagatorParameters.getDrivers().get(1).getValue(),
-                                     odsatW3.propagatorParameters.getDrivers().get(3).getValue(),
-                                     odsatW3.propagatorParameters.getDrivers().get(5).getValue());
-        //Assert.assertEquals(7.215e-6, leakAcceleration.getNorm(), 1.0e-8);
-        Assert.assertEquals(8.002e-6, leakAcceleration0.getNorm(), 1.0e-8);
-        final Vector3D leakAcceleration1 =
-                        new Vector3D(odsatW3.propagatorParameters.getDrivers().get(2).getValue(),
-                                     odsatW3.propagatorParameters.getDrivers().get(4).getValue(),
-                                     odsatW3.propagatorParameters.getDrivers().get(6).getValue());
-        Assert.assertEquals(3.058e-10, leakAcceleration1.getNorm(), 1.0e-12);
-
-        //test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(odsatW3.measurementsParameters.getDrivers());
-        sortParametersChanges(list);
-
-        //station CastleRock
-        final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
-        final double   CastleRangeBias = 11274.4677;
-        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
-        Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
-
-        //station Fucino
-        final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
-        final double   FucRangeBias = 13467.8256;
-        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
-        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
-        Assert.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
-
-        //station Kumsan
-        final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
-        final double   KumRangeBias = 13512.57594;
-        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
-        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
-        Assert.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
-
-        //station Pretoria
-        final double[] PreAzElBias = { 0.030201539, 0.009747877 };
-        final double PreRangeBias = 13594.11889;
-        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
-        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
-        Assert.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
-
-        //station Uralla
-        final double[] UraAzElBias = { 0.167814449, -0.12305252 };
-        final double UraRangeBias = 13450.26738;
-        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
-        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
-        Assert.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
-
-        //test on statistic for the range residuals
-        final long nbRange = 182;
-        //statistics for the range residual (min, max, mean, std)
-        final double[] RefStatRange = { -18.39149369, 12.54165259, -4.32E-05, 4.374712716 };
-        Assert.assertEquals(nbRange, odsatW3.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odsatW3.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], odsatW3.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], odsatW3.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], odsatW3.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
-        //test on statistic for the azimuth residuals
-        final long nbAzi = 339;
-        //statistics for the azimuth residual (min, max, mean, std)
-        final double[] RefStatAzi = { -0.043033616, 0.025297558, -1.39E-10, 0.010063041 };
-        Assert.assertEquals(nbAzi, odsatW3.getAzimStat().getN());
-        Assert.assertEquals(RefStatAzi[0], odsatW3.getAzimStat().getMin(),               angleAccuracy);
-        Assert.assertEquals(RefStatAzi[1], odsatW3.getAzimStat().getMax(),               angleAccuracy);
-        Assert.assertEquals(RefStatAzi[2], odsatW3.getAzimStat().getMean(),              angleAccuracy);
-        Assert.assertEquals(RefStatAzi[3], odsatW3.getAzimStat().getStandardDeviation(), angleAccuracy);
-
-        //test on statistic for the elevation residuals
-        final long nbEle = 339;
-        final double[] RefStatEle = { -0.025061971, 0.056294405, -4.10E-11, 0.011604931 };
-        Assert.assertEquals(nbEle, odsatW3.getElevStat().getN());
-        Assert.assertEquals(RefStatEle[0], odsatW3.getElevStat().getMin(),               angleAccuracy);
-        Assert.assertEquals(RefStatEle[1], odsatW3.getElevStat().getMax(),               angleAccuracy);
-        Assert.assertEquals(RefStatEle[2], odsatW3.getElevStat().getMean(),              angleAccuracy);
-        Assert.assertEquals(RefStatEle[3], odsatW3.getElevStat().getStandardDeviation(), angleAccuracy);
-
-        RealMatrix covariances = odsatW3.getCovariances();
-        Assert.assertEquals(28, covariances.getRowDimension());
-        Assert.assertEquals(28, covariances.getColumnDimension());
-
-        // drag coefficient variance
-        Assert.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-5);
-
-        // leak-X constant term variance
-        Assert.assertEquals(2.0540e-12, covariances.getEntry(7, 7), 1.0e-16);
-
-        // leak-Y constant term variance
-        Assert.assertEquals(2.4930e-11, covariances.getEntry(9, 9), 1.0e-15);
-
-        // leak-Z constant term variance
-        Assert.assertEquals(7.6720e-11, covariances.getEntry(11, 11), 1.0e-15);
     }
 
     private class ResultOD {
@@ -404,11 +246,6 @@ public class DSSTOrbitDeterminationTest {
         private int numberOfEvaluation;
         private TimeStampedPVCoordinates estimatedPV;
         private StreamingStatistics rangeStat;
-        private StreamingStatistics azimStat;
-        private StreamingStatistics elevStat;
-        private ParameterDriversList propagatorParameters  ;
-        private ParameterDriversList measurementsParameters;
-        private RealMatrix covariances;
         ResultOD(ParameterDriversList  propagatorParameters,
                  ParameterDriversList  measurementsParameters,
                  int numberOfIteration, int numberOfEvaluation, TimeStampedPVCoordinates estimatedPV,
@@ -416,16 +253,10 @@ public class DSSTOrbitDeterminationTest {
                  StreamingStatistics azimStat, StreamingStatistics elevStat,
                  StreamingStatistics posStat, StreamingStatistics velStat,
                  RealMatrix covariances) {
-
-            this.propagatorParameters   = propagatorParameters;
-            this.measurementsParameters = measurementsParameters;
             this.numberOfIteration      = numberOfIteration;
             this.numberOfEvaluation     = numberOfEvaluation;
             this.estimatedPV            = estimatedPV;
             this.rangeStat              =  rangeStat;
-            this.azimStat               = azimStat;
-            this.elevStat               = elevStat;
-            this.covariances            = covariances;
         }
 
         public int getNumberOfIteration() {
@@ -444,21 +275,9 @@ public class DSSTOrbitDeterminationTest {
             return rangeStat;
         }
 
-        public StreamingStatistics getAzimStat() {
-            return azimStat;
-        }
-
-        public StreamingStatistics getElevStat() {
-            return elevStat;
-        }
-
-        public RealMatrix getCovariances() {
-            return covariances;
-        }
-
     }
 
-    private ResultOD run(final DSSTPropagationType type, final File input, final boolean print)
+    private ResultOD run(final File input, final boolean print)
         throws IOException, IllegalArgumentException, OrekitException, ParseException {
 
         // read input parameters
@@ -494,7 +313,7 @@ public class DSSTOrbitDeterminationTest {
 
         // propagator builder
         final DSSTPropagatorBuilder propagatorBuilder =
-                        createPropagatorBuilder(parser, conventions, gravityField, body, initialGuess, type);
+                        createPropagatorBuilder(parser, conventions, gravityField, body, initialGuess);
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
@@ -637,21 +456,6 @@ public class DSSTOrbitDeterminationTest {
                             estimator.getPhysicalCovariances(1.0e-10));
     } 
     
-    /** Sort parameters changes.
-     * @param parameters parameters list
-     */
-    private void sortParametersChanges(List<? extends ParameterDriver> parameters) {
-
-        // sort the parameters lexicographically
-        Collections.sort(parameters, new Comparator<ParameterDriver>() {
-            /** {@inheritDoc} */
-            @Override
-            public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
-                return pd1.getName().compareTo(pd2.getName());
-            }
-
-        });
-    }
 
     /** Create a propagator builder from input parameters
      * @param parser input file parser
@@ -667,10 +471,11 @@ public class DSSTOrbitDeterminationTest {
                                                           final IERSConventions conventions,
                                                           final UnnormalizedSphericalHarmonicsProvider gravityField,
                                                           final OneAxisEllipsoid body,
-                                                          final Orbit orbit,
-                                                          final DSSTPropagationType type)
+                                                          final Orbit orbit)
         throws NoSuchElementException, OrekitException {
 
+        // Reference values are given for a numerical orbit determination
+        // The DSST allows to use a bigger computation step
         final double minStep;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
             minStep = 0.001;
@@ -680,16 +485,16 @@ public class DSSTOrbitDeterminationTest {
 
         final double maxStep;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_MAX_STEP)) {
-            maxStep = 300;
+            maxStep = 300 * 1000;
         } else {
-            maxStep = parser.getDouble(ParameterKey.PROPAGATOR_MAX_STEP);
+            maxStep = parser.getDouble(ParameterKey.PROPAGATOR_MAX_STEP) * 1000;
         }
 
         final double dP;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_POSITION_ERROR)) {
-            dP = 10.0;
+            dP = 10 * 1000;
         } else {
-            dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR);
+            dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR) * 1000;
         }
 
         final double positionScale;
@@ -703,9 +508,9 @@ public class DSSTOrbitDeterminationTest {
                         new DSSTPropagatorBuilder(orbitEqui,
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   positionScale,
-                                                  type,
-                                                  DSSTPropagationType.MEAN);
-
+                                                  PropagationType.MEAN,
+                                                  PropagationType.MEAN);
+        
         // initial mass
         final double mass;
         if (!parser.containsKey(ParameterKey.MASS)) {
@@ -717,8 +522,8 @@ public class DSSTOrbitDeterminationTest {
 
         propagatorBuilder.addForceModel(new DSSTTesseral(body.getBodyFrame(),
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityField,
-                                                         4, 4, 4, 8, 4, 4, 2));
-        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, 4, 3, 9));
+                                                         8, 8, 4, 12, 8, 8, 6));
+        propagatorBuilder.addForceModel(new DSSTZonal(gravityField, 3, 0, 2));
         // third body attraction
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) &&
             parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
