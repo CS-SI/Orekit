@@ -105,6 +105,12 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Maximum power for eccentricity used in short periodic computation. */
     private static final int    MAX_ECCPOWER_SP = 4;
 
+    /** Max frequency of F. */
+    private int    maxFreqF;
+
+    /** Max frequency of F for field initialization. */
+    private int    maxFieldFreqF;
+
     /** The 3rd body to consider. */
     private final CelestialBody    body;
 
@@ -182,12 +188,13 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Initializes specific parameters.
         final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
 
-        final int jMax = context.getMaxAR3Pow() + 1;
+        maxFreqF = context.getMaxFreqF();
 
         hansen = new HansenObjects();
 
+        final int jMax = maxFreqF;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
-                                                              context.getMaxFreqF(), body.getName(),
+                                                              maxFreqF, body.getName(),
                                                               new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -206,19 +213,21 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
 
-        // Initializes specific parameters.
-        final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
-
-        final int jMax = context.getMaxAR3Pow() + 1;
-
         if (pendingInitialization == true) {
+            // Initializes specific parameters.
+            final FieldDSSTThirdBodyContext<T> context = initializeStep(auxiliaryElements, parameters);
+
+            maxFieldFreqF = context.getMaxFreqF();
+
             fieldHansen.put(field, new FieldHansenObjects<>(field));
+
             pendingInitialization = false;
         }
 
+        final int jMax = maxFieldFreqF;
         final FieldThirdBodyShortPeriodicCoefficients<T> ftbspc =
                         new FieldThirdBodyShortPeriodicCoefficients<>(jMax, INTERPOLATION_POINTS,
-                                                                      context.getMaxFreqF(), body.getName(),
+                                                                      maxFieldFreqF, body.getName(),
                                                                       new FieldTimeSpanMap<>(new FieldSlot<>(jMax,
                                                                                                              INTERPOLATION_POINTS),
                                                                                              field));
