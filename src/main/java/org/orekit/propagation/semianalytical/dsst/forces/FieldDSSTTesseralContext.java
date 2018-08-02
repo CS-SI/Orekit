@@ -131,7 +131,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * Performs initialization at each integration step for the current force model.
      * This class aims at being called before mean elements rates computation
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param meanOnly create only the objects required for the mean contribution
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxFrequencyShortPeriodics maximum value for j
@@ -140,7 +139,6 @@ public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends Fie
      * @throws OrekitException if some specific error occurs
      */
     public FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                    final boolean meanOnly,
                                     final Frame centralBodyFrame,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final int maxFrequencyShortPeriodics,

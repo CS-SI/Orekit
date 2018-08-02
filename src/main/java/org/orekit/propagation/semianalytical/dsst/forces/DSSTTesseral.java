@@ -298,7 +298,7 @@ public class DSSTTesseral implements DSSTForceModel {
         throws OrekitException {
 
         // Initializes specific parameters.
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, meanOnly, parameters);
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // The following terms are only used for hansen objects initialization
         final double ratio            = context.getRatio();
@@ -337,7 +337,7 @@ public class DSSTTesseral implements DSSTForceModel {
         if (pendingInitialization == true) {
 
             // Initializes specific parameters.
-            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, meanOnly, parameters);
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             // Compute the non resonant tesseral harmonic terms if not set by the user
             getNonResonantTerms(meanOnly, context, field);
@@ -374,14 +374,13 @@ public class DSSTTesseral implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param meanOnly create only the objects required for the mean contribution
      *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
-    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
         throws OrekitException {
-        return new DSSTTesseralContext(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
+        return new DSSTTesseralContext(auxiliaryElements, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -390,16 +389,14 @@ public class DSSTTesseral implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param meanOnly create only the objects required for the mean contribution
      *  @param parameters values of the force model parameters
      *  @return new force model context
      *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                       final boolean meanOnly,
                                                                                        final T[] parameters)
         throws OrekitException {
-        return new FieldDSSTTesseralContext<>(auxiliaryElements, meanOnly, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
+        return new FieldDSSTTesseralContext<>(auxiliaryElements, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
     /** {@inheritDoc} */
@@ -408,7 +405,7 @@ public class DSSTTesseral implements DSSTForceModel {
         throws OrekitException {
 
         // Container for attributes
-        final DSSTTesseralContext context = initializeStep(auxiliaryElements, true, parameters);
+        final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, hansen);
@@ -442,7 +439,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final Field<T> field = auxiliaryElements.getDate().getField();
 
         // Container for attributes
-        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, true, parameters);
+        final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
         @SuppressWarnings("unchecked")
         final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
@@ -487,7 +484,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
-            final DSSTTesseralContext context = initializeStep(auxiliaryElements, false, parameters);
+            final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
             // Initialise the Hansen coefficients
             for (int s = -maxDegree; s <= maxDegree; s++) {
@@ -551,7 +548,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
-            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, false, parameters);
+            final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
             // Initialise the Hansen coefficients
