@@ -126,7 +126,7 @@ public class DSSTPartialDerivativesTest {
             DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations("partials", propagator, type);
             final SpacecraftState initialState =
                     partials.setInitialJacobians(new SpacecraftState(initialOrbit));
-            propagator.setInitialState(initialState, false);
+            propagator.setInitialState(initialState, PropagationType.MEAN);
             final DSSTJacobiansMapper mapper = partials.getMapper();
             PickUpHandler pickUp = new PickUpHandler(mapper, null);
             propagator.setMasterMode(pickUp);
@@ -266,7 +266,7 @@ public class DSSTPartialDerivativesTest {
         final double[] stateVector = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
-        propagator.setInitialState(initialState, false);
+        propagator.setInitialState(initialState, PropagationType.MEAN);
         final DSSTJacobiansMapper mapper = partials.getMapper();
         PickUpHandler pickUp = new PickUpHandler(mapper, null);
         propagator.setMasterMode(pickUp);
@@ -279,21 +279,21 @@ public class DSSTPartialDerivativesTest {
         propagator2.setMu(provider.getMu());
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -3 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType, -3 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -2 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType, -2 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType, -1 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType, -1 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  1 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType,  1 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  2 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType,  2 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  3 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType,  3 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, orbitType,  4 * steps[i], i), false);
+            propagator2.setInitialState(shiftState(initialState, orbitType,  4 * steps[i], i), PropagationType.MEAN);
             SpacecraftState sP4h = propagator2.propagate(target);
             fillJacobianColumn(dYdY0Ref, i, orbitType, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
@@ -451,22 +451,10 @@ public class DSSTPartialDerivativesTest {
 
         final double minStep = 0.001;
         final double maxStep = 1000;
-
-        boolean meanOnly = true;
-        switch (type) {
-            case MEAN:
-                meanOnly = true;
-                break;
-
-            case OSCULATING:
-                meanOnly = false;
-            default:
-                break;
-        }
         
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =
-            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), meanOnly);
+            new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
         for (DSSTForceModel model : models) {
             propagator.addForceModel(model);
         }

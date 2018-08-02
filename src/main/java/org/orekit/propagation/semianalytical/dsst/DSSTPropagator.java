@@ -45,6 +45,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -161,10 +162,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  follow a Keplerian evolution only.
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
-     *  @param meanOnly output only the mean orbits.
+     *  @param propagationType type of orbit to output (mean or osculating).
      */
-    public DSSTPropagator(final ODEIntegrator integrator, final boolean meanOnly) {
-        super(integrator, meanOnly);
+    public DSSTPropagator(final ODEIntegrator integrator, final PropagationType propagationType) {
+        super(integrator, propagationType);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
@@ -186,7 +187,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param integrator numerical integrator to use for propagation.
      */
     public DSSTPropagator(final ODEIntegrator integrator) {
-        super(integrator, true);
+        super(integrator, PropagationType.MEAN);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
@@ -234,18 +235,27 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public void setInitialState(final SpacecraftState initialState)
         throws OrekitException {
-        setInitialState(initialState, true);
+        setInitialState(initialState, PropagationType.OSCULATING);
     }
 
     /** Set the initial state.
      *  @param initialState initial state
-     *  @param isOsculating true if the orbital state is defined with osculating elements
+     *  @param stateType defined if the orbital state is defined with osculating or mean elements
      *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState,
-                                final boolean isOsculating)
+                                final PropagationType stateType)
         throws OrekitException {
-        initialIsOsculating = isOsculating;
+        switch (stateType) {
+            case MEAN:
+                initialIsOsculating = false;
+                break;
+            case OSCULATING:
+                initialIsOsculating = true;
+                break;
+            default:
+                throw new OrekitInternalError(null);
+        }
         resetInitialState(initialState);
     }
 
@@ -777,7 +787,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         @Override
         public SpacecraftState mapArrayToState(final AbsoluteDate date,
                                                final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
+                                               final PropagationType type)
             throws OrekitException {
 
             // add short periodic variations to mean elements to get osculating elements
@@ -785,20 +795,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
             final Map<String, double[]> coefficients;
-            if (meanOnly) {
-                coefficients = null;
-            } else {
-                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
-                for (final ShortPeriodTerms spt : shortPeriodTerms) {
-                    final double[] shortPeriodic = spt.value(meanOrbit);
-                    for (int i = 0; i < shortPeriodic.length; i++) {
-                        elements[i] += shortPeriodic[i];
+            switch (type) {
+                case MEAN:
+                    coefficients = null;
+                    break;
+                case OSCULATING:
+                    final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
+                    coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
+                    for (final ShortPeriodTerms spt : shortPeriodTerms) {
+                        final double[] shortPeriodic = spt.value(meanOrbit);
+                        for (int i = 0; i < shortPeriodic.length; i++) {
+                            elements[i] += shortPeriodic[i];
+                        }
+                        if (selectedCoefficients != null) {
+                            coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                        }
                     }
-                    if (selectedCoefficients != null) {
-                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
-                    }
-                }
+                    break;
+                default:
+                    throw new OrekitInternalError(null);
             }
 
             final double mass = elements[6];
@@ -1080,7 +1095,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
                                                                           initialState.getPrimaryState(),
                                                                           initialState.getPrimaryDerivative(),
-                                                                          true);
+                                                                          PropagationType.MEAN);
 
                 // Compute short periodic coefficients for this point
                 for (DSSTForceModel forceModel : forceModels) {
@@ -1114,7 +1129,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     meanStates[i] = mapper.mapArrayToState(time,
                                                            sd.getPrimaryState(),
                                                            sd.getPrimaryDerivative(),
-                                                           true);
+                                                           PropagationType.MEAN);
 
                 }
 

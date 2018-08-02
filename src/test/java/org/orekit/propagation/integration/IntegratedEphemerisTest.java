@@ -50,6 +50,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.JacobiansMapper;
@@ -206,23 +207,23 @@ public class IntegratedEphemerisTest {
     @Test
     public void testSerializationDSSTMean()
         throws OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(true, 36703);
+        doTestSerializationDSST(PropagationType.MEAN, 36703);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
         throws OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(false, 618025);
+        doTestSerializationDSST(PropagationType.OSCULATING, 618025);
     }
 
-    private void doTestSerializationDSST(boolean meanOnly, int expectedSize)
+    private void doTestSerializationDSST(PropagationType type, int expectedSize)
         throws OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(10, Constants.JULIAN_DAY, tol[0], tol[1]);
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator, meanOnly);
-        dsstProp.setInitialState(new SpacecraftState(initialOrbit), false);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, type);
+        dsstProp.setInitialState(new SpacecraftState(initialOrbit), PropagationType.MEAN);
         dsstProp.setEphemerisMode();
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

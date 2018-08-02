@@ -209,7 +209,7 @@ public class DSSTPropagatorBuilderTest {
         
         tolerance  = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
-        propagator.setInitialState(new SpacecraftState(orbit, 1000.), false);
+        propagator.setInitialState(new SpacecraftState(orbit, 1000.), PropagationType.MEAN);
         propagator.addForceModel(moon);
 
     }

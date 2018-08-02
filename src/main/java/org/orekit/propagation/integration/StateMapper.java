@@ -21,6 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -158,24 +159,24 @@ public abstract class StateMapper {
      * @param t date offset
      * @param y state components
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final boolean meanOnly)
+    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final PropagationType type)
             throws OrekitException {
-        return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
+        return mapArrayToState(mapDoubleToDate(t), y, yDot, type);
     }
 
     /** Map the raw double components to a spacecraft state.
      * @param date of the state components
      * @param y state components
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, boolean meanOnly)
+    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.

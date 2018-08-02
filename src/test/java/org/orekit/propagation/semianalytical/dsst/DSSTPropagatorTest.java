@@ -67,6 +67,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -527,7 +528,7 @@ public class DSSTPropagatorTest {
 
         // Set propagator with state and force model
         dsstProp = new DSSTPropagator(new ClassicalRungeKuttaIntegrator(86400.));
-        dsstProp.setInitialState(new SpacecraftState(orbit), false);
+        dsstProp.setInitialState(new SpacecraftState(orbit), PropagationType.MEAN);
         dsstProp.addForceModel(zonal);
         dsstProp.addForceModel(tesseral);
         dsstProp.addForceModel(srp);
@@ -601,7 +602,7 @@ public class DSSTPropagatorTest {
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
-        DSSTPropagator propagator = new DSSTPropagator(integrator, true);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.MEAN);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -617,7 +618,7 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
 
 
-        propagator.setInitialState(new SpacecraftState(orbit, 45.0), true);
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.OSCULATING);
         SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is in fact meaningless
         // the initial orbit is osculating the final orbit is a mean orbit
@@ -625,7 +626,7 @@ public class DSSTPropagatorTest {
         // we keep it only as is was an historical test
         Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 1.0);
 
-        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is realistic
         // both the initial orbit and final orbit are mean orbits
@@ -647,7 +648,7 @@ public class DSSTPropagatorTest {
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
-        DSSTPropagator propagator = new DSSTPropagator(integrator, false);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -664,7 +665,7 @@ public class DSSTPropagatorTest {
         propagator.setInterpolationGridToMaxTimeGap(0.5 * Constants.JULIAN_DAY);
 
         // direct generation of states
-        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
         propagator.setMasterMode(
                 600,
@@ -672,7 +673,7 @@ public class DSSTPropagatorTest {
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation
-        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), PropagationType.MEAN);
         propagator.setEphemerisMode();
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
@@ -698,7 +699,7 @@ public class DSSTPropagatorTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
-        DSSTPropagator prop = new DSSTPropagator(integrator, true);
+        DSSTPropagator prop = new DSSTPropagator(integrator, PropagationType.MEAN);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 0);
@@ -710,8 +711,8 @@ public class DSSTPropagatorTest {
         prop.addForceModel(zonal);
         prop.addForceModel(tesseral);
 
-        // Set the initial state as osculating
-        prop.setInitialState(initialState, false);
+        // Set the initial state
+        prop.setInitialState(initialState, PropagationType.MEAN);
         // Check the stored initial state is the osculating one
         Assert.assertEquals(initialState, prop.getInitialState());
         // Check that no propagation, i.e. propagation to the initial date, provides the initial
@@ -783,7 +784,7 @@ public class DSSTPropagatorTest {
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
-        DSSTPropagator propagator = new DSSTPropagator(integrator, false);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -979,7 +980,7 @@ public class DSSTPropagatorTest {
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         dsstProp = new DSSTPropagator(integrator);
-        dsstProp.setInitialState(initialState, false);
+        dsstProp.setInitialState(initialState, PropagationType.MEAN);
     }
 
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {

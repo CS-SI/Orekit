@@ -87,7 +87,7 @@ public class DSSTModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
+        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -148,7 +148,7 @@ public class DSSTModelTest {
                 // Do nothing here 
             }
         };
-        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
+        final DSSTModel model = new DSSTModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }

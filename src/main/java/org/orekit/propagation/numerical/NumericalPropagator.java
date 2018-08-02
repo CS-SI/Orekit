@@ -38,6 +38,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -157,7 +158,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final ODEIntegrator integrator) {
-        super(integrator, true);
+        super(integrator, PropagationType.MEAN);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
@@ -367,9 +368,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
+                                               final PropagationType type)
             throws OrekitException {
-            // the parameter meanOnly is ignored for the Numerical Propagator
+            // the parameter type is ignored for the Numerical Propagator
 
             final double mass = y[6];
             if (mass <= 0.0) {

@@ -23,7 +23,6 @@ import java.util.List;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.leastsquares.DSSTModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -184,33 +183,12 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
         final Attitude         attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
 
-        DSSTPropagator propagator = null;
-        switch (propagationType) {
-            case MEAN :
-                propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), true);
-                break;
-            case OSCULATING :
-                propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), false);
-                break;
-            default:
-                throw new OrekitInternalError(null);
-        }
-
+        final DSSTPropagator propagator = new DSSTPropagator(builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL), propagationType);
         propagator.setAttitudeProvider(attProvider);
         for (DSSTForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
-
-        switch (stateType) {
-            case MEAN :
-                propagator.setInitialState(state, false);
-                break;
-            case OSCULATING :
-                propagator.setInitialState(state, true);
-                break;
-            default:
-                throw new OrekitInternalError(null);
-        }
+        propagator.setInitialState(state, stateType);
 
         return propagator;
     }
@@ -221,7 +199,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer)
         throws OrekitException {
-        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer, propagationType);
+        return new DSSTModel(builders, measurements, estimatedMeasurementsParameters, observer, propagationType, stateType);
     }
 
 }
