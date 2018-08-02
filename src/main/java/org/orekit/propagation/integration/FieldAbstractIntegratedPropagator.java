@@ -45,6 +45,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -53,6 +54,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
@@ -93,26 +95,26 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Flag for resetting the state at end of propagation. */
     private boolean resetAtEnd;
 
-    /** Output only the mean orbit. <br/>
+    /** Type of orbit to output (mean or osculating) <br/>
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private boolean meanOrbit;
+    private PropagationType propagationType;
 
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
-     * @param meanOrbit output only the mean orbit.
+     * @param propagationType type of orbit to output (mean or osculating).
      * @param field Field used by default
      */
-    protected FieldAbstractIntegratedPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final boolean meanOrbit) {
+    protected FieldAbstractIntegratedPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
         super(field);
-        detectors           = new ArrayList<FieldEventDetector<T>>();
-        additionalEquations = new ArrayList<FieldAdditionalEquations<T>>();
-        this.integrator     = integrator;
-        this.meanOrbit      = meanOrbit;
-        this.resetAtEnd     = true;
+        detectors            = new ArrayList<FieldEventDetector<T>>();
+        additionalEquations  = new ArrayList<FieldAdditionalEquations<T>>();
+        this.integrator      = integrator;
+        this.propagationType = propagationType;
+        this.resetAtEnd      = true;
     }
 
     /** Allow/disallow resetting the initial state at end of propagation.
@@ -167,7 +169,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @return true if only mean elements have to be used
      */
     protected boolean isMeanOrbit() {
-        return meanOrbit;
+        switch (propagationType) {
+            case MEAN:
+                return true;
+            case OSCULATING:
+                return false;
+            default:
+                throw new OrekitInternalError(null);
+        }
     }
 
     /** Set position angle type.
@@ -494,7 +503,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                                                                                     tEnd),
                                                         mathFinalState.getPrimaryState(),
                                                         mathFinalState.getPrimaryDerivative(),
-                                                        meanOrbit);
+                                                        propagationType);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final T[] secondary = mathFinalState.getSecondaryState(i + 1);
@@ -629,7 +638,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         throws OrekitException {
 
         // main state
-        FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, true);  //not sure of the mean orbit, should be true
+        FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, PropagationType.MEAN);  //not sure of the mean orbit, should be true
         // pre-integrated additional states
         state = updateAdditionalStates(state);
 
@@ -697,7 +706,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         public void init(final T t0, final T[] y0, final T finalTime) {
             try {
                 // update space dynamics view
-                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, true);
+                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
                 initialState = updateAdditionalStates(initialState);
                 final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
                 main.init(initialState, target);
@@ -714,7 +723,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 ++calls;
 
                 // update space dynamics view
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, true);
+                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -758,7 +767,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                          final T[] secondary0, final T finalTime) {
             try {
                 // update space dynamics view
-                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, PropagationType.MEAN);
                 initialState = updateAdditionalStates(initialState);
                 initialState = initialState.addAdditionalState(equations.getName(), secondary0);
                 final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
@@ -778,7 +787,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             try {
 
                 // update space dynamics view
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
+                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, PropagationType.MEAN);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -995,7 +1004,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                         stateMapper.mapArrayToState(os.getTime(),
                                                     os.getPrimaryState(),
                                                     os.getPrimaryDerivative(),
-                                                    meanOrbit);
+                                                    propagationType);
                 s = updateAdditionalStates(s);
                 for (int i = 0; i < additionalEquations.size(); ++i) {
                     final T[] secondary = os.getSecondaryState(i + 1);
@@ -1103,7 +1112,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
                         // create the ephemeris
                         ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                                   stateMapper, meanOrbit, model, unmanaged,
+                                                                   stateMapper, propagationType, model, unmanaged,
                                                                    getAdditionalStateProviders(), names);
 
                     }

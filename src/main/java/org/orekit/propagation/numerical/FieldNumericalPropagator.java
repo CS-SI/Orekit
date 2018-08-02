@@ -39,6 +39,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
@@ -164,7 +165,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @param field Field used by default
      */
     public FieldNumericalPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
-        super(field, integrator, true);
+        super(field, integrator, PropagationType.MEAN);
         this.field = field;
         forceModels = new ArrayList<ForceModel>();
         initMapper(field);
@@ -384,9 +385,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
-                                                       final boolean meanOnly)
+                                                       final PropagationType type)
             throws OrekitException {
-            // the parameter meanOnly is ignored for the Numerical Propagator
+            // the parameter type is ignored for the Numerical Propagator
 
             final T mass = y[6];
             if (mass.getReal() <= 0.0) {

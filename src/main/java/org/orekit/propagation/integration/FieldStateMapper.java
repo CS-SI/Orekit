@@ -23,6 +23,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** This class maps between raw double elements and {@link FieldSpacecraftState} instances.
@@ -158,24 +159,24 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param t date offset
      * @param y state components
      * @param yDot state derivative components
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating)
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final boolean meanOnly)
+    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final PropagationType type)
             throws OrekitException {
-        return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
+        return mapArrayToState(mapDoubleToDate(t), y, yDot, type);
     }
 
     /** Map the raw double components to a spacecraft state.
      * @param date of the state components
      * @param y state components
      * @param yDot state derivative components
-     * @param meanOnly use only the mean elements to build the state
+     * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, boolean meanOnly)
+    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, PropagationType type)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.

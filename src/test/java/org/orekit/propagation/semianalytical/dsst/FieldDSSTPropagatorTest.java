@@ -70,6 +70,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -568,7 +569,7 @@ public class FieldDSSTPropagatorTest {
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
         // Set propagator with state and force model
         final FieldDSSTPropagator<T> dsstPropagatorp = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(86400.)));
-        dsstPropagatorp.setInitialState(new FieldSpacecraftState<>(orbit), false);
+        dsstPropagatorp.setInitialState(new FieldSpacecraftState<>(orbit), PropagationType.MEAN);
         dsstPropagatorp.addForceModel(zonal);
         dsstPropagatorp.addForceModel(tesseral);
         dsstPropagatorp.addForceModel(srp);
@@ -655,7 +656,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.));
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, true);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -671,7 +672,7 @@ public class FieldDSSTPropagatorTest {
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius(), nshp.getMu()));
 
 
-        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), true);
+        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.OSCULATING);
         FieldSpacecraftState<T> finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is in fact meaningless
         // the initial orbit is osculating the final orbit is a mean orbit
@@ -679,7 +680,7 @@ public class FieldDSSTPropagatorTest {
         // we keep it only as is was an historical test
         Assert.assertEquals(2189.4, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
 
-        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), false);
+        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is realistic
         // both the initial orbit and final orbit are mean orbits
@@ -706,7 +707,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.));
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, false);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -723,7 +724,7 @@ public class FieldDSSTPropagatorTest {
         propagator.setInterpolationGridToMaxTimeGap(zero.add(0.5 * Constants.JULIAN_DAY));
 
         // direct generation of states
-        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), false);
+        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         final List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>();
         propagator.setMasterMode(
                 zero.add(600),
@@ -731,7 +732,7 @@ public class FieldDSSTPropagatorTest {
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation
-        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), false);
+        propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         propagator.setEphemerisMode();
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
@@ -762,7 +763,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
-        FieldDSSTPropagator<T> prop = new FieldDSSTPropagator<>(field, integrator, true);
+        FieldDSSTPropagator<T> prop = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 0);
@@ -774,8 +775,8 @@ public class FieldDSSTPropagatorTest {
         prop.addForceModel(zonal);
         prop.addForceModel(tesseral);
 
-        // Set the initial state as osculating
-        prop.setInitialState(initialState, false);
+        // Set the initial state
+        prop.setInitialState(initialState, PropagationType.MEAN);
         // Check the stored initial state is the osculating one
         Assert.assertEquals(initialState, prop.getInitialState());
         // Check that no propagation, i.e. propagation to the initial date, provides the initial
@@ -861,7 +862,7 @@ public class FieldDSSTPropagatorTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10));
-        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, false);
+        FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getGTOD(false));
@@ -1087,7 +1088,7 @@ public class FieldDSSTPropagatorTest {
         final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(1.), initialState.getOrbit());
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
         final FieldDSSTPropagator<T> dsstProp = new FieldDSSTPropagator<>(field, integrator);
-        dsstProp.setInitialState(initialState, false);
+        dsstProp.setInitialState(initialState, PropagationType.MEAN);
         
         return dsstProp;
     }

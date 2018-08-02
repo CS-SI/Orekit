@@ -47,6 +47,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
@@ -167,10 +168,10 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  </p>
      *  @param field field used by default
      *  @param integrator numerical integrator to use for propagation.
-     *  @param meanOnly output only the mean orbits.
+     *  @param propagationType type of orbit to output (mean or osculating).
      */
-    public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final boolean meanOnly) {
-        super(field, integrator, meanOnly);
+    public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator, final PropagationType propagationType) {
+        super(field, integrator, propagationType);
         this.field  = field;
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper(field);
@@ -193,7 +194,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      *  @param integrator numerical integrator to use for propagation.
      */
     public FieldDSSTPropagator(final Field<T> field, final FieldODEIntegrator<T> integrator) {
-        super(field, integrator, true);
+        super(field, integrator, PropagationType.MEAN);
         this.field  = field;
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper(field);
@@ -242,18 +243,27 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      */
     public void setInitialState(final FieldSpacecraftState<T> initialState)
         throws OrekitException {
-        setInitialState(initialState, true);
+        setInitialState(initialState, PropagationType.OSCULATING);
     }
 
     /** Set the initial state.
      *  @param initialState initial state
-     *  @param isOsculating true if the orbital state is defined with osculating elements
+     *  @param stateType defined if the orbital state is defined with osculating or mean elements
      *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final FieldSpacecraftState<T> initialState,
-                                final boolean isOsculating)
+                                final PropagationType stateType)
         throws OrekitException {
-        initialIsOsculating = isOsculating;
+        switch (stateType) {
+            case MEAN:
+                initialIsOsculating = false;
+                break;
+            case OSCULATING:
+                initialIsOsculating = true;
+                break;
+            default:
+                throw new OrekitInternalError(null);
+        }
         resetInitialState(initialState);
     }
 
@@ -790,7 +800,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         @Override
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date,
                                                        final T[] y, final T[] yDot,
-                                                       final boolean meanOnly)
+                                                       final PropagationType type)
             throws OrekitException {
 
             // add short periodic variations to mean elements to get osculating elements
@@ -798,20 +808,25 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             //  case we want to remain in mean parameters only)
             final T[] elements = y.clone();
             final Map<String, T[]> coefficients;
-            if (meanOnly) {
-                coefficients = null;
-            } else {
-                final FieldOrbit<T> meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
-                coefficients = selectedCoefficients == null ? null : new HashMap<String, T[]>();
-                for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
-                    final T[] shortPeriodic = spt.value(meanOrbit);
-                    for (int i = 0; i < shortPeriodic.length; i++) {
-                        elements[i] = elements[i].add(shortPeriodic[i]);
+            switch (type) {
+                case MEAN:
+                    coefficients = null;
+                    break;
+                case OSCULATING:
+                    final FieldOrbit<T> meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
+                    coefficients = selectedCoefficients == null ? null : new HashMap<String, T[]>();
+                    for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
+                        final T[] shortPeriodic = spt.value(meanOrbit);
+                        for (int i = 0; i < shortPeriodic.length; i++) {
+                            elements[i] = elements[i].add(shortPeriodic[i]);
+                        }
+                        if (selectedCoefficients != null) {
+                            coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                        }
                     }
-                    if (selectedCoefficients != null) {
-                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
-                    }
-                }
+                    break;
+                default:
+                    throw new OrekitInternalError(null);
             }
 
             final T mass = elements[6];
@@ -1032,7 +1047,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
                 final FieldSpacecraftState<T> meanStates = mapper.mapArrayToState(zero,
                                                                           initialState.getPrimaryState(),
                                                                           initialState.getPrimaryDerivative(),
-                                                                          true);
+                                                                          PropagationType.MEAN);
 
                 // Compute short periodic coefficients for this point
                 for (DSSTForceModel forceModel : forceModels) {
@@ -1067,7 +1082,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
                     meanStates[i] = mapper.mapArrayToState(time,
                                                            sd.getPrimaryState(),
                                                            sd.getPrimaryDerivative(),
-                                                           true);
+                                                           PropagationType.MEAN);
 
                 }
 
