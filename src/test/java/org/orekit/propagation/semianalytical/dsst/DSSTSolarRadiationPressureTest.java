@@ -43,6 +43,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
@@ -105,7 +106,7 @@ public class DSSTSolarRadiationPressureTest {
         // Force model parameters
         final double[] parameters = srp.getParameters();
         // Initialize force model
-        srp.initialize(auxiliaryElements, true, parameters);
+        srp.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
@@ -170,7 +171,7 @@ public class DSSTSolarRadiationPressureTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initialize(aux, false, srp.getParameters()));
+        shortPeriodTerms.addAll(srp.initialize(aux, PropagationType.OSCULATING, srp.getParameters()));
         srp.updateShortPeriodTerms(srp.getParameters(), meanState);
 
         double[] y = new double[6];

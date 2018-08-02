@@ -141,14 +141,16 @@ public class DSSTPartialDerivativesEquationsTest {
         public DerivativeStructure l;
 
         @Override
-        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly, double[] parameters)
+        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+                                                 PropagationType type,
+                                                 double[] parameters)
             throws OrekitException {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
         public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                         boolean meanOnly,
+                                                                                         PropagationType type,
                                                                                          T[] parameters)
             throws OrekitException {
             return new ArrayList<FieldShortPeriodTerms<T>>();

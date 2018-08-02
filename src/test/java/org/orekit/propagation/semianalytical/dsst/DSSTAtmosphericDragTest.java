@@ -48,6 +48,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -112,7 +113,7 @@ public class DSSTAtmosphericDragTest {
         // Force model parameters
         final double[] parameters = drag.getParameters();
         // Initialize force model
-        drag.initialize(auxiliaryElements, true, parameters);
+        drag.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
@@ -179,7 +180,7 @@ public class DSSTAtmosphericDragTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initialize(aux, false, drag.getParameters()));
+        shortPeriodTerms.addAll(drag.initialize(aux, PropagationType.OSCULATING, drag.getParameters()));
         drag.updateShortPeriodTerms(drag.getParameters(), meanState);
 
         double[] y = new double[6];

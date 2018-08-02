@@ -49,6 +49,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
@@ -211,7 +212,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
+                                             final double[] parameters)
         throws OrekitException {
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -226,7 +229,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final boolean meanOnly,
+                                                                                     final PropagationType type,
                                                                                      final T[] parameters)
         throws OrekitException {
 

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -291,18 +290,8 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
             final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-            // "field" initialization of the force model
-            switch (propagationType) {
-                case MEAN:
-                    forceModel.initialize(auxiliaryElements, true, parameters);
-                    break;
-                case OSCULATING:
-                    forceModel.initialize(auxiliaryElements, false, parameters);
-                    break;
-                default:
-                    throw new OrekitInternalError(null);
-            }
-
+            // "field" initialization of the force model if it was not done before
+            forceModel.initialize(auxiliaryElements, propagationType, parameters);
             final DerivativeStructure[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getAllDerivatives();
             final double[] derivativesEx = meanElementRate[1].getAllDerivatives();

@@ -460,7 +460,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
             force.updateShortPeriodTerms(force.getParameters(), mean);
         }
 
@@ -543,7 +543,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         throws OrekitException {
 
         // check if only mean elements must be used
-        final boolean meanOnly = isMeanOrbit();
+        final PropagationType type = isMeanOrbit();
 
         // compute common auxiliary elements
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
@@ -551,12 +551,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, meanOnly, force.getParameters()));
+            shortPeriodTerms.addAll(force.initialize(aux, type, force.getParameters()));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
         // if required, insert the special short periodics step handler
-        if (!meanOnly) {
+        if (type == PropagationType.OSCULATING) {
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
             final Collection<ODEStepHandler> stepHandlers = new ArrayList<ODEStepHandler>();
             stepHandlers.add(spHandler);
@@ -577,7 +577,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     protected void afterIntegration() throws OrekitException {
         // remove the special short periodics step handler if added before
-        if (!isMeanOrbit()) {
+        if (isMeanOrbit() == PropagationType.OSCULATING) {
             final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
             final ODEIntegrator integrator = getIntegrator();
             for (final ODEStepHandler sp : integrator.getStepHandlers()) {
@@ -640,7 +640,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
-                shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+                shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
                 force.updateShortPeriodTerms(force.getParameters(), meanState);
             }
 

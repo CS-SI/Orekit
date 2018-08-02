@@ -225,7 +225,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
                     final DerivativeStructure zero = dsState.getDate().getField().getZero();
                     final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-                    shortPeriodTerms.addAll(forceModel.initialize(auxiliaryElements, false, dsParameters));
+                    shortPeriodTerms.addAll(forceModel.initialize(auxiliaryElements, propagationType, dsParameters));
                     forceModel.updateShortPeriodTerms(dsParameters, dsState);
                     final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
                     Arrays.fill(shortPeriod, zero);

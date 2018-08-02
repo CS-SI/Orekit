@@ -46,6 +46,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -110,7 +111,7 @@ public class FieldDSSTZonalTest {
         final T[] parameters = zonal.getParameters(field);
         // Initialize force model
         zonal.initialize(auxiliaryElements,
-                         true, parameters);
+                         PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
@@ -151,7 +152,7 @@ public class FieldDSSTZonalTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initialize(aux, false, zonal.getParameters(field)));
+        shortPeriodTerms.addAll(zonal.initialize(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
         zonal.updateShortPeriodTerms(zonal.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -211,7 +212,7 @@ public class FieldDSSTZonalTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -332,7 +333,7 @@ public class FieldDSSTZonalTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -444,7 +445,7 @@ public class FieldDSSTZonalTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

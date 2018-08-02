@@ -31,6 +31,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -78,7 +79,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly,
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
                                              final double[] parameters)
         throws OrekitException {
         return Collections.emptyList();
@@ -87,7 +89,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final boolean meanOnly,
+                                                                                     final PropagationType type,
                                                                                      final T[] parameters)
         throws OrekitException {
         return Collections.emptyList();
@@ -118,7 +120,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTNewtonianAttractionContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                        final T[] parameters)
+                                                                                                  final T[] parameters)
         throws OrekitException {
         return new FieldDSSTNewtonianAttractionContext<>(auxiliaryElements, parameters);
     }

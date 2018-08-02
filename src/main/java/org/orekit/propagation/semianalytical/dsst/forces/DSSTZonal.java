@@ -42,6 +42,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -226,15 +227,22 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
+                                             final double[] parameters)
         throws OrekitException {
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
 
-        if (meanOnly) {
-            maxEccPow = maxEccPowMeanElements;
-        } else {
-            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+        switch (type) {
+            case MEAN:
+                maxEccPow = maxEccPowMeanElements;
+                break;
+            case OSCULATING:
+                maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+                break;
+            default:
+                throw new OrekitInternalError(null);
         }
 
         hansen = new HansenObjects();
@@ -262,7 +270,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final boolean meanOnly,
+                                                                                     final PropagationType type,
                                                                                      final T[] parameters)
         throws OrekitException {
 
@@ -272,10 +280,15 @@ public class DSSTZonal implements DSSTForceModel {
         if (pendingInitialization == true) {
             computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
-            if (meanOnly) {
-                maxEccPow = maxEccPowMeanElements;
-            } else {
-                maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+            switch (type) {
+                case MEAN:
+                    maxEccPow = maxEccPowMeanElements;
+                    break;
+                case OSCULATING:
+                    maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+                    break;
+                default:
+                    throw new OrekitInternalError(null);
             }
 
             fieldHansen.put(field, new FieldHansenObjects<>(field));

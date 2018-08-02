@@ -39,6 +39,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
@@ -89,7 +90,7 @@ public class DSSTTesseralTest {
         final double[] parameters = tesseral.getParameters();
 
         // Initialize force model
-        tesseral.initialize(auxiliaryElements, true, parameters);
+        tesseral.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -137,7 +138,7 @@ public class DSSTTesseralTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters()));
+        shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
         force.updateShortPeriodTerms(force.getParameters(), meanState);
         
         double[] y = new double[6];

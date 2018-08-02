@@ -35,6 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
@@ -84,7 +85,7 @@ public class DSSTZonalTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
         
         // Initialize force model
-        zonal.initialize(auxiliaryElements, true, parameters);
+        zonal.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
         
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -117,7 +118,7 @@ public class DSSTZonalTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initialize(aux, false, zonal.getParameters()));
+        shortPeriodTerms.addAll(zonal.initialize(aux, PropagationType.OSCULATING, zonal.getParameters()));
         zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
 
         double[] y = new double[6];

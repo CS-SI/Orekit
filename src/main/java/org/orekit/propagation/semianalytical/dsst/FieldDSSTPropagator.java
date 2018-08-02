@@ -469,7 +469,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
             force.updateShortPeriodTerms(force.getParameters(field), mean);
         }
 
@@ -552,7 +552,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         throws OrekitException {
 
         // check if only mean elements must be used
-        final boolean meanOnly = isMeanOrbit();
+        final PropagationType type = isMeanOrbit();
 
         // compute common auxiliary elements
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(initialState.getOrbit(), I);
@@ -560,12 +560,12 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, meanOnly, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initialize(aux, type, force.getParameters(field)));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
         // if required, insert the special short periodics step handler
-        if (!meanOnly) {
+        if (type == PropagationType.OSCULATING) {
             final FieldShortPeriodicsHandler spHandler = new FieldShortPeriodicsHandler(forceModels);
             final Collection<FieldODEStepHandler<T>> stepHandlers = new ArrayList<FieldODEStepHandler<T>>();
             stepHandlers.add(spHandler);
@@ -586,7 +586,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
     @Override
     protected void afterIntegration() throws OrekitException {
         // remove the special short periodics step handler if added before
-        if (!isMeanOrbit()) {
+        if (isMeanOrbit() ==  PropagationType.OSCULATING) {
             final List<FieldODEStepHandler<T>> preserved = new ArrayList<FieldODEStepHandler<T>>();
             final FieldODEIntegrator<T> integrator = getIntegrator();
 //            for (final FieldODEStepHandler<T> sp : integrator.getStepHandlers()) {
@@ -653,7 +653,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             // Set the force models
             final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
             for (final DSSTForceModel force : forceModel) {
-                shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters(field)));
+                shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
                 force.updateShortPeriodTerms(force.getParameters(field), meanState);
             }
 

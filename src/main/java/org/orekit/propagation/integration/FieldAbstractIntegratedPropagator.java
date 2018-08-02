@@ -45,7 +45,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -166,17 +165,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     }
 
     /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return true if only mean elements have to be used
+     * @return {@link PropagationType MEAN} if only mean elements have to be used or
+     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
-    protected boolean isMeanOrbit() {
-        switch (propagationType) {
-            case MEAN:
-                return true;
-            case OSCULATING:
-                return false;
-            default:
-                throw new OrekitInternalError(null);
-        }
+    protected PropagationType isMeanOrbit() {
+        return propagationType;
     }
 
     /** Set position angle type.

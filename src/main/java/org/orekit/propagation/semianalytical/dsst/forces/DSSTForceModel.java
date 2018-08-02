@@ -24,6 +24,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -67,13 +68,13 @@ public interface DSSTForceModel {
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements are used during the propagation
+     *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, boolean meanOnly, double[] parameters)
+    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, PropagationType type, double[] parameters)
         throws OrekitException;
 
     /** Performs initialization prior to propagation for the current force model.
@@ -82,13 +83,13 @@ public interface DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements are used during the propagation
+     *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements, boolean meanOnly, T[] parameters)
+    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements, PropagationType type, T[] parameters)
         throws OrekitException;
 
     /** Get force model parameters.

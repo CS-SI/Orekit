@@ -63,6 +63,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContribution;
@@ -150,7 +151,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         final T[] parameters = srp.getParameters(field);
         // Initialize force model
         srp.initialize(auxiliaryElements,
-                        true, parameters);
+                        PropagationType.MEAN, parameters);
 
         // Compute the mean element rate
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -218,7 +219,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initialize(aux, false, srp.getParameters(field)));
+        shortPeriodTerms.addAll(srp.initialize(aux, PropagationType.OSCULATING, srp.getParameters(field)));
         srp.updateShortPeriodTerms(srp.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -397,7 +398,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         srp.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -533,7 +534,7 @@ public class FieldDSSTSolarRadiationPressureTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(srp.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         srp.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -626,7 +627,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

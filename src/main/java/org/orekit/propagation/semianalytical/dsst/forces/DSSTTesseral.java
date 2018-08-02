@@ -51,6 +51,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -294,7 +295,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
+                                             final double[] parameters)
         throws OrekitException {
 
         // Initializes specific parameters.
@@ -306,9 +309,9 @@ public class DSSTTesseral implements DSSTForceModel {
         final List<Integer> resOrders = context.getResOrders();
 
         // Compute the non resonant tesseral harmonic terms if not set by the user
-        getNonResonantTerms(meanOnly, context);
+        getNonResonantTerms(type, context);
 
-        hansen = new HansenObjects(ratio, maxEccPow, resOrders, meanOnly);
+        hansen = new HansenObjects(ratio, maxEccPow, resOrders, type);
 
         mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
@@ -327,7 +330,7 @@ public class DSSTTesseral implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final boolean meanOnly,
+                                                                                     final PropagationType type,
                                                                                      final T[] parameters)
         throws OrekitException {
 
@@ -340,7 +343,7 @@ public class DSSTTesseral implements DSSTForceModel {
             final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
             // Compute the non resonant tesseral harmonic terms if not set by the user
-            getNonResonantTerms(meanOnly, context, field);
+            getNonResonantTerms(type, context, field);
 
             // The following terms are only used for hansen objects initialization
             final T      ratio            = context.getRatio();
@@ -350,7 +353,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
             mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
-            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, meanOnly, field));
+            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, type, field));
 
             pendingInitialization = false;
         }
@@ -711,10 +714,10 @@ public class DSSTTesseral implements DSSTForceModel {
      /**
       * Get the non-resonant tesseral terms in the central body spherical harmonic field.
       *
-      * @param resonantOnly extract only resonant terms
+      * @param type type of the elements used during the propagation
       * @param context container for attributes
       */
-    private void getNonResonantTerms(final boolean resonantOnly, final DSSTTesseralContext context) {
+    private void getNonResonantTerms(final PropagationType type, final DSSTTesseralContext context) {
 
         // Compute natural resonant terms
         final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
@@ -730,7 +733,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 jRes = jComputedRes;
             }
 
-            if (!resonantOnly && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
+            if (type == PropagationType.OSCULATING && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
                 //compute non resonant orders in the tesseral harmonic field
                 final List<Integer> listJofM = new ArrayList<Integer>();
                 //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
@@ -748,11 +751,11 @@ public class DSSTTesseral implements DSSTForceModel {
     /**
      * Get the non-resonant tesseral terms in the central body spherical harmonic field.
      * @param <T> type of the elements
-     * @param resonantOnly extract only resonant terms
+     * @param type type of the elements used during the propagation
      * @param context container for attributes
      * @param field field used by default
      */
-    private <T extends RealFieldElement<T>> void getNonResonantTerms(final boolean resonantOnly,
+    private <T extends RealFieldElement<T>> void getNonResonantTerms(final PropagationType type,
                                                                      final FieldDSSTTesseralContext<T> context,
                                                                      final Field<T> field) {
 
@@ -771,7 +774,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 jRes = jComputedRes;
             }
 
-            if (!resonantOnly && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
+            if (type == PropagationType.OSCULATING && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
                 //compute non resonant orders in the tesseral harmonic field
                 final List<Integer> listJofM = new ArrayList<Integer>();
                 //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
@@ -2835,12 +2838,12 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param ratio Ratio of satellite period to central body rotation period
          * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
          * @param resOrders List of resonant orders
-         * @param meanOnly create only the objects required for the mean contribution
+         * @param type type of the elements used during the propagation
          */
         HansenObjects(final double ratio,
                       final int maxEccPow,
                       final List<Integer> resOrders,
-                      final boolean meanOnly) {
+                      final PropagationType type) {
 
             // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
             maxHansen = maxEccPow / 2;
@@ -2850,40 +2853,48 @@ public class DSSTTesseral implements DSSTForceModel {
             final int columns  = maxFrequencyShortPeriodics + 1;
             this.hansenObjects = new HansenTesseralLinear[rows][columns];
 
-            if (meanOnly) {
-                // loop through the resonant orders
-                for (int m : resOrders) {
-                    //Compute the corresponding j term
-                    final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+            switch (type) {
+                case MEAN:
+                    // loop through the resonant orders
+                    for (int m : resOrders) {
+                        //Compute the corresponding j term
+                        final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
 
-                    //Compute the sMin and sMax values
-                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+                        //Compute the sMin and sMax values
+                        final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                        final int sMax = FastMath.min(maxEccPow + j, maxDegree);
 
-                    //loop through the s values
-                    for (int s = 0; s <= sMax; s++) {
-                        //Compute the n0 value
-                        final int n0 = FastMath.max(FastMath.max(2, m), s);
+                        //loop through the s values
+                        for (int s = 0; s <= sMax; s++) {
+                            //Compute the n0 value
+                            final int n0 = FastMath.max(FastMath.max(2, m), s);
 
-                        //Create the object for the pair j, s
-                        this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+                            //Create the object for the pair j, s
+                            this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
 
-                        if (s > 0 && s <= sMin) {
-                            //Also create the object for the pair j, -s
-                            this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
+                            if (s > 0 && s <= sMin) {
+                                //Also create the object for the pair j, -s
+                                this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
+                            }
                         }
                     }
-                }
-            } else {
-                // create all objects
-                for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
-                    for (int s = -maxDegree; s <= maxDegree; s++) {
-                        //Compute the n0 value
-                        final int n0 = FastMath.max(2, FastMath.abs(s));
-                        this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+                    break;
+
+                case OSCULATING:
+                    // create all objects
+                    for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                        for (int s = -maxDegree; s <= maxDegree; s++) {
+                            //Compute the n0 value
+                            final int n0 = FastMath.max(2, FastMath.abs(s));
+                            this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+                        }
                     }
-                }
+                    break;
+
+                default:
+                    throw new OrekitInternalError(null);
             }
+
         }
 
         /** Compute init values for hansen objects.
@@ -2918,14 +2929,14 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param ratio Ratio of satellite period to central body rotation period
          * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
          * @param resOrders List of resonant orders
-         * @param meanOnly create only the objects required for the mean contribution
+         * @param type type of the elements used during the propagation
          * @param field field used by default.
          */
         @SuppressWarnings("unchecked")
         FieldHansenObjects(final T ratio,
                            final int maxEccPow,
                            final List<Integer> resOrders,
-                           final boolean meanOnly,
+                           final PropagationType type,
                            final Field<T> field) {
 
             // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
@@ -2936,40 +2947,48 @@ public class DSSTTesseral implements DSSTForceModel {
             final int columns  = maxFrequencyShortPeriodics + 1;
             this.hansenObjects = (FieldHansenTesseralLinear<T>[][]) Array.newInstance(FieldHansenTesseralLinear.class, rows, columns);
 
-            if (meanOnly) {
-                // loop through the resonant orders
-                for (int m : resOrders) {
-                    //Compute the corresponding j term
-                    final int j = FastMath.max(1, (int) FastMath.round(ratio.multiply(m)));
+            switch (type) {
+                case MEAN:
+                 // loop through the resonant orders
+                    for (int m : resOrders) {
+                        //Compute the corresponding j term
+                        final int j = FastMath.max(1, (int) FastMath.round(ratio.multiply(m)));
 
-                    //Compute the sMin and sMax values
-                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+                        //Compute the sMin and sMax values
+                        final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                        final int sMax = FastMath.min(maxEccPow + j, maxDegree);
 
-                    //loop through the s values
-                    for (int s = 0; s <= sMax; s++) {
-                        //Compute the n0 value
-                        final int n0 = FastMath.max(FastMath.max(2, m), s);
+                        //loop through the s values
+                        for (int s = 0; s <= sMax; s++) {
+                            //Compute the n0 value
+                            final int n0 = FastMath.max(FastMath.max(2, m), s);
 
-                        //Create the object for the pair j, s
-                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
+                            //Create the object for the pair j, s
+                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
 
-                        if (s > 0 && s <= sMin) {
-                            //Also create the object for the pair j, -s
-                            this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, field);
+                            if (s > 0 && s <= sMin) {
+                                //Also create the object for the pair j, -s
+                                this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, field);
+                            }
                         }
                     }
-                }
-            } else {
-                // create all objects
-                for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
-                    for (int s = -maxDegree; s <= maxDegree; s++) {
-                        //Compute the n0 value
-                        final int n0 = FastMath.max(2, FastMath.abs(s));
-                        this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
+                    break;
+
+                case OSCULATING:
+                    // create all objects
+                    for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
+                        for (int s = -maxDegree; s <= maxDegree; s++) {
+                            //Compute the n0 value
+                            final int n0 = FastMath.max(2, FastMath.abs(s));
+                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
+                        }
                     }
-                }
+                    break;
+
+                default:
+                    throw new OrekitInternalError(null);
             }
+
         }
 
         /** Compute init values for hansen objects.

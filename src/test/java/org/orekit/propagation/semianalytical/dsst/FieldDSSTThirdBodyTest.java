@@ -46,6 +46,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -109,7 +110,7 @@ public class FieldDSSTThirdBodyTest {
         final T[] parameters = moon.getParameters(field);
         // Initialize force model
         moon.initialize(auxiliaryElements,
-                        true, parameters);
+                        PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
@@ -153,7 +154,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
             force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
@@ -223,7 +224,7 @@ public class FieldDSSTThirdBodyTest {
             Arrays.fill(shortPeriod, zero);
             
             final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, false, dsParameters));
+            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             force.updateShortPeriodTerms(dsParameters, dsState);
             
             for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
@@ -349,7 +350,7 @@ public class FieldDSSTThirdBodyTest {
           
             // Compute Jacobian using directly the method
             final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, false, dsParameters));
+            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             forceModel.updateShortPeriodTerms(dsParameters, dsState);
             final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
             Arrays.fill(shortPeriod, zero);
@@ -466,7 +467,7 @@ public class FieldDSSTThirdBodyTest {
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             double[] parameters = force.getParameters();
-            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, state);
         }
         

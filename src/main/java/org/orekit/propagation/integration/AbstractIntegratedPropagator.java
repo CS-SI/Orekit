@@ -155,17 +155,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return true if only mean elements have to be used
+     * @return {@link PropagationType MEAN} if only mean elements have to be used or
+     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
-    protected boolean isMeanOrbit() {
-        switch (propagationType) {
-            case MEAN:
-                return true;
-            case OSCULATING:
-                return false;
-            default:
-                throw new OrekitInternalError(null);
-        }
+    protected PropagationType isMeanOrbit() {
+        return propagationType;
     }
 
     /** Set position angle type.

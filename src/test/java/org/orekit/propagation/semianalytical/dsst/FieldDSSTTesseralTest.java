@@ -34,6 +34,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -101,7 +102,7 @@ public class FieldDSSTTesseralTest {
         final T[] parameters = tesseral.getParameters(field);
         // Initialize force model
         tesseral.initialize(auxiliaryElements,
-                            true, parameters);
+                            PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
         Arrays.fill(elements, zero);
@@ -162,7 +163,7 @@ public class FieldDSSTTesseralTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initialize(aux, false, force.getParameters(field)));
+        shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
         force.updateShortPeriodTerms(force.getParameters(field), meanState);
         
         T[] y = MathArrays.buildArray(field, 6);
@@ -227,7 +228,7 @@ public class FieldDSSTTesseralTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(tesseral.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(tesseral.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         tesseral.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -350,7 +351,7 @@ public class FieldDSSTTesseralTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(tesseral.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(tesseral.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         tesseral.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -443,7 +444,7 @@ public class FieldDSSTTesseralTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

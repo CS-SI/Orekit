@@ -62,6 +62,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
@@ -145,7 +146,7 @@ public class FieldDSSTAtmosphericDragTest {
         final T[] parameters = drag.getParameters(field);
         // Initialize force model
         drag.initialize(auxiliaryElements,
-                        true, parameters);
+                        PropagationType.MEAN, parameters);
 
         // Compute the mean element rate
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -215,7 +216,7 @@ public class FieldDSSTAtmosphericDragTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initialize(aux, false, drag.getParameters(field)));
+        shortPeriodTerms.addAll(drag.initialize(aux, PropagationType.OSCULATING, drag.getParameters(field)));
         drag.updateShortPeriodTerms(drag.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -288,7 +289,7 @@ public class FieldDSSTAtmosphericDragTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(drag.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(drag.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         drag.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -428,7 +429,7 @@ public class FieldDSSTAtmosphericDragTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
-        shortPeriodTerms.addAll(drag.initialize(fieldAuxiliaryElements, false, dsParameters));
+        shortPeriodTerms.addAll(drag.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         drag.updateShortPeriodTerms(dsParameters, dsState);
         final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
         Arrays.fill(shortPeriod, zero);
@@ -521,7 +522,7 @@ public class FieldDSSTAtmosphericDragTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, false, parameters));
+        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

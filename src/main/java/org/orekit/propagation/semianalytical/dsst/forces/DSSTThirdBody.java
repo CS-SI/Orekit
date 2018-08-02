@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -177,12 +178,14 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  potential terms bigger than a defined tolerance.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements will be used for the propagation
+     *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters
      *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final boolean meanOnly, final double[] parameters)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+                                             final PropagationType type,
+                                             final double[] parameters)
         throws OrekitException {
 
         // Initializes specific parameters.
@@ -206,7 +209,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                     final boolean meanOnly,
+                                                                                     final PropagationType type,
                                                                                      final T[] parameters)
         throws OrekitException {
 
