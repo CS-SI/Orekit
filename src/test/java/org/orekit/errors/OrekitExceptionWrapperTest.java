@@ -19,8 +19,6 @@ package org.orekit.errors;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.Utils;
-import org.orekit.time.TimeScalesFactory;
 
 @Deprecated
 public class OrekitExceptionWrapperTest {
@@ -28,13 +26,11 @@ public class OrekitExceptionWrapperTest {
     @Test
     public void testDeprecated() {
         try {
-            Utils.clearFactories();
             try {
-                TimeScalesFactory.getUTC();
+                throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
-            Assert.fail("an exception should have been thrown");
         } catch (OrekitExceptionWrapper oew) {
             OrekitException oe = oew.getException();
             Assert.assertEquals(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED, oe.getSpecifier());
