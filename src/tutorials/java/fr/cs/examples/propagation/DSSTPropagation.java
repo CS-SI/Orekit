@@ -65,6 +65,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -265,13 +266,15 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.MASS)) {
             mass = parser.getDouble(ParameterKey.MASS);
         }
-        boolean initialIsOsculating = false;
+        PropagationType initialType = PropagationType.MEAN;
         if (parser.containsKey(ParameterKey.INITIAL_ORBIT_IS_OSCULATING)) {
-            initialIsOsculating = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING);
+            initialType = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING) ?
+                          PropagationType.OSCULATING : PropagationType.MEAN;
         }
-        boolean outputIsOsculating = initialIsOsculating;
+        PropagationType outputType = initialType;
         if (parser.containsKey(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING)) {
-            outputIsOsculating = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING);
+            outputType = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING) ?
+                         PropagationType.OSCULATING : PropagationType.MEAN;
         }
         List<String> shortPeriodCoefficients = null;
         if (parser.containsKey(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS)) {
@@ -287,7 +290,7 @@ public class DSSTPropagation {
                 // general case, we have an explicit list of coefficients names
                 Collections.sort(shortPeriodCoefficients);
             }
-            if (shortPeriodCoefficients != null && !outputIsOsculating) {
+            if (shortPeriodCoefficients != null && outputType != PropagationType.OSCULATING) {
                 System.out.println("\nWARNING:");
                 System.out.println("Short periodic coefficients can be output only if output orbit is osculating.");
                 System.out.println("No coefficients will be computed here.\n");
@@ -311,7 +314,7 @@ public class DSSTPropagation {
             }
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
-                                                       initialIsOsculating, outputIsOsculating,
+                                                       initialType, outputType,
                                                        fixedStepSize, minStep, maxStep, dP,
                                                        shortPeriodCoefficients);
 
@@ -377,7 +380,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
                 && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
 
-            if ( !outputIsOsculating ) {
+            if (outputType == PropagationType.MEAN) {
                 System.out.println("\nWARNING:");
                 System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
                 System.out.println("The comparison will be meaningless.\n");
@@ -508,8 +511,8 @@ public class DSSTPropagation {
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
-                                          final boolean initialIsOsculating,
-                                          final boolean outputIsOsculating,
+                                          final PropagationType initialType,
+                                          final PropagationType outputType,
                                           final double fixedStepSize,
                                           final double minStep,
                                           final double maxStep,
@@ -525,8 +528,8 @@ public class DSSTPropagation {
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator, !outputIsOsculating);
-        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, outputType);
+        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialType);
         dsstProp.setSelectedCoefficients(shortPeriodCoefficients == null ?
                                          null : new HashSet<String>(shortPeriodCoefficients));
 
