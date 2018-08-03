@@ -236,8 +236,7 @@ public class TDMParser extends DefaultHandler {
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
      */
-    public TDMFile parse(final InputStream stream, final String fileName)
-        throws  OrekitException {
+    public TDMFile parse(final InputStream stream, final String fileName) {
 
         // Set the format of the file automatically
         // If it is obvious and was not formerly specified
@@ -266,8 +265,7 @@ public class TDMParser extends DefaultHandler {
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
      */
-    public TDMFile parseKeyValue(final InputStream stream, final String fileName)
-        throws  OrekitException {
+    public TDMFile parseKeyValue(final InputStream stream, final String fileName) {
 
         final KeyValueHandler handler = new KeyValueHandler(new ParseInfo(this.getMissionReferenceDate(),
                                                                     this.getConventions(),
@@ -635,8 +633,7 @@ public class TDMParser extends DefaultHandler {
          * @param fileName name of the file containing the message (for error messages)
          * @return parsed file content in a TDMFile object
          */
-        public TDMFile parse(final InputStream stream, final String fileName)
-                        throws  OrekitException {
+        public TDMFile parse(final InputStream stream, final String fileName) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
                 try {
                     // Initialize internal TDMFile

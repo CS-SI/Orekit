@@ -237,8 +237,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Set the selected parameters.
      * @param normalizedParameters normalized values for the selected parameters
      */
-    protected void setParameters(final double[] normalizedParameters)
-        throws OrekitIllegalArgumentException {
+    protected void setParameters(final double[] normalizedParameters) {
 
 
         if (normalizedParameters.length != getNbSelected()) {

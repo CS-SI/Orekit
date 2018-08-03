@@ -108,7 +108,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
     }
 
     /** Load the data using supported names .
-     * @throws OrekitException */
+     */
     public void loadKlobucharIonosphericCoefficients() {
         DataProvidersManager.getInstance().feed(supportedNames, this);
 
@@ -151,7 +151,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      * @exception ParseException if data can't be parsed
      */
     public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException, OrekitException {
+        throws IOException, ParseException {
 
         // Open stream and parse data
         final BufferedReader br = new BufferedReader(new InputStreamReader(input, "UTF-8"));

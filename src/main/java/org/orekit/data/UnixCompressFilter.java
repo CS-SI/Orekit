@@ -117,7 +117,7 @@ public class UnixCompressFilter implements DataFilter {
          * @exception IOException if first bytes cannot be read
          */
         ZInputStream(final String name, final InputStream input)
-            throws IOException, OrekitException {
+            throws IOException {
 
             this.name  = name;
             this.input = input;

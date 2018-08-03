@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for loading data files from {@link DataProvider data providers}.
  * @see DataProvider
  * @author Luc Maisonobe
@@ -49,6 +47,6 @@ public interface DataLoader {
      * or if some loader specific error occurs
      */
     void loadData(InputStream input, String name)
-        throws IOException, ParseException, OrekitException;
+        throws IOException, ParseException;
 
 }
