@@ -39,7 +39,7 @@ import org.hipparchus.exception.MathRuntimeException;
 
  */
 
-public class OrekitException extends Exception implements LocalizedException {
+public class OrekitException extends RuntimeException implements LocalizedException {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20150611L;
