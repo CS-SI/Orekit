@@ -152,7 +152,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          * @throws OrekitException
          *             if there is an exception in time or frame transformations
          */
-        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) throws OrekitException {
+        public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) {
             return this.addNewSegment(states, CelestialBodyFactory.getEarth(), DEFAULT_INTERPOLATION_SIZE);
         }
 
@@ -172,7 +172,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *             if there is an exception in time or frame transformations
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
-                final int interpolationSampleSize) throws OrekitException {
+                final int interpolationSampleSize) {
             return this.addNewSegment(states, CelestialBodyFactory.getEarth(), interpolationSampleSize);
         }
 
@@ -194,7 +194,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *             if there is an exception in time or frame transformations
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
-                final int interpolationSampleSize) throws OrekitException {
+                final int interpolationSampleSize) {
             final int minimumSampleSize = 2;
             if (states == null || states.size() == 0) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "states");
@@ -297,7 +297,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
         }
 
         @Override
-        public Frame getFrame() throws OrekitException {
+        public Frame getFrame() {
             return frame;
         }
 
@@ -307,7 +307,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
         }
 
         @Override
-        public TimeScale getTimeScale() throws OrekitException {
+        public TimeScale getTimeScale() {
             return timeScale;
         }
 

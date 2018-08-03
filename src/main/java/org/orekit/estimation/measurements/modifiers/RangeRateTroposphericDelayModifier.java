@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -88,8 +87,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      * @throws OrekitException  if frames transformations cannot be computed
      */
     public double rangeRateErrorTroposphericModel(final GroundStation station,
-                                                  final SpacecraftState state)
-        throws OrekitException {
+                                                  final SpacecraftState state) {
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
 
@@ -142,20 +140,14 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      */
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
                                                    final SpacecraftState refstate,
-                                                   final double delay)
-        throws OrekitException {
+                                                   final double delay) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
-                                try {
-                                    // evaluate target's elevation with a changed target position
-                                    final double value = rangeRateErrorTroposphericModel(station, state);
+                            public double[] value(final SpacecraftState state) {
+                                // evaluate target's elevation with a changed target position
+                                final double value = rangeRateErrorTroposphericModel(station, state);
 
-                                    return new double[] {value };
-
-                                } catch (OrekitException oe) {
-                                    throw new OrekitExceptionWrapper(oe);
-                                }
+                                return new double[] {value };
                             }
                         }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
@@ -175,13 +167,12 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
     private double rangeRateErrorParameterDerivative(final GroundStation station,
                                                      final ParameterDriver driver,
                                                      final SpacecraftState state,
-                                                     final double delay)
-        throws OrekitException {
+                                                     final double delay) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeRateErrorTroposphericModel(station, state);
             }
         };
@@ -201,8 +192,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<RangeRate> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<RangeRate> estimated) {
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];

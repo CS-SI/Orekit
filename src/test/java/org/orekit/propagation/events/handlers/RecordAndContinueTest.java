@@ -46,7 +46,7 @@ public class RecordAndContinueTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testGetEvents() throws OrekitException {
+    public void testGetEvents() {
         // setup
         RecordAndContinue<DateDetector> handler =
                 new RecordAndContinue<DateDetector>();

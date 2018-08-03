@@ -50,7 +50,7 @@ public class AngularSeparationDetectorTest {
     private Propagator       propagator;
 
     @Test
-    public void testCentralSunTransit() throws OrekitException {
+    public void testCentralSunTransit() {
 
         double proximityAngle = FastMath.toRadians(0.1);
         double maxCheck = 0.1 * proximityAngle / initialOrbit.getKeplerianMeanMotion();
@@ -70,7 +70,7 @@ public class AngularSeparationDetectorTest {
     }
 
     @Test
-    public void testRegularProximity() throws OrekitException {
+    public void testRegularProximity() {
 
         double proximityAngle = FastMath.toRadians(5.0);
         double maxCheck = 0.1 * proximityAngle / initialOrbit.getKeplerianMeanMotion();

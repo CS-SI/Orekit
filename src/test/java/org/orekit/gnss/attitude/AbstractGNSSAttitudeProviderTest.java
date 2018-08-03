@@ -39,7 +39,6 @@ import org.junit.Before;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -61,7 +60,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class AbstractGNSSAttitudeProviderTest {
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:gnss");
     }
 
@@ -94,7 +93,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     }
 
     protected void doTestAxes(final String fileName, final double tolX, double tolY, double tolZ)
-        throws OrekitException {
+        {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
             Assert.fail("file not found: " + fileName);
@@ -176,7 +175,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     }
 
     private List<List<ParsedLine>> parseFile(final String fileName, final Frame eme2000, final Frame itrf)
-        throws OrekitException {
+        {
         final List<List<ParsedLine>> dataBlocks = new ArrayList<>();
         try (InputStream is = getClass().getResourceAsStream("/gnss/attitude/" + fileName);
              Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
@@ -259,7 +258,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         final double   nominalPsi;
         final double   eclipsPsi;
 
-        ParsedLine(final String line, final Frame eme2000, final Frame itrf) throws OrekitException {
+        ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
             gpsDate    = new GPSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]));
             final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());

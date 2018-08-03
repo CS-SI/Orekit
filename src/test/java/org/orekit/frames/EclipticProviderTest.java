@@ -73,7 +73,7 @@ public class EclipticProviderTest {
      * @param end   en date of check.
      * @throws OrekitException on error
      */
-    private void checkAlignment(AbsoluteDate start, AbsoluteDate end) throws OrekitException {
+    private void checkAlignment(AbsoluteDate start, AbsoluteDate end) {
         //setup
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody emb = CelestialBodyFactory.getEarthMoonBarycenter();
@@ -108,7 +108,7 @@ public class EclipticProviderTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetName() throws OrekitException {
+    public void testGetName() {
         Assert.assertEquals("Ecliptic/1996",
                             FramesFactory.getEcliptic(IERSConventions.IERS_1996).getName());
         Assert.assertEquals("Ecliptic/2003",
@@ -123,7 +123,7 @@ public class EclipticProviderTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetParent() throws OrekitException {
+    public void testGetParent() {
         //setup
         Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2003);
 
@@ -133,7 +133,7 @@ public class EclipticProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

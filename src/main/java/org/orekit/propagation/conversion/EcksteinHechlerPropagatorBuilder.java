@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -51,14 +50,12 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final PositionAngle positionAngle,
-                                            final double positionScale)
-        throws OrekitException {
+                                            final double positionScale) {
         super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true);
         this.provider = provider;
     }
@@ -87,8 +84,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final double referenceRadius,
@@ -101,8 +97,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double c60,
                                             final OrbitType orbitType,
                                             final PositionAngle positionAngle,
-                                            final double positionScale)
-        throws OrekitException {
+                                            final double positionScale) {
         this(templateOrbit,
              GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu, tideSystem,
                                                          new double[][] {
@@ -146,12 +141,10 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param provider gravity field provider
      * @param positionAngle position angle type to use
      * @return orbit with overridden central attraction coefficient
-     * @exception OrekitException if orbit cannot be converted
      */
     private static Orbit overrideMu(final Orbit templateOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngle positionAngle)
-        throws OrekitException {
+                                    final PositionAngle positionAngle) {
         final double[] parameters    = new double[6];
         final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
@@ -162,8 +155,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         return new EcksteinHechlerPropagator(createInitialOrbit(), provider);
     }

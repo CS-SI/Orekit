@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -70,13 +69,13 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
 
     /** {@inheritDoc} */
     public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) throws OrekitException {
+                     final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
         getHandler().init(s0, t);
     }
 
     /** {@inheritDoc} */
-    public abstract T g(FieldSpacecraftState<T> s) throws OrekitException;
+    public abstract T g(FieldSpacecraftState<T> s);
 
     /** {@inheritDoc} */
     public T getMaxCheckInterval() {
@@ -153,15 +152,14 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
-    public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing)
-        throws OrekitException {
+    public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
         @SuppressWarnings("unchecked")
         final FieldEventHandler.Action whatNext = getHandler().eventOccurred(s, (D) this, increasing);
         return whatNext;
     }
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) throws OrekitException {
+    public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
         @SuppressWarnings("unchecked")
         final FieldSpacecraftState<T> newState = getHandler().resetState((D) this, oldState);
         return newState;

@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -77,7 +76,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testRangeIonoModifier() throws OrekitException {
+    public void testRangeIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -141,7 +140,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testTurnAroundRangeIonoModifier() throws OrekitException {
+    public void testTurnAroundRangeIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -210,7 +209,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testRangeRateIonoModifier() throws OrekitException {
+    public void testRangeRateIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -256,7 +255,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testAngularIonoModifier() throws OrekitException {
+    public void testAngularIonoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -303,7 +302,7 @@ public class IonoModifierTest {
     }
 
     @Test
-    public void testKlobucharIonoModel() throws OrekitException {
+    public void testKlobucharIonoModel() {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =

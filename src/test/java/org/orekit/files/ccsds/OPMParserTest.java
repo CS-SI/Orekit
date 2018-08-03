@@ -49,7 +49,7 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM1()
-        throws OrekitException {
+        {
         // simple test for OPM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/OPMExample.txt";
@@ -119,7 +119,7 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM2()
-        throws OrekitException {
+        {
         // simple test for OPM file, contains all mandatory information plus
         // Keplerian elements, Spacecraft parameters and 2 maneuvers.
         final String ex = "/ccsds/OPMExample2.txt";
@@ -246,7 +246,7 @@ public class OPMParserTest {
 
     @Test
     public void testMissingIERSInitialization()
-            throws OrekitException, URISyntaxException {
+            throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/OPMExample3.txt").toURI().getPath();
         OPMParser parser = new OPMParser();
         try {
@@ -260,7 +260,7 @@ public class OPMParserTest {
 
     @Test
     public void testMissingMu()
-            throws OrekitException, URISyntaxException {
+            throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/OPM-unknown-mu.txt").toURI().getPath();
         OPMFile opm = new OPMParser().withConventions(IERSConventions.IERS_2010).parse(name);
         try {
@@ -273,7 +273,7 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM3()
-            throws OrekitException, URISyntaxException {
+            throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = getClass().getResource("/ccsds/OPMExample3.txt").toURI().getPath();
@@ -350,7 +350,7 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM3NoDesignator()
-            throws OrekitException, URISyntaxException {
+            throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/OPM-no-designator.txt").toURI().getPath();
         OPMParser parser =
                 new OPMParser().withConventions(IERSConventions.IERS_2010).withInternationalDesignator(2060, 666, "XYZ");
@@ -365,7 +365,7 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM4()
-        throws OrekitException {
+        {
         //
         final String ex = "/ccsds/OPMExample4.txt";
         OPMParser parser =
@@ -382,7 +382,7 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testCentersAndTimeScales() throws OrekitException {
+    public void testCentersAndTimeScales() {
 
         final OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate())
                                                 .withConventions(IERSConventions.IERS_2010);
@@ -415,7 +415,7 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testOrbitFileInterface() throws OrekitException {
+    public void testOrbitFileInterface() {
         final String ex = "/ccsds/OPMExample4.txt";
 
         final OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate())
@@ -492,7 +492,7 @@ public class OPMParserTest {
 
     @Test
     public void testWrongKeyword()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OPM-wrong-keyword.txt").toURI().getPath();

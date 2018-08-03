@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -173,9 +172,8 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @param s the current state information: date, kinematics, attitude
      * @return angle difference between the spacecraft and the fixed
      * angle, with some sign tweaks to ensure continuity
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // get angle
         final double currentAngle;

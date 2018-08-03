@@ -80,14 +80,11 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
      * @param tolerance relative tolerance factor used to check singularities
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
      */
     public TimeStampedAngularCoordinates(final AbsoluteDate date,
                                          final PVCoordinates u1, final PVCoordinates u2,
                                          final PVCoordinates v1, final PVCoordinates v2,
-                                         final double tolerance)
-        throws OrekitException {
+                                         final double tolerance) {
         super(u1, u2, v1, v2, tolerance);
         this.date = date;
     }
@@ -104,12 +101,9 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param date coordinates date
      * @param u origin vector
      * @param v desired image of u by the rotation
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
      */
     public TimeStampedAngularCoordinates(final AbsoluteDate date,
-                                         final PVCoordinates u, final PVCoordinates v)
-        throws OrekitException {
+                                         final PVCoordinates u, final PVCoordinates v) {
         super(u, v);
         this.date = date;
     }
@@ -246,12 +240,10 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static TimeStampedAngularCoordinates interpolate(final AbsoluteDate date,
                                                             final AngularDerivativesFilter filter,
-                                                            final Collection<TimeStampedAngularCoordinates> sample)
-        throws OrekitException {
+                                                            final Collection<TimeStampedAngularCoordinates> sample) {
 
         // set up safety elements for 2π singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();

@@ -76,7 +76,7 @@ public class OsculatingToMeanElementsConverter {
      *  @return mean orbit state, in DSST sense
      *  @throws OrekitException if state cannot be propagated throughout range
      */
-    public final SpacecraftState convert() throws OrekitException {
+    public final SpacecraftState convert() {
 
         final double timeSpan = state.getKeplerianPeriod() * satelliteRevolution;
         propagator.resetInitialState(state);

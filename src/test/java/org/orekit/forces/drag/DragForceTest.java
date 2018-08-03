@@ -87,7 +87,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
 
             java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
@@ -159,7 +159,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeSphere() throws OrekitException {
+    public void testParameterDerivativeSphere() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -184,7 +184,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testStateJacobianSphere()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -218,7 +218,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParametersDerivativesBox() throws OrekitException {
+    public void testParametersDerivativesBox() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -244,7 +244,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testJacobianBoxVs80Implementation()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -273,7 +273,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testJacobianBoxVsFiniteDifferences()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -300,7 +300,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testGlobalStateJacobianBox()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -335,7 +335,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testIssue229() throws OrekitException {
+    public void testIssue229() {
         AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 0, 0, 0., TimeScalesFactory.getUTC());
         Frame frame       = FramesFactory.getEME2000();
         double rpe         = 160.e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -396,7 +396,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException {
+    public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7e6);
         DerivativeStructure e_0 = factory.variable(1, 0.01);
@@ -547,7 +547,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e6);
         DerivativeStructure e_0 = factory.variable(1, 0.01);
@@ -613,7 +613,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -45,7 +45,7 @@ public class PVTest {
      *  Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -100,7 +100,7 @@ public class PVTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -130,7 +130,7 @@ public class PVTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) throws OrekitException {
+                    public double[] value(final SpacecraftState state) {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
@@ -163,7 +163,7 @@ public class PVTest {
      * @throws OrekitException
      */
     @Test
-    public void testPVWithSingleStandardDeviations() throws OrekitException {
+    public void testPVWithSingleStandardDeviations() {
         
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -231,7 +231,7 @@ public class PVTest {
      * @throws OrekitException
      */
     @Test
-    public void testPVWithVectorStandardDeviations() throws OrekitException {
+    public void testPVWithVectorStandardDeviations() {
         
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -302,7 +302,7 @@ public class PVTest {
      * @throws OrekitException
      */
     @Test
-    public void testPVWithTwoCovarianceMatrices() throws OrekitException {
+    public void testPVWithTwoCovarianceMatrices() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -387,7 +387,7 @@ public class PVTest {
      * @throws OrekitException
      */
     @Test
-    public void testPVWithCovarianceMatrix() throws OrekitException {
+    public void testPVWithCovarianceMatrix() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         
@@ -461,7 +461,7 @@ public class PVTest {
     
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
-    public void testExceptions() throws OrekitException {
+    public void testExceptions() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         

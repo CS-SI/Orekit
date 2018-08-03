@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -47,16 +46,14 @@ public class FieldOrekitStepHandlerMultiplexer<T extends RealFieldElement<T>> im
     }
 
     /** {@inheritDoc} */
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t)
-        throws OrekitException {
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         for (final FieldOrekitStepHandler<T> handler : handlers) {
             handler.init(s0, t);
         }
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast) {
         for (final FieldOrekitStepHandler<T> handler : handlers) {
             handler.handleStep(interpolator, isLast);
         }

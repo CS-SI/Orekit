@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,17 +33,17 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta() {
         doTestAxes("beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         doTestAxes("beta-small-negative-GLONASS.txt", 7.6e-5, 7.6e-5, 8.0e-16);
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         // TODO: these results are not good,
         // however the reference data is also highly suspicious
         // this needs to be investigated
@@ -52,12 +51,12 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         doTestAxes("beta-small-positive-GLONASS.txt", 5.9e-5, 5.9e-5, 4.1e-16);
     }
 
     @Test
-    public void testLargePositiveBeta() throws OrekitException {
+    public void testLargePositiveBeta() {
         doTestAxes("beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
     }
 

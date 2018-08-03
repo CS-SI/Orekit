@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -87,7 +86,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         startDate = new AbsoluteDate();
         double a = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 400e3;
         double e = 0.001;
@@ -137,7 +136,7 @@ public class ConstantThrustManeuverInitializationTest {
 
 
     @Test
-    public void testInBetween() throws OrekitException {
+    public void testInBetween() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(-(duration / 2)),
@@ -154,7 +153,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testOnStart() throws OrekitException {
+    public void testOnStart() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(0.0),
@@ -175,7 +174,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testOnEnd() throws OrekitException {
+    public void testOnEnd() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(0.0 - duration),
@@ -196,7 +195,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testOnEndReverse() throws OrekitException {
+    public void testOnEndReverse() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(0.0),
@@ -217,7 +216,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testOnStartReverse() throws OrekitException {
+    public void testOnStartReverse() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(0.0),
@@ -238,7 +237,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testInBetweenReverse() throws OrekitException {
+    public void testInBetweenReverse() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(duration / 2),
@@ -259,7 +258,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testControlForward() throws OrekitException {
+    public void testControlForward() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(1.0),
@@ -280,7 +279,7 @@ public class ConstantThrustManeuverInitializationTest {
     }
 
     @Test
-    public void testControlReverse() throws OrekitException {
+    public void testControlReverse() {
         //Create test Thrust Maneuver
         ConstantThrustManeuver ctm = new ConstantThrustManeuver(
                 startDate.shiftedBy(-1.0),

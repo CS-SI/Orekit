@@ -37,7 +37,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -196,8 +195,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param initialState initial state (defined with osculating elements)
      *  @throws OrekitException if the initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState)
-        throws OrekitException {
+    public void setInitialState(final SpacecraftState initialState) {
         setInitialState(initialState, true);
     }
 
@@ -207,8 +205,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState,
-                                final boolean isOsculating)
-        throws OrekitException {
+                                final boolean isOsculating) {
         initialIsOsculating = isOsculating;
         resetInitialState(initialState);
     }
@@ -219,7 +216,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @throws OrekitException if initial state cannot be reset
      */
     @Override
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         super.setStartDate(state.getDate());
         super.resetInitialState(state);
     }
@@ -329,8 +326,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public static SpacecraftState computeOsculatingState(final SpacecraftState mean,
                                                          final AttitudeProvider attitudeProvider,
-                                                         final Collection<DSSTForceModel> forces)
-        throws OrekitException {
+                                                         final Collection<DSSTForceModel> forces) {
 
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(mean.getOrbit(), I);
@@ -371,8 +367,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
-                                                   final Collection<DSSTForceModel> forceModels)
-        throws OrekitException {
+                                                   final Collection<DSSTForceModel> forceModels) {
         final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
@@ -414,12 +409,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-     * @exception OrekitException if hook cannot be run
      */
     @Override
     protected void beforeIntegration(final SpacecraftState initialState,
-                                     final AbsoluteDate tEnd)
-        throws OrekitException {
+                                     final AbsoluteDate tEnd) {
 
         // compute common auxiliary elements
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
@@ -454,7 +447,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected void afterIntegration() throws OrekitException {
+    protected void afterIntegration() {
         // remove the special short periodics step handler if added before
         if (!isMeanOrbit()) {
             final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
@@ -490,8 +483,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
                                           final AttitudeProvider attitudeProvider,
-                                          final Collection<DSSTForceModel> forceModels)
-        throws OrekitException {
+                                          final Collection<DSSTForceModel> forceModels) {
 
         // rough initialization of the mean parameters
         EquinoctialOrbit meanOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
@@ -568,8 +560,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @throws OrekitException if the computation of the short-periodic variation fails
      */
     private static EquinoctialOrbit computeOsculatingOrbit(final SpacecraftState meanState,
-                                                           final List<ShortPeriodTerms> shortPeriodTerms)
-        throws OrekitException {
+                                                           final List<ShortPeriodTerms> shortPeriodTerms) {
 
         final double[] mean = new double[6];
         final double[] meanDot = new double[6];
@@ -588,7 +579,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState getInitialIntegrationState() throws OrekitException {
+    protected SpacecraftState getInitialIntegrationState() {
         if (initialIsOsculating) {
             // the initial state is an osculating state,
             // it must be converted to mean state
@@ -666,8 +657,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         @Override
         public SpacecraftState mapArrayToState(final AbsoluteDate date,
                                                final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
-            throws OrekitException {
+                                               final boolean meanOnly) {
 
             // add short periodic variations to mean elements to get osculating elements
             // (the loop may not be performed if there are no force models and in the
@@ -708,8 +698,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot)
-            throws OrekitException {
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, y, yDot);
             y[6] = state.getMass();
@@ -874,7 +863,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
+        public double[] computeDerivatives(final SpacecraftState state) {
 
             // compute common auxiliary elements
             final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
@@ -928,10 +917,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit)
-        throws OrekitException {
+    public static double[][] tolerances(final double dP, final Orbit orbit) {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 
@@ -954,59 +941,46 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final ODEStateAndDerivative initialState, final double finalTime)
-            throws OrekitExceptionWrapper {
-            try {
-                // Build the mean state interpolated at initial point
-                final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
-                                                                          initialState.getPrimaryState(),
-                                                                          initialState.getPrimaryDerivative(),
-                                                                          true);
+        public void init(final ODEStateAndDerivative initialState, final double finalTime) {
+            // Build the mean state interpolated at initial point
+            final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
+                                                                      initialState.getPrimaryState(),
+                                                                      initialState.getPrimaryDerivative(),
+                                                                      true);
 
-                // Compute short periodic coefficients for this point
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(meanStates);
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(meanStates);
 
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
-
         }
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
-            throws OrekitExceptionWrapper {
+        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
 
-            try {
-                // Get the grid points to compute
-                final double[] interpolationPoints =
-                        interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
-                                                        interpolator.getCurrentState().getTime());
+            // Get the grid points to compute
+            final double[] interpolationPoints =
+                    interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
+                                                    interpolator.getCurrentState().getTime());
 
-                final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
-                for (int i = 0; i < interpolationPoints.length; ++i) {
+            final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
+            for (int i = 0; i < interpolationPoints.length; ++i) {
 
-                    // Build the mean state interpolated at grid point
-                    final double time = interpolationPoints[i];
-                    final ODEStateAndDerivative sd = interpolator.getInterpolatedState(time);
-                    meanStates[i] = mapper.mapArrayToState(time,
-                                                           sd.getPrimaryState(),
-                                                           sd.getPrimaryDerivative(),
-                                                           true);
+                // Build the mean state interpolated at grid point
+                final double time = interpolationPoints[i];
+                final ODEStateAndDerivative sd = interpolator.getInterpolatedState(time);
+                meanStates[i] = mapper.mapArrayToState(time,
+                                                       sd.getPrimaryState(),
+                                                       sd.getPrimaryDerivative(),
+                                                       true);
 
-                }
-
-                // Computate short periodic coefficients for this step
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(meanStates);
-                }
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
 
+            // Computate short periodic coefficients for this step
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(meanStates);
+            }
         }
     }
 }

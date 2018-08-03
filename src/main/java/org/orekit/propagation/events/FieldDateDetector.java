@@ -20,7 +20,6 @@ import java.util.ArrayList;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -118,9 +117,8 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
             return s.getA().getField().getZero().add(-1);

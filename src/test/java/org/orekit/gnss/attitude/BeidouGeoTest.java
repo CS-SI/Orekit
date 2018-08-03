@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,22 +33,22 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta()  {
         doTestAxes("beta-large-negative-BEIDOU-2G.txt", 8.0e-16, 5.9e-16, 3.4e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         doTestAxes("beta-small-negative-BEIDOU-2G.txt", 9.3e-16, 7.6e-16, 4.0e-16);
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         doTestAxes("beta-crossing-BEIDOU-2G.txt", 9.0e-16, 7.4e-16, 4.6e-16);
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         doTestAxes("beta-small-positive-BEIDOU-2G.txt", 7.0e-16, 6.8e-16, 4.3e-16);
     }
 

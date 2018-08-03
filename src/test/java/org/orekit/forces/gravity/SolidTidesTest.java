@@ -31,7 +31,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -68,7 +67,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field attractionModelField = SolidTides.class.getDeclaredField("attractionModel");
             attractionModelField.setAccessible(true);
@@ -97,7 +96,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testDefaultInterpolation() throws OrekitException {
+    public void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -136,7 +135,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect1996() throws OrekitException {
+    public void testTideEffect1996() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -148,7 +147,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003WithinAnnualPoleRange() throws OrekitException {
+    public void testTideEffect2003WithinAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
@@ -160,7 +159,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003AfterAnnualPoleRange() throws OrekitException {
+    public void testTideEffect2003AfterAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -172,7 +171,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010BeforePoleModelChange() throws OrekitException {
+    public void testTideEffect2010BeforePoleModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -184,7 +183,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010AfterModelChange() throws OrekitException {
+    public void testTideEffect2010AfterModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -197,7 +196,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testStateJacobianVs80ImplementationNoPoleTide()
-        throws OrekitException {
+        {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -226,7 +225,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testStateJacobianVs80ImplementationPoleTide()
-        throws OrekitException {
+        {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -254,7 +253,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testStateJacobianVsFiniteDifferencesNoPoleTide()
-        throws OrekitException {
+        {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -281,7 +280,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Test
     public void testStateJacobianVsFiniteDifferencesPoleTide()
-        throws OrekitException {
+        {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -307,7 +306,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2)
-        throws OrekitException {
+        {
 
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
@@ -345,7 +344,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
-        throws OrekitException {
+        {
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);

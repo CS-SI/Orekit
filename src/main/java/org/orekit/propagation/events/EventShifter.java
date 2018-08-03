@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -131,13 +130,13 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         super.init(s0, t);
         detector.init(s0, t);
     }
 
     /** {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
@@ -151,8 +150,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing) {
 
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
@@ -169,8 +167,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState) {
             return shifter.detector.resetState(shiftedState);
         }
 

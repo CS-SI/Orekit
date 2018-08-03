@@ -50,7 +50,7 @@ We will put all switching events in a set.
 Let's define a couple of `AttitudeProvider`, built upon `LofOffset` laws for instance.
 
     final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
-                                                             RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+                                                             RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
     final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
 
 Let's also define some `EventDetector`. For this tutorial's requirements,

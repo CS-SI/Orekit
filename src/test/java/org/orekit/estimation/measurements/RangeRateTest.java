@@ -22,7 +22,6 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
@@ -46,7 +45,7 @@ public class RangeRateTest {
      *  One-way measurements.
      */
     @Test
-    public void testValuesOneWay() throws OrekitException {
+    public void testValuesOneWay() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -90,7 +89,7 @@ public class RangeRateTest {
      *  Two-ways measurements.
      */
     @Test
-    public void testValuesTwoWays() throws OrekitException {
+    public void testValuesTwoWays() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -134,7 +133,7 @@ public class RangeRateTest {
      * One way measurements.
      */
     @Test
-    public void testStateDerivativesOneWay() throws OrekitException {
+    public void testStateDerivativesOneWay() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -167,7 +166,7 @@ public class RangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -195,7 +194,7 @@ public class RangeRateTest {
      * Two-ways measurements.
      */
     @Test
-    public void testStateDerivativesTwoWays() throws OrekitException {
+    public void testStateDerivativesTwoWays() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -230,7 +229,7 @@ public class RangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -258,7 +257,7 @@ public class RangeRateTest {
      * One-way measurements.
      */
     @Test
-    public void testParameterDerivativesOneWay() throws OrekitException {
+    public void testParameterDerivativesOneWay() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -310,7 +309,7 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
@@ -328,7 +327,7 @@ public class RangeRateTest {
      * Two-ways measurements.
      */
     @Test
-    public void testParameterDerivativesTwoWays() throws OrekitException {
+    public void testParameterDerivativesTwoWays() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -380,7 +379,7 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);
@@ -398,7 +397,7 @@ public class RangeRateTest {
      * One-way measurements with modifiers (tropospheric corrections).
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -431,7 +430,7 @@ public class RangeRateTest {
 
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
@@ -459,7 +458,7 @@ public class RangeRateTest {
      * One-way measurements with modifiers (tropospheric corrections).
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -514,7 +513,7 @@ public class RangeRateTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);

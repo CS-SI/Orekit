@@ -53,7 +53,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmExternalResourceIssue368() throws OrekitException {
+    public void testParseTdmExternalResourceIssue368() {
         // setup
         TDMParser parser = new TDMParser().withFileFormat(TDMFileFormat.XML);
         String name = "/ccsds/XML/TDM-external-doctype.xml";
@@ -74,7 +74,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample2() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExample2() throws IOException {
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
@@ -86,7 +86,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample4() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExample4() throws IOException {
 
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
@@ -99,7 +99,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample6() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExample6() throws IOException {
 
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
@@ -112,7 +112,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample8() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExample8() throws IOException {
 
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
@@ -125,7 +125,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample15() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExample15() throws IOException {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
@@ -137,7 +137,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExampleAllKeywords() throws OrekitException, IOException {
+    public void testParseTdmKeyValueExampleAllKeywords() throws IOException {
 
         // Testing all TDM keywords
         final String ex = "/ccsds/TDMExampleAllKeywords.txt";
@@ -148,7 +148,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample2() throws OrekitException, IOException {
+    public void testParseTdmXmlExample2() throws IOException {
 
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
@@ -161,7 +161,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample4() throws OrekitException, IOException {
+    public void testParseTdmXmlExample4() throws IOException {
 
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
@@ -174,7 +174,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample6() throws OrekitException, IOException {
+    public void testParseTdmXmlExample6() throws IOException {
 
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
@@ -187,7 +187,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample8() throws OrekitException, IOException {
+    public void testParseTdmXmlExample8() throws IOException {
 
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
@@ -200,7 +200,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample15() throws OrekitException, IOException {
+    public void testParseTdmXmlExample15() throws IOException {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
@@ -212,7 +212,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExampleAllKeywords() throws OrekitException, IOException {
+    public void testParseTdmXmlExampleAllKeywords() throws IOException {
 
         // Testing all TDM keywords
         final String ex = "/ccsds/XML/TDMExampleAllKeywords.xml";
@@ -332,7 +332,7 @@ public class TDMParserTest {
 
     @Test
     public void testWrongDataKeywordKeyValue()
-                    throws OrekitException, URISyntaxException {
+                    throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String ex = "/ccsds/TDM-data-wrong-keyword.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -349,7 +349,7 @@ public class TDMParserTest {
 
     @Test
     public void testWrongDataKeywordXml()
-                    throws OrekitException, URISyntaxException {
+                    throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String ex = "/ccsds/XML/TDM-data-wrong-keyword.xml";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -366,7 +366,7 @@ public class TDMParserTest {
 
     @Test
     public void testWrongMetaDataKeywordKeyValue()
-                    throws OrekitException, URISyntaxException {
+                    throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String ex = "/ccsds/TDM-metadata-wrong-keyword.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -383,7 +383,7 @@ public class TDMParserTest {
 
     @Test
     public void testWrongMetaDataKeywordXml()
-                    throws OrekitException, URISyntaxException {
+                    throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String ex = "/ccsds/XML/TDM-metadata-wrong-keyword.xml";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -478,7 +478,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExample2(TDMFile file) throws OrekitException {
+    public static void validateTDMExample2(TDMFile file) {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
@@ -540,7 +540,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExample4(TDMFile file) throws OrekitException {
+    public static void validateTDMExample4(TDMFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -614,7 +614,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExample6(TDMFile file) throws OrekitException {
+    public static void validateTDMExample6(TDMFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -679,7 +679,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExample8(TDMFile file) throws OrekitException {
+    public static void validateTDMExample8(TDMFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -787,7 +787,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExample15(TDMFile file) throws OrekitException {
+    public static void validateTDMExample15(TDMFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -916,7 +916,7 @@ public class TDMParserTest {
      * @param file Parsed TDMFile to validate
      * @throws OrekitException if UTC time scale cannot be retrieved
      */
-    public static void validateTDMExampleAllKeywords(TDMFile file) throws OrekitException {
+    public static void validateTDMExampleAllKeywords(TDMFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 

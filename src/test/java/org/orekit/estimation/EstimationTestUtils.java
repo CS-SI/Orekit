@@ -75,7 +75,7 @@ import org.orekit.utils.ParameterDriver;
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
 
-    public static Context eccentricContext(final String dataRoot) throws OrekitException {
+    public static Context eccentricContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         Context context = new Context();
@@ -134,7 +134,7 @@ public class EstimationTestUtils {
 
     }
 
-    public static Context geoStationnaryContext(final String dataRoot) throws OrekitException {
+    public static Context geoStationnaryContext(final String dataRoot) {
 
         Utils.setDataRoot(dataRoot);
         Context context = new Context();
@@ -235,7 +235,7 @@ public class EstimationTestUtils {
 
     public static Propagator createPropagator(final Orbit initialOrbit,
                                               final PropagatorBuilder propagatorBuilder)
-        throws OrekitException {
+        {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
@@ -254,7 +254,7 @@ public class EstimationTestUtils {
                                                           final MeasurementCreator creator,
                                                           final double startPeriod, final double endPeriod,
                                                           final double step)
-        throws OrekitException {
+        {
 
         propagator.setMasterMode(step, creator);
         final double       period = propagator.getInitialState().getKeplerianPeriod();
@@ -298,7 +298,7 @@ public class EstimationTestUtils {
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
                                 final double expectedDeltaVel, final double velEps)
-        throws OrekitException {
+        {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
@@ -370,7 +370,7 @@ public class EstimationTestUtils {
                                       final double expectedDeltaVel, final double velEps,
                                       final double[] expectedSigmasPos,final double sigmaPosEps,
                                       final double[] expectedSigmasVel,final double sigmaVelEps)
-        throws OrekitException {
+        {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
                        new PositionAngle[] { positionAngle },
@@ -403,7 +403,7 @@ public class EstimationTestUtils {
                                       final double[] expectedDeltaVel, final double []velEps,
                                       final double[][] expectedSigmasPos,final double[] sigmaPosEps,
                                       final double[][] expectedSigmasVel,final double[] sigmaVelEps)
-                                                      throws OrekitException {
+                                                      {
 
         // Add the measurements to the Kalman filter
         NumericalPropagator[] estimated = kalman.processMeasurements(measurements);

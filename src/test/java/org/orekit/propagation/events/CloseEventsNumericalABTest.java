@@ -40,7 +40,7 @@ public class CloseEventsNumericalABTest extends CloseEventsAbstractTest {
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         double[][] tol = NumericalPropagator
                 .tolerances(10000, initialOrbit, OrbitType.CARTESIAN);
         final AdamsBashforthIntegrator integrator =

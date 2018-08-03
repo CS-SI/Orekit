@@ -24,7 +24,6 @@ import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.OrbitType;
@@ -44,7 +43,7 @@ public class AngularAzElTest {
      *  Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -92,7 +91,7 @@ public class AngularAzElTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
@@ -146,7 +145,7 @@ public class AngularAzElTest {
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) throws OrekitException {
+                    public double[] value(final SpacecraftState state) {
                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -196,7 +195,7 @@ public class AngularAzElTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
@@ -252,7 +251,7 @@ public class AngularAzElTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                        public double value(final ParameterDriver parameterDriver) {
                                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
                                         }
                                     }, drivers[i], 3, 50.0);

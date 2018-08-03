@@ -210,7 +210,7 @@ public class DOPComputation {
      */
     private List<List<GeodeticPoint>> sample(final OneAxisEllipsoid shape,
                                              final List<GeodeticPoint> zone,
-                                             final double meshSize) throws OrekitException {
+                                             final double meshSize) {
         // Convert the area into a SphericalPolygonsSet
         final SphericalPolygonsSet sps = computeSphericalPolygonsSet(zone);
 

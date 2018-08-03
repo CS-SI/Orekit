@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -62,7 +61,7 @@ public class EventEnablingPredicateFilterTest {
     private Orbit orbit;
 
     @Test
-    public void testForward0Degrees() throws OrekitException {
+    public void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -70,7 +69,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5Degrees() throws OrekitException {
+    public void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -78,7 +77,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5DegreesStartEnabled() throws OrekitException {
+    public void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(12614.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -86,7 +85,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward0Degrees() throws OrekitException {
+    public void testBackward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -94,7 +93,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5Degrees() throws OrekitException {
+    public void testBackward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -102,7 +101,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5DegreesStartEnabled() throws OrekitException {
+    public void testBackward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(73112.0),
                orbit.getDate(),
@@ -111,7 +110,7 @@ public class EventEnablingPredicateFilterTest {
 
     private void doElevationTest(final double minElevation,
                                  final AbsoluteDate start, final AbsoluteDate end,
-                                 final int expectedEvents, final boolean sameSign) throws OrekitException {
+                                 final int expectedEvents, final boolean sameSign) {
 
         final ElevationExtremumDetector raw =
                 new ElevationExtremumDetector(0.001, 1.e-6, new TopocentricFrame(earth, gp, "test")).
@@ -121,7 +120,7 @@ public class EventEnablingPredicateFilterTest {
                                 new EnablingPredicate<ElevationExtremumDetector>() {
                                     public boolean eventIsEnabled(final SpacecraftState state,
                                                                   final ElevationExtremumDetector eventDetector,
-                                                                  final double g) throws OrekitException {
+                                                                  final double g) {
                                         return eventDetector.getElevation(state) > minElevation;
                                     }
                 }).withMaxCheck(60.0);
@@ -174,7 +173,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testResetState() throws OrekitException {
+    public void testResetState() {
         final List<AbsoluteDate> reset = new ArrayList<AbsoluteDate>();
         DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
@@ -220,7 +219,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryForward() throws OrekitException, IOException {
+    public void testExceedHistoryForward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -273,7 +272,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryBackward() throws OrekitException, IOException {
+    public void testExceedHistoryBackward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -400,7 +399,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
 
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

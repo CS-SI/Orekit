@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GPSAlmanac;
@@ -48,7 +47,7 @@ public class GPSPropagatorTest {
     private static List<GPSAlmanac> almanacs;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws OrekitException {
+    public static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
         // Get the parser to read a SEM file
         SEMParser reader = new SEMParser(null);
@@ -59,7 +58,7 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testGPSCycle() throws OrekitException {
+    public void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
         final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
         // Propagate at the GPS date and one GPS cycle later
@@ -74,7 +73,7 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testFrames() throws OrekitException {
+    public void testFrames() {
         // Builds the GPSPropagator from the almanac
         final GPSPropagator propagator = new GPSPropagator.Builder(almanacs.get(0)).build();
         // Defines some date
@@ -90,7 +89,7 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testTLE() throws OrekitException {
+    public void testTLE() {
 
         List<GPSPropagator> gpsPropagators = new ArrayList<GPSPropagator>();
         for (final GPSAlmanac almanac : almanacs) {
@@ -212,7 +211,7 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testDerivativesConsistency() throws OrekitException {
+    public void testDerivativesConsistency() {
 
         final Frame eme2000 = FramesFactory.getEME2000();
         double errorP = 0;

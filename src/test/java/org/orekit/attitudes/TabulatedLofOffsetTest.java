@@ -88,7 +88,7 @@ public class TabulatedLofOffsetTest {
     PVCoordinates pvSatEME2000;
 
     @Test
-    public void testConstantOffset() throws OrekitException {
+    public void testConstantOffset() {
 
         RandomGenerator random = new Well19937a(0x1199d4bb8f53d2b6l);
         for (LOFType type : LOFType.values()) {
@@ -124,7 +124,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @Test
-    public void testYawCompensation() throws OrekitException {
+    public void testYawCompensation() {
 
         // create a sample from Yaw compensation law
         final LOFType type = LOFType.VNC;
@@ -135,7 +135,7 @@ public class TabulatedLofOffsetTest {
         originalPropagator.setAttitudeProvider(yawCompensLaw);
         originalPropagator.setMasterMode(1.0, new OrekitFixedStepHandler() {
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
+                {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();
                 LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                 Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
@@ -155,7 +155,7 @@ public class TabulatedLofOffsetTest {
         rebuildingPropagator.setAttitudeProvider(tabulated);
         rebuildingPropagator.setMasterMode(0.3, new OrekitFixedStepHandler() {
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
+                {
                 final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
                 final Rotation r1 = currentState.getAttitude().getRotation();
                 final Rotation r2 = rebuilt.getAttitude().getRotation();
@@ -169,7 +169,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
 
         // create a sample from Yaw compensation law
         final LOFType type = LOFType.VNC;
@@ -180,7 +180,7 @@ public class TabulatedLofOffsetTest {
         originalPropagator.setAttitudeProvider(yawCompensLaw);
         originalPropagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws OrekitException {
+                {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();
                 LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                 Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
@@ -219,7 +219,7 @@ public class TabulatedLofOffsetTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);

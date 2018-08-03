@@ -23,7 +23,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
@@ -67,8 +66,6 @@ public class SolidTides extends AbstractForceModel {
      * @param conventions IERS conventions used for loading Love numbers
      * @param ut1 UT1 time scale
      * @param bodies tide generating bodies (typically Sun and Moon)
-     * @exception OrekitException if the Love numbers embedded in the
-     * library cannot be read
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
      * @see #SolidTides(Frame, double, double, TideSystem, boolean, double, int, IERSConventions, UT1Scale, CelestialBody...)
@@ -76,8 +73,7 @@ public class SolidTides extends AbstractForceModel {
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,
                       final IERSConventions conventions, final UT1Scale ut1,
-                      final CelestialBody... bodies)
-        throws OrekitException {
+                      final CelestialBody... bodies) {
         this(centralBodyFrame, ae, mu, centralTideSystem, true,
              DEFAULT_STEP, DEFAULT_POINTS, conventions, ut1, bodies);
     }
@@ -94,15 +90,12 @@ public class SolidTides extends AbstractForceModel {
      * @param conventions IERS conventions used for loading Love numbers
      * @param ut1 UT1 time scale
      * @param bodies tide generating bodies (typically Sun and Moon)
-     * @exception OrekitException if the Love numbers embedded in the
-     * library cannot be read
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem, final boolean poleTide,
                       final double step, final int nbPoints,
                       final IERSConventions conventions, final UT1Scale ut1,
-                      final CelestialBody... bodies)
-        throws OrekitException {
+                      final CelestialBody... bodies) {
         final SolidTidesField raw =
                 new SolidTidesField(conventions.getLoveNumbers(),
                                     conventions.getTideFrequencyDependenceFunction(ut1),
@@ -130,8 +123,7 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
         // delegate to underlying attraction model
         return attractionModel.acceleration(s, parameters);
     }
@@ -139,8 +131,7 @@ public class SolidTides extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
         // delegate to underlying attraction model
         return attractionModel.acceleration(s, parameters);
     }

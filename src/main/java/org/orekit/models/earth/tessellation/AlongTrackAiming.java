@@ -55,18 +55,15 @@ public class AlongTrackAiming implements TileAiming {
      * @param orbit orbit along which tiles should be aligned
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
-     * @exception OrekitException if some frame conversion fails
      */
-    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
-        throws OrekitException {
+    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
         this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
         this.factory   = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
-        throws OrekitException {
+    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         final double lStart = halfTrack.get(0).getFirst().getLatitude();
         final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
@@ -131,12 +128,10 @@ public class AlongTrackAiming implements TileAiming {
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      * @return time stamped ground points on the selected half track
-     * @exception OrekitException if some frame conversion fails
      */
     private static List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> findHalfTrack(final Orbit orbit,
                                                                                      final OneAxisEllipsoid ellipsoid,
-                                                                                     final boolean isAscending)
-        throws OrekitException {
+                                                                                     final boolean isAscending) {
 
         // find the span of the next half track
         final Propagator propagator = new KeplerianPropagator(orbit);

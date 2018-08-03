@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -40,19 +39,15 @@ public interface FieldOrekitFixedStepHandler<T extends RealFieldElement<T>> {
      * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
-     * @exception OrekitException if step handler cannot be initialized
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step)
-        throws OrekitException {
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step) {
         // do nothing by default
     }
 
     /** Handle the current step.
      * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
-     * @exception OrekitException if step cannot be handled
      */
-    void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-        throws OrekitException;
+    void handleStep(FieldSpacecraftState<T> currentState, boolean isLast);
 
 }

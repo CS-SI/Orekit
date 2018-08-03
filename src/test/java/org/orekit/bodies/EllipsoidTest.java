@@ -157,7 +157,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testLimb() throws OrekitException {
+    public void testLimb() {
         final Ellipsoid ellipsoid =
                         new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         RandomGenerator random = new Well1024a(0xa69c430a67475af7l);

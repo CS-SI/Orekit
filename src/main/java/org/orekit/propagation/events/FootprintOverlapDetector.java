@@ -103,13 +103,11 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
-     * @exception OrekitException if the geographic zone cannot be sampled
      */
     public FootprintOverlapDetector(final FieldOfView fov,
                                     final OneAxisEllipsoid body,
                                     final SphericalPolygonsSet zone,
-                                    final double samplingStep)
-        throws OrekitException {
+                                    final double samplingStep) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<FootprintOverlapDetector>(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
@@ -162,8 +160,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      */
     private static List<SamplingPoint> sample(final OneAxisEllipsoid body,
                                               final SphericalPolygonsSet zone,
-                                              final double samplingStep)
-        throws OrekitException {
+                                              final double samplingStep) {
 
         final List<SamplingPoint> sampledZone = new ArrayList<SamplingPoint>();
 
@@ -249,7 +246,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * the Field Of View, an increasing event is generated.
      * </p>
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // initial arbitrary positive value
         double value = FastMath.PI;

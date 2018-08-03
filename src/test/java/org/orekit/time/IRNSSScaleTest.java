@@ -22,13 +22,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
 
 public class IRNSSScaleTest {
 
     @Test
-    public void testArbitrary() throws OrekitException {
+    public void testArbitrary() {
         AbsoluteDate tIRNSS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getIRNSS());
         AbsoluteDate tUTC =
@@ -60,7 +59,7 @@ public class IRNSSScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getIRNSS();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),

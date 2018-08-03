@@ -25,7 +25,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -102,8 +101,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date,
-                                final Frame frame)
-        throws OrekitException {
+                                final Frame frame) {
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
@@ -127,8 +125,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
@@ -204,19 +201,15 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
      * @return corrected yaw, using inertial frame as the reference
-     * @exception OrekitException if yaw corrected attitude cannot be computed
      */
-    protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context)
-        throws OrekitException;
+    protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context);
 
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
      * @param <T> type of the field elements
      * @return corrected yaw, using inertial frame as the reference
-     * @exception OrekitException if yaw corrected attitude cannot be computed
      */
     protected abstract <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
-        correctedYaw(GNSSFieldAttitudeContext<T> context)
-        throws OrekitException;
+        correctedYaw(GNSSFieldAttitudeContext<T> context);
 
 }

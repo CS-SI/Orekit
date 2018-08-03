@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -142,8 +141,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** {@inheritDoc} */
     public GeodeticPoint getIntersectionPoint(final Line line, final Vector3D close,
-                                              final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+                                              final Frame frame, final AbsoluteDate date) {
 
         // transform line and close to body frame
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
@@ -197,8 +195,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
                                                                                       final FieldVector3D<T> close,
                                                                                       final Frame frame,
-                                                                                      final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                                      final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
         final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
@@ -282,8 +279,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame) {
 
         // transform point to body frame
         final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
@@ -306,8 +302,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame) {
 
         // transform point to body frame
         final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
@@ -364,8 +359,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * </ul>
      * </p>
      */
-    public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+    public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
         final Vector3D pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
@@ -487,8 +481,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      */
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,
-                                                                           final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                           final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
         final FieldVector3D<T> pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
@@ -598,11 +591,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point,
      * using time as the single derivation parameter
-     * @exception OrekitException if point cannot be converted to body frame
      */
     public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
-                                                             final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
+                                                             final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
         final Transform toBody = frame.getTransformTo(bodyFrame, date);

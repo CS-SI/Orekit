@@ -64,8 +64,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorIonosphericModel(final GroundStation station,
-                                                final SpacecraftState state)
-        throws OrekitException {
+                                                final SpacecraftState state) {
 
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -99,8 +98,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];

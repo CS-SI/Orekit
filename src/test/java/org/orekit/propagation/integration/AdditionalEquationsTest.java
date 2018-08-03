@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
@@ -47,7 +46,7 @@ public class AdditionalEquationsTest {
     /** Test for issue #401
      *  with a numerical propagator */
     @Test
-    public void testInitNumerical() throws OrekitException {
+    public void testInitNumerical() {
 
         // setup
         final double reference = 1.25;
@@ -70,7 +69,7 @@ public class AdditionalEquationsTest {
     /** Test for issue #401
      *  with a DSST propagator */
     @Test
-    public void testInitDSST() throws OrekitException {
+    public void testInitDSST() {
 
         // setup
         final double reference = 3.5;
@@ -91,7 +90,7 @@ public class AdditionalEquationsTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
@@ -123,14 +122,14 @@ public class AdditionalEquationsTest {
 
         @Override
         public void init(SpacecraftState initiaState, AbsoluteDate target)
-            throws OrekitException {
+            {
             Assert.assertEquals(expected, initiaState.getAdditionalState(getName())[0], 1.0e-15);
             called = true;
         }
 
         @Override
         public double[] computeDerivatives(SpacecraftState s, double[] pDot)
-            throws OrekitException {
+            {
             pDot[0] = 1.5;
             return new double[7];
         }

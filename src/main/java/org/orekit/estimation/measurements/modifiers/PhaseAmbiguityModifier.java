@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Phase;
@@ -54,10 +53,8 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
      * </p>
      * @param key key to identify the ambiguity
      * @param ambiguity initial value of ambiguity
-     * @exception OrekitException if parameter scale is too close to zero (never happens)
      */
-    public PhaseAmbiguityModifier(final int key, final double ambiguity)
-        throws OrekitException {
+    public PhaseAmbiguityModifier(final int key, final double ambiguity) {
         this.ambiguity = new ParameterDriver("amgiguity-" + key,
                                              ambiguity, AMBIGUITY_SCALE,
                                              Double.NEGATIVE_INFINITY,
@@ -71,8 +68,7 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<Phase> estimated) {
 
         // apply the ambiguity to the measurement value
         final double[] value = estimated.getEstimatedValue();

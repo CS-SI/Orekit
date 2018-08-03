@@ -31,7 +31,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -59,7 +58,7 @@ import org.orekit.utils.PVCoordinates;
 public class AdapterPropagatorTest {
 
     @Test
-    public void testLowEarthOrbit() throws OrekitException, ParseException, IOException {
+    public void testLowEarthOrbit() throws ParseException, IOException {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -121,7 +120,7 @@ public class AdapterPropagatorTest {
     }
 
     @Test
-    public void testEccentricOrbit() throws OrekitException, ParseException, IOException {
+    public void testEccentricOrbit() throws ParseException, IOException {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
@@ -183,7 +182,7 @@ public class AdapterPropagatorTest {
     }
 
     @Test
-    public void testNonKeplerian() throws OrekitException, ParseException, IOException {
+    public void testNonKeplerian() throws ParseException, IOException {
 
         Orbit leo = new CircularOrbit(7204319.233600575, 4.434564637450575E-4, 0.0011736728299091088,
                                       1.7211611441767323, 5.5552084166959474,
@@ -267,7 +266,7 @@ public class AdapterPropagatorTest {
                                            final double f, final double isp,
                                            final boolean sunAttraction, final boolean moonAttraction,
                                            final NormalizedSphericalHarmonicsProvider gravityField)
-        throws OrekitException, ParseException, IOException {
+        throws ParseException, IOException {
 
         SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);

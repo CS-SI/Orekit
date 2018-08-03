@@ -40,14 +40,14 @@ import org.orekit.utils.IERSConventions;
 public class EOPHistoryTest {
 
     @Test
-    public void testRegular() throws OrekitException {
+    public void testRegular() {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
         double dt = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getUT1MinusUTC(date);
         Assert.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
     @Test
-    public void testOutOfRange() throws OrekitException {
+    public void testOutOfRange() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         AbsoluteDate endDate = new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 3) {
@@ -64,7 +64,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testFieldOutOfRange() throws OrekitException {
+    public void testFieldOutOfRange() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         FieldAbsoluteDate<Decimal64> endDate = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
                                                                        2006, 3, 5, TimeScalesFactory.getUTC());
@@ -95,7 +95,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testUTCLeap() throws OrekitException {
+    public void testUTCLeap() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         AbsoluteDate endLeap = new AbsoluteDate(2006, 1, 1, TimeScalesFactory.getUTC());
         for (double dt = -200; dt < 200; dt += 3) {
@@ -110,7 +110,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testFieldUTCLeap() throws OrekitException {
+    public void testFieldUTCLeap() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         FieldAbsoluteDate<Decimal64> endLeap = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
                                                                        2006, 1, 1, TimeScalesFactory.getUTC());
@@ -126,7 +126,7 @@ public class EOPHistoryTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

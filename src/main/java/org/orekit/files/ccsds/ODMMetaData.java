@@ -241,7 +241,7 @@ public class ODMMetaData {
      * @return the reference frame
      * @throws OrekitException if the reference frame cannot be created.
      */
-    public Frame getFrame() throws OrekitException {
+    public Frame getFrame() {
         final Frame frame = this.getRefFrame();
         final CelestialBody body = this.getCenterBody();
         if (body == null) {

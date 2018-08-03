@@ -216,11 +216,11 @@ public class Geoid implements EarthShape {
      */
     public double getUndulation(final double geodeticLatitude,
                                 final double longitude,
-                                final AbsoluteDate date) throws OrekitException {
-            /*
-             * equations references are to the algorithm printed in the geoid
-             * cookbook[2]. See comment for Geoid.
-             */
+                                final AbsoluteDate date) {
+        /*
+         * equations references are to the algorithm printed in the geoid
+         * cookbook[2]. See comment for Geoid.
+         */
         // reference ellipsoid
         final ReferenceEllipsoid ellipsoid = this.getEllipsoid();
 
@@ -309,20 +309,19 @@ public class Geoid implements EarthShape {
         }
 
         @Override
-        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date)
-            throws OrekitException {
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             return new NormalizedSphericalHarmonics() {
 
                 /** the original harmonics */
                 private final NormalizedSphericalHarmonics delegate = provider.onDate(date);
 
                 @Override
-                public double getNormalizedCnm(final int n, final int m) throws OrekitException {
+                public double getNormalizedCnm(final int n, final int m) {
                     return getCorrectedCnm(n, m, this.delegate.getNormalizedCnm(n, m));
                 }
 
                 @Override
-                public double getNormalizedSnm(final int n, final int m) throws OrekitException {
+                public double getNormalizedSnm(final int n, final int m) {
                     return this.delegate.getNormalizedSnm(n, m);
                 }
 
@@ -381,8 +380,7 @@ public class Geoid implements EarthShape {
     public GeodeticPoint getIntersectionPoint(final Line lineInFrame,
                                               final Vector3D closeInFrame,
                                               final Frame frame,
-                                              final AbsoluteDate date)
-        throws OrekitException {
+                                              final AbsoluteDate date) {
         /*
          * It is assumed that the geoid is slowly varying over it's entire
          * surface. Therefore there will one local intersection.
@@ -452,7 +450,7 @@ public class Geoid implements EarthShape {
     @Override
     public Vector3D projectToGround(final Vector3D point,
                                     final AbsoluteDate date,
-                                    final Frame frame) throws OrekitException {
+                                    final Frame frame) {
         final GeodeticPoint gp = this.transform(point, frame, date);
         final GeodeticPoint gpZero =
                 new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 0);
@@ -470,8 +468,7 @@ public class Geoid implements EarthShape {
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
                                                                                       final FieldVector3D<T> closeInFrame,
                                                                                       final Frame frame,
-                                                                                      final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                                      final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
         /*
@@ -545,7 +542,7 @@ public class Geoid implements EarthShape {
     @Override
     public TimeStampedPVCoordinates projectToGround(
             final TimeStampedPVCoordinates pv,
-            final Frame frame) throws OrekitException {
+            final Frame frame) {
         throw new UnsupportedOperationException();
     }
 
@@ -563,7 +560,7 @@ public class Geoid implements EarthShape {
      */
     @Override
     public GeodeticPoint transform(final Vector3D point, final Frame frame,
-                                   final AbsoluteDate date) throws OrekitException {
+                                   final AbsoluteDate date) {
         // convert using reference ellipsoid, altitude referenced to ellipsoid
         final GeodeticPoint ellipsoidal = this.getEllipsoid().transform(
                 point, frame, date);
@@ -592,8 +589,7 @@ public class Geoid implements EarthShape {
      */
     @Override
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
-                                                                           final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+                                                                           final FieldAbsoluteDate<T> date) {
         // convert using reference ellipsoid, altitude referenced to ellipsoid
         final FieldGeodeticPoint<T> ellipsoidal = this.getEllipsoid().transform(
                 point, frame, date);

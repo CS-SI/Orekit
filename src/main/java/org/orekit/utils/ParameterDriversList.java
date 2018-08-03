@@ -22,8 +22,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -67,11 +65,8 @@ public class ParameterDriversList {
      * each addition overrides the parameter value).
      * </p>
      * @param driver driver to add
-     * @exception OrekitException if an existing driver for the
-     * same parameter throws one when its value is reset using the
-     * new driver value
      */
-    public void add(final ParameterDriver driver) throws OrekitException {
+    public void add(final ParameterDriver driver) {
 
         final DelegatingDriver existingHere = findByName(driver.getName());
         final DelegatingDriver alreadyBound = getAssociatedDelegatingDriver(driver);
@@ -186,9 +181,8 @@ public class ParameterDriversList {
 
         /** Simple constructor.
          * @param driver first driver in the series
-         * @exception OrekitException if first drivers throws one
          */
-        DelegatingDriver(final ParameterDriver driver) throws OrekitException {
+        DelegatingDriver(final ParameterDriver driver) {
             super(driver.getName(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue());
             drivers = new ArrayList<ParameterDriver>();
@@ -202,11 +196,9 @@ public class ParameterDriversList {
 
         /** Set the changes forwarder.
          * @param forwarder new changes forwarder
-         * @exception OrekitException if forwarder generates one
-         * @since 9.1
+                  * @since 9.1
          */
-        void setForwarder(final ChangesForwarder forwarder)
-            throws OrekitException {
+        void setForwarder(final ChangesForwarder forwarder) {
 
             // remove the previous observer if any
             if (this.forwarder != null) {
@@ -234,10 +226,8 @@ public class ParameterDriversList {
 
         /** Add a driver.
          * @param driver driver to add
-         * @exception OrekitException if an existing drivers cannot be set to the same value
          */
-        private void add(final ParameterDriver driver)
-            throws OrekitException {
+        private void add(final ParameterDriver driver) {
 
             for (final ParameterDriver d : drivers) {
                 if (d == driver) {
@@ -302,19 +292,10 @@ public class ParameterDriversList {
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver)
-            throws OrekitException {
-            try {
-                updateAll(driver, d -> {
-                    try {
-                        d.setValue(driver.getValue());
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
-                });
-            } catch (OrekitExceptionWrapper oew) {
-                throw oew.getException();
-            }
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
+            updateAll(driver, d -> {
+                d.setValue(driver.getValue());
+            });
         }
 
         /** {@inheritDoc} */

@@ -25,7 +25,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -66,7 +65,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeTropoModifier() throws OrekitException {
+    public void testRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -112,7 +111,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testTurnAroundRangeTropoModifier() throws OrekitException {
+    public void testTurnAroundRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -163,7 +162,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testRangeRateTropoModifier() throws OrekitException {
+    public void testRangeRateTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -210,7 +209,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testAngularTropoModifier() throws OrekitException {
+    public void testAngularTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -256,7 +255,7 @@ public class TropoModifierTest {
     }
 
     @Test
-    public void testAngularRadioRefractionModifier() throws OrekitException {
+    public void testAngularRadioRefractionModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

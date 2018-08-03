@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -119,7 +118,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * the Field Of View, an increasing event is generated.
      * </p>
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // get line of sight in spacecraft frame
         final Vector3D targetPosInert =

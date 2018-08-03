@@ -166,14 +166,12 @@ public class GravityFieldFactory {
      * <a href="http://tai.bipm.org/iers/convupdt/convupdt_c6.html">
      * http://tai.bipm.org/iers/convupdt/convupdt_c6.html</a>.
      * </p>
-     * @exception OrekitException if astronomical amplitudes cannot be read
-     * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
+          * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      * @see #getOceanLoadDeformationCoefficients()
      */
-    public static void addDefaultOceanTidesReaders()
-        throws OrekitException {
+    public static void addDefaultOceanTidesReaders() {
         synchronized (OCEAN_TIDES_READERS) {
 
             OCEAN_TIDES_READERS.add(new FESCnmSnmReader(FES_CNM_SNM_FILENAME, 1.0e-11));
@@ -213,14 +211,11 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
-     * @exception OrekitException if some data can't be read (missing or read error)
-     * or if some loader specific error occurs
      * @since 6.0
      * @see #getNormalizedProvider(int, int)
      */
     public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
-                                                                                     final int order)
-        throws OrekitException {
+                                                                                     final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(true, degree, order);
         return new WrappingNormalizedProvider(provider);
@@ -238,14 +233,11 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
-     * @exception OrekitException if some data can't be read (missing or read error)
-     * or if some loader specific error occurs
      * @since 6.0
      * @see #getConstantNormalizedProvider(int, int)
      */
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
-                                                                             final int order)
-        throws OrekitException {
+                                                                             final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getProvider(true, degree, order);
         return new WrappingNormalizedProvider(provider);
@@ -279,12 +271,9 @@ public class GravityFieldFactory {
      * </p>
      * @param unnormalized provider to normalize
      * @return provider for normalized coefficients
-     * @exception OrekitException if degree and order are too large
-     * and the normalization coefficients underflow
      * @since 6.0
      */
-    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized)
-        throws OrekitException {
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
         return new Normalizer(unnormalized);
     }
 
@@ -300,14 +289,11 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
-     * @exception OrekitException if some data can't be read (missing or read error)
-     * or if some loader specific error occurs
      * @since 6.0
      * @see #getUnnormalizedProvider(int, int)
      */
     public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
-                                                                                         final int order)
-        throws OrekitException {
+                                                                                         final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false, degree, order);
         return new WrappingUnnormalizedProvider(provider);
@@ -325,14 +311,11 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
-     * @exception OrekitException if some data can't be read (missing or read error)
-     * or if some loader specific error occurs
      * @since 6.0
      * @see #getConstantUnnormalizedProvider(int, int)
      */
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
-                                                                                 final int order)
-        throws OrekitException {
+                                                                                 final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getProvider(false, degree, order);
         return new WrappingUnnormalizedProvider(provider);
@@ -366,12 +349,9 @@ public class GravityFieldFactory {
      * </p>
      * @param normalized provider to un-normalize
      * @return provider for un-normalized coefficients
-     * @exception OrekitException if degree and order are too large
-     * and the un-normalization coefficients underflow
      * @since 6.0
      */
-    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized)
-        throws OrekitException {
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized) {
         return new Unnormalizer(normalized);
     }
 
@@ -387,13 +367,10 @@ public class GravityFieldFactory {
      * @param maxParseDegree maximal degree to parse
      * @param maxParseOrder maximal order to parse
      * @return a reader containing already loaded data
-     * @exception OrekitException if some data is missing
-     * or if some loader specific error occurs
      * @since 6.0
      */
     public static PotentialCoefficientsReader readGravityField(final int maxParseDegree,
-                                                               final int maxParseOrder)
-        throws OrekitException {
+                                                               final int maxParseOrder) {
 
         synchronized (READERS) {
 
@@ -424,12 +401,9 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return triangular un-normalization factors array
-     * @exception OrekitException if degree and order are too large
-     * and the latest coefficients underflow
      * @since 6.0
      */
-    public static double[][] getUnnormalizationFactors(final int degree, final int order)
-        throws OrekitException {
+    public static double[][] getUnnormalizationFactors(final int degree, final int order) {
 
         // allocate a triangular array
         final int rows = degree + 1;
@@ -478,12 +452,9 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return list of tides waves containing already loaded data
-     * @exception OrekitException if some data can't be read (missing or read error)
-     * or if some loader specific error occurs
      * @since 6.1
      */
-    public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order)
-        throws OrekitException {
+    public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order) {
 
         synchronized (OCEAN_TIDES_READERS) {
 

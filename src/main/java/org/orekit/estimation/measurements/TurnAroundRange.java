@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -77,13 +76,10 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param turnAroundRange observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
-                           final double sigma, final double baseWeight)
-        throws OrekitException {
+                           final double sigma, final double baseWeight) {
         this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, 0);
     }
 
@@ -95,15 +91,12 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
      */
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
-                           final int propagatorIndex)
-        throws OrekitException {
+                           final int propagatorIndex) {
         super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
               masterStation.getEastOffsetDriver(),
               masterStation.getNorthOffsetDriver(),
@@ -144,8 +137,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                          final SpacecraftState[] states)
-        throws OrekitException {
+                                                                          final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

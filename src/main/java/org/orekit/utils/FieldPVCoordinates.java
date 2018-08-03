@@ -343,11 +343,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return vector with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
-     * @since 9.2
+          * @since 9.2
      */
-    public FieldVector3D<FieldDerivativeStructure<T>> toDerivativeStructureVector(final int order)
-        throws OrekitException {
+    public FieldVector3D<FieldDerivativeStructure<T>> toDerivativeStructureVector(final int order) {
 
         final FDSFactory<T> factory;
         final FieldDerivativeStructure<T> x;
@@ -399,11 +397,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return pv coordinates with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
-     * @since 9.2
+          * @since 9.2
      */
-    public FieldPVCoordinates<FieldDerivativeStructure<T>> toDerivativeStructurePV(final int order)
-        throws OrekitException {
+    public FieldPVCoordinates<FieldDerivativeStructure<T>> toDerivativeStructurePV(final int order) {
 
         final FDSFactory<T> factory;
         final FieldDerivativeStructure<T> x0;

@@ -127,7 +127,7 @@ public class DOPComputer {
      * @return the {@link DOP} at the location
      * @throws OrekitException if something wrong occurs
      */
-    public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) throws OrekitException {
+    public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) {
 
         // Checks the number of provided propagators
         if (gnss.size() < DOP_MIN_PROPAGATORS) {

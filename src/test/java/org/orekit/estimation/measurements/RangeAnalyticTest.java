@@ -53,7 +53,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Analytical Values\n");
@@ -68,7 +68,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -87,7 +87,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -106,7 +106,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -125,7 +125,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testStateDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -144,7 +144,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -162,7 +162,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -180,7 +180,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -198,7 +198,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    public void testParameterDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -216,7 +216,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -337,7 +337,7 @@ public class RangeAnalyticTest {
     void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-        throws OrekitException {
+        {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -399,7 +399,7 @@ public class RangeAnalyticTest {
                     if (isFiniteDifferences) {
                         // Compute a reference value using finite differences
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -508,7 +508,7 @@ public class RangeAnalyticTest {
      * @throws OrekitException
      */
     void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

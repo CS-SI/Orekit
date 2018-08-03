@@ -42,7 +42,7 @@ public class ShiftingTransformProviderTest {
 
     @Test
     @Deprecated
-    public void testDeprecatedConstructor() throws OrekitException {
+    public void testDeprecatedConstructor() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -75,7 +75,7 @@ public class ShiftingTransformProviderTest {
     }
 
     @Test
-    public void testCacheHitForward() throws OrekitException {
+    public void testCacheHitForward() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -107,7 +107,7 @@ public class ShiftingTransformProviderTest {
     }
 
     @Test
-    public void testCacheHitBackward() throws OrekitException {
+    public void testCacheHitBackward() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -139,11 +139,11 @@ public class ShiftingTransformProviderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testForwardException() throws OrekitException {
+    public void testForwardException() {
         ShiftingTransformProvider shiftingProvider =
                 new ShiftingTransformProvider(new TransformProvider() {
                     private static final long serialVersionUID = -3126512810306982868L;
-                    public Transform getTransform(AbsoluteDate date) throws OrekitException {
+                    public Transform getTransform(AbsoluteDate date) {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
                     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
@@ -157,7 +157,7 @@ public class ShiftingTransformProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);

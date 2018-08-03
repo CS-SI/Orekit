@@ -79,7 +79,7 @@ public class YawCompensationTest {
     /** Test that pointed target remains the same with or without yaw compensation
      */
     @Test
-    public void testTarget() throws OrekitException {
+    public void testTarget() {
 
         //  Attitude laws
         // **************
@@ -110,7 +110,7 @@ public class YawCompensationTest {
     /** Test the derivatives of the sliding target
      */
     @Test
-    public void testSlidingDerivatives() throws OrekitException {
+    public void testSlidingDerivatives() {
 
         GroundPointing law =
                 new YawCompensation(circOrbit.getFrame(), new NadirPointing(circOrbit.getFrame(), earthShape));
@@ -142,7 +142,7 @@ public class YawCompensationTest {
     /** Test that pointed target motion is along -X sat axis
      */
     @Test
-    public void testAlignment() throws OrekitException {
+    public void testAlignment() {
 
         GroundPointing   notCompensated = new NadirPointing(circOrbit.getFrame(), earthShape);
         YawCompensation compensated     = new YawCompensation(circOrbit.getFrame(), notCompensated);
@@ -203,7 +203,7 @@ public class YawCompensationTest {
     }
 
     PVCoordinates toSpacecraft(PVCoordinates groundPoint, Orbit orbit, AttitudeProvider attitudeProvider)
-        throws OrekitException {
+        {
         SpacecraftState state =
                 new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         Transform earthToSc =
@@ -217,7 +217,7 @@ public class YawCompensationTest {
      * and minimum yaw compensation is at maximum latitude.
      */
     @Test
-    public void testCompensMinMax() throws OrekitException {
+    public void testCompensMinMax() {
 
         //  Attitude laws
         // **************
@@ -296,7 +296,7 @@ public class YawCompensationTest {
     /** Test that compensation rotation axis is Zsat, yaw axis
      */
     @Test
-    public void testCompensAxis() throws OrekitException {
+    public void testCompensAxis() {
 
         //  Attitude laws
         // **************
@@ -322,7 +322,7 @@ public class YawCompensationTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
@@ -367,7 +367,7 @@ public class YawCompensationTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final GroundPointing provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
 
         final Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();

@@ -54,7 +54,7 @@ public class EclipseDetectorTest {
     private double               earthRadius;
 
     @Test
-    public void testEclipse() throws OrekitException {
+    public void testEclipse() {
         EclipseDetector e = new EclipseDetector(60., 1.e-3,
                                                 sun, sunRadius,
                                                 earth, earthRadius).
@@ -74,7 +74,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testPenumbra() throws OrekitException {
+    public void testPenumbra() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius,
                                                 earth, earthRadius).
                             withPenumbra();
@@ -85,7 +85,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testWithMethods() throws OrekitException {
+    public void testWithMethods() {
         EclipseDetector e = new EclipseDetector(60.,
                                                 sun, sunRadius,
                                                 earth, earthRadius).
@@ -103,7 +103,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testInsideOcculting() throws OrekitException {
+    public void testInsideOcculting() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius,
                                                 earth, earthRadius);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -115,7 +115,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testInsideOcculted() throws OrekitException {
+    public void testInsideOcculted() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius,
                                                 earth, earthRadius);
         Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -129,7 +129,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testTooSmallMaxIterationCount() throws OrekitException {
+    public void testTooSmallMaxIterationCount() {
         int n = 5;
         EclipseDetector e = new EclipseDetector(60., 1.e-3,
                                                 sun, sunRadius,

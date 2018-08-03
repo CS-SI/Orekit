@@ -25,8 +25,10 @@ package org.orekit.errors;
  * Commons optimizers, integrators or solvers.</p>
  *
  * @author Luc Maisonobe
-
+ * @deprecated as of 9.3, this class is not used anymore, as {@link OrekitException}
+ * is now an unchecked exception
  */
+@Deprecated
 public class OrekitExceptionWrapper extends RuntimeException {
 
     /** serializable UID. */

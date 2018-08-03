@@ -280,12 +280,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @return array of cached entries surrounding specified date (the size
      * of the array is fixed to the one specified in the {@link
      * #GenericTimeStampedCache(int, int, double, double, TimeStampedGenerator)}
-     * @exception TimeStampedCacheException if entries are not chronologically
-     * sorted or if new data cannot be generated
      * @see #getEarliest()
      * @see #getLatest()
      */
-    public Stream<T> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+    public Stream<T> getNeighbors(final AbsoluteDate central) {
 
         lock.readLock().lock();
         try {
@@ -317,11 +315,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param date target date
      * @param dateQuantum global quantum of the date
      * @return slot covering the date
-     * @exception TimeStampedCacheException if entries are not chronologically
-     * sorted or if new data cannot be generated
      */
-    private Slot selectSlot(final AbsoluteDate date, final long dateQuantum)
-        throws TimeStampedCacheException {
+    private Slot selectSlot(final AbsoluteDate date, final long dateQuantum) {
 
         Slot selected = null;
 
@@ -439,10 +434,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Simple constructor.
          * @param date central date for initial entries to insert in the slot
-         * @exception TimeStampedCacheException if entries are not chronologically
-         * sorted or if new data cannot be generated
          */
-        Slot(final AbsoluteDate date) throws TimeStampedCacheException {
+        Slot(final AbsoluteDate date) {
 
             // allocate cache
             this.cache = new ArrayList<Entry>();
@@ -554,13 +547,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @param central central date
          * @param dateQuantum global quantum of the date
          * @return a new array containing date neighbors
-         * @exception TimeStampedCacheException if entries are not chronologically
-         * sorted or if new data cannot be generated
          * @see #getBefore(AbsoluteDate)
          * @see #getAfter(AbsoluteDate)
          */
-        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum)
-            throws TimeStampedCacheException {
+        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum) {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
@@ -716,9 +706,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Insert data at slot start.
          * @param data data to insert
-         * @exception TimeStampedCacheException if new data cannot be generated
          */
-        private void insertAtStart(final List<T> data) throws TimeStampedCacheException {
+        private void insertAtStart(final List<T> data) {
 
             // insert data at start
             boolean inserted = false;
@@ -753,9 +742,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Append data at slot end.
          * @param data data to append
-         * @exception TimeStampedCacheException if new data cannot be generated
          */
-        private void appendAtEnd(final List<T> data) throws TimeStampedCacheException {
+        private void appendAtEnd(final List<T> data) {
 
             // append data at end
             boolean appended = false;
@@ -794,11 +782,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @param date date that must be covered by the range of the generated array
          * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
          * @return chronologically sorted list of generated entries
-         * @exception TimeStampedCacheException if if entries are not chronologically
-         * sorted or if new data cannot be generated
          */
-        private List<T> generateAndCheck(final AbsoluteDate existingDate, final AbsoluteDate date)
-            throws TimeStampedCacheException {
+        private List<T> generateAndCheck(final AbsoluteDate existingDate, final AbsoluteDate date) {
             final List<T> entries = generator.generate(existingDate, date);
             if (entries.isEmpty()) {
                 throw new TimeStampedCacheException(OrekitMessages.NO_DATA_GENERATED, date);

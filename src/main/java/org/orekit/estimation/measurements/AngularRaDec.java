@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -65,12 +64,9 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                       final double[] angular, final double[] sigma, final double[] baseWeight)
-        throws OrekitException {
+                       final double[] angular, final double[] sigma, final double[] baseWeight) {
         this(station, referenceFrame, date, angular, sigma, baseWeight, 0);
     }
 
@@ -82,13 +78,10 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
-                        final int propagatorIndex)
-        throws OrekitException {
+                        final int propagatorIndex) {
         super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -120,8 +113,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<AngularRaDec> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                       final SpacecraftState[] states)
-        throws OrekitException {
+                                                                       final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

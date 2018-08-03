@@ -24,7 +24,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.frames.Frame;
@@ -79,8 +78,7 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
@@ -98,8 +96,7 @@ public class DragForce extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
@@ -219,13 +216,11 @@ public class DragForce extends AbstractForceModel {
      * @param position position of spacecraft in inertial frame
      * @param <T> type of the elements
      * @return the density and its derivatives
-     * @exception OrekitException if derivatives cannot be computed
-     * @since 9.0
+          * @since 9.0
      */
     private <T extends RealFieldElement<T>> T getDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
                                                                                        final Frame frame,
-                                                                                       final FieldVector3D<T> position)
-        throws OrekitException {
+                                                                                       final FieldVector3D<T> position) {
 
         // Retrieve derivation properties for parameter T
         // It is implied here that T is a DerivativeStructure

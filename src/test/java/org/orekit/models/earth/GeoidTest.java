@@ -151,7 +151,7 @@ public class GeoidTest {
      * height for WGS84 and EGM96</a>
      */
     @Test
-    public void testGetUndulation() throws OrekitException {
+    public void testGetUndulation() {
         /*
          * allow 3 meter of error, which is what the approximations would
          * suggest, see the comment for Geoid.
@@ -180,7 +180,7 @@ public class GeoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPoint() throws OrekitException {
+    public void testGetIntersectionPoint() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = geoid.getBodyFrame();
@@ -221,7 +221,7 @@ public class GeoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPointFrame() throws OrekitException {
+    public void testGetIntersectionPointFrame() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = new Frame(
@@ -265,7 +265,7 @@ public class GeoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetIntersectionPointNoIntersection() throws OrekitException {
+    public void testGetIntersectionPointNoIntersection() {
         Geoid geoid = getComponent();
         Vector3D closeMiss = new Vector3D(geoid.getEllipsoid()
                 .getEquatorialRadius() + 18, 0, 0);
@@ -287,7 +287,7 @@ public class GeoidTest {
      */
     @Test
     public void testTransformVector3DFrameAbsoluteDate()
-            throws OrekitException {
+            {
         // frame and date are the same
         Frame frame = FramesFactory.getGCRF();
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
@@ -321,7 +321,7 @@ public class GeoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testTransformGeodeticPoint() throws OrekitException {
+    public void testTransformGeodeticPoint() {
         // geoid
         Geoid geoid = getComponent();
         // ellipsoid
@@ -364,7 +364,7 @@ public class GeoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testProjectToGround() throws OrekitException {
+    public void testProjectToGround() {
         //setup
         Vector3D p = new Vector3D(7e8, 1e3, 200);
         Geoid geoid = new Geoid(potential, WGS84);

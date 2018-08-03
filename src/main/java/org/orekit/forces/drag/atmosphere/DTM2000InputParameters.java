@@ -18,7 +18,6 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -42,44 +41,38 @@ public interface DTM2000InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
-     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMinDate() throws OrekitException;
+    AbsoluteDate getMinDate();
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
-     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMaxDate() throws OrekitException;
+    AbsoluteDate getMaxDate();
 
     /** Get the value of the instantaneous solar flux.
      * @param date the current date
      * @return the instantaneous solar flux
-     * @exception OrekitException if the date is out of range of available data
      */
-    double getInstantFlux(AbsoluteDate date) throws OrekitException;
+    double getInstantFlux(AbsoluteDate date);
 
     /** Get the value of the mean solar flux.
      * @param date the current date
      * @return the mean solar flux
-     * @exception OrekitException if the date is out of range of available data
      */
-    double getMeanFlux(AbsoluteDate date) throws OrekitException;
+    double getMeanFlux(AbsoluteDate date);
 
     /** Get the value of the 3 hours geomagnetic index.
      * With a delay of 3 hours at pole to 6 hours at equator using:
      * delay=6-abs(lat)*0.033 (lat in deg.)
      * @param date the current date
      * @return the 3H geomagnetic index
-     * @exception OrekitException if the date is out of range of available data
      */
-    double getThreeHourlyKP(AbsoluteDate date) throws OrekitException;
+    double getThreeHourlyKP(AbsoluteDate date);
 
     /** Get the last 24H mean geomagnetic index.
      * @param date the current date
      * @return the 24H geomagnetic index
-     * @exception OrekitException if the date is out of range of available data
      */
-    double get24HoursKp(AbsoluteDate date) throws OrekitException;
+    double get24HoursKp(AbsoluteDate date);
 
 }

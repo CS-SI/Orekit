@@ -381,7 +381,7 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(28, covariances.getColumnDimension());
 
         // drag coefficient variance
-        Assert.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-5);
+        Assert.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-4);
 
         // leak-X constant term variance
         Assert.assertEquals(2.0540e-12, covariances.getEntry(7, 7), 1.0e-16);
@@ -977,10 +977,9 @@ public class OrbitDeterminationTest {
     /** Set up range bias due to transponder delay.
      * @param parser input file parser
      * @RETURN range bias (may be null if bias is fixed to zero)
-     * @exception OrekitException if bias initial value cannot be set
      */
     private Bias<Range> createSatRangeBias(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
 
         // transponder delay
         final double transponderDelayBias;
@@ -1060,13 +1059,12 @@ public class OrbitDeterminationTest {
      * @param conventions IERS conventions to use
      * @param body central body
      * @return name to station data map
-     * @exception OrekitException if some frame transforms cannot be computed
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
-        throws OrekitException, NoSuchElementException {
+        throws NoSuchElementException {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
@@ -1298,7 +1296,7 @@ public class OrbitDeterminationTest {
      * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
         if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1317,7 +1315,7 @@ public class OrbitDeterminationTest {
      * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
         if (parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.RANGE_RATE_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1336,7 +1334,7 @@ public class OrbitDeterminationTest {
      * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<AngularAzEl> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
         if (parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1355,7 +1353,7 @@ public class OrbitDeterminationTest {
      * @throws OrekitException if outliers are partly configured
      */
     private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser)
-        throws OrekitException {
+        {
         if (parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_MULTIPLIER) !=
             parser.containsKey(ParameterKey.PV_OUTLIER_REJECTION_STARTING_ITERATION)) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1782,14 +1780,13 @@ public class OrbitDeterminationTest {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the fields do not represent a valid measurements line
          */
         public abstract T parseFields(String[] fields,
                                       Map<String, StationData> stations,
                                       PVData pvData,
                                       Bias<Range> satRangeBias, Weights weight,
                                       String line, int lineNumber, String fileName)
-            throws OrekitException;
+           ;
 
         /** Check the number of fields.
          * @param expected expected number of fields
@@ -1797,11 +1794,10 @@ public class OrbitDeterminationTest {
          * @param line complete line
          * @param lineNumber line number
          * @param fileName file name
-         * @exception OrekitException if the number of fields does not match the expected number
          */
         protected void checkFields(final int expected, final String[] fields,
                                    final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             if (fields.length != expected) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, fileName, line);
@@ -1814,11 +1810,10 @@ public class OrbitDeterminationTest {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the date cannot be parsed
          */
         protected AbsoluteDate getDate(final String date,
                                        final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             try {
                 return new AbsoluteDate(date, TimeScalesFactory.getUTC());
             } catch (OrekitException oe) {
@@ -1837,12 +1832,11 @@ public class OrbitDeterminationTest {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-         * @exception OrekitException if the station is not known
          */
         protected StationData getStationData(final String stationName,
                                              final Map<String, StationData> stations,
                                              final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+            {
             final StationData stationData = stations.get(stationName);
             if (stationData == null) {
                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -1867,7 +1861,7 @@ public class OrbitDeterminationTest {
                                  final String line,
                                  final int lineNumber,
                                  final String fileName)
-                                                 throws OrekitException {
+                                                 {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final Range range = new Range(stationData.station,
@@ -1900,7 +1894,7 @@ public class OrbitDeterminationTest {
                                      final String line,
                                      final int lineNumber,
                                      final String fileName)
-                                                     throws OrekitException {
+                                                     {
             checkFields(4, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final RangeRate rangeRate = new RangeRate(stationData.station,
@@ -1928,7 +1922,7 @@ public class OrbitDeterminationTest {
                                    final String line,
                                    final int lineNumber,
                                    final String fileName)
-                                                   throws OrekitException {
+                                                   {
             checkFields(5, fields, line, lineNumber, fileName);
             final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
             final AngularAzEl azEl = new AngularAzEl(stationData.station,
@@ -1961,7 +1955,7 @@ public class OrbitDeterminationTest {
                               final String line,
                               final int lineNumber,
                               final String fileName)
-                                              throws OrekitException {
+                                              {
             // field 2, which corresponds to stations in other measurements, is ignored
             // this allows the measurements files to be columns aligned
             // by inserting something like "----" instead of a station name
@@ -2218,11 +2212,10 @@ public class OrbitDeterminationTest {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range modifier
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         public RangeIonosphericDelayModifier getRangeModifier(final Frequency frequency,
                                                               final AbsoluteDate date)
-            throws OrekitException {
+            {
             final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
             ensureFrequencyAndDateSupported(frequency, dc);
             return rangeModifiers.get(frequency).get(dc);
@@ -2232,11 +2225,10 @@ public class OrbitDeterminationTest {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range-rate modifier
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         public RangeRateIonosphericDelayModifier getRangeRateModifier(final Frequency frequency,
                                                                       final AbsoluteDate date)
-            throws OrekitException {
+            {
             final DateComponents dc = date.getComponents(TimeScalesFactory.getUTC()).getDate();
             ensureFrequencyAndDateSupported(frequency, dc);
             return rangeRateModifiers.get(frequency).get(dc);
@@ -2245,10 +2237,9 @@ public class OrbitDeterminationTest {
         /** Create modifiers for a frequency and date if needed.
          * @param frequency frequency of the signal
          * @param dc date for which modifiers are required
-         * @exception OrekitException if ionospheric model cannot be loaded
          */
         private void ensureFrequencyAndDateSupported(final Frequency frequency, final DateComponents dc)
-            throws OrekitException {
+            {
 
             if (!rangeModifiers.containsKey(frequency)) {
                 rangeModifiers.put(frequency, new HashMap<>());
@@ -2283,13 +2274,13 @@ public class OrbitDeterminationTest {
     private static enum AttitudeMode {
         NADIR_POINTING_WITH_YAW_COMPENSATION() {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new YawCompensation(inertialFrame, new NadirPointing(inertialFrame, body));
             }
         },
         CENTER_POINTING_WITH_YAW_STEERING {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new YawSteering(inertialFrame,
                                        new BodyCenterPointing(inertialFrame, body),
                                        CelestialBodyFactory.getSun(),
@@ -2298,37 +2289,37 @@ public class OrbitDeterminationTest {
         },
         LOF_ALIGNED_LVLH {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new LofOffset(inertialFrame, LOFType.LVLH);
             }
         },
         LOF_ALIGNED_QSW {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                            throws OrekitException {
+                            {
                 return new LofOffset(inertialFrame, LOFType.QSW);
             }
         },
         LOF_ALIGNED_TNW {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.TNW);
             }
         },
         LOF_ALIGNED_VNC {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.VNC);
             }
         },
         LOF_ALIGNED_VVLH {
             public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-                throws OrekitException {
+                {
                 return new LofOffset(inertialFrame, LOFType.VVLH);
             }
         };
 
         public abstract AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body)
-            throws OrekitException;
+           ;
 
     }
 

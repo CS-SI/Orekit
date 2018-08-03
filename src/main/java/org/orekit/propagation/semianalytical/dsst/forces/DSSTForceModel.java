@@ -65,8 +65,7 @@ public interface DSSTForceModel {
      *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly)
-        throws OrekitException;
+    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly);
 
     /** Performs initialization at each integration step for the current force model.
      *  <p>
@@ -75,8 +74,7 @@ public interface DSSTForceModel {
      *  @param aux auxiliary elements related to the current orbit
      *  @throws OrekitException if some specific error occurs
      */
-    void initializeStep(AuxiliaryElements aux)
-        throws OrekitException;
+    void initializeStep(AuxiliaryElements aux);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
@@ -84,7 +82,7 @@ public interface DSSTForceModel {
      *  @return the mean element rates dai/dt
      *  @throws OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state);
 
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not
@@ -109,7 +107,6 @@ public interface DSSTForceModel {
      * @param meanStates mean states information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(SpacecraftState... meanStates)
-        throws OrekitException;
+    void updateShortPeriodTerms(SpacecraftState... meanStates);
 
 }

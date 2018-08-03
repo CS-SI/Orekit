@@ -274,8 +274,7 @@ public class StreamingOemWriter {
      */
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
-                              final Map<Keyword, String> metadata)
-            throws OrekitException {
+                              final Map<Keyword, String> metadata) {
 
         this.writer = writer;
         this.timeScale = timeScale;
@@ -504,7 +503,7 @@ public class StreamingOemWriter {
         @Override
         public void init(final SpacecraftState s0,
                          final AbsoluteDate t,
-                         final double step) throws OrekitException {
+                         final double step) {
             try {
                 final String start = dateToString(s0.getDate().getComponents(timeScale));
                 final String stop = dateToString(t.getComponents(timeScale));
@@ -519,7 +518,7 @@ public class StreamingOemWriter {
 
         @Override
         public void handleStep(final SpacecraftState s,
-                               final boolean isLast) throws OrekitException {
+                               final boolean isLast) {
             try {
                 writeEphemerisLine(s.getPVCoordinates(this.frame));
             } catch (IOException e) {

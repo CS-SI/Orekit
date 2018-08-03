@@ -29,7 +29,6 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -46,7 +45,7 @@ import org.orekit.utils.ParameterDriversList;
 public class ModelTest {
 
     @Test
-    public void testPerfectValue() throws OrekitException {
+    public void testPerfectValue() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -116,7 +115,7 @@ public class ModelTest {
     }
     
     @Test
-    public void testBackwardPropagation() throws OrekitException {
+    public void testBackwardPropagation() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

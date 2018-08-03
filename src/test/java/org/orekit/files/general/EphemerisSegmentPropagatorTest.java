@@ -68,7 +68,7 @@ public class EphemerisSegmentPropagatorTest {
             }
 
             @Override
-            public Frame getFrame() throws OrekitException {
+            public Frame getFrame() {
                 return frame;
             }
 
@@ -78,7 +78,7 @@ public class EphemerisSegmentPropagatorTest {
             }
 
             @Override
-            public TimeScale getTimeScale() throws OrekitException {
+            public TimeScale getTimeScale() {
                 return null;
             }
 

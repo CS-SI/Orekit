@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeShiftable;
@@ -442,11 +441,9 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                                                                final Collection<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
                            sample);
@@ -474,14 +471,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @param <T> the type of the field elements
+          * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Collection<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(date, cFilter, aFilter, sample.stream());
     }
 
@@ -507,14 +502,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @param <T> the type of the field elements
+          * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Stream<FieldTransform<T>> sample)
-        throws OrekitException {
+                                                                                final Stream<FieldTransform<T>> sample) {
         final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
         final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
         sample.forEach(t -> {

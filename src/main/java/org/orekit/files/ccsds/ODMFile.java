@@ -141,7 +141,7 @@ public abstract class ODMFile {
      * </ol>
      * @throws OrekitException if no gravitational coefficient can be found
      */
-    protected void setMuUsed() throws OrekitException {
+    protected void setMuUsed() {
         if (!Double.isNaN(muParsed)) {
             muUsed = muParsed;
         } else if (!Double.isNaN(muSet)) {
@@ -155,9 +155,8 @@ public abstract class ODMFile {
 
     /** Get IERS conventions.
      * @return conventions IERS conventions
-     * @exception OrekitException if no IERS conventions have been set
      */
-    public IERSConventions getConventions() throws OrekitException {
+    public IERSConventions getConventions() {
         if (conventions != null) {
             return conventions;
         } else {

@@ -197,14 +197,12 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
-     * @exception OrekitException if degrees or powers are out of range
-     * @since 7.2
+          * @since 7.2
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
-                     final int maxFrequencyShortPeriodics)
-        throws OrekitException {
+                     final int maxFrequencyShortPeriodics) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -239,10 +237,8 @@ public class DSSTZonal implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-     * @exception OrekitException if index is out of range
      */
-    private void checkIndexRange(final int index, final int min, final int max)
-        throws OrekitException {
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -267,8 +263,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        throws OrekitException {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         computeMeanElementsTruncations(aux);
 
@@ -300,7 +295,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param aux auxiliary elements
      * @throws OrekitException if an error occurs
      */
-    private void computeMeanElementsTruncations(final AuxiliaryElements aux) throws OrekitException {
+    private void computeMeanElementsTruncations(final AuxiliaryElements aux) {
 
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
@@ -397,7 +392,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -444,7 +439,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState) {
         return computeMeanElementRates(spacecraftState.getDate());
     }
 
@@ -459,7 +454,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @return the mean element rates
      * @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeMeanElementRates(final AbsoluteDate date) throws OrekitException {
+    private double[] computeMeanElementRates(final AbsoluteDate date) {
         // Compute potential derivative
         final double[] dU  = computeUDerivatives(date);
         final double dUda  = dU[0];
@@ -497,7 +492,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) {
 
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
@@ -616,8 +611,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -666,8 +660,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param slot slot to which the coefficients belong
      * @throws OrekitException if an error occurs during the coefficient computation
      */
-    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot)
-        throws OrekitException {
+    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot) {
         final double[] meanElementRates = computeMeanElementRates(date);
         final double[] currentDi = new double[6];
 
@@ -1075,8 +1068,7 @@ public class DSSTZonal implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-                throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1256,8 +1248,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @throws OrekitException if an error occurs while generating the coefficients
          */
         FourierCjSjCoefficients(final AbsoluteDate date,
-                                final int nMax, final int sMax, final int jMax)
-                throws OrekitException {
+                                final int nMax, final int sMax, final int jMax) {
             this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients
             final double[][] Qns  = CoefficientsFactory.computeQns(gamma, nMax, nMax);
@@ -1285,7 +1276,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @param date the current date
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        private void generateCoefficients(final AbsoluteDate date) throws OrekitException {
+        private void generateCoefficients(final AbsoluteDate date) {
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
             for (int j = 1; j <= jMax; j++) {
 

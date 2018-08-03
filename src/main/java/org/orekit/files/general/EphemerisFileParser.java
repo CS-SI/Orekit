@@ -38,7 +38,7 @@ public interface EphemerisFileParser {
      * @throws IOException     if {@code reader} throws one.
      */
     EphemerisFile parse(BufferedReader reader, String fileName)
-            throws OrekitException, IOException;
+            throws IOException;
 
     /**
      * Parse an ephemeris file from a file on the local file system.
