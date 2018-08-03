@@ -107,15 +107,13 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                {
+            public double getRawCnm(final int n, final int m) {
                 checkLimits(n, m);
                 return rawC[n][m];
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                {
+            public double getRawSnm(final int n, final int m) {
                 checkLimits(n, m);
                 return rawS[n][m];
             }
@@ -126,9 +124,8 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Check limits.
      * @param degree degree
      * @param order order
-          */
-    private void checkLimits(final int degree, final int order)
-        {
+     */
+    private void checkLimits(final int degree, final int order) {
 
         if (degree >= rawC.length) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,

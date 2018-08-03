@@ -30,7 +30,7 @@ public interface ODEIntegratorBuilder {
      * @param orbit reference orbit
      * @param orbitType orbit type to use
      * @return a first order integrator ready to use
-          */
+     */
     AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
 
 }

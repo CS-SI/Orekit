@@ -66,8 +66,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state)
-        {
+                                              final SpacecraftState state) {
 
         // State position
         final Vector3D position = state.getPVCoordinates().getPosition();
@@ -104,8 +103,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate)
-        {
+                                               final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
@@ -133,8 +131,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      */
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
-                                                 final SpacecraftState state)
-        {
+                                                 final SpacecraftState state) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
@@ -158,8 +155,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated)
-        {
+    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
         final TurnAroundRange measurement   = estimated.getObservedMeasurement();
         final GroundStation   masterStation = measurement.getMasterStation();
         final GroundStation   slaveStation  = measurement.getSlaveStation();

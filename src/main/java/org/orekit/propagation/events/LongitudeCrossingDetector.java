@@ -131,7 +131,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * @param s the current state information: date, kinematics, attitude
      * @return longitude difference between the spacecraft and the fixed
      * longitude, with some sign tweaks to ensure continuity
-          */
+     */
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates

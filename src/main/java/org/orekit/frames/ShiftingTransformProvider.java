@@ -160,8 +160,7 @@ public class ShiftingTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         @SuppressWarnings("unchecked")
         GenericTimeStampedCache<FieldTransform<T>> fieldCache =
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());

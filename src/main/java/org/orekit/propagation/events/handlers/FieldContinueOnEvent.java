@@ -37,10 +37,9 @@ public class FieldContinueOnEvent <KK extends FieldEventDetector<T>, T extends R
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return {@link FieldEventHandler.Action#CONTINUE continue} under all circumstances
-          */
+     */
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing)
-        {
+    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {
         return Action.CONTINUE;
     }
 

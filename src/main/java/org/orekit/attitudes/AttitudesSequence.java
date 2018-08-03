@@ -151,8 +151,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public T g(final FieldSpacecraftState<T> s)
-                    {
+                public T g(final FieldSpacecraftState<T> s) {
                     return field.getZero().add(sw.g(s.toSpacecraftState()));
                 }
 
@@ -176,8 +175,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing)
-                    {
+                public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
                     switch(sw.eventOccurred(s.toSpacecraftState(), increasing)) {
                         case STOP :
                             return FieldEventHandler.Action.STOP;
@@ -192,8 +190,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState)
-                    {
+                public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
                     return new FieldSpacecraftState<>(field, sw.resetState(oldState.toSpacecraftState()));
                 }
 
@@ -284,8 +281,7 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                 final boolean switchOnDecrease,
                                                                 final double transitionTime,
                                                                 final AngularDerivativesFilter transitionFilter,
-                                                                final SwitchHandler handler)
-        {
+                                                                final SwitchHandler handler) {
 
         // safety check, for ensuring attitude continuity
         if (transitionTime < switchEvent.getThreshold()) {
@@ -306,16 +302,14 @@ public class AttitudesSequence implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        {
+                                final AbsoluteDate date, final Frame frame) {
         return activated.get(date).getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        {
+                                                                        final Frame frame) {
         return activated.get(date.toAbsoluteDate()).getAttitude(pvProv, date, frame);
     }
 
@@ -421,14 +415,12 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public double g(final SpacecraftState s)
-            {
+        public double g(final SpacecraftState s) {
             return event.g(forward ? s : s.shiftedBy(-transitionTime));
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
 
             final AbsoluteDate date = s.getDate();
             if (activated.get(date) == (forward ? past : future) &&
@@ -484,8 +476,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final SpacecraftState oldState) {
             // delegate to underlying event
             return event.resetState(oldState);
         }
@@ -515,8 +506,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
             /** {@inheritDoc} */
             public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                        final AbsoluteDate date, final Frame frame)
-                {
+                                        final AbsoluteDate date, final Frame frame) {
 
                 // interpolate between the two boundary attitudes
                 final TimeStampedAngularCoordinates start =
@@ -534,8 +524,7 @@ public class AttitudesSequence implements AttitudeProvider {
             /** {@inheritDoc} */
             public <S extends RealFieldElement<S>> FieldAttitude<S> getAttitude(final FieldPVCoordinatesProvider<S> pvProv,
                                                                                 final FieldAbsoluteDate<S> date,
-                                                                                final Frame frame)
-                                                                                                {
+                                                                                final Frame frame) {
 
                 // interpolate between the two boundary attitudes
                 final TimeStampedFieldAngularCoordinates<S> start =
@@ -574,8 +563,7 @@ public class AttitudesSequence implements AttitudeProvider {
          * of the switch event for a backward propagation)
          * @param state state at switch time (with attitude computed using the {@code preceding} law)
          */
-        void switchOccurred(AttitudeProvider preceding, AttitudeProvider following, SpacecraftState state)
-           ;
+        void switchOccurred(AttitudeProvider preceding, AttitudeProvider following, SpacecraftState state);
 
     }
 

@@ -358,8 +358,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser();
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         parser.fill(history);
@@ -399,9 +398,8 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         private int firstMJD;
 
         /** Simple constructor.
-                  */
-        Parser()
-            {
+         */
+        Parser() {
             this.eopFieldsMap         = new HashMap<Integer, double[]>();
             this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
             this.itrfVersionLoader    = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
@@ -473,9 +471,8 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
         /** Fill EOP history obtained after reading several files.
          * @param history history to fill up
-                  */
-        public void fill(final SortedSet<EOPEntry> history)
-            {
+         */
+        public void fill(final SortedSet<EOPEntry> history) {
 
             double[] currentEOP = null;
             double[] nextEOP    = eopFieldsMap.get(mjdMin);
@@ -584,7 +581,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-                  */
+         */
         private void loadXYDT(final Section section, final BufferedReader reader, final String name)
             throws IOException {
 
@@ -652,7 +649,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-                  */
+         */
         private void loadPoleOffsets(final Section section, final boolean isNonRotatingOrigin,
                                      final BufferedReader reader, final String name)
             throws IOException {

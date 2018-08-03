@@ -46,8 +46,7 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
-        {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw
         return context.orbitNormalYaw();
@@ -56,8 +55,7 @@ public class BeidouGeo extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected  <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
-        {
+    protected  <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         // geostationary Beidou spacecraft are always in Orbit Normal (ON) yaw
         return context.orbitNormalYaw();

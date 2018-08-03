@@ -80,8 +80,7 @@ public class Range extends AbstractMeasurement<Range> {
      * @param baseWeight base weight
      */
     public Range(final GroundStation station, final AbsoluteDate date,
-                 final double range, final double sigma, final double baseWeight)
-        {
+                 final double range, final double sigma, final double baseWeight) {
         this(station, true, date, range, sigma, baseWeight, 0);
     }
 
@@ -99,8 +98,7 @@ public class Range extends AbstractMeasurement<Range> {
      * @param twoWay flag indicating whether it is a two-way measurement
      */
     public Range(final GroundStation station, final AbsoluteDate date, final double range,
-                 final double sigma, final double baseWeight, final boolean twoWay)
-        {
+                 final double sigma, final double baseWeight, final boolean twoWay) {
         this(station, twoWay, date, range, sigma, baseWeight, 0);
     }
 
@@ -115,8 +113,7 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
-                 final int propagatorIndex)
-        {
+                 final int propagatorIndex) {
         this(station, true, date, range, sigma, baseWeight, 0);
     }
 
@@ -132,8 +129,7 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
-                 final int propagatorIndex)
-        {
+                 final int propagatorIndex) {
         super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -166,8 +162,7 @@ public class Range extends AbstractMeasurement<Range> {
     @Override
     protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
-                                                                final SpacecraftState[] states)
-        {
+                                                                final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

@@ -96,8 +96,7 @@ public class KalmanEstimator {
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final List<NumericalPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters)
-        {
+                    final ParameterDriversList estimatedMeasurementParameters) {
 
         this.propagatorBuilders = propagatorBuilders;
         this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
@@ -158,8 +157,7 @@ public class KalmanEstimator {
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
      */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
-        {
+    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < propagatorBuilders.size(); ++i) {
@@ -182,8 +180,7 @@ public class KalmanEstimator {
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
      */
-    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly)
-        {
+    public ParameterDriversList getPropagationParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (PropagatorBuilder builder : propagatorBuilders) {
@@ -213,8 +210,7 @@ public class KalmanEstimator {
      * @return estimated propagators
      * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement)
-        {
+    public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
             processModel.finalizeEstimation(observedMeasurement, estimate);
@@ -232,8 +228,7 @@ public class KalmanEstimator {
      * @return estimated propagators
      * @throws OrekitException if an error occurred during the estimation
      */
-    public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements)
-        {
+    public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
         NumericalPropagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);

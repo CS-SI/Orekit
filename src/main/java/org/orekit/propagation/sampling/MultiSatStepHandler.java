@@ -43,9 +43,8 @@ public interface MultiSatStepHandler {
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}.
      * @param t target time for the integration
-          */
-    default void init(final List<SpacecraftState> states0, final AbsoluteDate t)
-        {
+     */
+    default void init(final List<SpacecraftState> states0, final AbsoluteDate t) {
         // nothing by default
     }
 
@@ -58,7 +57,7 @@ public interface MultiSatStepHandler {
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}
      * @param isLast if true, this is the last integration step
-          */
+     */
     void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast);
 
 }

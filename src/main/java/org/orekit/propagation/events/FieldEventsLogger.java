@@ -226,16 +226,14 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
     private class FieldLocalHandler<D extends FieldEventDetector<T>> implements FieldEventHandler<FieldLoggingWrapper<D>, T> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing)
-            {
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing) {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState)
-            {
+        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState) {
             return wrapper.detector.resetState(oldState);
         }
 

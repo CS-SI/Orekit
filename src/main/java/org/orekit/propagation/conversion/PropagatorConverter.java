@@ -38,7 +38,7 @@ public interface PropagatorConverter {
      * @param nbPoints number of points for sampling over the time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-          */
+     */
     Propagator convert(Propagator source,
                        double timeSpan,
                        int nbPoints,
@@ -50,7 +50,7 @@ public interface PropagatorConverter {
      * @param nbPoints number of points for sampling over the time span
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-          */
+     */
     Propagator convert(Propagator source,
                        double timeSpan,
                        int nbPoints,
@@ -61,7 +61,7 @@ public interface PropagatorConverter {
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-          */
+     */
     Propagator convert(List<SpacecraftState> states,
                        boolean positionOnly,
                        List<String> freeParameters);
@@ -71,7 +71,7 @@ public interface PropagatorConverter {
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @param freeParameters names of the free parameters
      * @return adapted propagator
-          */
+     */
     Propagator convert(List<SpacecraftState> states,
                        boolean positionOnly,
                        String... freeParameters);

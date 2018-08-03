@@ -191,8 +191,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
-                                                 final boolean increasing)
-            {
+                                                 final boolean increasing) {
 
             // filter underlying event
             final EventHandler.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
@@ -203,8 +202,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState) {
 
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();

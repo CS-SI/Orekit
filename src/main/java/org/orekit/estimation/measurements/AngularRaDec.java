@@ -67,8 +67,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      * @param baseWeight base weight
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
-                       final double[] angular, final double[] sigma, final double[] baseWeight)
-        {
+                       final double[] angular, final double[] sigma, final double[] baseWeight) {
         this(station, referenceFrame, date, angular, sigma, baseWeight, 0);
     }
 
@@ -83,8 +82,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
      */
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
-                        final int propagatorIndex)
-        {
+                        final int propagatorIndex) {
         super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -116,8 +114,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<AngularRaDec> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                       final SpacecraftState[] states)
-        {
+                                                                       final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

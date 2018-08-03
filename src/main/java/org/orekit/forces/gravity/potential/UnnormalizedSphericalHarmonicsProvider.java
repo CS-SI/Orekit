@@ -46,16 +46,14 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
          * @param m order of the coefficient
          * @return un-normalized coefficient Cnm
          */
-        double getUnnormalizedCnm(int n, int m)
-           ;
+        double getUnnormalizedCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return un-normalized coefficient Snm
          */
-        double getUnnormalizedSnm(int n, int m)
-           ;
+        double getUnnormalizedSnm(int n, int m);
 
     }
 

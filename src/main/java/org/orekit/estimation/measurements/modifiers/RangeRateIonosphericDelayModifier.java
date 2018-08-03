@@ -76,8 +76,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
      * @return the measurement error due to Ionosphere
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state)
-        {
+    private double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state) {
         // The effect of ionospheric correction on the range rate is
         // computed using finite differences.
 
@@ -141,8 +140,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate)
-        {
+                                               final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
@@ -170,8 +168,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
     private double rangeRateErrorParameterDerivative(final GroundStation station,
                                                      final ParameterDriver driver,
                                                      final SpacecraftState state,
-                                                     final double delay)
-        {
+                                                     final double delay) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
@@ -196,8 +193,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<RangeRate> estimated)
-        {
+    public void modify(final EstimatedMeasurement<RangeRate> estimated) {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();

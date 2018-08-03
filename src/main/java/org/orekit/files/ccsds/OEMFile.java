@@ -66,7 +66,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
     }
 
     /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
-          */
+     */
     void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {

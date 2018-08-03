@@ -65,8 +65,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context)
-        {
+    protected TimeStampedAngularCoordinates correctedYaw(final GNSSAttitudeContext context) {
 
         // noon beta angle limit from yaw rate
         final double realBeta = context.getBeta();
@@ -127,8 +126,7 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context)
-        {
+    protected <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T> correctedYaw(final GNSSFieldAttitudeContext<T> context) {
 
         final Field<T> field = context.getDate().getField();
 

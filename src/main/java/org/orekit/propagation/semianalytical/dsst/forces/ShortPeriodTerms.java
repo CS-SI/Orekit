@@ -37,7 +37,7 @@ public interface ShortPeriodTerms extends Serializable {
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies
      * @return short period terms contributions
-          */
+     */
     double[] value(Orbit meanOrbit);
 
     /** Get the prefix for short period coefficients keys.

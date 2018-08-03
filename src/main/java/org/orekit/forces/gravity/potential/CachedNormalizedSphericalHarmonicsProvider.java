@@ -196,10 +196,9 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         /** Fill coefficients array for one entry.
          * @param raw the un-interpolated spherical harmonics
          * @param cnmsnm arrays to fill in
-                  */
+         */
         private void fillArray(final NormalizedSphericalHarmonics raw,
-                               final double[] cnmsnm)
-            {
+                               final double[] cnmsnm) {
             int index = 0;
             for (int n = 0; n <= rawProvider.getMaxDegree(); ++n) {
                 for (int m = 0; m <= n; ++m) {

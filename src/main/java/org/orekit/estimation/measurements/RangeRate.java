@@ -71,8 +71,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
-                     final boolean twoway)
-        {
+                     final boolean twoway) {
         this(station, date, rangeRate, sigma, baseWeight, twoway, 0);
     }
 
@@ -91,8 +90,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double sigma,
                      final double baseWeight,
                      final boolean twoway,
-                     final int propagatorIndex)
-        {
+                     final int propagatorIndex) {
         super(date, rangeRate, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -124,8 +122,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                    final SpacecraftState[] states)
-        {
+                                                                    final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
@@ -259,8 +256,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState,
-                                                                        final Map<String, Integer> indices)
-        {
+                                                                        final Map<String, Integer> indices) {
 
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =

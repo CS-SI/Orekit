@@ -117,8 +117,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                {
+            public double getRawCnm(final int n, final int m) {
 
                 // retrieve the underlying part of the coefficient
                 double cnm = raw.getRawCnm(n, m);
@@ -132,8 +131,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                {
+            public double getRawSnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double snm = raw.getRawSnm(n, m);

@@ -310,7 +310,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
-          */
+     */
     public void setInitialState(final SpacecraftState initialState) {
         resetInitialState(initialState);
     }
@@ -326,8 +326,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -366,8 +365,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
-            {
+                                               final boolean meanOnly) {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
             final double mass = y[6];
@@ -483,8 +481,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target)
-                {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
             for (final ForceModel forceModel : forceModels) {
                 forceModel.init(initialState, target);
             }
@@ -516,8 +513,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void addNonKeplerianAcceleration(final Vector3D gamma)
-            {
+        public void addNonKeplerianAcceleration(final Vector3D gamma) {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
                 yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
@@ -560,9 +556,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-          */
-    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
-        {
+     */
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();

@@ -139,8 +139,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
                 /** {@inheritDoc} */
                 @Override
-                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    {
+                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
                     // delegate to raw Sun provider
                     return sun.getPVCoordinates(date, frame);
                 }
@@ -148,8 +147,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
                 /** {@inheritDoc} */
                 @Override
                 public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-                        {
+                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
                     // SRP was created with a provider that does not support fields,
                     // but the fields methods are called
                     throw new OrekitIllegalArgumentException(LocalizedCoreFormats.UNSUPPORTED_OPERATION);
@@ -192,8 +190,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date         = s.getDate();
         final Frame        frame        = s.getFrame();
@@ -214,8 +211,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        {
+                                                                         final T[] parameters) {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame                frame        = s.getFrame();
@@ -240,8 +236,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @return lighting ratio
           * @since 7.1
      */
-    public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
-        {
+    public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date) {
 
         final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
         if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
@@ -306,8 +301,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
      */
     public <T extends RealFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
                                                               final Frame frame,
-                                                              final FieldAbsoluteDate<T> date)
-        {
+                                                              final FieldAbsoluteDate<T> date) {
 
         final T one = date.getField().getOne();
 
@@ -384,9 +378,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param sunPosition Sun position in the selected frame
      * @param position the satellite's position in the selected frame
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-          */
-    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position)
-        {
+     */
+    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position) {
         final double[] angle = new double[3];
 
         final Vector3D satSunVector = sunPosition.subtract(position);
@@ -412,9 +405,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
      * @param position the satellite's position in the selected frame.
      * @param <T> extends RealFieldElement
      * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-          */
-    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position)
-        {
+     */
+    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
         final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
 
         final FieldVector3D<T> mP           = position.negate();
@@ -503,7 +495,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the central body apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-                  */
+         */
         public double g(final SpacecraftState s) {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
@@ -559,7 +551,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the sum of the central body and Sun's apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-                  */
+         */
         public double g(final SpacecraftState s) {
             final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                     s.getPVCoordinates().getPosition());
@@ -620,7 +612,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the central body apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-                  */
+         */
         public T g(final FieldSpacecraftState<T> s) {
             final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                s.getPVCoordinates().getPosition());
@@ -681,7 +673,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
          * the sum of the central body and Sun's apparent radius.
          * @param s the current state information : date, kinematics, attitude
          * @return value of the g function
-                  */
+         */
         public T g(final FieldSpacecraftState<T> s) {
             final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
                                                s.getPVCoordinates().getPosition());

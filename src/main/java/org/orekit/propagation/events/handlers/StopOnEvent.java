@@ -42,10 +42,9 @@ public class StopOnEvent <T extends EventDetector> implements EventHandler<T>, S
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return {@link EventHandler.Action#STOP stop} under all circumstances
-          */
+     */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
-        {
+    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
         return Action.STOP;
     }
 

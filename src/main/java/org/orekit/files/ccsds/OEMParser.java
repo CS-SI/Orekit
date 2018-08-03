@@ -146,8 +146,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
     }
 
     @Override
-    public OEMFile parse(final BufferedReader reader, final String fileName)
-            {
+    public OEMFile parse(final BufferedReader reader, final String fileName) {
 
         try {
 
@@ -248,7 +247,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param reader the reader
      * @param pi the parser info
      * @exception IOException if an error occurs while reading from the stream
-          */
+     */
     private void parseEphemeridesDataLines(final BufferedReader reader,  final ParseInfo pi)
         throws IOException {
 

@@ -1070,9 +1070,8 @@ public class NRLMSISE00 implements Atmosphere {
      * @param number switch number between 1 and 23
      * @param value switch value
      * @return a <em>new</em> instance, with switch changed
-          */
-    public NRLMSISE00 withSwitch(final int number, final int value)
-        {
+     */
+    public NRLMSISE00 withSwitch(final int number, final int value) {
         if (number < 1 || number > 23) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, number, 1, 23);
         }
@@ -1114,8 +1113,7 @@ public class NRLMSISE00 implements Atmosphere {
     @Override
     public double getDensity(final AbsoluteDate date,
                              final Vector3D position,
-                             final Frame frame)
-        {
+                             final Frame frame) {
 
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -1152,8 +1150,7 @@ public class NRLMSISE00 implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
-                                                        final Frame frame)
-        {
+                                                        final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
         if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -1215,8 +1212,7 @@ public class NRLMSISE00 implements Atmosphere {
      */
     private <T extends RealFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
-                                                             final Frame frame)
-        {
+                                                             final Frame frame) {
         final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));

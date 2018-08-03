@@ -63,7 +63,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
          * @param original original state <em>without</em> the effect
          * @return updated state at the same date, taking the effect
          * into account if meaningful
-                  */
+         */
         SpacecraftState apply(SpacecraftState original);
 
     }
@@ -114,14 +114,12 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public void resetInitialState(final SpacecraftState state)
-        {
+    public void resetInitialState(final SpacecraftState state) {
         reference.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         if (reference instanceof AbstractAnalyticalPropagator) {
             ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
         } else {
@@ -154,14 +152,12 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date)
-        {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc}*/
-    protected double getMass(final AbsoluteDate date)
-        {
+    protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
     }
 

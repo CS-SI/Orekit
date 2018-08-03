@@ -35,7 +35,7 @@ public interface FieldPVCoordinatesProvider<T extends RealFieldElement<T>> {
      * @param date current date
      * @param frame the frame where to define the position
      * @return time-stamped position/velocity of the body (m and m/s)
-          */
+     */
     TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame);
 
 }

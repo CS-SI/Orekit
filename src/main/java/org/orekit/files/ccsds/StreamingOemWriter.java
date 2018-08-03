@@ -274,8 +274,7 @@ public class StreamingOemWriter {
      */
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
-                              final Map<Keyword, String> metadata)
-            {
+                              final Map<Keyword, String> metadata) {
 
         this.writer = writer;
         this.timeScale = timeScale;

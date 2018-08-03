@@ -35,8 +35,7 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     /** Simple constructor.
      * @param normalized provider to un-normalize
      */
-    Unnormalizer(final NormalizedSphericalHarmonicsProvider normalized)
-        {
+    Unnormalizer(final NormalizedSphericalHarmonicsProvider normalized) {
         this.normalized = normalized;
         this.factors    = GravityFieldFactory.getUnnormalizationFactors(normalized.getMaxDegree(),
                                                                         normalized.getMaxOrder());

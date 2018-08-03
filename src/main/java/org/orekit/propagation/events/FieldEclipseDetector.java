@@ -218,7 +218,7 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
      * and positive when exiting.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public T g(final FieldSpacecraftState<T> s) {
         final Vector3D pted = occulted.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();
         final Vector3D ping = occulting.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition();

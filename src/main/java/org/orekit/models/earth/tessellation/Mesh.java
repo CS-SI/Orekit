@@ -77,11 +77,10 @@ class Mesh {
      * @param alongGap distance between nodes in the along direction
      * @param acrossGap distance between nodes in the across direction
      * @param start location of the first node.
-          */
+     */
     Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
                 final TileAiming aiming, final double alongGap, final double acrossGap,
-                final S2Point start)
-        {
+                final S2Point start) {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
         this.coverage       = null;
@@ -212,8 +211,7 @@ class Mesh {
      * @return node at specified indices, guaranteed to be non-null
           * @see #getNode(int, int)
      */
-    public Node addNode(final int alongIndex, final int acrossIndex)
-        {
+    public Node addNode(final int alongIndex, final int acrossIndex) {
 
         // create intermediate (disabled) nodes, up to specified indices
         Node node = getExistingAncestor(alongIndex, acrossIndex);
@@ -499,9 +497,8 @@ class Mesh {
          * @param s2p position in spherical coordinates (my be null)
          * @param alongIndex index in the along direction
          * @param acrossIndex index in the across direction
-                  */
-        private Node(final S2Point s2p, final int alongIndex, final int acrossIndex)
-            {
+         */
+        private Node(final S2Point s2p, final int alongIndex, final int acrossIndex) {
             final GeodeticPoint gp = new GeodeticPoint(0.5 * FastMath.PI - s2p.getPhi(), s2p.getTheta(), 0.0);
             this.v           = ellipsoid.transform(gp);
             this.s2p         = s2p;
@@ -598,9 +595,8 @@ class Mesh {
          * </p>
          * @param motion straight motion, which must be curved back to surface
          * @return arrival point, approximately at specified distance from node
-                  */
-        public S2Point move(final Vector3D motion)
-            {
+         */
+        public S2Point move(final Vector3D motion) {
 
             // safety check for too small motion
             if (motion.getNorm() < Precision.EPSILON * v.getNorm()) {

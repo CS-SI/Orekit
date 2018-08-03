@@ -55,8 +55,7 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
      * @param key key to identify the ambiguity
      * @param ambiguity initial value of ambiguity
      */
-    public PhaseAmbiguityModifier(final int key, final double ambiguity)
-        {
+    public PhaseAmbiguityModifier(final int key, final double ambiguity) {
         this.ambiguity = new ParameterDriver("amgiguity-" + key,
                                              ambiguity, AMBIGUITY_SCALE,
                                              Double.NEGATIVE_INFINITY,
@@ -70,8 +69,7 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated)
-        {
+    public void modify(final EstimatedMeasurement<Phase> estimated) {
 
         // apply the ambiguity to the measurement value
         final double[] value = estimated.getEstimatedValue();

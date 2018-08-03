@@ -94,16 +94,14 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedCnm(final int n, final int m)
-                {
+            public double getUnnormalizedCnm(final int n, final int m) {
                 // no conversion is done here
                 return raw.getRawCnm(n, m);
             }
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedSnm(final int n, final int m)
-                {
+            public double getUnnormalizedSnm(final int n, final int m) {
                 // no conversion is done here
                 return raw.getRawSnm(n, m);
             }

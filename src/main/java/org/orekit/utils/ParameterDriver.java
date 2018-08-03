@@ -104,11 +104,10 @@ public class ParameterDriver {
      * parameter), it must be non-zero
      * @param minValue minimum value
      * @param maxValue maximum value
-          */
+     */
     public ParameterDriver(final String name, final double referenceValue,
                            final double scale, final double minValue,
-                           final double maxValue)
-        {
+                           final double maxValue) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -134,8 +133,7 @@ public class ParameterDriver {
      * @param observer observer to add
           * while being updated
      */
-    public void addObserver(final ParameterObserver observer)
-        {
+    public void addObserver(final ParameterObserver observer) {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
     }
@@ -226,7 +224,7 @@ public class ParameterDriver {
      * process. It is computed as {@code (current - reference)/scale}.
      * </p>
      * @param normalized value
-          */
+     */
     public void setNormalizedValue(final double normalized) {
         setValue(referenceValue + scale * normalized);
     }
@@ -266,7 +264,7 @@ public class ParameterDriver {
      * #getMaxValue()}.
      * </p>
      * @param newValue new value
-          */
+     */
     public void setValue(final double newValue) {
         final double previousValue = getValue();
         value = FastMath.max(minValue, FastMath.min(maxValue, newValue));

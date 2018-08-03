@@ -42,7 +42,7 @@ public interface JB2008InputParameters extends Serializable {
      * <p>Tabular time 1.0 day earlier.</p>
      * @param date the current date
      * @return the instantaneous F10.7 index
-          */
+     */
     double getF10(AbsoluteDate date);
 
     /** Get the value of the mean solar flux.
@@ -50,55 +50,55 @@ public interface JB2008InputParameters extends Serializable {
      * <p>Tabular time 1.0 day earlier.</p>
      * @param date the current date
      * @return the mean solar flux F10.7B index
-          */
+     */
     double getF10B(AbsoluteDate date);
 
     /** Get the EUV index (26-34 nm) scaled to F10.
      * <p>Tabular time 1.0 day earlier.</p>
      * @param date the current date
      * @return the the EUV S10 index
-          */
+     */
     double getS10(AbsoluteDate date);
 
     /** Get the EUV 81-day averaged centered index.
      * <p>Tabular time 1.0 day earlier.</p>
      * @param date the current date
      * @return the the mean EUV S10B index
-          */
+     */
     double getS10B(AbsoluteDate date);
 
     /** Get the MG2 index scaled to F10.
      * <p>Tabular time 2.0 days earlier.</p>
      * @param date the current date
      * @return the the MG2 index
-          */
+     */
     double getXM10(AbsoluteDate date);
 
     /** Get the MG2 81-day average centered index.
      * <p>Tabular time 2.0 days earlier.</p>
      * @param date the current date
      * @return the the mean MG2 index
-          */
+     */
     double getXM10B(AbsoluteDate date);
 
     /** Get the Solar X-Ray & Lya index scaled to F10.
      * <p>Tabular time 5.0 days earlier.</p>
      * @param date the current date
      * @return the Solar X-Ray & Lya index scaled to F10
-          */
+     */
     double getY10(AbsoluteDate date);
 
     /** Get the Solar X-Ray & Lya 81-day ave. centered index.
      * <p>Tabular time 5.0 days earlier.</p>
      * @param date the current date
      * @return the Solar X-Ray & Lya 81-day ave. centered index
-          */
+     */
     double getY10B(AbsoluteDate date);
 
     /** Get the temperature change computed from Dst index.
      * @param date the current date
      * @return the temperature change computed from Dst index
-          */
+     */
     double getDSTDTC(AbsoluteDate date);
 
 }

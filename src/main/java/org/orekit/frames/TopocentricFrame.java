@@ -158,10 +158,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return elevation of the point
-          */
+     */
     public double getElevation(final Vector3D extPoint, final Frame frame,
-                               final AbsoluteDate date)
-        {
+                               final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -179,10 +178,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return azimuth of the point
-          */
+     */
     public double getAzimuth(final Vector3D extPoint, final Frame frame,
-                             final AbsoluteDate date)
-        {
+                             final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = getTransformTo(frame, date).getInverse();
@@ -202,10 +200,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range (distance) of the point
-          */
+     */
     public double getRange(final Vector3D extPoint, final Frame frame,
-                           final AbsoluteDate date)
-        {
+                           final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -221,10 +218,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range rate of the point (positive if point departs from frame)
-          */
+     */
     public double getRangeRate(final PVCoordinates extPV, final Frame frame,
-                               final AbsoluteDate date)
-        {
+                               final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -250,8 +246,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @throws OrekitException if point cannot be found
      */
     public GeodeticPoint computeLimitVisibilityPoint(final double radius,
-                                                     final double azimuth, final double elevation)
-        {
+                                                     final double azimuth, final double elevation) {
         try {
             // convergence threshold on point position: 1mm
             final double deltaP = 0.001;
@@ -282,10 +277,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param elevation pointing elevation from station
      * @param distance distance to station
      * @return observed point
-          */
+     */
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
-                                         final double distance)
-        {
+                                         final double distance) {
         final double cosAz = FastMath.cos(azimuth);
         final double sinAz = FastMath.sin(azimuth);
         final double cosEl = FastMath.cos(elevation);
@@ -300,9 +294,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position/velocity of the topocentric frame origin (m and m/s)
-          */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        {
+     */
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
                                                                                                Vector3D.ZERO,
                                                                                                Vector3D.ZERO,

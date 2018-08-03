@@ -55,17 +55,15 @@ public class AlongTrackAiming implements TileAiming {
      * @param orbit orbit along which tiles should be aligned
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
-          */
-    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
-        {
+     */
+    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
         this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
         this.factory   = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
-        {
+    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         final double lStart = halfTrack.get(0).getFirst().getLatitude();
         final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
@@ -130,11 +128,10 @@ public class AlongTrackAiming implements TileAiming {
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      * @return time stamped ground points on the selected half track
-          */
+     */
     private static List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> findHalfTrack(final Orbit orbit,
                                                                                      final OneAxisEllipsoid ellipsoid,
-                                                                                     final boolean isAscending)
-        {
+                                                                                     final boolean isAscending) {
 
         // find the span of the next half track
         final Propagator propagator = new KeplerianPropagator(orbit);

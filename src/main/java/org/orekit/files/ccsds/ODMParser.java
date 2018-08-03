@@ -193,9 +193,8 @@ public abstract class ODMParser {
     /** Parse a CCSDS Orbit Data Message.
      * @param fileName name of the file containing the message
      * @return parsed orbit
-          */
-    public ODMFile parse(final String fileName)
-        {
+     */
+    public ODMFile parse(final String fileName) {
         try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
         } catch (IOException e) {
@@ -206,9 +205,8 @@ public abstract class ODMParser {
     /** Parse a CCSDS Orbit Data Message.
      * @param stream stream containing message
      * @return parsed orbit
-          */
-    public ODMFile parse(final InputStream stream)
-        {
+     */
+    public ODMFile parse(final InputStream stream) {
         return parse(stream, "<unknown>");
     }
 
@@ -216,7 +214,7 @@ public abstract class ODMParser {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed orbit
-          */
+     */
     public abstract ODMFile parse(InputStream stream, String fileName);
 
     /** Parse a comment line.
@@ -238,10 +236,9 @@ public abstract class ODMParser {
      * @param odmFile instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a header keyword and has been parsed
-          */
+     */
     protected boolean parseHeaderEntry(final KeyValue keyValue,
-                                       final ODMFile odmFile, final List<String> comment)
-        {
+                                       final ODMFile odmFile, final List<String> comment) {
         switch (keyValue.getKeyword()) {
 
             case CREATION_DATE:
@@ -268,10 +265,9 @@ public abstract class ODMParser {
      * @param metaData instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
-          */
+     */
     protected boolean parseMetaDataEntry(final KeyValue keyValue,
-                                         final ODMMetaData metaData, final List<String> comment)
-        {
+                                         final ODMMetaData metaData, final List<String> comment) {
         switch (keyValue.getKeyword()) {
             case OBJECT_NAME:
                 if (!comment.isEmpty()) {
@@ -345,10 +341,9 @@ public abstract class ODMParser {
      * @param general instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
-          */
+     */
     protected boolean parseGeneralStateDataEntry(final KeyValue keyValue,
-                                                 final OGMFile general, final List<String> comment)
-        {
+                                                 final OGMFile general, final List<String> comment) {
         switch (keyValue.getKeyword()) {
 
             case EPOCH:
@@ -546,9 +541,8 @@ public abstract class ODMParser {
      * @param date date to parse, as the value of a CCSDS key=value line
      * @param timeSystem time system to use
      * @return parsed date
-          */
-    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
-        {
+     */
+    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
         return timeSystem.parseDate(date, conventions, missionReferenceDate);
     }
 

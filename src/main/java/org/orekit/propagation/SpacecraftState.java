@@ -102,9 +102,8 @@ public class SpacecraftState
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-          */
-    public SpacecraftState(final Orbit orbit)
-        {
+     */
+    public SpacecraftState(final Orbit orbit) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, null);
@@ -126,9 +125,8 @@ public class SpacecraftState
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-          */
-    public SpacecraftState(final Orbit orbit, final double mass)
-        {
+     */
+    public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
@@ -150,9 +148,8 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-          */
-    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional)
-        {
+     */
+    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
@@ -176,9 +173,8 @@ public class SpacecraftState
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-          */
-    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional)
-        {
+     */
+    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
@@ -307,8 +303,7 @@ public class SpacecraftState
      * </p>
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Stream<SpacecraftState> sample)
-            {
+                                       final Stream<SpacecraftState> sample) {
 
         // prepare interpolators
         final List<Orbit> orbits = new ArrayList<>();
@@ -590,9 +585,8 @@ public class SpacecraftState
      * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
-          */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-        {
+     */
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         return orbit.getPVCoordinates(outputFrame);
     }
 

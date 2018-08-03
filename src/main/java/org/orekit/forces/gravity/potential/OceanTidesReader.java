@@ -146,12 +146,11 @@ public abstract class OceanTidesReader implements DataLoader {
      * @param sMinus S-(n,m)
      * @param lineNumber number of the parsed line
      * @param line text of the line
-          */
+     */
     protected void addWaveCoefficients(final int doodson, final int n, final int m,
                                        final double cPlus, final double sPlus,
                                        final double cMinus, final double sMinus,
-                                       final int lineNumber, final String line)
-        {
+                                       final int lineNumber, final String line) {
 
         if (!coefficients.containsKey(doodson)) {
             // prepare the triangular array to hold coefficients
@@ -178,7 +177,7 @@ public abstract class OceanTidesReader implements DataLoader {
      * <p>
      * This method must be called by subclasses when they end parsing a file
      * </p>
-          */
+     */
     protected void endParse() {
 
         // check requested degree and order

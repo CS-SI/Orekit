@@ -167,7 +167,7 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * (and azimuth if necessary) and the reference mask or minimum value.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
 

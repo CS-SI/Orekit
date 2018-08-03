@@ -33,24 +33,24 @@ public interface NRLMSISE00InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
-          */
+     */
     AbsoluteDate getMinDate();
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
-          */
+     */
     AbsoluteDate getMaxDate();
 
     /** Get the value of the daily F10.7 solar flux for previous day.
      * @param date the current date
      * @return the daily F10.7 flux for previous day
-          */
+     */
     double getDailyFlux(AbsoluteDate date);
 
     /** Get the value of the 81 day average of F10.7 solar flux centered on current day.
      * @param date the current date
      * @return the 81 day average of F10.7 solar flux centered on current day
-          */
+     */
     double getAverageFlux(AbsoluteDate date);
 
     /** Get the A<sub>p</sub> geomagnetic indices.
@@ -70,7 +70,7 @@ public interface NRLMSISE00InputParameters extends Serializable {
      * </p>
      * @param date the current date
      * @return the array of A<sub>p</sub> indices
-          */
+     */
     double[] getAp(AbsoluteDate date);
 
 }

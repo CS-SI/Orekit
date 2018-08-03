@@ -159,9 +159,8 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
-          */
-    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final boolean meanOnly)
-            {
+     */
+    public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final boolean meanOnly) {
         return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
     }
 
@@ -171,14 +170,14 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
-          */
+     */
     public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, boolean meanOnly);
 
     /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
      * @param yDot placeholder where to put the components derivatives
-          */
+     */
     public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot);
 
 }

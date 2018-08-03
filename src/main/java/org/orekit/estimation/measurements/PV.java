@@ -266,8 +266,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight, final int propagatorIndex)
-        {
+              final double[][] covarianceMatrix, final double baseWeight, final int propagatorIndex) {
         super(date,
               new double[] {
                   position.getX(), position.getY(), position.getZ(),
@@ -332,8 +331,7 @@ public class PV extends AbstractMeasurement<PV> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                             final SpacecraftState[] states)
-        {
+                                                             final SpacecraftState[] states) {
 
         // PV value
         final TimeStampedPVCoordinates pv = states[getPropagatorsIndices().get(0)].getPVCoordinates();
@@ -388,8 +386,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @throws OrekitException if the matrices do not have the proper size
      */
     private static double[][] buildPvCovarianceMatrix(final double[][] positionCovarianceMatrix,
-                                                      final double[][] velocityCovarianceMatrix)
-        {
+                                                      final double[][] velocityCovarianceMatrix) {
         // Check the sizes of the matrices first
         if (positionCovarianceMatrix[0].length != 3 || positionCovarianceMatrix[1].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
@@ -443,8 +440,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @throws OrekitException if the vectors do not have the proper sizes
      */
     private static double[][] buildPvCovarianceMatrix(final double[] sigmaPosition,
-                                                      final double[] sigmaVelocity)
-        {
+                                                      final double[] sigmaVelocity) {
 
         // Check the sizes of the vectors first
         if (sigmaPosition.length != 3) {

@@ -220,8 +220,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f)
-                {
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));
                 final Transform                transform = instanceFrame.getTransformTo(f, d);
                 return transform.transformPVCoordinates(shifted);

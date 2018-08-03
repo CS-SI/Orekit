@@ -53,8 +53,7 @@ public class TransformProviderUtils {
          * </p>
          */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-            {
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return FieldTransform.getIdentity(date.getField());
         }
 
@@ -81,15 +80,13 @@ public class TransformProviderUtils {
 
             /** {@inheritDoc} */
             @Override
-            public Transform getTransform(final AbsoluteDate date)
-                {
+            public Transform getTransform(final AbsoluteDate date) {
                 return provider.getTransform(date).getInverse();
             }
 
             /** {@inheritDoc} */
             @Override
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                {
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return provider.getTransform(date).getInverse();
             }
 
@@ -111,15 +108,13 @@ public class TransformProviderUtils {
 
             /** {@inheritDoc} */
             @Override
-            public Transform getTransform(final AbsoluteDate date)
-                {
+            public Transform getTransform(final AbsoluteDate date) {
                 return new Transform(date, first.getTransform(date), second.getTransform(date));
             }
 
             /** {@inheritDoc} */
             @Override
-            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                {
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return new FieldTransform<>(date, first.getTransform(date), second.getTransform(date));
             }
 

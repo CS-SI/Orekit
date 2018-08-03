@@ -83,8 +83,7 @@ public class EOPEntry implements TimeStamped, Serializable {
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
-                    final double dx, final double dy)
-        {
+                    final double dx, final double dy) {
         this(mjd, dt, lod, x, y, ddPsi, ddEps, dx, dy, ITRFVersion.ITRF_2014);
     }
 
@@ -99,13 +98,12 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
      * @param itrfType ITRF version this entry defines
-          */
+     */
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy,
-                    final ITRFVersion itrfType)
-        {
+                    final ITRFVersion itrfType) {
 
         this.mjd      = mjd;
         this.date     = AbsoluteDate.createMJDDate(mjd, 0.0, TimeScalesFactory.getUTC());

@@ -283,8 +283,7 @@ public class GeoMagneticField {
      *                         model or the model does not support time transformations
      *                         (i.e. no secular variations available)
      */
-    public GeoMagneticField transformModel(final GeoMagneticField otherModel, final double year)
-        {
+    public GeoMagneticField transformModel(final GeoMagneticField otherModel, final double year) {
 
         // the model can only be transformed within its validity period
         if (year < validityStart || year > validityEnd) {

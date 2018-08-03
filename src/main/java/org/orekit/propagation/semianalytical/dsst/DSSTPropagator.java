@@ -195,8 +195,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param initialState initial state (defined with osculating elements)
      *  @throws OrekitException if the initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState)
-        {
+    public void setInitialState(final SpacecraftState initialState) {
         setInitialState(initialState, true);
     }
 
@@ -206,8 +205,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState,
-                                final boolean isOsculating)
-        {
+                                final boolean isOsculating) {
         initialIsOsculating = isOsculating;
         resetInitialState(initialState);
     }
@@ -328,8 +326,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public static SpacecraftState computeOsculatingState(final SpacecraftState mean,
                                                          final AttitudeProvider attitudeProvider,
-                                                         final Collection<DSSTForceModel> forces)
-        {
+                                                         final Collection<DSSTForceModel> forces) {
 
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(mean.getOrbit(), I);
@@ -370,8 +367,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
-                                                   final Collection<DSSTForceModel> forceModels)
-        {
+                                                   final Collection<DSSTForceModel> forceModels) {
         final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
@@ -413,11 +409,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-          */
+     */
     @Override
     protected void beforeIntegration(final SpacecraftState initialState,
-                                     final AbsoluteDate tEnd)
-        {
+                                     final AbsoluteDate tEnd) {
 
         // compute common auxiliary elements
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
@@ -488,8 +483,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
                                           final AttitudeProvider attitudeProvider,
-                                          final Collection<DSSTForceModel> forceModels)
-        {
+                                          final Collection<DSSTForceModel> forceModels) {
 
         // rough initialization of the mean parameters
         EquinoctialOrbit meanOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
@@ -566,8 +560,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @throws OrekitException if the computation of the short-periodic variation fails
      */
     private static EquinoctialOrbit computeOsculatingOrbit(final SpacecraftState meanState,
-                                                           final List<ShortPeriodTerms> shortPeriodTerms)
-        {
+                                                           final List<ShortPeriodTerms> shortPeriodTerms) {
 
         final double[] mean = new double[6];
         final double[] meanDot = new double[6];
@@ -664,8 +657,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         @Override
         public SpacecraftState mapArrayToState(final AbsoluteDate date,
                                                final double[] y, final double[] yDot,
-                                               final boolean meanOnly)
-            {
+                                               final boolean meanOnly) {
 
             // add short periodic variations to mean elements to get osculating elements
             // (the loop may not be performed if there are no force models and in the
@@ -706,8 +698,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot)
-            {
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, y, yDot);
             y[6] = state.getMass();
@@ -926,9 +917,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
-          */
-    public static double[][] tolerances(final double dP, final Orbit orbit)
-        {
+     */
+    public static double[][] tolerances(final double dP, final Orbit orbit) {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 
@@ -951,8 +941,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final ODEStateAndDerivative initialState, final double finalTime)
-            {
+        public void init(final ODEStateAndDerivative initialState, final double finalTime) {
             // Build the mean state interpolated at initial point
             final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
                                                                       initialState.getPrimaryState(),
@@ -968,8 +957,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
-            {
+        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
 
             // Get the grid points to compute
             final double[] interpolationPoints =

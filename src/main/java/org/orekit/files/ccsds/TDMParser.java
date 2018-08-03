@@ -214,9 +214,8 @@ public class TDMParser extends DefaultHandler {
     /** Parse a CCSDS Tracking Data Message.
      * @param fileName name of the file containing the message
      * @return parsed file content in a TDMFile object
-          */
-    public TDMFile parse(final String fileName)
-        {
+     */
+    public TDMFile parse(final String fileName) {
         try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
         } catch (IOException ioe) {
@@ -227,9 +226,8 @@ public class TDMParser extends DefaultHandler {
     /** Parse a CCSDS Tracking Data Message.
      * @param stream stream containing message
      * @return parsed file content in a TDMFile object
-          */
-    public TDMFile parse(final InputStream stream)
-        {
+     */
+    public TDMFile parse(final InputStream stream) {
         return parse(stream, "<unknown>");
     }
 
@@ -237,7 +235,7 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-          */
+     */
     public TDMFile parse(final InputStream stream, final String fileName)
         throws  OrekitException {
 
@@ -267,7 +265,7 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-          */
+     */
     public TDMFile parseKeyValue(final InputStream stream, final String fileName)
         throws  OrekitException {
 
@@ -284,9 +282,8 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-          */
-    public TDMFile parseXml(final InputStream stream, final String fileName)
-        {
+     */
+    public TDMFile parseXml(final InputStream stream, final String fileName) {
         try {
             // Create the handler
             final XMLHandler handler = new XMLHandler(new ParseInfo(this.getMissionReferenceDate(),
@@ -381,7 +378,7 @@ public class TDMParser extends DefaultHandler {
         /** Parse a meta-data entry.<p>
          * key = value (KEYVALUE file format)<p>
          * <&lt;key>value&lt;/key> (XML file format)
-                  */
+         */
         private void parseMetaDataEntry() {
 
             final TDMFile.TDMMetaData metaData = this.currentObservationsBlock.getMetaData();
@@ -579,9 +576,8 @@ public class TDMParser extends DefaultHandler {
          * @param date date to parse, as the value of a CCSDS key=value line
          * @param timeSystem time system to use
          * @return parsed date
-                  */
-        private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
-                        {
+         */
+        private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
             return timeSystem.parseDate(date, conventions, missionReferenceDate);
         }
     }
@@ -603,9 +599,8 @@ public class TDMParser extends DefaultHandler {
          * Parse an observation data line and add its content to the Observations Block
          * block.
          *
-                  */
-        private void parseObservationsDataLine()
-                        {
+         */
+        private void parseObservationsDataLine() {
 
             // Parse an observation line
             // An observation line should consist in the string "keyword = epoch value"
@@ -639,7 +634,7 @@ public class TDMParser extends DefaultHandler {
          * @param stream stream containing message
          * @param fileName name of the file containing the message (for error messages)
          * @return parsed file content in a TDMFile object
-                  */
+         */
         public TDMFile parse(final InputStream stream, final String fileName)
                         throws  OrekitException {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
@@ -1009,9 +1004,8 @@ public class TDMParser extends DefaultHandler {
         }
 
         /** Parse a line in an observation data block.
-                  */
-        private void parseObservationDataLine()
-                        {
+         */
+        private void parseObservationDataLine() {
 
             // Parse an observation line
             // An XML observation line should consist in the string "<KEYWORD>value</KEYWORD>

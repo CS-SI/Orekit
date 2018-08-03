@@ -51,8 +51,7 @@ public class DormandPrince54IntegratorBuilder implements ODEIntegratorBuilder {
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
     }

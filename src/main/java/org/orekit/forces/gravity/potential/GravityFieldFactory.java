@@ -171,8 +171,7 @@ public class GravityFieldFactory {
      * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
      * @see #getOceanLoadDeformationCoefficients()
      */
-    public static void addDefaultOceanTidesReaders()
-        {
+    public static void addDefaultOceanTidesReaders() {
         synchronized (OCEAN_TIDES_READERS) {
 
             OCEAN_TIDES_READERS.add(new FESCnmSnmReader(FES_CNM_SNM_FILENAME, 1.0e-11));
@@ -216,8 +215,7 @@ public class GravityFieldFactory {
      * @see #getNormalizedProvider(int, int)
      */
     public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
-                                                                                     final int order)
-        {
+                                                                                     final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(true, degree, order);
         return new WrappingNormalizedProvider(provider);
@@ -239,8 +237,7 @@ public class GravityFieldFactory {
      * @see #getConstantNormalizedProvider(int, int)
      */
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
-                                                                             final int order)
-        {
+                                                                             final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getProvider(true, degree, order);
         return new WrappingNormalizedProvider(provider);
@@ -276,8 +273,7 @@ public class GravityFieldFactory {
      * @return provider for normalized coefficients
      * @since 6.0
      */
-    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized)
-        {
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
         return new Normalizer(unnormalized);
     }
 
@@ -297,8 +293,7 @@ public class GravityFieldFactory {
      * @see #getUnnormalizedProvider(int, int)
      */
     public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
-                                                                                         final int order)
-        {
+                                                                                         final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false, degree, order);
         return new WrappingUnnormalizedProvider(provider);
@@ -320,8 +315,7 @@ public class GravityFieldFactory {
      * @see #getConstantUnnormalizedProvider(int, int)
      */
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
-                                                                                 final int order)
-        {
+                                                                                 final int order) {
         final PotentialCoefficientsReader reader = readGravityField(degree, order);
         final RawSphericalHarmonicsProvider provider = reader.getProvider(false, degree, order);
         return new WrappingUnnormalizedProvider(provider);
@@ -357,8 +351,7 @@ public class GravityFieldFactory {
      * @return provider for un-normalized coefficients
      * @since 6.0
      */
-    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized)
-        {
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized) {
         return new Unnormalizer(normalized);
     }
 
@@ -377,8 +370,7 @@ public class GravityFieldFactory {
      * @since 6.0
      */
     public static PotentialCoefficientsReader readGravityField(final int maxParseDegree,
-                                                               final int maxParseOrder)
-        {
+                                                               final int maxParseOrder) {
 
         synchronized (READERS) {
 
@@ -411,8 +403,7 @@ public class GravityFieldFactory {
      * @return triangular un-normalization factors array
      * @since 6.0
      */
-    public static double[][] getUnnormalizationFactors(final int degree, final int order)
-        {
+    public static double[][] getUnnormalizationFactors(final int degree, final int order) {
 
         // allocate a triangular array
         final int rows = degree + 1;
@@ -463,8 +454,7 @@ public class GravityFieldFactory {
      * @return list of tides waves containing already loaded data
      * @since 6.1
      */
-    public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order)
-        {
+    public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order) {
 
         synchronized (OCEAN_TIDES_READERS) {
 

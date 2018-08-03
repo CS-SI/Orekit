@@ -91,7 +91,7 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
      * This function computes the dot product of the 2 vectors : position.velocity.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public T g(final FieldSpacecraftState<T> s) {
         final FieldPVCoordinates<T> pv = s.getPVCoordinates();
         return FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity());

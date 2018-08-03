@@ -97,10 +97,9 @@ public class SmallManeuverAnalyticalModel
      * is performed
      * @param dV velocity increment in spacecraft frame
      * @param isp engine specific impulse (s)
-          */
+     */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0,
-                                        final Vector3D dV, final double isp)
-        {
+                                        final Vector3D dV, final double isp) {
         this(state0, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
@@ -112,10 +111,9 @@ public class SmallManeuverAnalyticalModel
      * @param frame frame in which velocity increment is defined
      * @param dV velocity increment in specified frame
      * @param isp engine specific impulse (s)
-          */
+     */
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
-                                        final Vector3D dV, final double isp)
-        {
+                                        final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
@@ -252,10 +250,9 @@ public class SmallManeuverAnalyticalModel
      * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x4, only the 6x4 upper left corner will be modified
      * @see #apply(Orbit)
-          */
+     */
     public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle,
-                            final double[][] jacobian)
-        {
+                            final double[][] jacobian) {
 
         final double dt = orbit1.getDate().durationFrom(state0.getDate());
         if (dt < 0) {
@@ -316,7 +313,7 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Lazy evaluation of the initial Jacobian time derivative.
-          */
+     */
     private void evaluateJ0Dot() {
 
         if (j0Dot == null) {

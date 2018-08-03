@@ -73,8 +73,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @since 7.1
      */
     public LofOffsetPointing(final Frame inertialFrame, final BodyShape shape,
-                             final AttitudeProvider attLaw, final Vector3D satPointingVector)
-        {
+                             final AttitudeProvider attLaw, final Vector3D satPointingVector) {
         super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
         this.attitudeLaw = attLaw;
@@ -84,23 +83,20 @@ public class LofOffsetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        {
+                                final AbsoluteDate date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        {
+                                                final AbsoluteDate date, final Frame frame) {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.1;
@@ -138,8 +134,7 @@ public class LofOffsetPointing extends GroundPointing {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        {
+                                                                                        final Frame frame) {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.1;
@@ -178,8 +173,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param scToBody transform from spacecraft frame to body frame
      * @return intersection point in body frame (only the position is set!)
      */
-    private TimeStampedPVCoordinates losIntersectionWithBody(final Transform scToBody)
-        {
+    private TimeStampedPVCoordinates losIntersectionWithBody(final Transform scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final Vector3D pointingBodyFrame = scToBody.transformVector(satPointingVector);
@@ -214,8 +208,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param <T> type of the field elements
      * @return intersection point in body frame (only the position is set!)
      */
-    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody)
-        {
+    private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final FieldVector3D<T> pointingBodyFrame = scToBody.transformVector(satPointingVector);

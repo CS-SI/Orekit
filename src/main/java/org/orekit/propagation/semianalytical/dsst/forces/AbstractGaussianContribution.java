@@ -202,8 +202,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux)
-        {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -276,7 +275,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      *  @param  state current state information: date, kinematics, attitude
      *  @return the integration limits in L
-          */
+     */
     protected abstract double[] getLLimits(SpacecraftState state);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
@@ -326,8 +325,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -1204,8 +1202,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param jMax maximum value for j
          * @throws OrekitException in case of an error
          */
-        FourierCjSjCoefficients(final SpacecraftState state, final int jMax)
-            {
+        FourierCjSjCoefficients(final SpacecraftState state, final int jMax) {
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1227,8 +1224,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param state the current state
          * @throws OrekitException in case of an error
          */
-        private void computeCoefficients(final SpacecraftState state)
-            {
+        private void computeCoefficients(final SpacecraftState state) {
             // Computes the limits for the integral
             final double[] ll = getLLimits(state);
             // Computes integrated mean element rates if Llow < Lhigh
@@ -1341,8 +1337,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private void computeCoefficients(final SpacecraftState state, final Slot slot,
                                          final FourierCjSjCoefficients fourierCjSj,
                                          final UijVijCoefficients uijvij,
-                                         final double n, final double a)
-            {
+                                         final double n, final double a) {
 
             // get the current date
             final AbsoluteDate date = state.getDate();
@@ -1489,8 +1484,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

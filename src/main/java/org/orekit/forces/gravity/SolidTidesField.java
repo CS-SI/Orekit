@@ -424,15 +424,13 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedCnm(final int n, final int m)
-            {
+        public double getNormalizedCnm(final int n, final int m) {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedSnm(final int n, final int m)
-            {
+        public double getNormalizedSnm(final int n, final int m) {
             return snm[n][m];
         }
 

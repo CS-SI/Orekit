@@ -104,9 +104,8 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
-          */
-    GNSSAttitudeContext(final TimeStampedPVCoordinates sunPV, final TimeStampedPVCoordinates svPV)
-        {
+     */
+    GNSSAttitudeContext(final TimeStampedPVCoordinates sunPV, final TimeStampedPVCoordinates svPV) {
 
         final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
         this.svPV    = svPV;

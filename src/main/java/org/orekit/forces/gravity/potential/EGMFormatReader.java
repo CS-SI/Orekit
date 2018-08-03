@@ -157,8 +157,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
-                                                     final int degree, final int order)
-        {
+                                                     final int degree, final int order) {
         return getConstantProvider(wantNormalized, degree, order);
     }
 

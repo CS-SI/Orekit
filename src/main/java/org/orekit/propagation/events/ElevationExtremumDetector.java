@@ -108,7 +108,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     /** Get the elevation value.
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft elevation
-          */
+     */
     public double getElevation(final SpacecraftState s) {
         return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
     }
@@ -119,7 +119,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft elevation first time derivative
-          */
+     */
     public double g(final SpacecraftState s) {
 
         // get position, velocity acceleration of spacecraft in topocentric frame

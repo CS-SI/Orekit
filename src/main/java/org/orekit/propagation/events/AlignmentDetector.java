@@ -147,7 +147,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * orbital plane.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D a  = pv.getPosition().normalize();

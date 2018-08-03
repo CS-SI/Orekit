@@ -217,10 +217,10 @@ public class Geoid implements EarthShape {
     public double getUndulation(final double geodeticLatitude,
                                 final double longitude,
                                 final AbsoluteDate date) {
-            /*
-             * equations references are to the algorithm printed in the geoid
-             * cookbook[2]. See comment for Geoid.
-             */
+        /*
+         * equations references are to the algorithm printed in the geoid
+         * cookbook[2]. See comment for Geoid.
+         */
         // reference ellipsoid
         final ReferenceEllipsoid ellipsoid = this.getEllipsoid();
 
@@ -309,8 +309,7 @@ public class Geoid implements EarthShape {
         }
 
         @Override
-        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date)
-            {
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             return new NormalizedSphericalHarmonics() {
 
                 /** the original harmonics */
@@ -381,8 +380,7 @@ public class Geoid implements EarthShape {
     public GeodeticPoint getIntersectionPoint(final Line lineInFrame,
                                               final Vector3D closeInFrame,
                                               final Frame frame,
-                                              final AbsoluteDate date)
-        {
+                                              final AbsoluteDate date) {
         /*
          * It is assumed that the geoid is slowly varying over it's entire
          * surface. Therefore there will one local intersection.
@@ -470,8 +468,7 @@ public class Geoid implements EarthShape {
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> lineInFrame,
                                                                                       final FieldVector3D<T> closeInFrame,
                                                                                       final Frame frame,
-                                                                                      final FieldAbsoluteDate<T> date)
-        {
+                                                                                      final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
         /*
@@ -592,8 +589,7 @@ public class Geoid implements EarthShape {
      */
     @Override
     public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point, final Frame frame,
-                                                                           final FieldAbsoluteDate<T> date)
-        {
+                                                                           final FieldAbsoluteDate<T> date) {
         // convert using reference ellipsoid, altitude referenced to ellipsoid
         final FieldGeodeticPoint<T> ellipsoidal = this.getEllipsoid().transform(
                 point, frame, date);

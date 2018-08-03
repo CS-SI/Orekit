@@ -102,8 +102,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
 
         // apply the scale factor to raw position-velocity
         final PVCoordinates rawPV    = rawPVProvider.getRawPV(date);
@@ -124,8 +123,7 @@ class JPLCelestialBody implements CelestialBody {
      * @return time-stamped position/velocity of the body (m and m/s)
      */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                             final Frame frame)
-        {
+                                                                                             final Frame frame) {
 
         // apply the scale factor to raw position-velocity
         final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
@@ -215,8 +213,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                    {
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
                     // compute translation from parent frame to self
                     final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
@@ -292,8 +289,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                    {
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                     final double dt = 10.0;
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));

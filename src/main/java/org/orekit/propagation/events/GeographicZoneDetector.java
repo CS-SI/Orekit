@@ -161,7 +161,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return signed distance to boundary minus the margin
-          */
+     */
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates

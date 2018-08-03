@@ -29,8 +29,7 @@ public enum CenterName {
     SOLAR_SYSTEM_BARYCENTER {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getSolarSystemBarycenter();
         }
     },
@@ -38,8 +37,7 @@ public enum CenterName {
     SUN {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getSun();
         }
     },
@@ -47,8 +45,7 @@ public enum CenterName {
     MERCURY {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getMercury();
         }
     },
@@ -56,8 +53,7 @@ public enum CenterName {
     VENUS {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getVenus();
         }
     },
@@ -65,8 +61,7 @@ public enum CenterName {
     EARTH_MOON {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getEarthMoonBarycenter();
         }
     },
@@ -74,8 +69,7 @@ public enum CenterName {
     EARTH {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getEarth();
         }
     },
@@ -83,8 +77,7 @@ public enum CenterName {
     MOON {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getMoon();
         }
     },
@@ -92,8 +85,7 @@ public enum CenterName {
     MARS {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getMars();
         }
     },
@@ -101,8 +93,7 @@ public enum CenterName {
     JUPITER {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getJupiter();
         }
     },
@@ -110,8 +101,7 @@ public enum CenterName {
     SATURN {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getSaturn();
         }
     },
@@ -119,8 +109,7 @@ public enum CenterName {
     URANUS {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getUranus();
         }
     },
@@ -128,8 +117,7 @@ public enum CenterName {
     NEPTUNE {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getNeptune();
         }
     },
@@ -137,8 +125,7 @@ public enum CenterName {
     PLUTO {
 
         /** {@inheritDoc} */
-        public CelestialBody getCelestialBody()
-            {
+        public CelestialBody getCelestialBody() {
             return CelestialBodyFactory.getPluto();
         }
     };
@@ -146,7 +133,7 @@ public enum CenterName {
     /**
      * Get the celestial body corresponding to the CCSDS constant.
      * @return celestial body corresponding to the CCSDS constant
-          */
+     */
     public abstract CelestialBody getCelestialBody();
 
 }

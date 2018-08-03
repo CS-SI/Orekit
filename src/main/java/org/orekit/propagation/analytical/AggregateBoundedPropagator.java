@@ -75,8 +75,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame)
-            {
+                                                     final Frame frame) {
         return getPropagator(date).getPVCoordinates(date, frame);
     }
 

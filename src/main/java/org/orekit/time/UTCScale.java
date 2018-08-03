@@ -54,7 +54,7 @@ public class UTCScale implements TimeScale {
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
      * @param offsetModels UTC-TAI offsets
-          */
+     */
     UTCScale(final List<OffsetModel> offsetModels) {
 
         if (offsetModels.get(0).getStart().getYear() > 1968) {

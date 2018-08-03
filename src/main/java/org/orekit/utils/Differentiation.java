@@ -60,8 +60,7 @@ public class Differentiation {
         final UnivariateFunction uf = new UnivariateFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final double normalizedValue)
-                {
+            public double value(final double normalizedValue) {
                 final double saved = driver.getNormalizedValue();
                 driver.setNormalizedValue(normalizedValue);
                 final double functionValue = function.value(driver);
@@ -78,8 +77,7 @@ public class Differentiation {
         return new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver)
-                {
+            public double value(final ParameterDriver parameterDriver) {
                 if (!parameterDriver.getName().equals(driver.getName())) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                               parameterDriver.getName(), driver.getName());

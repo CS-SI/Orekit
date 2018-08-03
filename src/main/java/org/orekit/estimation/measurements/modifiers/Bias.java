@@ -47,8 +47,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
      * @param max maximum value of the bias
      */
     public Bias(final String[] name, final double[] bias, final double[] scale,
-                final double[] min, final double[] max)
-        {
+                final double[] min, final double[] max) {
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {

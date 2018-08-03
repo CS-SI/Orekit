@@ -35,8 +35,7 @@ public enum CcsdsTimeScale {
     /** Greenwich Mean Sidereal Time. */
     GMST {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             return TimeScalesFactory.getGMST(conventions, false);
         }
     },
@@ -61,8 +60,7 @@ public enum CcsdsTimeScale {
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MET");
@@ -82,8 +80,7 @@ public enum CcsdsTimeScale {
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MRT");
@@ -94,16 +91,14 @@ public enum CcsdsTimeScale {
         @Override
         public AbsoluteDate parseDate(final String date,
                                       final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate)
-                {
+                                      final AbsoluteDate missionReferenceDate) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
                     this.name());
         }
 
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     this.name());
@@ -126,8 +121,7 @@ public enum CcsdsTimeScale {
     /** Barycentric Dynamical Time. */
     TDB {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             return TimeScalesFactory.getTDB();
         }
     },
@@ -148,16 +142,14 @@ public enum CcsdsTimeScale {
     /** Universal Time. */
     UT1 {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             return TimeScalesFactory.getUT1(conventions, false);
         }
     },
     /** Universal Coordinated Time. */
     UTC {
         @Override
-        public TimeScale getTimeScale(final IERSConventions conventions)
-                {
+        public TimeScale getTimeScale(final IERSConventions conventions) {
             return TimeScalesFactory.getUTC();
         }
     };
@@ -174,8 +166,7 @@ public enum CcsdsTimeScale {
      */
     public AbsoluteDate parseDate(final String date,
                                   final IERSConventions conventions,
-                                  final AbsoluteDate missionReferenceDate)
-            {
+                                  final AbsoluteDate missionReferenceDate) {
         return new AbsoluteDate(date, this.getTimeScale(conventions));
     }
 
@@ -186,8 +177,7 @@ public enum CcsdsTimeScale {
      * @return the time scale.
      * @throws OrekitException if the time scale cannot be constructed.
      */
-    public abstract TimeScale getTimeScale(IERSConventions conventions)
-           ;
+    public abstract TimeScale getTimeScale(IERSConventions conventions);
 
     /**
      * Check if {@code timeScale} is one of the values supported by this enum.

@@ -63,9 +63,8 @@ public class AntexLoader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
-          */
-    public AntexLoader(final String supportedNames)
-        {
+     */
+    public AntexLoader(final String supportedNames) {
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
@@ -97,10 +96,9 @@ public class AntexLoader {
      * @param satelliteSystem satellite system
      * @param prnNumber number within the satellite system
      * @return time map for the antenna
-          */
+     */
     public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
-                                                              final int prnNumber)
-        {
+                                                              final int prnNumber) {
         final Optional<TimeSpanMap<SatelliteAntenna>> existing =
                         satellitesAntennas.
                         stream().

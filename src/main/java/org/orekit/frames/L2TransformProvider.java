@@ -75,8 +75,7 @@ class L2TransformProvider implements TransformProvider {
      * @param secondaryBody Secondary body.
      * @throws OrekitException in .getInertiallyOrientedFrame() if frame cannot be retrieved
      */
-    L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-        {
+    L2TransformProvider(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         this.primaryBody = primaryBody;
         this.secondaryBody = secondaryBody;
         this.frame = primaryBody.getInertiallyOrientedFrame();
@@ -84,8 +83,7 @@ class L2TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date)
-        {
+    public Transform getTransform(final AbsoluteDate date) {
         final PVCoordinates pv21        = secondaryBody.getPVCoordinates(date, frame);
         final Vector3D      translation = getL2(pv21.getPosition()).negate();
         final Rotation      rotation    = new Rotation(pv21.getPosition(), pv21.getVelocity(),
@@ -95,8 +93,7 @@ class L2TransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         final FieldPVCoordinates<T> pv21        = secondaryBody.getPVCoordinates(date, frame);
         final FieldVector3D<T>      translation = getL2(pv21.getPosition()).negate();
         final Field<T>              field       = pv21.getPosition().getX().getField();
@@ -113,8 +110,7 @@ class L2TransformProvider implements TransformProvider {
      * @return coordinates of the L2 point given in frame: primaryBody.getInertiallyOrientedFrame()
      * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
-    private Vector3D getL2(final Vector3D primaryToSecondary)
-        {
+    private Vector3D getL2(final Vector3D primaryToSecondary) {
 
         // mass ratio
         final double massRatio = secondaryBody.getGM() / primaryBody.getGM();
@@ -156,8 +152,7 @@ class L2TransformProvider implements TransformProvider {
      * @throws OrekitException if some frame specific error occurs at .getTransformTo()
      */
     private <T extends RealFieldElement<T>> FieldVector3D<T>
-        getL2(final FieldVector3D<T> primaryToSecondary)
-        {
+        getL2(final FieldVector3D<T> primaryToSecondary) {
 
         // mass ratio
         final double massRatio = secondaryBody.getGM() / primaryBody.getGM();

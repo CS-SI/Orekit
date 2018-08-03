@@ -206,8 +206,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) {
         return propagate(date).getPVCoordinates(f);
     }
 
@@ -216,15 +215,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * This method always throws an exception, as ephemerides cannot be reset.
      * </p>
      * @param state new initial state to consider
-          */
-    public void resetInitialState(final SpacecraftState state)
-        {
+     */
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -342,8 +339,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         }
 
         /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
-            {
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) {
             final double dt = getCurrentState().getDate().durationFrom(date);
             final double closeEnoughTimeInSec = 1e-9;
 

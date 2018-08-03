@@ -166,8 +166,7 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @return an attitude that has the same orientation and motion as the instance,
      * but guaranteed to have the specified reference frame
      */
-    public FieldAttitude<T> withReferenceFrame(final Frame newReferenceFrame)
-        {
+    public FieldAttitude<T> withReferenceFrame(final Frame newReferenceFrame) {
 
         if (newReferenceFrame == referenceFrame) {
             // simple case, the instance is already compliant
@@ -251,8 +250,7 @@ public class FieldAttitude<T extends RealFieldElement<T>>
      * @return a new instance, interpolated at specified date
      */
     public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                        final Stream<FieldAttitude<T>> sample)
-        {
+                                        final Stream<FieldAttitude<T>> sample) {
         final List<TimeStampedFieldAngularCoordinates<T>> datedPV =
                 sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedFieldAngularCoordinates<T> interpolated =

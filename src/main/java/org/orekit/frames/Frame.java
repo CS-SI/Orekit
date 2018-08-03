@@ -239,9 +239,8 @@ public class Frame implements Serializable {
      * @param destination destination frame to which we want to transform vectors
      * @param date the date (can be null if it is sure than no date dependent frame is used)
      * @return transform from the instance to the destination frame
-          */
-    public Transform getTransformTo(final Frame destination, final AbsoluteDate date)
-        {
+     */
+    public Transform getTransformTo(final Frame destination, final AbsoluteDate date) {
 
         if (this == destination) {
             // shortcut for special case that may be frequent
@@ -275,9 +274,8 @@ public class Frame implements Serializable {
      * @param date the date (can be null if it is sure than no date dependent frame is used)
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
-          */
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date)
-        {
+     */
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
 
         if (this == destination) {
             // shortcut for special case that may be frequent

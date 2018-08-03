@@ -56,8 +56,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
 
         // find the sliding ground point below spacecraft
         final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());

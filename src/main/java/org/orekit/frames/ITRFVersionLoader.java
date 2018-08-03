@@ -76,7 +76,7 @@ class ITRFVersionLoader {
 
     /** Build a loader for ITRF version configuration file.
      * @param supportedNames regular expression for supported files names
-          */
+     */
     ITRFVersionLoader(final String supportedNames) {
         this.configurations = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());

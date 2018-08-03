@@ -328,9 +328,8 @@ public class TLESeries implements DataLoader {
      * [{@link #getFirstDate() first date} ; {@link #getLastDate() last date}].
      * @param date the final date
      * @return the final PVCoordinates
-          */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date)
-        {
+     */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
         final TLE toExtrapolate = getClosestTLE(date);
         if (toExtrapolate != lastTLE) {
             lastTLE = toExtrapolate;

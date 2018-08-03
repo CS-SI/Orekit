@@ -134,8 +134,7 @@ public class GroundStation {
      * model (no station offset, no polar motion, no meridian shift)
      * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
      */
-    public GroundStation(final TopocentricFrame baseFrame)
-        {
+    public GroundStation(final TopocentricFrame baseFrame) {
         this(baseFrame, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
     }
 
@@ -159,8 +158,7 @@ public class GroundStation {
      * @since 9.1
      */
     public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
-                         final StationDisplacement... displacements)
-        {
+                         final StationDisplacement... displacements) {
 
         this.baseFrame = baseFrame;
 
@@ -336,8 +334,7 @@ public class GroundStation {
      * @deprecated as of 9.1, replaced by {@link #getOffsetGeodeticPoint(AbsoluteDate)}
      */
     @Deprecated
-    public GeodeticPoint getOffsetGeodeticPoint()
-        {
+    public GeodeticPoint getOffsetGeodeticPoint() {
         return getOffsetGeodeticPoint(null);
     }
 
@@ -348,8 +345,7 @@ public class GroundStation {
      * @return station displacement
      * @since 9.1
      */
-    private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position)
-        {
+    private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position) {
         Vector3D displacement = Vector3D.ZERO;
         if (arguments != null) {
             final BodiesElements elements = arguments.evaluateAll(date);
@@ -367,8 +363,7 @@ public class GroundStation {
      * @return geodetic point at the center of the offset frame
      * @since 9.1
      */
-    public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date)
-        {
+    public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date) {
 
         // take station offset into account
         final double    x          = parametricModel(eastOffsetDriver);
@@ -399,8 +394,7 @@ public class GroundStation {
      * @param date date of the transform
      * @return offset frame defining vectors
      */
-    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date)
-        {
+    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date) {
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(date).getInverse();
@@ -447,8 +441,7 @@ public class GroundStation {
     public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
                                                                    final FieldAbsoluteDate<DerivativeStructure> date,
                                                                    final DSFactory factory,
-                                                                   final Map<String, Integer> indices)
-        {
+                                                                   final Map<String, Integer> indices) {
 
         final Field<DerivativeStructure>         field = date.getField();
         final FieldVector3D<DerivativeStructure> zero  = FieldVector3D.getZero(field);

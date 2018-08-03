@@ -28,7 +28,7 @@ public interface TileAiming {
      * @param point point on the ellipsoid (Cartesian coordinates)
      * @param gp point on the ellipsoid (geodetic coordinates)
      * @return normalized along tile direction
-          */
+     */
     Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp);
 
 }

@@ -296,16 +296,14 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing) {
             final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
             return ef.rawDetector.eventOccurred(s, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState) {
             return ef.rawDetector.resetState(oldState);
         }
 

@@ -240,9 +240,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-          */
-    public void addAdditionalEquations(final AdditionalEquations additional)
-        {
+     */
+    public void addAdditionalEquations(final AdditionalEquations additional) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additional.getName())) {
@@ -395,8 +394,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
-        {
+    public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd) {
 
         if (getInitialState() == null) {
             throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
@@ -417,9 +415,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param tEnd target date to which orbit should be propagated
      * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
-          */
-    protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
-        {
+     */
+    protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers) {
         try {
 
             if (getInitialState().getDate().equals(tEnd)) {
@@ -495,7 +492,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Get the initial state for integration.
      * @return initial state for integration
-          */
+     */
     protected SpacecraftState getInitialIntegrationState() {
         return getInitialState();
     }
@@ -503,9 +500,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Create an initial state.
      * @param initialState initial state in flight dynamics world
      * @return initial state in mathematics world
-          */
-    private ODEState createInitialState(final SpacecraftState initialState)
-        {
+     */
+    private ODEState createInitialState(final SpacecraftState initialState) {
 
         // retrieve initial state
         final double[] primary  = new double[getBasicDimension()];
@@ -526,10 +522,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param integ numerical integrator to use for propagation.
      * @param mathInitialState initial state
      * @return a new ode
-          */
+     */
     private ExpandableODE createODE(final ODEIntegrator integ,
-                                    final ODEState mathInitialState)
-        {
+                                    final ODEState mathInitialState) {
 
         final ExpandableODE ode =
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -553,10 +548,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-          */
+     */
     protected void beforeIntegration(final SpacecraftState initialState,
-                                     final AbsoluteDate tEnd)
-        {
+                                     final AbsoluteDate tEnd) {
         // do nothing by default
     }
 
@@ -564,9 +558,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * <p>
      * The default implementation does nothing, it may be specialized in subclasses.
      * </p>
-          */
-    protected void afterIntegration()
-        {
+     */
+    protected void afterIntegration() {
         // do nothing by default
     }
 
@@ -590,9 +583,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param y array containing the current value of the state vector
      * @param yDot array containing the current value of the state vector derivative
      * @return complete state
-          */
-    private SpacecraftState getCompleteState(final double t, final double[] y, final double[] yDot)
-        {
+     */
+    private SpacecraftState getCompleteState(final double t, final double[] y, final double[] yDot) {
 
         // main state
         SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, meanOrbit);
@@ -629,8 +621,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        default void init(final SpacecraftState initialState, final AbsoluteDate target)
-            {
+        default void init(final SpacecraftState initialState, final AbsoluteDate target) {
         }
 
         /** Compute differential equations for main state.
@@ -671,8 +662,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public double[] computeDerivatives(final double t, final double[] y)
-            {
+        public double[] computeDerivatives(final double t, final double[] y) {
 
             // increment calls counter
             ++calls;
@@ -729,8 +719,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         @Override
         public double[] computeDerivatives(final double t, final double[] primary,
-                                           final double[] primaryDot, final double[] secondary)
-            {
+                                           final double[] primaryDot, final double[] secondary) {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
@@ -897,8 +886,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc}} */
         @Override
-        public SpacecraftState getPreviousState()
-            {
+        public SpacecraftState getPreviousState() {
             return convert(mathInterpolator.getPreviousState());
         }
 
@@ -910,8 +898,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc}} */
         @Override
-        public SpacecraftState getCurrentState()
-            {
+        public SpacecraftState getCurrentState() {
             return convert(mathInterpolator.getCurrentState());
         }
 
@@ -923,17 +910,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc}} */
         @Override
-        public SpacecraftState getInterpolatedState(final AbsoluteDate date)
-            {
+        public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(stateMapper.getReferenceDate())));
         }
 
         /** Convert a state from mathematical world to space flight dynamics world.
          * @param os mathematical state
          * @return space flight dynamics state
-                  */
-        private SpacecraftState convert(final ODEStateAndDerivative os)
-            {
+         */
+        private SpacecraftState convert(final ODEStateAndDerivative os) {
 
             SpacecraftState s =
                             stateMapper.mapArrayToState(os.getTime(),
@@ -953,9 +938,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Convert a state from space flight dynamics world to mathematical world.
          * @param state space flight dynamics state
          * @return mathematical state
-                  */
-        private ODEStateAndDerivative convert(final SpacecraftState state)
-            {
+         */
+        private ODEStateAndDerivative convert(final SpacecraftState state) {
 
             // retrieve initial state
             final double[] primary    = new double[getBasicDimension()];
@@ -984,8 +968,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc}} */
         @Override
         public AdaptedStepInterpolator restrictStep(final SpacecraftState newPreviousState,
-                                                    final SpacecraftState newCurrentState)
-            {
+                                                    final SpacecraftState newCurrentState) {
             try {
                 final AbstractODEStateInterpolator aosi = (AbstractODEStateInterpolator) mathInterpolator;
                 return new AdaptedStepInterpolator(aosi.restrictStep(convert(newPreviousState),
@@ -1052,8 +1035,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
-            {
+        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
             if (activate) {
                 if (this.handler != null) {
                     this.handler.handleStep(interpolator, isLast);

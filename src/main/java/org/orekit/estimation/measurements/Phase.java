@@ -72,8 +72,7 @@ public class Phase extends AbstractMeasurement<Phase> {
      */
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
-                 final double baseWeight)
-        {
+                 final double baseWeight) {
         this(station, date, phase, wavelength, sigma, baseWeight, 0);
     }
 
@@ -88,8 +87,7 @@ public class Phase extends AbstractMeasurement<Phase> {
      */
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
-                 final double baseWeight, final int propagatorIndex)
-        {
+                 final double baseWeight, final int propagatorIndex) {
         super(date, phase, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -115,8 +113,7 @@ public class Phase extends AbstractMeasurement<Phase> {
     @Override
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
-                                                                final SpacecraftState[] states)
-        {
+                                                                final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

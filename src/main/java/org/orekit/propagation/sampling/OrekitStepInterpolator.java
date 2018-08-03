@@ -31,7 +31,7 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-          */
+     */
     SpacecraftState getPreviousState();
 
     /**
@@ -51,7 +51,7 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at current grid point date.
      * @return state at current grid point date
-          */
+     */
     SpacecraftState getCurrentState();
 
     /**

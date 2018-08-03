@@ -287,7 +287,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * </p>
      * @param date date of the solar activity data
      * @return date of the file
-          */
+     */
     public DateComponents getFileDate(final AbsoluteDate date) {
         bracketDate(date);
         final double dtP = date.durationFrom(previousParam.getDate());
@@ -321,7 +321,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * </table>
      * @param date date of the Kp data
      * @return the 24H geomagnetic index
-          */
+     */
     public double get24HoursKp(final AbsoluteDate date) {
 
         // get the neighboring dates

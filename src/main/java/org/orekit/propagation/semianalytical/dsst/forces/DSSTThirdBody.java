@@ -246,8 +246,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         // Initializes specific parameters.
         initializeStep(aux);
@@ -436,8 +435,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriods.createSlot(meanStates);
 
@@ -1943,8 +1941,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

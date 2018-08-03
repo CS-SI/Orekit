@@ -60,14 +60,14 @@ abstract class SDP4  extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-          */
+     */
     protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                    final double mass) {
         super(initialTLE, attitudeProvider, mass);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-          */
+     */
     protected void sxpInitialize() {
         luniSolarTermsComputation();
     }  // End of initialization
@@ -112,7 +112,7 @@ abstract class SDP4  extends TLEPropagator {
     /** Computes SPACETRACK#3 compliant earth rotation angle.
      * @param date the current date
      * @return the ERA (rad)
-          */
+     */
     protected static double thetaG(final AbsoluteDate date) {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
@@ -138,7 +138,7 @@ abstract class SDP4  extends TLEPropagator {
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
-          */
+     */
     protected abstract void luniSolarTermsComputation();
 
     /** Computes secular terms from current coordinates and epoch.

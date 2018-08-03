@@ -44,14 +44,12 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
           * @since 8.0
      */
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                      final double positionScale)
-        {
+                                      final double positionScale) {
         super(templateOrbit, positionAngle, positionScale, true);
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         return new KeplerianPropagator(createInitialOrbit());
     }

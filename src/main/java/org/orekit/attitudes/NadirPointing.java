@@ -61,8 +61,7 @@ public class NadirPointing extends GroundPointing {
      * @param shape Body shape
      * @since 7.1
      */
-    public NadirPointing(final Frame inertialFrame, final BodyShape shape)
-        {
+    public NadirPointing(final Frame inertialFrame, final BodyShape shape) {
         // Call constructor of superclass
         super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
@@ -70,8 +69,7 @@ public class NadirPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        {
+                                                final AbsoluteDate date, final Frame frame) {
 
         // transform from specified reference frame to body frame
         final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
@@ -93,8 +91,7 @@ public class NadirPointing extends GroundPointing {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        {
+                                                                                        final Frame frame) {
 
         // transform from specified reference frame to body frame
         final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
@@ -118,8 +115,7 @@ public class NadirPointing extends GroundPointing {
      * @param refToBody transform from reference frame to body frame
      * @return intersection point in body frame (only the position is set!)
      */
-    private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef, final Transform refToBody)
-        {
+    private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef, final Transform refToBody) {
 
         final Vector3D satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 
@@ -147,8 +143,7 @@ public class NadirPointing extends GroundPointing {
      * @since 9.0
      */
     private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> nadirRef(final TimeStampedFieldPVCoordinates<T> scRef,
-                                                                                      final FieldTransform<T> refToBody)
-        {
+                                                                                      final FieldTransform<T> refToBody) {
 
         final FieldVector3D<T> satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 

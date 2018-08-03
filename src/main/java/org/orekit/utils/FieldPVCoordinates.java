@@ -345,8 +345,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @return vector with time-derivatives embedded within the coordinates
           * @since 9.2
      */
-    public FieldVector3D<FieldDerivativeStructure<T>> toDerivativeStructureVector(final int order)
-        {
+    public FieldVector3D<FieldDerivativeStructure<T>> toDerivativeStructureVector(final int order) {
 
         final FDSFactory<T> factory;
         final FieldDerivativeStructure<T> x;
@@ -400,8 +399,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @return pv coordinates with time-derivatives embedded within the coordinates
           * @since 9.2
      */
-    public FieldPVCoordinates<FieldDerivativeStructure<T>> toDerivativeStructurePV(final int order)
-        {
+    public FieldPVCoordinates<FieldDerivativeStructure<T>> toDerivativeStructurePV(final int order) {
 
         final FDSFactory<T> factory;
         final FieldDerivativeStructure<T> x0;

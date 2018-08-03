@@ -108,15 +108,14 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-          */
+     */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
                                final FieldStateMapper<T> mapper, final boolean meanFieldOrbit,
                                final FieldDenseOutputModel<T> model,
                                final Map<String, T[]> unmanaged,
                                final List<FieldAdditionalStateProvider<T>> providers,
-                               final String[] equations)
-        {
+                               final String[] equations) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
 
@@ -144,8 +143,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      * @return state interpolated at date
           * of supported range
      */
-    private FieldODEStateAndDerivative<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-        {
+    private FieldODEStateAndDerivative<T> getInterpolatedState(final FieldAbsoluteDate<T> date) {
 
         // compare using double precision instead of FieldAbsoluteDate<T>.compareTo(...)
         // because time is expressed as a double when searching for events
@@ -162,8 +160,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date)
-        {
+    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
@@ -175,8 +172,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
-        {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getOrbit();
     }
 
@@ -186,8 +182,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -211,14 +206,12 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state)
-        {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-        {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -251,8 +244,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         }
 
         /** {@inheritDoc} */
-        public T[] getAdditionalState(final FieldSpacecraftState<T> state)
-            {
+        public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);

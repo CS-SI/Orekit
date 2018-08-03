@@ -44,16 +44,14 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
          * @param m order of the coefficient
          * @return raw coefficient Cnm
          */
-        double getRawCnm(int n, int m)
-           ;
+        double getRawCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return raw coefficient Snm
          */
-        double getRawSnm(int n, int m)
-           ;
+        double getRawSnm(int n, int m);
 
     }
 

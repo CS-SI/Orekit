@@ -59,8 +59,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param baseWeight base weight
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
-                       final double[] angular, final double[] sigma, final double[] baseWeight)
-        {
+                       final double[] angular, final double[] sigma, final double[] baseWeight) {
         this(station, date, angular, sigma, baseWeight, 0);
     }
 
@@ -75,8 +74,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
-                       final int propagatorIndex)
-        {
+                       final int propagatorIndex) {
         super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -100,8 +98,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                      final SpacecraftState[] states)
-        {
+                                                                      final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

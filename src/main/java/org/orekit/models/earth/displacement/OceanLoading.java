@@ -359,8 +359,7 @@ public class OceanLoading implements StationDisplacement {
     /** {@inheritDoc} */
     @Override
     public Vector3D displacement(final BodiesElements elements, final Frame earthFrame,
-                                 final Vector3D referencePoint)
-        {
+                                 final Vector3D referencePoint) {
 
         // allocate arrays for each species splines
         final UnivariateFunction[] realZSpline      = new UnivariateFunction[mainTides.length];

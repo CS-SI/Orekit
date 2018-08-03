@@ -72,8 +72,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldAngularCoordinates (final AbsoluteDate date,
                                                final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                                final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                               final double tolerance)
-        {
+                                               final double tolerance) {
         this(new FieldAbsoluteDate<>(u1.getPosition().getX().getField(), date),
              u1, u2, v1, v2, tolerance);
     }
@@ -105,8 +104,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     public TimeStampedFieldAngularCoordinates (final FieldAbsoluteDate<T> date,
                                                final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                                final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                               final double tolerance)
-        {
+                                               final double tolerance) {
         super(u1, u2, v1, v2, tolerance);
         this.date = date;
     }
@@ -297,12 +295,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-          */
+     */
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
                                                           final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
-        {
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
         return interpolate(new FieldAbsoluteDate<>(sample.iterator().next().getRotation().getQ0().getField(), date),
                            filter, sample);
     }
@@ -336,12 +333,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-          */
+     */
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
                                                           final AngularDerivativesFilter filter,
-                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
-        {
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample) {
 
         // get field properties
         final Field<T> field = sample.iterator().next().getRotation().getQ0().getField();

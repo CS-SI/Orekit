@@ -96,8 +96,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
           * @since 8.0
      */
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                        final double positionScale, final boolean addDriverForCentralAttraction)
-        {
+                                        final double positionScale, final boolean addDriverForCentralAttraction) {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
@@ -237,7 +236,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Set the selected parameters.
      * @param normalizedParameters normalized values for the selected parameters
-          */
+     */
     protected void setParameters(final double[] normalizedParameters)
         throws OrekitIllegalArgumentException {
 
@@ -268,18 +267,16 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Add a supported parameter.
      * @param driver driver for the parameter
-          */
-    protected void addSupportedParameter(final ParameterDriver driver)
-        {
+     */
+    protected void addSupportedParameter(final ParameterDriver driver) {
         propagationDrivers.add(driver);
         propagationDrivers.sort();
     }
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder
-          */
-    public void resetOrbit(final Orbit newOrbit)
-        {
+     */
+    public void resetOrbit(final Orbit newOrbit) {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];

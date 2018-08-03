@@ -215,13 +215,12 @@ public class JB2008 implements Atmosphere {
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
      * @return total mass-Density at input position (kg/m³)
-          */
+     */
     public double getDensity(final double dateMJD, final double sunRA, final double sunDecli,
                              final double satLon, final double satLat, final double satAlt,
                              final double f10, final double f10B, final double s10,
                              final double s10B, final double xm10, final double xm10B,
-                             final double y10, final double y10B, final double dstdtc)
-        {
+                             final double y10, final double y10B, final double dstdtc) {
 
         if (satAlt < ALT_MIN) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, satAlt, ALT_MIN);
@@ -477,13 +476,12 @@ public class JB2008 implements Atmosphere {
      * @param dstdtc Temperature change computed from Dst index
      * @param <T> type fo the field elements
      * @return total mass-Density at input position (kg/m³)
-          */
+     */
     public <T extends RealFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
                                                         final T satLon, final T satLat, final T satAlt,
                                                         final double f10, final double f10B, final double s10,
                                                         final double s10B, final double xm10, final double xm10B,
-                                                        final double y10, final double y10B, final double dstdtc)
-        {
+                                                        final double y10, final double y10B, final double dstdtc) {
 
         if (satAlt.getReal() < ALT_MIN) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -1178,10 +1176,9 @@ public class JB2008 implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-          */
+     */
     public double getDensity(final AbsoluteDate date, final Vector3D position,
-                             final Frame frame)
-        {
+                             final Frame frame) {
         // check if data are available :
         if (date.compareTo(inputParams.getMaxDate()) > 0 ||
             date.compareTo(inputParams.getMinDate()) < 0) {
@@ -1215,8 +1212,7 @@ public class JB2008 implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
                                                         final FieldVector3D<T> position,
-                                                        final Frame frame)
-        {
+                                                        final Frame frame) {
 
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();

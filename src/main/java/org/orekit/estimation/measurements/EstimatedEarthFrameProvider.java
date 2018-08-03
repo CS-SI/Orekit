@@ -111,8 +111,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param baseUT1 underlying base UT1
      * @since 9.1
      */
-    public EstimatedEarthFrameProvider(final UT1Scale baseUT1)
-        {
+    public EstimatedEarthFrameProvider(final UT1Scale baseUT1) {
 
         this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
                                                              0.0, ANGULAR_SCALE,
@@ -216,8 +215,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date)
-        {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // take parametric prime meridian shift into account
         final double theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
@@ -247,8 +245,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
 
@@ -274,8 +271,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      */
     public FieldTransform<DerivativeStructure> getTransform(final FieldAbsoluteDate<DerivativeStructure> date,
                                                             final DSFactory factory,
-                                                            final Map<String, Integer> indices)
-        {
+                                                            final Map<String, Integer> indices) {
 
         // prime meridian shift parameters
         final DerivativeStructure theta    = linearModel(factory, date,
@@ -309,8 +305,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
     private <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
                                                                            final T theta, final T thetaDot,
                                                                            final T xpNeg, final T xpNegDot,
-                                                                           final T ypNeg, final T ypNegDot)
-        {
+                                                                           final T ypNeg, final T ypNegDot) {
 
         final T                zero  = date.getField().getZero();
         final FieldVector3D<T> plusI = FieldVector3D.getPlusI(date.getField());
@@ -344,8 +339,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @return current value of the linear model
      */
     private double linearModel(final AbsoluteDate date,
-                               final ParameterDriver offsetDriver, final ParameterDriver driftDriver)
-        {
+                               final ParameterDriver offsetDriver, final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
@@ -365,8 +359,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      */
     private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
-                                                          final ParameterDriver driftDriver)
-        {
+                                                          final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
@@ -387,8 +380,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      */
     private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
                                             final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices)
-        {
+                                            final Map<String, Integer> indices) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());

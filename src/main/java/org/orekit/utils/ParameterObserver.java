@@ -29,7 +29,7 @@ public interface ParameterObserver {
     /** Notify that a parameter value has been changed.
      * @param previousValue previous value
      * @param driver parameter driver that has been changed
-          */
+     */
     void valueChanged(double previousValue, ParameterDriver driver);
 
     /** Notify that a parameter reference date has been changed.

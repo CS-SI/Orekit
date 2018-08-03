@@ -170,7 +170,7 @@ class KeyValue {
 
     /** Get the value as a double number.
      * @return value
-          */
+     */
     public double getDoubleValue() {
         try {
             return Double.parseDouble(value);
@@ -182,7 +182,7 @@ class KeyValue {
 
     /** Get the value as an integer number.
      * @return value
-          */
+     */
     public int getIntegerValue() {
         try {
             return Integer.parseInt(value);

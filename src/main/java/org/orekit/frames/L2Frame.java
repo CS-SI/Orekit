@@ -35,9 +35,8 @@ public class L2Frame extends Frame {
     /** Simple constructor.
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-          */
-    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-        {
+     */
+    public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody) {
         super(primaryBody.getInertiallyOrientedFrame(),
               new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
                                             CartesianDerivativesFilter.USE_P,

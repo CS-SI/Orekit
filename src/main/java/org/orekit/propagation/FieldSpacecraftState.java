@@ -100,9 +100,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
     /** Build a spacecraft state from orbit only.
      * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-          */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit)
-        {
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), null);
@@ -124,9 +123,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>FieldAttitude<T> law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-          */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass)
-        {
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
@@ -148,9 +146,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * <p>FieldAttitude<T> and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-          */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional)
-        {
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final Map<String, T[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
@@ -174,9 +171,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-          */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional)
-        {
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final Map<String, T[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
@@ -393,10 +389,9 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          */
+     */
     public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
-                                               final Stream<FieldSpacecraftState<T>> sample)
-        {
+                                               final Stream<FieldSpacecraftState<T>> sample) {
 
         // prepare interpolators
         final List<FieldOrbit<T>> orbits = new ArrayList<>();
@@ -678,9 +673,8 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * {@link TimeStampedFieldPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
-          */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
-        {
+     */
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         return orbit.getPVCoordinates(outputFrame);
     }
 

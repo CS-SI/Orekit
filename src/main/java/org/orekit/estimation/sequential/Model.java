@@ -128,8 +128,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      */
     Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-          final ParameterDriversList estimatedMeasurementParameters)
-        {
+          final ParameterDriversList estimatedMeasurementParameters) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -296,7 +295,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param orbitalParameters orbital parameters
      * @param propagationParameters propagation parameters
      * @param measurementParameters measurements parameters
-          */
+     */
     private void checkDimension(final int dimension,
                                 final ParameterDriversList orbitalParameters,
                                 final ParameterDriversList propagationParameters,
@@ -418,8 +417,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @return numerical propagators based on the current values in the builder
      * @throws OrekitException if propagators cannot be build
      */
-    public NumericalPropagator[] getEstimatedPropagators()
-        {
+    public NumericalPropagator[] getEstimatedPropagators() {
 
         // Return propagators built with current instantiation of the propagator builders
         final NumericalPropagator[] propagators = new NumericalPropagator[builders.size()];
@@ -436,8 +434,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @return the normalized error state transition matrix
      * @throws OrekitException if Jacobians cannot be computed
      */
-    private RealMatrix getErrorStateTransitionMatrix()
-        {
+    private RealMatrix getErrorStateTransitionMatrix() {
 
         /* The state transition matrix is obtained as follows, with:
          *  - Y  : Current state vector
@@ -520,8 +517,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @return the normalized measurement matrix H
      * @throws OrekitException if Jacobians cannot be computed
      */
-    private RealMatrix getMeasurementMatrix()
-        {
+    private RealMatrix getMeasurementMatrix() {
 
         // Observed measurement characteristics
         final SpacecraftState[]      evaluationStates    = predictedMeasurement.getStates();
@@ -622,8 +618,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param propagators The new propagators to use
      * @throws OrekitException if setting up the partial derivatives failed
      */
-    private void updateReferenceTrajectories(final NumericalPropagator[] propagators)
-        {
+    private void updateReferenceTrajectories(final NumericalPropagator[] propagators) {
 
         // Update the reference trajectory propagator
         referenceTrajectories = propagators;
@@ -726,8 +721,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if modifier cannot be applied
      */
     private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
-                                                                              final RealMatrix innovationCovarianceMatrix)
-        {
+                                                                              final RealMatrix innovationCovarianceMatrix) {
 
         // Observed measurement associated to the predicted measurement
         final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
@@ -770,8 +764,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** {@inheritDoc} */
     @Override
     public NonLinearEvolution getEvolution(final double previousTime, final RealVector previousState,
-                                           final MeasurementDecorator measurement)
-        {
+                                           final MeasurementDecorator measurement) {
 
         // Set a reference date for all measurements parameters that lack one (including the not estimated ones)
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
@@ -847,8 +840,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** {@inheritDoc} */
     @Override
     public RealVector getInnovation(final MeasurementDecorator measurement, final NonLinearEvolution evolution,
-                                    final RealMatrix innovationCovarianceMatrix)
-        {
+                                    final RealMatrix innovationCovarianceMatrix) {
 
         // Apply the dynamic outlier filter, if it exists
         applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
@@ -872,10 +864,9 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Finalize estimation.
      * @param observedMeasurement measurement that has just been processed
      * @param estimate corrected estimate
-          */
+     */
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
-                                   final ProcessEstimate estimate)
-        {
+                                   final ProcessEstimate estimate) {
         // Update the parameters with the estimated state
         // The min/max values of the parameters are handled by the ParameterDriver implementation
         correctedEstimate = estimate;
@@ -904,8 +895,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @return predicted state
      * @throws OrekitException if the propagator builder could not be reset
      */
-    private RealVector predictState(final AbsoluteDate date)
-        {
+    private RealVector predictState(final AbsoluteDate date) {
 
         // Predicted state is initialized to previous estimated state
         final RealVector predictedState = correctedEstimate.getState().copy();

@@ -167,7 +167,7 @@ public enum OceanLoadDeformationCoefficients {
 
     /** Get the load deformation coefficients for ocean tides.
      * @return load deformation coefficients for ocean tides
-          */
+     */
     public abstract double[] getCoefficients();
 
 }

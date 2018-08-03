@@ -54,9 +54,8 @@ class DSConverter {
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
-          */
-    DSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider)
-        {
+     */
+    DSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider) {
 
         this.freeStateParameters = freeStateParameters;
 

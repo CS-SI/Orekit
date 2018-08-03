@@ -248,7 +248,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param timeSpan time span for the sample
      * @param nbPoints number of points for the sample over the time span
      * @return a sample of {@link SpacecraftState}
-          */
+     */
     private List<SpacecraftState> createSample(final Propagator source,
                                                final double timeSpan,
                                                final int nbPoints) {
@@ -266,7 +266,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Free some parameters.
      * @param freeParameters names of the free parameters
-          */
+     */
     private void setFreeParameters(final Iterable<String> freeParameters) {
 
         // start by setting all parameters as not estimated
@@ -303,7 +303,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param states set of spacecraft states to fit
      * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      * @return adapted propagator
-          */
+     */
     private Propagator adapt(final List<SpacecraftState> states,
                              final boolean positionOnly) {
 
@@ -352,7 +352,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Get the Root Mean Square Deviation for a given parameters set.
      * @param parameterSet position/velocity parameters set
      * @return RMSD
-          */
+     */
     private double getRMS(final double[] parameterSet) {
         final double[] residuals = getObjectiveFunction().value(parameterSet);
         for (int i = 0; i < residuals.length; ++i) {
@@ -368,15 +368,14 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Build the adpated propagator for a given position/velocity(/free) parameters set.
      * @param parameterSet position/velocity(/free) parameters set
      * @return adapted propagator
-          */
-    private Propagator buildAdaptedPropagator(final double[] parameterSet)
-        {
+     */
+    private Propagator buildAdaptedPropagator(final double[] parameterSet) {
         return builder.buildPropagator(parameterSet);
     }
 
     /** Set the states sample.
      * @param states spacecraft states sample
-          */
+     */
     private void setSample(final List<SpacecraftState> states) {
 
         this.sample = states;

@@ -34,8 +34,7 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
     /** Simple constructor.
      * @param unnormalized provider to normalize
      */
-    Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized)
-        {
+    Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized) {
         this.unnormalized = unnormalized;
         this.factors      = GravityFieldFactory.getUnnormalizationFactors(unnormalized.getMaxDegree(),
                                                                           unnormalized.getMaxOrder());
@@ -97,15 +96,13 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             @Override
-            public double getNormalizedCnm(final int n, final int m)
-                {
+            public double getNormalizedCnm(final int n, final int m) {
                 return harmonics.getUnnormalizedCnm(n, m) / factors[n][m];
             }
 
             /** {@inheritDoc} */
             @Override
-            public double getNormalizedSnm(final int n, final int m)
-                {
+            public double getNormalizedSnm(final int n, final int m) {
                 return harmonics.getUnnormalizedSnm(n, m) / factors[n][m];
             }
 

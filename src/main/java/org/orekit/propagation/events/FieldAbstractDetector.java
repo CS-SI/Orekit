@@ -153,8 +153,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     }
 
     /** {@inheritDoc} */
-    public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing)
-        {
+    public FieldEventHandler.Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
         @SuppressWarnings("unchecked")
         final FieldEventHandler.Action whatNext = getHandler().eventOccurred(s, (D) this, increasing);
         return whatNext;

@@ -99,9 +99,8 @@ public class RinexLoader {
      * global {@link DataProvidersManager DataProvidersManager}.
      * </p>
      * @param supportedNames regular expression for supported files names
-          */
-    public RinexLoader(final String supportedNames)
-        {
+     */
+    public RinexLoader(final String supportedNames) {
         observations = new HashMap<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
     }
@@ -109,9 +108,8 @@ public class RinexLoader {
     /** Simple constructor.
      * @param input data input stream
      * @param name name of the file (or zip entry)
-          */
-    public RinexLoader(final InputStream input, final String name)
-        {
+     */
+    public RinexLoader(final InputStream input, final String name) {
         try {
             observations = new HashMap<>();
             new Parser().loadData(input, name);

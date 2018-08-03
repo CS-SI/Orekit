@@ -103,8 +103,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
@@ -140,8 +139,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getXYSpXY2Function()
-            {
+        public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -308,8 +306,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction()
-            {
+        public TimeVectorFunction getNutationFunction() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -364,8 +361,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
-            {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -423,8 +419,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
-            {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -473,8 +468,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            {
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
 
             // obliquity
             final TimeScalarFunction epsilonA = getMeanObliquityFunction();
@@ -527,8 +521,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection()
-            {
+        public TimeVectorFunction getEOPTidalCorrection() {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -572,8 +565,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -665,8 +657,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            {
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory) {
 
             return new TimeVectorFunction() {
 
@@ -717,16 +708,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal() {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 17, -1, 18, -1);
         }
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal() {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 20, 17, 19, 18, 20);
         }
@@ -785,8 +774,7 @@ public enum IERSConventions {
         private static final String TIDAL_DISPLACEMENT_CORRECTION_ZONAL = IERS_BASE + "2003/tab7.5b.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
@@ -822,8 +810,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getXYSpXY2Function()
-            {
+        public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -890,8 +877,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction()
-            {
+        public TimeVectorFunction getNutationFunction() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -964,8 +950,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
-            {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -1003,8 +988,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
-            {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -1042,8 +1026,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            {
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -1125,8 +1108,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection()
-            {
+        public TimeVectorFunction getEOPTidalCorrection() {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -1169,8 +1151,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -1229,8 +1210,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
-            {
+        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory) {
 
             // annual pole from ftp://tai.bipm.org/iers/conv2003/chapter7/annual.pole
             final TimeScale utc = TimeScalesFactory.getUTC();
@@ -1435,8 +1415,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            {
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory) {
 
             return new TimeVectorFunction() {
 
@@ -1474,16 +1453,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal() {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 15, 16, 17, 18);
         }
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal() {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 18, 15, 16, 17, 18);
         }
@@ -1539,8 +1516,7 @@ public enum IERSConventions {
         private static final String TIDAL_DISPLACEMENT_CORRECTION_ZONAL = IERS_BASE + "2010/tab7.3b.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            {
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale) {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
@@ -1621,8 +1597,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            {
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -1787,8 +1762,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
-            {
+        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory) {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
@@ -1848,8 +1822,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            {
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory) {
 
             return new TimeVectorFunction() {
 
@@ -1929,8 +1902,7 @@ public enum IERSConventions {
 
          /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getNutationFunction()
-            {
+        public TimeVectorFunction getNutationFunction() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -2053,8 +2025,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            {
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory) {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -2120,8 +2091,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getEOPTidalCorrection()
-            {
+        public TimeVectorFunction getEOPTidalCorrection() {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -2173,16 +2143,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal() {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 15, 16, 17, 18);
         }
 
         /** {@inheritDoc} */
         @Override
-        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            {
+        public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal() {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 18, 15, 16, 17, 18);
         }
@@ -2329,7 +2297,7 @@ public enum IERSConventions {
 
     /** Get the permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used.
      * @return permanent tide to remove
-          */
+     */
     public abstract double getPermanentTide();
 
     /** Get the function computing solid pole tide (ΔC₂₁, ΔS₂₁).
@@ -2389,8 +2357,7 @@ public enum IERSConventions {
      */
     protected static CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal(final String tableName, final int cols,
                                                                                    final int rIp, final int rOp,
-                                                                                   final int tIp, final int tOp)
-        {
+                                                                                   final int tIp, final int tOp) {
 
         // radial component, missing the sin 2φ factor; this corresponds to:
         //  - equation 15a in IERS conventions 1996, chapter 7
@@ -2476,8 +2443,7 @@ public enum IERSConventions {
      */
     protected static CompiledSeries getTidalDisplacementFrequencyCorrectionZonal(final String tableName, final int cols,
                                                                                  final int rIp, final int rOp,
-                                                                                 final int tIp, final int tOp)
-        {
+                                                                                 final int tIp, final int tOp) {
 
         // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
         //  - equation 16a in IERS conventions 1996, chapter 7
@@ -2520,18 +2486,16 @@ public enum IERSConventions {
          * @param ddPsi δΔψ part of the nutation correction
          * @param ddEpsilon δΔε part of the nutation correction
          * @return array containing δX and δY
-                  */
-        double[] toNonRotating(AbsoluteDate date, double ddPsi, double ddEpsilon)
-           ;
+         */
+        double[] toNonRotating(AbsoluteDate date, double ddPsi, double ddEpsilon);
 
         /** Convert nutation corrections.
          * @param date current date
          * @param dX δX part of the nutation correction
          * @param dY δY part of the nutation correction
          * @return array containing δΔψ and δΔε
-                  */
-        double[] toEquinox(AbsoluteDate date, double dX, double dY)
-           ;
+         */
+        double[] toEquinox(AbsoluteDate date, double dX, double dY);
 
     }
 
@@ -2544,8 +2508,7 @@ public enum IERSConventions {
      * @return a new converter
           * @since 6.1
      */
-    public NutationCorrectionConverter getNutationCorrectionConverter()
-        {
+    public NutationCorrectionConverter getNutationCorrectionConverter() {
 
         // get models parameters
         final TimeVectorFunction precessionFunction = getPrecessionFunction();
@@ -2558,8 +2521,7 @@ public enum IERSConventions {
             /** {@inheritDoc} */
             @Override
             public double[] toNonRotating(final AbsoluteDate date,
-                                          final double ddPsi, final double ddEpsilon)
-                {
+                                          final double ddPsi, final double ddEpsilon) {
                 // compute precession angles psiA, omegaA and chiA
                 final double[] angles = precessionFunction.value(date);
 
@@ -2578,8 +2540,7 @@ public enum IERSConventions {
             /** {@inheritDoc} */
             @Override
             public double[] toEquinox(final AbsoluteDate date,
-                                      final double dX, final double dY)
-                {
+                                      final double dX, final double dY) {
                 // compute precession angles psiA, omegaA and chiA
                 final double[] angles   = precessionFunction.value(date);
 

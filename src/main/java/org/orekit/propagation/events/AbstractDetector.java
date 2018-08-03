@@ -159,8 +159,7 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
     }
 
     /** {@inheritDoc} */
-    public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        {
+    public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing) {
         @SuppressWarnings("unchecked")
         final EventHandler.Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
         return whatNext;

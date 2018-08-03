@@ -30,7 +30,7 @@ public interface EnablingPredicate<S extends EventDetector> {
      * @param g value of the underlying detector for the current state
      * @return true if the event is enabled (i.e. it can be
      * triggered), false if it should be ignored
-          */
+     */
     boolean eventIsEnabled(SpacecraftState state, S eventDetector, double g);
 
 }

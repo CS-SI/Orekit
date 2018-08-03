@@ -101,9 +101,8 @@ public enum ITRFVersion {
     /** Find an ITRF version from its reference year.
      * @param year reference year of the frame version
      * @return ITRF version for specified year
-          */
-    public static ITRFVersion getITRFVersion(final int year)
-        {
+     */
+    public static ITRFVersion getITRFVersion(final int year) {
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
@@ -120,9 +119,8 @@ public enum ITRFVersion {
     /** Find an ITRF version from its name.
      * @param name name of the frame version (case is ignored)
      * @return ITRF version
-          */
-    public static ITRFVersion getITRFVersion(final String name)
-        {
+     */
+    public static ITRFVersion getITRFVersion(final String name) {
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
@@ -237,8 +235,7 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-            {
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
         }
 

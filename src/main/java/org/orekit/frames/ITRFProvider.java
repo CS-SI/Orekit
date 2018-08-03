@@ -61,8 +61,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public ITRFProvider getNonInterpolatingProvider()
-        {
+    public ITRFProvider getNonInterpolatingProvider() {
         return new ITRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
@@ -91,8 +90,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // offset from J2000 epoch in Julian centuries
         final T tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);

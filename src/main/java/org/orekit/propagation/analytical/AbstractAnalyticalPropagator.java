@@ -115,8 +115,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target)
-        {
+    public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target) {
         try {
 
             lastPropagationStart = start;
@@ -323,7 +322,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Get the mass.
      * @param date target date for the orbit
      * @return mass mass
-          */
+     */
     protected abstract double getMass(AbsoluteDate date);
 
     /** Get PV coordinates provider.
@@ -337,13 +336,13 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
-          */
+     */
     protected abstract void resetIntermediateState(SpacecraftState state, boolean forward);
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
-          */
+     */
     protected abstract Orbit propagateOrbit(AbsoluteDate date);
 
     /** Propagate an orbit without any fancy features.
@@ -353,7 +352,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
-          */
+     */
     protected SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
@@ -376,8 +375,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     private class LocalPVProvider implements PVCoordinatesProvider {
 
         /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-            {
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
 
@@ -435,8 +433,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        protected Orbit propagateOrbit(final AbsoluteDate target)
-            {
+        protected Orbit propagateOrbit(final AbsoluteDate target) {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
@@ -446,8 +443,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-            {
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             return propagate(date).getPVCoordinates(frame);
         }
 
@@ -457,8 +453,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-            {
+        protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
             AbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
@@ -574,8 +569,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState getInterpolatedState(final AbsoluteDate date)
-            {
+        public SpacecraftState getInterpolatedState(final AbsoluteDate date) {
 
             // compute the basic spacecraft state
             final SpacecraftState basicState = basicPropagate(date);

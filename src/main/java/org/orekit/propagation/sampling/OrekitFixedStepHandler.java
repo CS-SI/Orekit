@@ -43,8 +43,7 @@ public interface OrekitFixedStepHandler {
           * @deprecated as of 9.0, replaced by {@link #init(SpacecraftState, AbsoluteDate, double)}
      */
     @Deprecated
-    default void init(SpacecraftState s0, AbsoluteDate t)
-        {
+    default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default
     }
 
@@ -66,8 +65,7 @@ public interface OrekitFixedStepHandler {
      *             positive even if propagation is backwards.
           * @since 9.0
      */
-    default void init(SpacecraftState s0, AbsoluteDate t, double step)
-        {
+    default void init(SpacecraftState s0, AbsoluteDate t, double step) {
         // as of 9.0, the default implementation calls the DEPRECATED version
         // without a step size, which does nothing by default but may have
         // been overridden by users
@@ -79,7 +77,7 @@ public interface OrekitFixedStepHandler {
     /** Handle the current step.
      * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
-          */
+     */
     void handleStep(SpacecraftState currentState, boolean isLast);
 
 }

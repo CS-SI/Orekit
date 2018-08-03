@@ -105,7 +105,7 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
      *
-          */
+     */
     Action eventOccurred(FieldSpacecraftState<T> s, KK detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
@@ -122,9 +122,8 @@ public interface FieldEventHandler<KK extends FieldEventDetector<T>, T extends R
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param oldState old state
      * @return new state
-          */
-    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState)
-        {
+     */
+    default FieldSpacecraftState<T> resetState(KK detector, FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 }

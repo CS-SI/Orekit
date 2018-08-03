@@ -155,8 +155,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
-        {
+    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additionalStateProvider.getName())) {
@@ -180,8 +179,7 @@ public abstract class AbstractPropagator implements Propagator {
      * @return updated state, with all additional states included
           * @see #addAdditionalStateProvider(AdditionalStateProvider)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original)
-        {
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -264,8 +262,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 

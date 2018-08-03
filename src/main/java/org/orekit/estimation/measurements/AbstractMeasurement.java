@@ -198,8 +198,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states)
-        {
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states) {
 
         // compute the theoretical value
         final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, states);
@@ -227,8 +226,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EstimationModifier<T> modifier)
-        {
+    public void addModifier(final EstimationModifier<T> modifier) {
 
         // combine the measurement parameters and the modifier parameters
         supportedParameters.addAll(modifier.getParametersDrivers());

@@ -160,8 +160,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addDefaultCelestialBodyLoader(final String supportedNames)
-        {
+    public static void addDefaultCelestialBodyLoader(final String supportedNames) {
         addDefaultCelestialBodyLoader(SOLAR_SYSTEM_BARYCENTER, supportedNames);
         addDefaultCelestialBodyLoader(SUN,                     supportedNames);
         addDefaultCelestialBodyLoader(MERCURY,                 supportedNames);
@@ -191,8 +190,7 @@ public class CelestialBodyFactory {
      * @see #clearCelestialBodyLoaders(String)
      * @see #clearCelestialBodyLoaders()
      */
-    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames)
-        {
+    public static void addDefaultCelestialBodyLoader(final String name, final String supportedNames) {
 
         CelestialBodyLoader loader = null;
         if (name.equalsIgnoreCase(SOLAR_SYSTEM_BARYCENTER)) {
@@ -424,8 +422,7 @@ public class CelestialBodyFactory {
      * @param name name of the celestial body
      * @return celestial body
      */
-    public static CelestialBody getBody(final String name)
-        {
+    public static CelestialBody getBody(final String name) {
         synchronized (CELESTIAL_BODIES_MAP) {
             CelestialBody body = CELESTIAL_BODIES_MAP.get(name);
             if (body == null) {

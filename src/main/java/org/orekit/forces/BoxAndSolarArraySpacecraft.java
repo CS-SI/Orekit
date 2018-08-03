@@ -629,8 +629,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @return solar array normal in spacecraft frame
      */
     public synchronized Vector3D getNormal(final AbsoluteDate date, final Frame frame,
-                                           final Vector3D position, final Rotation rotation)
-        {
+                                           final Vector3D position, final Rotation rotation) {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -666,8 +665,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
                                                                                    final Frame frame,
                                                                                    final FieldVector3D<T> position,
-                                                                                   final FieldRotation<T> rotation)
-        {
+                                                                                   final FieldRotation<T> rotation) {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -702,8 +700,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      */
     public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
                                                                      final FieldVector3D<DerivativeStructure> position,
-                                                                     final FieldRotation<DerivativeStructure> rotation)
-        {
+                                                                     final FieldRotation<DerivativeStructure> rotation) {
 
         final DerivativeStructure zero = position.getX().getField().getZero();
 
@@ -738,8 +735,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                      final Rotation rotation, final double mass,
                                      final double density, final Vector3D relativeVelocity,
-                                     final double[] parameters)
-        {
+                                     final double[] parameters) {
 
         final double dragCoeff = parameters[0];
         final double liftRatio = liftParameterDriver == null ? 0.0 : parameters[1];
@@ -781,8 +777,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                final double mass, final  double density,
                                                                final Vector3D relativeVelocity,
                                                                final double[] parameters,
-                                                               final String paramName)
-        {
+                                                               final String paramName) {
 
         final DerivativeStructure dragCoeffDS;
         final DerivativeStructure liftRatioDS;
@@ -844,8 +839,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     @Override
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                   final Rotation rotation, final double mass, final Vector3D flux,
-                                                  final double[] parameters)
-        {
+                                                  final double[] parameters) {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -887,8 +881,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                             final Vector3D position, final Rotation rotation,
                                                                             final double mass, final Vector3D flux,
                                                                             final double[] parameters,
-                                                                            final String paramName)
-        {
+                                                                            final String paramName) {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -948,8 +941,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final  T density, final FieldVector3D<T> relativeVelocity,
-                         final T[] parameters)
-        {
+                         final T[] parameters) {
 
         final T dragCoeff = parameters[0];
         final T liftRatio = liftParameterDriver == null ? dragCoeff.getField().getZero() : parameters[1];
@@ -994,8 +986,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        {
+                                      final T[] parameters) {
 
         if (flux.getNormSq().getReal() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)

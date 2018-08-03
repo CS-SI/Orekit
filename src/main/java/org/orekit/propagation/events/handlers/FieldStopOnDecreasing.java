@@ -42,10 +42,9 @@ public class FieldStopOnDecreasing <KK extends FieldEventDetector<T>, T extends 
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
      * @return {@link FieldEventHandler.Action#STOP} or {@link FieldEventHandler.Action#CONTINUE}
-          */
+     */
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing)
-        {
+    public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing) {
         return increasing ?  Action.CONTINUE : Action.STOP;
     }
 

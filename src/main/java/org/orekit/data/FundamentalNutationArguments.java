@@ -129,8 +129,7 @@ public class FundamentalNutationArguments implements Serializable {
      */
     public FundamentalNutationArguments(final IERSConventions conventions,
                                         final TimeScale timeScale,
-                                        final InputStream stream, final String name)
-        {
+                                        final InputStream stream, final String name) {
         this(conventions, timeScale, parseCoefficients(stream, name));
     }
 
@@ -143,8 +142,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @since 6.1
      */
     public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
-                                        final List<double[]> coefficients)
-        {
+                                        final List<double[]> coefficients) {
         this.conventions        = conventions;
         this.timeScale          = timeScale;
         this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
@@ -170,8 +168,7 @@ public class FundamentalNutationArguments implements Serializable {
      * @param name name of the resource file (for error messages only)
      * @return list of coefficients arrays
      */
-    private static List<double[]> parseCoefficients(final InputStream stream, final String name)
-        {
+    private static List<double[]> parseCoefficients(final InputStream stream, final String name) {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -239,8 +236,7 @@ public class FundamentalNutationArguments implements Serializable {
      */
     private static double[] getCoefficients(final FundamentalName argument,
                                             final Map<FundamentalName, double[]> polynomials,
-                                            final String fileName)
-        {
+                                            final String fileName) {
         if (!polynomials.containsKey(argument)) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, fileName);
         }

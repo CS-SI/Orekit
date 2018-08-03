@@ -441,10 +441,9 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new instance, interpolated at specified date
-          */
+     */
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                                                                final Collection<FieldTransform<T>> sample)
-        {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
                            sample);
@@ -477,8 +476,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Collection<FieldTransform<T>> sample)
-        {
+                                                                                final Collection<FieldTransform<T>> sample) {
         return interpolate(date, cFilter, aFilter, sample.stream());
     }
 
@@ -509,8 +507,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
-                                                                                final Stream<FieldTransform<T>> sample)
-        {
+                                                                                final Stream<FieldTransform<T>> sample) {
         final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
         final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
         sample.forEach(t -> {

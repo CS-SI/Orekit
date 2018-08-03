@@ -68,8 +68,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
                                       final PositionAngle positionAngle,
-                                      final double positionScale)
-        {
+                                      final double positionScale) {
         super(referenceOrbit, positionAngle, positionScale, true);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
@@ -117,9 +116,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * <p>If this method is not called at all, the integrated orbit will follow
      * a Keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
-          */
-    public void addForceModel(final ForceModel model)
-        {
+     */
+    public void addForceModel(final ForceModel model) {
         forceModels.add(model);
         for (final ParameterDriver driver : model.getParametersDrivers()) {
             addSupportedParameter(driver);
@@ -159,8 +157,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator buildPropagator(final double[] normalizedParameters)
-        {
+    public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
         final Orbit           orbit    = createInitialOrbit();

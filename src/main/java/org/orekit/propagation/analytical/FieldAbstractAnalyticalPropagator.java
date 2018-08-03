@@ -113,8 +113,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         eventsStates.clear();
     }
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target)
-        {
+    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target) {
         try {
             lastPropagationStart = start;
 
@@ -315,7 +314,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     /** Get the mass.
      * @param date target date for the orbit
      * @return mass mass
-          */
+     */
     protected abstract T getMass(FieldAbsoluteDate<T> date);
 
     /** Get PV coordinates provider.
@@ -334,13 +333,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
-          */
+     */
     protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward);
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
-          */
+     */
     protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date);
 
     /** Propagate an orbit without any fancy features.
@@ -350,7 +349,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
-          */
+     */
     protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         try {
 
@@ -373,8 +372,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     private class FieldLocalPVProvider implements FieldPVCoordinatesProvider<T> {
 
         /** {@inheritDoc} */
-        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-            {
+        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
 
@@ -428,8 +426,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target)
-            {
+        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target) {
             return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
@@ -439,8 +436,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-            {
+        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
             return propagate(date).getPVCoordinates(frame);
         }
 
@@ -450,8 +446,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-            {
+        protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
             FieldAbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
@@ -503,8 +498,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-            {
+        public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date) {
 
             // compute the basic spacecraft state
             final FieldSpacecraftState<T> basicState = basicPropagate(date);

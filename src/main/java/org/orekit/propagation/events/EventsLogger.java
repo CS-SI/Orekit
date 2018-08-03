@@ -231,16 +231,14 @@ public class EventsLogger implements Serializable {
     private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing) {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState) {
             return wrapper.detector.resetState(oldState);
         }
 

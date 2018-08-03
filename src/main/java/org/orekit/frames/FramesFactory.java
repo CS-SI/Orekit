@@ -386,9 +386,8 @@ public class FramesFactory {
      * @param conventions conventions for which EOP history is requested
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Earth Orientation Parameters history
-          */
-    public static EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP)
-        {
+     */
+    public static EOPHistory getEOPHistory(final IERSConventions conventions, final boolean simpleEOP) {
 
         synchronized (EOP_HISTORY_LOADERS) {
 
@@ -428,9 +427,8 @@ public class FramesFactory {
     /** Get one of the predefined frames.
      * @param factoryKey key of the frame within the factory
      * @return the predefined frame
-          */
-    public static Frame getFrame(final Predefined factoryKey)
-        {
+     */
+    public static Frame getFrame(final Predefined factoryKey) {
         switch (factoryKey) {
             case GCRF :
                 return getGCRF();
@@ -550,7 +548,7 @@ public class FramesFactory {
      * <p>The ICRF frame is centered at solar system barycenter and aligned
      * with GCRF.</p>
      * @return the unique instance of the ICRF frame
-          */
+     */
     public static Frame getICRF() {
         return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
     }
@@ -564,7 +562,7 @@ public class FramesFactory {
      * <p> This implementation agrees with the JPL 406 ephemerides to within 0.5 arc seconds.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
-          */
+     */
     public static Frame getEcliptic(final IERSConventions conventions) {
         synchronized (FramesFactory.class) {
 
@@ -644,8 +642,7 @@ public class FramesFactory {
      * @since 6.1
      */
     public static FactoryManagedFrame getITRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -711,8 +708,7 @@ public class FramesFactory {
      */
     public static VersionedITRF getITRF(final ITRFVersion version,
                                         final IERSConventions conventions,
-                                        final boolean simpleEOP)
-        {
+                                        final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
             // try to find an already built frame
             final ITRFKey key = new ITRFKey(version, conventions, simpleEOP);
@@ -741,8 +737,7 @@ public class FramesFactory {
      * @since 6.1
      */
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -791,8 +786,7 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      */
     public static FactoryManagedFrame getCIRF(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        {
+                                              final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -841,7 +835,7 @@ public class FramesFactory {
     /** Get the VEIS 1950 reference frame.
      * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
      * @return the selected reference frame singleton.
-          */
+     */
     public static FactoryManagedFrame getVeis1950() {
         synchronized (FramesFactory.class) {
 
@@ -868,8 +862,7 @@ public class FramesFactory {
           * @since 6.1
      */
     public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,
-                                                     final boolean simpleEOP)
-        {
+                                                     final boolean simpleEOP) {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -924,7 +917,7 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @return the selected reference frame singleton.
-          */
+     */
     public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) {
         return getGTOD(IERSConventions.IERS_1996, applyEOPCorr, true);
     }
@@ -933,10 +926,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          */
+     */
     public static FactoryManagedFrame getGTOD(final IERSConventions conventions,
-                                              final boolean simpleEOP)
-        {
+                                              final boolean simpleEOP) {
         return getGTOD(conventions, true, simpleEOP);
     }
 
@@ -953,11 +945,10 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          */
+     */
     private static FactoryManagedFrame getGTOD(final IERSConventions conventions,
                                                final boolean applyEOPCorr,
-                                               final boolean simpleEOP)
-        {
+                                               final boolean simpleEOP) {
 
         synchronized (FramesFactory.class) {
 
@@ -1020,9 +1011,8 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
-          */
-    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr)
-        {
+     */
+    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) {
         return getTOD(IERSConventions.IERS_1996, applyEOPCorr, false);
     }
 
@@ -1030,10 +1020,9 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          */
+     */
     public static FactoryManagedFrame getTOD(final IERSConventions conventions,
-                                             final boolean simpleEOP)
-        {
+                                             final boolean simpleEOP) {
         return getTOD(conventions, true, simpleEOP);
     }
 
@@ -1050,11 +1039,10 @@ public class FramesFactory {
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          */
+     */
     private static FactoryManagedFrame getTOD(final IERSConventions conventions,
                                               final boolean applyEOPCorr,
-                                              final boolean simpleEOP)
-        {
+                                              final boolean simpleEOP) {
 
         synchronized (FramesFactory.class) {
 
@@ -1122,18 +1110,16 @@ public class FramesFactory {
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
-          */
-    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr)
-        {
+     */
+    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr) {
         return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
     }
 
     /** Get the MOD reference frame.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
-          */
-    public static FactoryManagedFrame getMOD(final IERSConventions conventions)
-        {
+     */
+    public static FactoryManagedFrame getMOD(final IERSConventions conventions) {
         return getMOD(conventions, true);
     }
 
@@ -1149,9 +1135,8 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
-          */
-    private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
-        {
+     */
+    private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr) {
 
         synchronized (FramesFactory.class) {
 
@@ -1202,7 +1187,7 @@ public class FramesFactory {
      * blue book.
      * </p>
      * @return the selected reference frame singleton.
-          */
+     */
     public static FactoryManagedFrame getTEME() {
         synchronized (FramesFactory.class) {
 
@@ -1252,8 +1237,7 @@ public class FramesFactory {
      * @throws OrekitException if transform cannot be computed at this date
      */
     public static Transform getNonInterpolatingTransform(final Frame from, final Frame to,
-                                                         final AbsoluteDate date)
-        {
+                                                         final AbsoluteDate date) {
 
         // common ancestor to both frames in the frames tree
         Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
@@ -1306,8 +1290,7 @@ public class FramesFactory {
      * @since 9.0
      */
     public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
-                                                                                                 final FieldAbsoluteDate<T> date)
-        {
+                                                                                                 final FieldAbsoluteDate<T> date) {
 
         // common ancestor to both frames in the frames tree
         Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
@@ -1381,9 +1364,8 @@ public class FramesFactory {
     /** Peel interpolation and shifting from a transform provider.
      * @param provider transform provider to peel
      * @return peeled transform provider
-          */
-    private static TransformProvider peel(final TransformProvider provider)
-        {
+     */
+    private static TransformProvider peel(final TransformProvider provider) {
 
         TransformProvider peeled = provider;
 

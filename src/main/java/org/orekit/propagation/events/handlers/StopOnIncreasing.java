@@ -47,10 +47,9 @@ public class StopOnIncreasing<T extends EventDetector> implements EventHandler<T
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
      * @return {@link EventHandler.Action#STOP} or {@link EventHandler.Action#CONTINUE}
-          */
+     */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
-        {
+    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
         return increasing ? Action.STOP : Action.CONTINUE;
     }
 

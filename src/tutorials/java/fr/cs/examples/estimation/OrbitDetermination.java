@@ -840,7 +840,7 @@ public class OrbitDetermination {
     /** Set up range bias due to transponder delay.
      * @param parser input file parser
      * @return range bias (may be null if bias is fixed to zero)
-          */
+     */
     private Bias<Range> createSatRangeBias(final KeyValueFileParser<ParameterKey> parser)
         {
 
@@ -1645,7 +1645,7 @@ public class OrbitDetermination {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-                  */
+         */
         public abstract T parseFields(String[] fields,
                                       Map<String, StationData> stations,
                                       PVData pvData,
@@ -1659,7 +1659,7 @@ public class OrbitDetermination {
          * @param line complete line
          * @param lineNumber line number
          * @param fileName file name
-                  */
+         */
         protected void checkFields(final int expected, final String[] fields,
                                    final String line, final int lineNumber, final String fileName)
             {
@@ -1675,7 +1675,7 @@ public class OrbitDetermination {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-                  */
+         */
         protected AbsoluteDate getDate(final String date,
                                        final String line, final int lineNumber, final String fileName)
             {
@@ -1697,7 +1697,7 @@ public class OrbitDetermination {
          * @param lineNumber line number
          * @param fileName file name
          * @return parsed measurement
-                  */
+         */
         protected StationData getStationData(final String stationName,
                                              final Map<String, StationData> stations,
                                              final String line, final int lineNumber, final String fileName)
@@ -1934,7 +1934,7 @@ public class OrbitDetermination {
          * <p>
          * The file is deleted if it contains no data.
          * </p>
-                  */
+         */
         public void close() {
             if (stream != null) {
                 stream.close();
@@ -2271,7 +2271,7 @@ public class OrbitDetermination {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range modifier
-                  */
+         */
         public RangeIonosphericDelayModifier getRangeModifier(final Frequency frequency,
                                                               final AbsoluteDate date)
             {
@@ -2284,7 +2284,7 @@ public class OrbitDetermination {
          * @param frequency frequency of the signal
          * @param date measurement date
          * @return range-rate modifier
-                  */
+         */
         public RangeRateIonosphericDelayModifier getRangeRateModifier(final Frequency frequency,
                                                                       final AbsoluteDate date)
             {
@@ -2296,7 +2296,7 @@ public class OrbitDetermination {
         /** Create modifiers for a frequency and date if needed.
          * @param frequency frequency of the signal
          * @param dc date for which modifiers are required
-                  */
+         */
         private void ensureFrequencyAndDateSupported(final Frequency frequency, final DateComponents dc)
             {
 

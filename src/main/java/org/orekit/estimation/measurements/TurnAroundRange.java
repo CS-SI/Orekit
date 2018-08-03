@@ -79,8 +79,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      */
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
-                           final double sigma, final double baseWeight)
-        {
+                           final double sigma, final double baseWeight) {
         this(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight, 0);
     }
 
@@ -97,8 +96,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     public TurnAroundRange(final GroundStation masterStation, final GroundStation slaveStation,
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
-                           final int propagatorIndex)
-        {
+                           final int propagatorIndex) {
         super(date, turnAroundRange, sigma, baseWeight, Arrays.asList(propagatorIndex),
               masterStation.getEastOffsetDriver(),
               masterStation.getNorthOffsetDriver(),
@@ -139,8 +137,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                          final SpacecraftState[] states)
-        {
+                                                                          final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

@@ -64,8 +64,7 @@ public class GeoMagneticFieldFactory {
      * @throws OrekitException if the models could not be loaded
      * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
-    public static GeoMagneticField getField(final FieldModel type, final double year)
-        {
+    public static GeoMagneticField getField(final FieldModel type, final double year) {
 
         switch (type) {
             case WMM:
@@ -115,8 +114,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link TreeMap} of all loaded models
      * @throws OrekitException if the models could not be loaded
      */
-    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames)
-        {
+    private static TreeMap<Integer, GeoMagneticField> loadModels(final String supportedNames) {
 
         TreeMap<Integer, GeoMagneticField> loadedModels = null;
         final GeoMagneticModelLoader loader = new GeoMagneticModelLoader();
@@ -154,8 +152,7 @@ public class GeoMagneticFieldFactory {
      */
     private static GeoMagneticField getModel(final FieldModel type,
                                              final TreeMap<Integer, GeoMagneticField> models,
-                                             final double year)
-        {
+                                             final double year) {
 
         final int epochKey = (int) (year * 100d);
         final SortedMap<Integer, GeoMagneticField> head = models.headMap(epochKey, true);

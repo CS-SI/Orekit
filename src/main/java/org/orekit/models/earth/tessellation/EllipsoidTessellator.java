@@ -151,12 +151,11 @@ public class EllipsoidTessellator {
      * @return a list of lists of tiles covering the zone of interest,
      * each sub-list corresponding to a part not connected to the other
      * parts (for example for islands)
-          */
+     */
     public List<List<Tile>> tessellate(final SphericalPolygonsSet zone,
                                        final double fullWidth, final double fullLength,
                                        final double widthOverlap, final double lengthOverlap,
-                                       final boolean truncateLastWidth, final boolean truncateLastLength)
-        {
+                                       final boolean truncateLastWidth, final boolean truncateLastLength) {
 
         final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
         final double                  splitLength = (fullLength - lengthOverlap) / quantization;
@@ -226,10 +225,9 @@ public class EllipsoidTessellator {
      * @return a list of lists of points sampling the zone of interest,
      * each sub-list corresponding to a part not connected to the other
      * parts (for example for islands)
-          */
+     */
     public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone,
-                                            final double width, final double length)
-        {
+                                            final double width, final double length) {
 
         final double                         splitWidth  = width  / quantization;
         final double                         splitLength = length / quantization;
@@ -292,9 +290,8 @@ public class EllipsoidTessellator {
     /** Get an inside point from a zone of interest.
      * @param zone zone to mesh
      * @return a point inside the zone or null if zone is empty or too thin
-          */
-    private S2Point getInsidePoint(final SphericalPolygonsSet zone)
-        {
+     */
+    private S2Point getInsidePoint(final SphericalPolygonsSet zone) {
 
         final InsideFinder finder = new InsideFinder(zone);
         zone.getTree(false).visit(finder);
@@ -312,10 +309,9 @@ public class EllipsoidTessellator {
      * @param mesh mesh to expand
      * @param seeds seed nodes (already in the mesh) from which to start expansion
      * @param zone zone to mesh
-          */
+     */
     private void neighborExpandMesh(final Mesh mesh, final Collection<Mesh.Node> seeds,
-                                    final SphericalPolygonsSet zone)
-        {
+                                    final SphericalPolygonsSet zone) {
 
         // mesh expansion loop
         boolean expanding = true;
@@ -369,11 +365,10 @@ public class EllipsoidTessellator {
      * @param truncateLastWidth true if we can reduce last tile width
      * @param truncateLastLength true if we can reduce last tile length
      * @return extracted tiles
-          */
+     */
     private List<Tile> extractTiles(final Mesh mesh, final SphericalPolygonsSet zone,
                                     final double lengthOverlap, final double widthOverlap,
-                                    final boolean truncateLastWidth, final boolean truncateLastLength)
-        {
+                                    final boolean truncateLastWidth, final boolean truncateLastLength) {
 
         final List<Tile>      tiles = new ArrayList<Tile>();
         final List<RangePair> rangePairs = new ArrayList<RangePair>();
@@ -445,9 +440,8 @@ public class EllipsoidTessellator {
      * @param mesh mesh from which grid should be extracted
      * @param zone zone covered by the mesh
      * @return extracted grid
-          */
-    private List<GeodeticPoint> extractSample(final Mesh mesh, final SphericalPolygonsSet zone)
-        {
+     */
+    private List<GeodeticPoint> extractSample(final Mesh mesh, final SphericalPolygonsSet zone) {
 
         // find how to select sample points taking quantization into account
         // to have the largest possible number of points while still
@@ -506,10 +500,9 @@ public class EllipsoidTessellator {
      * @param mesh2 second mesh
      * @param mergingSeeds collection where to put the nodes created during the merge
      * @return merged mesh (really one of the instances)
-          */
+     */
     private Mesh mergeMeshes(final Mesh mesh1, final Mesh mesh2,
-                             final Collection<Mesh.Node> mergingSeeds)
-        {
+                             final Collection<Mesh.Node> mergingSeeds) {
 
         // select the way merge will be performed
         final Mesh larger;
@@ -576,10 +569,9 @@ public class EllipsoidTessellator {
      * @param base base node
      * @param mesh complete mesh containing nodes
      * @param newNodes queue where new node must be put
-          */
+     */
     private void addAllNeighborsIfNeeded(final Mesh.Node base, final Mesh mesh,
-                                         final Collection<Mesh.Node> newNodes)
-        {
+                                         final Collection<Mesh.Node> newNodes) {
         addNode(base.getAlongIndex() - 1, base.getAcrossIndex() - 1, mesh, newNodes);
         addNode(base.getAlongIndex() - 1, base.getAcrossIndex(),     mesh, newNodes);
         addNode(base.getAlongIndex() - 1, base.getAcrossIndex() + 1, mesh, newNodes);
@@ -595,10 +587,9 @@ public class EllipsoidTessellator {
      * @param acrossIndex index in the across direction
      * @param mesh complete mesh containing nodes
      * @param newNodes queue where new node must be put
-          */
+     */
     private void addNode(final int alongIndex, final int acrossIndex,
-                         final Mesh mesh, final Collection<Mesh.Node> newNodes)
-        {
+                         final Mesh mesh, final Collection<Mesh.Node> newNodes) {
 
         final Mesh.Node node = mesh.addNode(alongIndex, acrossIndex);
 

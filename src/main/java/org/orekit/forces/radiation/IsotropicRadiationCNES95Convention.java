@@ -128,8 +128,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                                       final FieldVector3D<T> position,
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
-                                      final T[] parameters)
-        {
+                                      final T[] parameters) {
         final T alpha = parameters[0];
         final T tau   = parameters[1];
         final T kP    = alpha.negate().add(1).multiply(tau.negate().add(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
@@ -141,8 +140,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final double[] parameters,
-                                                                            final String paramName)
-        {
+                                                                            final String paramName) {
 
         final DerivativeStructure absorptionCoeffDS;
         final DerivativeStructure specularReflectionCoeffDS;

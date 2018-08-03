@@ -49,9 +49,8 @@ public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, 
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          */
-    default T interpolate(FieldAbsoluteDate<KK> date, Collection<T> sample)
-        {
+     */
+    default T interpolate(FieldAbsoluteDate<KK> date, Collection<T> sample) {
         return interpolate(date, sample.stream());
     }
 
@@ -76,7 +75,7 @@ public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, 
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          */
+     */
     T interpolate(FieldAbsoluteDate<KK> date, Stream<T> sample);
 
 }

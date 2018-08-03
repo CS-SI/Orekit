@@ -402,8 +402,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
      * @return FieldPVCoordinates in the specified output frame
           * @see #getPVCoordinates()
      */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
-        {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -420,8 +419,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
-        {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 

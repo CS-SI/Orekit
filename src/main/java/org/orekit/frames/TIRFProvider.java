@@ -57,9 +57,8 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** Simple constructor.
      * @param eopHistory EOP history
-          */
-    protected TIRFProvider(final EOPHistory eopHistory)
-        {
+     */
+    protected TIRFProvider(final EOPHistory eopHistory) {
 
         this.ut1        = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory = eopHistory;
@@ -75,8 +74,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public TIRFProvider getNonInterpolatingProvider()
-        {
+    public TIRFProvider getNonInterpolatingProvider() {
         return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
@@ -100,8 +98,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute proper rotation
         final T correctedERA = era.value(date);
@@ -122,7 +119,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** Get the Earth Rotation Angle at the current date.
      * @param  date the date
      * @return Earth Rotation Angle at the current date in radians
-          */
+     */
     public double getEarthRotationAngle(final AbsoluteDate date) {
         return MathUtils.normalizeAngle(era.value(date), 0);
     }

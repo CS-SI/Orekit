@@ -77,8 +77,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     OceanTidesField(final double ae, final double mu,
                            final List<OceanTidesWave> waves,
                            final FundamentalNutationArguments arguments,
-                           final TimeVectorFunction poleTideFunction)
-        {
+                           final TimeVectorFunction poleTideFunction) {
 
         // store mode parameters
         this.ae  = ae;
@@ -219,15 +218,13 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedCnm(final int n, final int m)
-            {
+        public double getNormalizedCnm(final int n, final int m) {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedSnm(final int n, final int m)
-            {
+        public double getNormalizedSnm(final int n, final int m) {
             return snm[n][m];
         }
 

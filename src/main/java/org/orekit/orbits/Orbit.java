@@ -418,8 +418,7 @@ public abstract class Orbit
      * @return pvCoordinates in the specified output frame
           * @see #getPVCoordinates()
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -436,8 +435,7 @@ public abstract class Orbit
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
-        {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 

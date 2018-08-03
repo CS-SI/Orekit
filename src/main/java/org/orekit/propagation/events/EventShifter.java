@@ -150,8 +150,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing) {
 
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
@@ -168,8 +167,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState) {
             return shifter.detector.resetState(shiftedState);
         }
 

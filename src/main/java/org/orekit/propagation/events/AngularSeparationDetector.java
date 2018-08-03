@@ -136,7 +136,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
         final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());

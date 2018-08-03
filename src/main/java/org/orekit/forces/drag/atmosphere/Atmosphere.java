@@ -65,9 +65,8 @@ public interface Atmosphere extends Serializable {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame as the position)
-          */
-    default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame)
-        {
+     */
+    default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
         final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
         final Vector3D      posInBody   = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
@@ -81,9 +80,8 @@ public interface Atmosphere extends Serializable {
      * @param frame the frame in which is defined the position
      * @param <T> instance of RealFieldElement
      * @return velocity (m/s) (defined in the same frame as the position)
-          */
-    default <T extends RealFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
-        {
+     */
+    default <T extends RealFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
         final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
         final FieldVector3D<T>      posInBody   = bodyToFrame.getInverse().transformPosition(position);
         final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));

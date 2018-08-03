@@ -166,10 +166,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-          */
+     */
     protected TLEPropagator(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                            final double mass)
-        {
+                            final double mass) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         this.tle  = initialTLE;
@@ -186,7 +185,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @return the correct propagator.
-          */
+     */
     public static TLEPropagator selectExtrapolator(final TLE tle) {
         return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
     }
@@ -196,7 +195,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @return the correct propagator.
-          */
+     */
     public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
                                                    final double mass) {
 
@@ -229,9 +228,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** Get the extrapolated position and velocity from an initial TLE.
      * @param date the final date
      * @return the final PVCoordinates
-          */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date)
-        {
+     */
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
 
         sxpPropagate(date.durationFrom(tle.getDate()) / 60.0);
 
@@ -451,23 +449,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-          */
+     */
     protected abstract void sxpInitialize();
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
-          */
+     */
     protected abstract void sxpPropagate(double t);
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

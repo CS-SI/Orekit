@@ -122,8 +122,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
                               final PVCoordinates v1, final PVCoordinates v2,
-                              final double tolerance)
-        {
+                              final double tolerance) {
 
         try {
             // find the initial fixed rotation
@@ -327,9 +326,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * </p>
      * @param order derivation order for the vector components
      * @return rotation with time-derivatives embedded within the coordinates
-          */
-    public FieldRotation<DerivativeStructure> toDerivativeStructureRotation(final int order)
-        {
+     */
+    public FieldRotation<DerivativeStructure> toDerivativeStructureRotation(final int order) {
 
         // quaternion components
         final double q0 = rotation.getQ0();

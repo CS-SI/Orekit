@@ -200,8 +200,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
      * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
-                                                     final int degree, final int order)
-        {
+                                                     final int degree, final int order) {
 
         // get the constant part
         RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);

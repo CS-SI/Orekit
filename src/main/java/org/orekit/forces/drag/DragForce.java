@@ -78,8 +78,7 @@ public class DragForce extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
@@ -97,8 +96,7 @@ public class DragForce extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        {
+                                                                         final T[] parameters) {
 
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
@@ -222,8 +220,7 @@ public class DragForce extends AbstractForceModel {
      */
     private <T extends RealFieldElement<T>> T getDensityWrtStateUsingFiniteDifferences(final AbsoluteDate date,
                                                                                        final Frame frame,
-                                                                                       final FieldVector3D<T> position)
-        {
+                                                                                       final FieldVector3D<T> position) {
 
         // Retrieve derivation properties for parameter T
         // It is implied here that T is a DerivativeStructure

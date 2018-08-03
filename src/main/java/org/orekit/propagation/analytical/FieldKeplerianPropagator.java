@@ -48,9 +48,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialFieldOrbit initial orbit
-          */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit)
-        {
+     */
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit) {
         this(initialFieldOrbit, DEFAULT_LAW, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -58,9 +57,8 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialFieldOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
-          */
-    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu)
-        {
+     */
+    public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final double mu) {
         this(initialFieldOrbit, DEFAULT_LAW, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -70,10 +68,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * non-null arbitrary value.</p>
      * @param initialFieldOrbit initial orbit
      * @param attitudeProv  attitude provider
-          */
+     */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
-                                    final AttitudeProvider attitudeProv)
-        {
+                                    final AttitudeProvider attitudeProv) {
         this(initialFieldOrbit, attitudeProv, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -83,11 +80,10 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param initialFieldOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
-          */
+     */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
                                     final AttitudeProvider attitudeProv,
-                                    final double mu)
-                                                    {
+                                    final double mu) {
         this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
     }
 
@@ -97,10 +93,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
      * @param mass spacecraft mass (kg)
-          */
+     */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialOrbit, final AttitudeProvider attitudeProv,
-                                    final double mu, final T mass)
-        {
+                                    final double mu, final T mass) {
 
         super(initialOrbit.getA().getField(), attitudeProv);
 
@@ -136,8 +131,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state)
-        {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final double mu = initialState == null ? state.getMu() : initialState.getMu();
@@ -153,8 +147,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-        {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         if (forward) {
             states.addValidAfter(state, state.getDate());
         } else {
@@ -163,8 +156,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
-        {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {

@@ -50,8 +50,7 @@ public class FixedRate implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        {
+                                final AbsoluteDate date, final Frame frame) {
         final double timeShift = date.durationFrom(referenceAttitude.getDate());
         final Attitude shifted = referenceAttitude.shiftedBy(timeShift);
         return shifted.withReferenceFrame(frame);
@@ -60,8 +59,7 @@ public class FixedRate implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        {
+                                                                        final Frame frame) {
         final Field<T> field = date.getField();
         final T timeShift = date.durationFrom(referenceAttitude.getDate());
         final FieldAttitude<T> shifted = new FieldAttitude<>(field, referenceAttitude).shiftedBy(timeShift);

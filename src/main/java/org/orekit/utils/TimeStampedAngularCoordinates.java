@@ -84,8 +84,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
     public TimeStampedAngularCoordinates(final AbsoluteDate date,
                                          final PVCoordinates u1, final PVCoordinates u2,
                                          final PVCoordinates v1, final PVCoordinates v2,
-                                         final double tolerance)
-        {
+                                         final double tolerance) {
         super(u1, u2, v1, v2, tolerance);
         this.date = date;
     }
@@ -104,8 +103,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param v desired image of u by the rotation
      */
     public TimeStampedAngularCoordinates(final AbsoluteDate date,
-                                         final PVCoordinates u, final PVCoordinates v)
-        {
+                                         final PVCoordinates u, final PVCoordinates v) {
         super(u, v);
         this.date = date;
     }
@@ -242,11 +240,10 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
-          */
+     */
     public static TimeStampedAngularCoordinates interpolate(final AbsoluteDate date,
                                                             final AngularDerivativesFilter filter,
-                                                            final Collection<TimeStampedAngularCoordinates> sample)
-        {
+                                                            final Collection<TimeStampedAngularCoordinates> sample) {
 
         // set up safety elements for 2π singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();

@@ -236,15 +236,13 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     private static class LocalHandler<T extends EventDetector> implements EventHandler<EventSlopeFilter<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final EventSlopeFilter<T> ef, final boolean increasing) {
             return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState)
-            {
+        public SpacecraftState resetState(final EventSlopeFilter<T> ef, final SpacecraftState oldState) {
             return ef.rawDetector.resetState(oldState);
         }
 

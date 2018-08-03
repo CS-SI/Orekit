@@ -160,8 +160,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider)
-        {
+    public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additionalStateProvider.getName())) {
@@ -185,8 +184,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
      * @return updated state, with all additional states included
           * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
      */
-    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original)
-        {
+    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -271,8 +269,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 

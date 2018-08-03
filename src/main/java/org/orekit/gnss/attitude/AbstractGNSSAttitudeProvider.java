@@ -85,8 +85,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date,
-                                final Frame frame)
-        {
+                                final Frame frame) {
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
@@ -104,8 +103,7 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        {
+                                                                        final Frame frame) {
 
         // Sun/spacecraft geometry
         // computed in inertial frame so orbital plane (which depends on spacecraft velocity) is correct
@@ -122,14 +120,14 @@ public abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvid
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
      * @return corrected yaw, using inertial frame as the reference
-          */
+     */
     protected abstract TimeStampedAngularCoordinates correctedYaw(GNSSAttitudeContext context);
 
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
      * @param <T> type of the field elements
      * @return corrected yaw, using inertial frame as the reference
-          */
+     */
     protected abstract <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
         correctedYaw(GNSSFieldAttitudeContext<T> context);
 

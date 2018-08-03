@@ -327,7 +327,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** Set the initial state.
      * @param initialState initial state
-          */
+     */
     public void setInitialState(final FieldSpacecraftState<T> initialState) {
         resetInitialState(initialState);
     }
@@ -342,8 +342,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -379,8 +378,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
-                                                       final boolean meanOnly)
-            {
+                                                       final boolean meanOnly) {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
             final T mass = y[6];
@@ -432,8 +430,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-            {
+        public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
             final SpacecraftState stateD  = initialState.toSpacecraftState();
             final AbsoluteDate    targetD = target.toAbsoluteDate();
             for (final ForceModel forceModel : forceModels) {
@@ -468,8 +465,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma)
-            {
+        public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma) {
             for (int i = 0; i < 6; ++i) {
                 final T[] jRow = jacobian[i];
                 yDot[i] = yDot[i].add(jRow[3].linearCombination(jRow[3], gamma.getX(),
@@ -516,8 +512,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * being the relative tolerance error
           * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type)
-        {
+    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();

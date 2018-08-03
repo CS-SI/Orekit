@@ -425,8 +425,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

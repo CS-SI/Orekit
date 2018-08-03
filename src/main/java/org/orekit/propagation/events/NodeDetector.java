@@ -160,7 +160,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * This function computes the Z position in the defined frame.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         return s.getPVCoordinates(frame).getPosition().getZ();
     }

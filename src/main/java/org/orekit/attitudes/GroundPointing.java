@@ -73,8 +73,7 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @param bodyFrame the frame that rotates with the body
      * @since 7.1
      */
-    protected GroundPointing(final Frame inertialFrame, final Frame bodyFrame)
-        {
+    protected GroundPointing(final Frame inertialFrame, final Frame bodyFrame) {
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -124,8 +123,7 @@ public abstract class GroundPointing implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
-                                final Frame frame)
-        {
+                                final Frame frame) {
 
         // satellite-target relative vector
         final PVCoordinates pva  = pvProv.getPVCoordinates(date, inertialFrame);
@@ -166,8 +164,7 @@ public abstract class GroundPointing implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                        final FieldAbsoluteDate<T> date,
-                                                                       final Frame frame)
-        {
+                                                                       final Frame frame) {
 
         // satellite-target relative vector
         final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);

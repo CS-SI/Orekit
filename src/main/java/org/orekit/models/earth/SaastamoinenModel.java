@@ -106,8 +106,7 @@ public class SaastamoinenModel implements TroposphericModel {
           * @since 7.1
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0,
-                             final String deltaRFileName)
-        {
+                             final String deltaRFileName) {
         this(t0, p0, r0,
              deltaRFileName == null ? defaultDeltaR() : loadDeltaR(deltaRFileName));
     }
@@ -138,9 +137,8 @@ public class SaastamoinenModel implements TroposphericModel {
      * </ul>
      *
      * @return a Saastamoinen model with standard environmental values
-          */
-    public static SaastamoinenModel getStandardModel()
-        {
+     */
+    public static SaastamoinenModel getStandardModel() {
         return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
     }
 
@@ -200,9 +198,8 @@ public class SaastamoinenModel implements TroposphericModel {
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table
      * @return δR function
-          */
-    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName)
-        {
+     */
+    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName) {
 
         // read the δR interpolation function from the config file
         final InterpolationTableLoader loader = new InterpolationTableLoader();

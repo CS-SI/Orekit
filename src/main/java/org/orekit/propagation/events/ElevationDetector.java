@@ -164,7 +164,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * (and azimuth if necessary) and the reference mask or minimum value.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     @Override
     public double g(final SpacecraftState s) {
 

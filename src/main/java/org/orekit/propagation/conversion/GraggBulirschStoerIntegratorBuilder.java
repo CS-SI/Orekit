@@ -51,8 +51,7 @@ public class GraggBulirschStoerIntegratorBuilder implements ODEIntegratorBuilder
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new GraggBulirschStoerIntegrator(minStep, maxStep, tol[0], tol[1]);
     }

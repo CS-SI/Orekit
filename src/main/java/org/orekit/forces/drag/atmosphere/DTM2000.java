@@ -176,10 +176,9 @@ public class DTM2000 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-          */
+     */
     public DTM2000(final DTM2000InputParameters parameters,
-                   final PVCoordinatesProvider sun, final BodyShape earth)
-        {
+                   final PVCoordinatesProvider sun, final BodyShape earth) {
 
         synchronized (DTM2000.class) {
             // lazy reading of model coefficients
@@ -210,12 +209,11 @@ public class DTM2000 implements Atmosphere {
      * @param akp3 3 hrs geomagnetic activity index (1-9)
      * @param akp24 Mean of last 24 hrs geomagnetic activity index (1-9)
      * @return the local density (kg/m³)
-          */
+     */
     public double getDensity(final int day,
                              final double alti, final double lon, final double lat,
                              final double hl, final double f, final double fbar,
-                             final double akp3, final double akp24)
-        {
+                             final double akp3, final double akp24) {
         final double threshold = 120000;
         if (alti < threshold) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -249,8 +247,7 @@ public class DTM2000 implements Atmosphere {
     public <T extends RealFieldElement<T>> T getDensity(final int day,
                                                         final T alti, final T lon, final T lat,
                                                         final T hl, final double f, final double fbar,
-                                                        final double akp3, final double akp24)
-        {
+                                                        final double akp3, final double akp24) {
         final double threshold = 120000;
         if (alti.getReal() < threshold) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -268,7 +265,7 @@ public class DTM2000 implements Atmosphere {
     }
 
     /** Store the DTM model elements coefficients in internal arrays.
-          */
+     */
     private static void readcoefficients() {
 
         final int size = NLATM + 1;
@@ -334,8 +331,7 @@ public class DTM2000 implements Atmosphere {
      * @return local density (kg/m³)
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position,
-                             final Frame frame)
-        {
+                             final Frame frame) {
 
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -375,8 +371,7 @@ public class DTM2000 implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
-                   final Frame frame)
-            {
+                   final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
         if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||

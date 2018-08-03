@@ -32,7 +32,7 @@ public interface PropagatorBuilder {
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator
-          */
+     */
     Propagator buildPropagator(double[] normalizedParameters);
 
     /** Get the current value of selected normalized parameters.

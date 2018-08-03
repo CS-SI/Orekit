@@ -153,7 +153,7 @@ public class EventState<T extends EventDetector> implements Serializable {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
             lastT = s.getDate();
@@ -165,8 +165,7 @@ public class EventState<T extends EventDetector> implements Serializable {
     /** Reinitialize the beginning of the step.
      * @param interpolator interpolator valid for the current step
      */
-    public void reinitializeBegin(final OrekitStepInterpolator interpolator)
-        {
+    public void reinitializeBegin(final OrekitStepInterpolator interpolator) {
         forward = interpolator.isForward();
         final SpacecraftState s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
@@ -257,8 +256,7 @@ public class EventState<T extends EventDetector> implements Serializable {
      */
     private boolean findRoot(final OrekitStepInterpolator interpolator,
                              final AbsoluteDate ta, final double ga,
-                             final AbsoluteDate tb, final double gb)
-            {
+                             final AbsoluteDate tb, final double gb) {
         // check there appears to be a root in [ta, tb]
         check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
 
@@ -411,10 +409,9 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @return if the event detector has an event it has not detected before that is on or
      * before the same time as {@code state}. In other words {@code false} means continue
      * on while {@code true} means stop and handle my event first.
-          */
+     */
     public boolean tryAdvance(final SpacecraftState state,
-                              final OrekitStepInterpolator interpolator)
-        {
+                              final OrekitStepInterpolator interpolator) {
         // check this is only called before a pending event.
         check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
 
@@ -454,9 +451,8 @@ public class EventState<T extends EventDetector> implements Serializable {
      * org.orekit.propagation.events.handlers.EventHandler.Action#STOP Action.STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
-          */
-    public EventOccurrence doEvent(final SpacecraftState state)
-        {
+     */
+    public EventOccurrence doEvent(final SpacecraftState state) {
         // check event is pending and is at the same time
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));

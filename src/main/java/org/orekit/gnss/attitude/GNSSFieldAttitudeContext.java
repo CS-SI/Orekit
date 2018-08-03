@@ -114,9 +114,8 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
-          */
-    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV)
-        {
+     */
+    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV) {
 
         final Field<T> field = sunPV.getDate().getField();
         plusY  = new FieldPVCoordinates<>(field, PLUS_Y);

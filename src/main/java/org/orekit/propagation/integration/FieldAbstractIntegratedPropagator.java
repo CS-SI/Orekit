@@ -247,9 +247,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-          */
-    public void addAdditionalEquations(final FieldAdditionalEquations<T> additional)
-        {
+     */
+    public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additional.getName())) {
@@ -398,8 +397,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     }
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tStart, final FieldAbsoluteDate<T> tEnd)
-        {
+    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tStart, final FieldAbsoluteDate<T> tEnd) {
         try {
 
             if (getInitialState() == null) {
@@ -432,9 +430,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param tEnd target date to which orbit should be propagated
      * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
-          */
-    protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers)
-        {
+     */
+    protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers) {
         try {
 
             if (getInitialState().getDate().equals(tEnd)) {
@@ -510,7 +507,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the initial state for integration.
      * @return initial state for integration
-          */
+     */
     protected FieldSpacecraftState<T> getInitialIntegrationState() {
         return getInitialState();
     }
@@ -518,9 +515,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Create an initial state.
      * @param initialState initial state in flight dynamics world
      * @return initial state in mathematics world
-          */
-    private FieldODEState<T> createInitialState(final FieldSpacecraftState<T> initialState)
-        {
+     */
+    private FieldODEState<T> createInitialState(final FieldSpacecraftState<T> initialState) {
 
         // retrieve initial state
         final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
@@ -545,10 +541,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param integ numerical integrator to use for propagation.
      * @param mathInitialState initial state
      * @return a new ode
-          */
+     */
     private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ,
-                                    final FieldODEState<T> mathInitialState)
-        {
+                                    final FieldODEState<T> mathInitialState) {
 
         final FieldExpandableODE<T> ode =
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -572,10 +567,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-          */
+     */
     protected void beforeIntegration(final FieldSpacecraftState<T> initialState,
-                                     final FieldAbsoluteDate<T> tEnd)
-        {
+                                     final FieldAbsoluteDate<T> tEnd) {
         // do nothing by default
     }
 
@@ -583,9 +577,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * <p>
      * The default implementation does nothing, it may be specialized in subclasses.
      * </p>
-          */
-    protected void afterIntegration()
-        {
+     */
+    protected void afterIntegration() {
         // do nothing by default
     }
 
@@ -609,9 +602,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param ts array containing the current value of the state vector
      * @param tsDot array containing the current value of the state vector derivative
      * @return complete state
-          */
-    private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts, final T[] tsDot)
-        {
+     */
+    private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts, final T[] tsDot) {
 
         // main state
         FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, true);  //not sure of the mean orbit, should be true
@@ -647,8 +639,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          * @throws OrekitException if there is an Orekit related error during
          *                         initialization.
          */
-        void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
-           ;
+        void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target);
 
         /** Compute differential equations for main state.
          * @param state current state
@@ -687,8 +678,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             main.init(initialState, target);
         }
         /** {@inheritDoc} */
-        public T[] computeDerivatives(final T t, final T[] y)
-            {
+        public T[] computeDerivatives(final T t, final T[] y) {
 
             // increment calls counter
             ++calls;
@@ -744,8 +734,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         /** {@inheritDoc} */
         @Override
         public T[] computeDerivatives(final T t, final T[] primary,
-                                      final T[] primaryDot, final T[] secondary)
-            {
+                                      final T[] primaryDot, final T[] secondary) {
 
             // update space dynamics view
             FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
@@ -897,22 +886,19 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc}} */
         @Override
-        public FieldSpacecraftState<T> getPreviousState()
-            {
+        public FieldSpacecraftState<T> getPreviousState() {
             return convert(mathInterpolator.getPreviousState());
         }
 
         /** {@inheritDoc}} */
         @Override
-        public FieldSpacecraftState<T> getCurrentState()
-            {
+        public FieldSpacecraftState<T> getCurrentState() {
             return convert(mathInterpolator.getCurrentState());
         }
 
         /** {@inheritDoc}} */
         @Override
-        public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-            {
+        public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date) {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
@@ -923,8 +909,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
          */
-        private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os)
-            {
+        private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os) {
             try {
 
                 FieldSpacecraftState<T> s =
@@ -994,8 +979,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast)
-            {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
             if (activate) {
                 model.handleStep(interpolator, isLast);
                 if (isLast) {

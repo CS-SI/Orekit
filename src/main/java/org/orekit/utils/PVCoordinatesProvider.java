@@ -34,7 +34,7 @@ public interface PVCoordinatesProvider {
      * @param date current date
      * @param frame the frame where to define the position
      * @return time-stamped position/velocity of the body (m and m/s)
-          */
+     */
     TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
                                               Frame frame);
 

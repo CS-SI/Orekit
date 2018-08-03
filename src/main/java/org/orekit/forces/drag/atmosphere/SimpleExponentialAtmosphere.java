@@ -71,8 +71,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     }
 
     /** {@inheritDoc} */
-    public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
-        {
+    public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame) {
         final GeodeticPoint gp = shape.transform(position, frame, date);
         return rho0 * FastMath.exp((h0 - gp.getAltitude()) / hscale);
     }
@@ -80,8 +79,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     @Override
     public <T extends RealFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
-                   final Frame frame)
-            {
+                   final Frame frame) {
         final FieldGeodeticPoint<T> gp = shape.transform(position, frame, date);
         return gp.getAltitude().subtract(h0).divide(-hscale).exp().multiply(rho0);
     }

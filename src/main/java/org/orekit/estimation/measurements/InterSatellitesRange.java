@@ -74,8 +74,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
                                 final boolean twoWay,
                                 final AbsoluteDate date, final double range,
-                                final double sigma, final double baseWeight)
-        {
+                                final double sigma, final double baseWeight) {
         super(date, range, sigma, baseWeight, Arrays.asList(satellite1Index, satellite2Index));
         this.twoway = twoWay;
     }
@@ -91,8 +90,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     @Override
     protected EstimatedMeasurement<InterSatellitesRange> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
-                                                                               final SpacecraftState[] states)
-        {
+                                                                               final SpacecraftState[] states) {
 
         // Range derivatives are computed with respect to spacecrafts states in inertial frame
         // ----------------------

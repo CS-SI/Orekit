@@ -207,11 +207,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param s raw tesseral-sectorial coefficients matrix
      * (a reference to the array will be stored)
      * @param name name of the file (or zip entry)
-          */
+     */
     protected void setRawCoefficients(final boolean rawNormalized,
                                       final double[][] c, final double[][] s,
-                                      final String name)
-        {
+                                      final String name) {
 
         // normalization indicator
         normalized = rawNormalized;
@@ -326,8 +325,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @since 6.0
      */
     protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
-                                                             final int degree, final int order)
-        {
+                                                             final int degree, final int order) {
 
         if (!readComplete) {
             throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
@@ -430,11 +428,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
-          */
+     */
     protected void parseCoefficient(final String field, final List<List<Double>> list,
                                     final int i, final int j,
-                                    final String cName, final String name)
-        {
+                                    final String cName, final String name) {
         final double value    = parseDouble(field);
         final double oldValue = list.get(i).get(j);
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
@@ -453,11 +450,10 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param j second index in the list
      * @param cName name of the coefficient
      * @param name name of the file
-          */
+     */
     protected void parseCoefficient(final String field, final double[][] array,
                                     final int i, final int j,
-                                    final String cName, final String name)
-        {
+                                    final String cName, final String name) {
         final double value    = parseDouble(field);
         final double oldValue = array[i][j];
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
@@ -481,8 +477,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     protected static void rescale(final double scale,
                                   final boolean normalizedOrigin, final double[][] originC,
                                   final double[][] originS, final boolean wantNormalized,
-                                  final double[][] rescaledC, final double[][] rescaledS)
-        {
+                                  final double[][] rescaledC, final double[][] rescaledS) {
 
         if (wantNormalized == normalizedOrigin) {
             // apply only the general scaling factor

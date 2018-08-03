@@ -267,8 +267,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
                         final int maxEccPowTesseralSP, final int maxFrequencyShortPeriodics,
                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP,
-                        final int maxEccPowMdailyTesseralSP)
-        {
+                        final int maxEccPowMdailyTesseralSP) {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -320,9 +319,8 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-          */
-    private void checkIndexRange(final int index, final int min, final int max)
-        {
+     */
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -330,8 +328,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         // Keplerian period
         orbitPeriod = aux.getKeplerianPeriod();
@@ -535,8 +532,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriodTerms.createSlot(meanStates);
 
@@ -826,8 +822,7 @@ public class DSSTTesseral implements DSSTForceModel {
      */
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
-                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
-        {
+                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS) {
 
         //spherical harmonics
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
@@ -1384,8 +1379,7 @@ public class DSSTTesseral implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

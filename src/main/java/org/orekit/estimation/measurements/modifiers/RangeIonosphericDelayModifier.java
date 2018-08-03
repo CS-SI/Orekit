@@ -67,8 +67,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state)
-        {
+                                              final SpacecraftState state) {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -104,8 +103,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate)
-        {
+                                               final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
@@ -135,8 +133,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
-                                                 final double delay)
-        {
+                                                 final double delay) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
@@ -160,8 +157,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated)
-        {
+    public void modify(final EstimatedMeasurement<Range> estimated) {
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];

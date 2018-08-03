@@ -168,14 +168,14 @@ public class DeepSDP4 extends SDP4 {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-          */
+     */
     public DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                        final double mass) {
         super(initialTLE, attitudeProvider, mass);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
-          */
+     */
     protected void luniSolarTermsComputation() {
 
         final double sing = FastMath.sin(tle.getPerigeeArgument());

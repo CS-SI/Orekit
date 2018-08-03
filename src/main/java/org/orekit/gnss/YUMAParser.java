@@ -203,8 +203,7 @@ public class YUMAParser implements DataLoader {
      * @return a {@link GPSAlmanac GPS almanac}
      * @throws OrekitException if a GPSAlmanac can't be built from the gathered entries
      */
-    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name)
-        {
+    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
         try {
             // Initializes fields
             int prn = 0;

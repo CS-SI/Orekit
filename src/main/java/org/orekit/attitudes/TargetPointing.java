@@ -62,8 +62,7 @@ public class TargetPointing extends GroundPointing {
      * @param target target position in body frame
      * @since 7.1
      */
-    public TargetPointing(final Frame inertialFrame, final Frame bodyFrame, final Vector3D target)
-        {
+    public TargetPointing(final Frame inertialFrame, final Frame bodyFrame, final Vector3D target) {
         super(inertialFrame, bodyFrame);
         this.target = target;
     }
@@ -74,8 +73,7 @@ public class TargetPointing extends GroundPointing {
      * @param shape body shape
      * @since 7.1
      */
-    public TargetPointing(final Frame inertialFrame, final GeodeticPoint targetGeo, final BodyShape shape)
-        {
+    public TargetPointing(final Frame inertialFrame, final GeodeticPoint targetGeo, final BodyShape shape) {
         super(inertialFrame, shape.getBodyFrame());
         // Transform target from geodetic coordinates to Cartesian coordinates
         target = shape.transform(targetGeo);
@@ -84,8 +82,7 @@ public class TargetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        {
+                                                final AbsoluteDate date, final Frame frame) {
         final Transform t = getBodyFrame().getTransformTo(frame, date);
         final TimeStampedPVCoordinates pv =
                 new TimeStampedPVCoordinates(date, target, Vector3D.ZERO, Vector3D.ZERO);
@@ -95,8 +92,7 @@ public class TargetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+                                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
         final FieldTransform<T> t = getBodyFrame().getTransformTo(frame, date);
         final FieldVector3D<T> zero = FieldVector3D.getZero(date.getField());
         final TimeStampedFieldPVCoordinates<T> pv =

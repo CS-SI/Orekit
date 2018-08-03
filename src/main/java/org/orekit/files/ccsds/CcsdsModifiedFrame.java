@@ -110,8 +110,7 @@ public class CcsdsModifiedFrame extends Frame {
         }
 
         @Override
-        public Transform getTransform(final AbsoluteDate date)
-                {
+        public Transform getTransform(final AbsoluteDate date) {
             return new Transform(date, body.getPVCoordinates(date, frame));
         }
 

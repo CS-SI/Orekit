@@ -217,7 +217,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * and positive when exiting.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         final Vector3D pted = occulted.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
         final Vector3D ping = occulting.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();

@@ -118,8 +118,7 @@ public class LofOffset implements AttitudeProvider {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        {
+                                final AbsoluteDate date, final Frame frame) {
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -140,8 +139,7 @@ public class LofOffset implements AttitudeProvider {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        {
+                                                                        final Frame frame) {
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);

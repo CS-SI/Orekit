@@ -375,8 +375,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
      * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
-                                                     final int degree, final int order)
-        {
+                                                     final int degree, final int order) {
 
         RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
         if (cTrend.isEmpty() && cCos.isEmpty()) {

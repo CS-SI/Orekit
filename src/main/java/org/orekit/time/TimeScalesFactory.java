@@ -208,8 +208,7 @@ public class TimeScalesFactory implements Serializable {
      * @see #getUTC()
      * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
      */
-    public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP)
-        {
+    public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
         synchronized (TimeScalesFactory.class) {
 
             final Map<IERSConventions, UT1Scale> map =
@@ -274,7 +273,7 @@ public class TimeScalesFactory implements Serializable {
 
     /** Get the GLObal NAvigation Satellite System time scale.
      * @return  GLObal NAvigation Satellite System time scale
-          */
+     */
     public static GLONASSScale getGLONASS() {
         synchronized (TimeScalesFactory.class) {
 

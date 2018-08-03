@@ -42,24 +42,24 @@ public interface DTM2000InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
-          */
+     */
     AbsoluteDate getMinDate();
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
-          */
+     */
     AbsoluteDate getMaxDate();
 
     /** Get the value of the instantaneous solar flux.
      * @param date the current date
      * @return the instantaneous solar flux
-          */
+     */
     double getInstantFlux(AbsoluteDate date);
 
     /** Get the value of the mean solar flux.
      * @param date the current date
      * @return the mean solar flux
-          */
+     */
     double getMeanFlux(AbsoluteDate date);
 
     /** Get the value of the 3 hours geomagnetic index.
@@ -67,13 +67,13 @@ public interface DTM2000InputParameters extends Serializable {
      * delay=6-abs(lat)*0.033 (lat in deg.)
      * @param date the current date
      * @return the 3H geomagnetic index
-          */
+     */
     double getThreeHourlyKP(AbsoluteDate date);
 
     /** Get the last 24H mean geomagnetic index.
      * @param date the current date
      * @return the 24H geomagnetic index
-          */
+     */
     double get24HoursKp(AbsoluteDate date);
 
 }

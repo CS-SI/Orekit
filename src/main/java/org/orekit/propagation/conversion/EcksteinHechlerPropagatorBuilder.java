@@ -55,8 +55,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final PositionAngle positionAngle,
-                                            final double positionScale)
-        {
+                                            final double positionScale) {
         super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true);
         this.provider = provider;
     }
@@ -98,8 +97,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double c60,
                                             final OrbitType orbitType,
                                             final PositionAngle positionAngle,
-                                            final double positionScale)
-        {
+                                            final double positionScale) {
         this(templateOrbit,
              GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu, tideSystem,
                                                          new double[][] {
@@ -143,11 +141,10 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param provider gravity field provider
      * @param positionAngle position angle type to use
      * @return orbit with overridden central attraction coefficient
-          */
+     */
     private static Orbit overrideMu(final Orbit templateOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngle positionAngle)
-        {
+                                    final PositionAngle positionAngle) {
         final double[] parameters    = new double[6];
         final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
@@ -158,8 +155,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         return new EcksteinHechlerPropagator(createInitialOrbit(), provider);
     }

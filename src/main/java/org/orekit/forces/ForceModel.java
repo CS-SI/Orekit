@@ -77,8 +77,7 @@ public interface ForceModel {
      * @throws OrekitException if an implementing class overrides the default behavior and
      *                         takes some action that throws an {@link OrekitException}.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target)
-        {
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -89,9 +88,8 @@ public interface ForceModel {
      * </p>
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
-          */
-    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
-        {
+     */
+    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
     }
 
@@ -100,9 +98,8 @@ public interface ForceModel {
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
-          */
-    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
-        {
+     */
+    default <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
     }
 

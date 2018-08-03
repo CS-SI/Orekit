@@ -448,7 +448,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-                  */
+         */
         private void loadTaiUtc(final Section section, final BufferedReader reader, final String name)
             throws IOException {
 
@@ -474,7 +474,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-                  */
+         */
         private void loadTimeSteps(final Section section, final BufferedReader reader, final String name)
             throws IOException {
 

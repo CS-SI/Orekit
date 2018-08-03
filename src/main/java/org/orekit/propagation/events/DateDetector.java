@@ -117,7 +117,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         gDate = s.getDate();
         if (currentIndex < 0) {

@@ -98,8 +98,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     public YawSteering(final Frame inertialFrame,
                        final GroundPointing groundPointingLaw,
                        final PVCoordinatesProvider sun,
-                       final Vector3D phasingAxis)
-        {
+                       final Vector3D phasingAxis) {
         super(inertialFrame, groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
@@ -117,16 +116,14 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        {
+                                                final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame)
-        {
+                                                                                        final Frame frame) {
         return groundPointingLaw.getTargetPV(pvProv, date, frame);
     }
 
@@ -138,8 +135,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @throws OrekitException if some specific error occurs
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
-                                 final AbsoluteDate date, final Frame frame)
-        {
+                                 final AbsoluteDate date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
@@ -153,16 +149,14 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                         final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+                                                                         final FieldAbsoluteDate<T> date, final Frame frame) {
         return groundPointingLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        {
+                                final AbsoluteDate date, final Frame frame) {
 
         // attitude from base attitude provider
         final Attitude base = getBaseState(pvProv, date, frame);
@@ -188,8 +182,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
 
         final Field<T>              field = date.getField();
         final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);

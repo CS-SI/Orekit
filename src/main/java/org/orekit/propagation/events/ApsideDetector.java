@@ -93,7 +93,7 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * This function computes the dot product of the 2 vectors : position.velocity.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         final PVCoordinates pv = s.getPVCoordinates();
         return Vector3D.dotProduct(pv.getPosition(), pv.getVelocity());

@@ -71,8 +71,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public VersionedITRFProvider getNonInterpolatingProvider()
-        {
+    public VersionedITRFProvider getNonInterpolatingProvider() {
         return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider());
     }
 
@@ -95,8 +94,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // get the transform from the current EOP
         final FieldTransform<T> rawTransform = rawProvider.getTransform(date);

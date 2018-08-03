@@ -84,8 +84,7 @@ public class OrphanFrame implements Serializable {
      * (i.e. suitable for propagating orbit)
      */
     public void addChild(final OrphanFrame child, final Transform transform,
-                         final boolean isPseudoInertial)
-        {
+                         final boolean isPseudoInertial) {
         addChild(child, new FixedTransformProvider(transform), isPseudoInertial);
     }
 
@@ -100,8 +99,7 @@ public class OrphanFrame implements Serializable {
      * (i.e. suitable for propagating orbit)
      */
     public void addChild(final OrphanFrame child, final TransformProvider transformProvider,
-                         final boolean isPseudoInertial)
-        {
+                         final boolean isPseudoInertial) {
 
         // safety check
         if (child.orphanParent != null) {
@@ -129,8 +127,7 @@ public class OrphanFrame implements Serializable {
      * (i.e. suitable for propagating orbit)
      */
     public void attachTo(final Frame parent, final Transform transform,
-                         final boolean isPseudoInertial)
-        {
+                         final boolean isPseudoInertial) {
         attachTo(parent, new FixedTransformProvider(transform), isPseudoInertial);
     }
 
@@ -141,8 +138,7 @@ public class OrphanFrame implements Serializable {
      * (i.e. suitable for propagating orbit)
      */
     public void attachTo(final Frame parent, final TransformProvider transformProvider,
-                         final boolean isPseudoInertial)
-        {
+                         final boolean isPseudoInertial) {
 
         // safety check
         if (orphanParent != null) {
@@ -166,7 +162,7 @@ public class OrphanFrame implements Serializable {
 
     /** Get the associated {@link Frame frame}.
      * @return associated frame
-          */
+     */
     public Frame getFrame() {
 
         // safety check

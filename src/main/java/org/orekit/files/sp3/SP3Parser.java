@@ -274,8 +274,7 @@ public class SP3Parser implements EphemerisFileParser {
 
             /** {@inheritDoc} */
             @Override
-            public void parse(final String line, final ParseInfo pi)
-                {
+            public void parse(final String line, final ParseInfo pi) {
                 try (Scanner s1      = new Scanner(line);
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
@@ -330,8 +329,7 @@ public class SP3Parser implements EphemerisFileParser {
 
             /** {@inheritDoc} */
             @Override
-            public void parse(final String line, final ParseInfo pi)
-                {
+            public void parse(final String line, final ParseInfo pi) {
                 try (Scanner s1      = new Scanner(line);
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
@@ -422,8 +420,7 @@ public class SP3Parser implements EphemerisFileParser {
 
             /** {@inheritDoc} */
             @Override
-            public void parse(final String line, final ParseInfo pi)
-                {
+            public void parse(final String line, final ParseInfo pi) {
 
                 if (pi.file.getType() == null) {
                     // this the first custom fields line, the only one really used
@@ -757,7 +754,7 @@ public class SP3Parser implements EphemerisFileParser {
         /** Parse a line.
          * @param line line to parse
          * @param pi holder for transient data
-                  */
+         */
         public abstract void parse(String line, ParseInfo pi);
 
         /** Get the allowed parsers for next line.

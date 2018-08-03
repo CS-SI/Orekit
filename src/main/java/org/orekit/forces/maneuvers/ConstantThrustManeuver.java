@@ -332,8 +332,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        {
+    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         if (firing) {
 
@@ -351,8 +350,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> void
         addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-        {
+                        final FieldTimeDerivativesEquations<T> adder) {
         if (firing) {
 
             final T[] parameters = getParameters(s.getDate().getField());
@@ -367,8 +365,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
-        {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
         if (firing) {
             final double thrust = parameters[0];
             final Attitude attitude =
@@ -387,8 +384,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        {
+                                                                         final T[] parameters) {
         if (firing) {
             // compute thrust acceleration in inertial frame
             final T thrust = parameters[0];

@@ -114,7 +114,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft latitude minus the fixed latitude to be crossed
-          */
+     */
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates

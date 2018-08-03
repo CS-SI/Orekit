@@ -102,8 +102,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawCnm(final int n, final int m)
-                {
+            public double getRawCnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double cnm = harmonics.getRawCnm(n, m);
@@ -118,8 +117,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
             }
 
             /** {@inheritDoc} */
-            public double getRawSnm(final int n, final int m)
-                {
+            public double getRawSnm(final int n, final int m) {
 
                 // retrieve the constant part of the coefficient
                 double snm = harmonics.getRawSnm(n, m);

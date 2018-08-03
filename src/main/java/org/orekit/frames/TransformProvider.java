@@ -34,7 +34,7 @@ public interface TransformProvider extends Serializable {
     /** Get the {@link Transform} corresponding to specified date.
      * @param date current date
      * @return transform at specified date
-          */
+     */
     Transform getTransform(AbsoluteDate date);
 
     /** Get the {@link FieldTransform} corresponding to specified date.

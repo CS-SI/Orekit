@@ -46,9 +46,8 @@ public interface TimeInterpolable<T extends TimeInterpolable<T>> {
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          */
-    default T interpolate(AbsoluteDate date, Collection<T> sample)
-        {
+     */
+    default T interpolate(AbsoluteDate date, Collection<T> sample) {
         return interpolate(date, sample.stream());
     }
 

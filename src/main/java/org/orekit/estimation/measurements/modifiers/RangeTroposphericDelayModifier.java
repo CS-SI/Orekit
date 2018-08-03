@@ -77,8 +77,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
      * @return the measurement error due to Troposphere
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double rangeErrorTroposphericModel(final GroundStation station, final SpacecraftState state)
-        {
+    private double rangeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -109,8 +108,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
      * @return Jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate)
-        {
+    private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
@@ -138,8 +136,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
-                                                 final double delay)
-        {
+                                                 final double delay) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
@@ -164,8 +161,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated)
-        {
+    public void modify(final EstimatedMeasurement<Range> estimated) {
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];

@@ -39,16 +39,15 @@ public interface FieldOrekitFixedStepHandler<T extends RealFieldElement<T>> {
      * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
-          */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step)
-        {
+     */
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step) {
         // do nothing by default
     }
 
     /** Handle the current step.
      * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
-          */
+     */
     void handleStep(FieldSpacecraftState<T> currentState, boolean isLast);
 
 }

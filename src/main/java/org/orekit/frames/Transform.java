@@ -382,9 +382,8 @@ public class Transform
      * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
-          */
-    public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample)
-        {
+     */
+    public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample) {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
                            sample.collect(Collectors.toList()));
@@ -417,8 +416,7 @@ public class Transform
     public static Transform interpolate(final AbsoluteDate date,
                                         final CartesianDerivativesFilter cFilter,
                                         final AngularDerivativesFilter aFilter,
-                                        final Collection<Transform> sample)
-        {
+                                        final Collection<Transform> sample) {
         final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
         final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
         for (final Transform t : sample) {

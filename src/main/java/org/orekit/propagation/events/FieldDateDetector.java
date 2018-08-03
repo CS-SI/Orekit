@@ -117,7 +117,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {

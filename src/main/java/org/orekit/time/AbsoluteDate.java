@@ -442,8 +442,7 @@ public class AbsoluteDate
     public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
                                                              final byte preambleField2,
                                                              final byte[] timeField,
-                                                             final AbsoluteDate agencyDefinedEpoch)
-        {
+                                                             final AbsoluteDate agencyDefinedEpoch) {
 
         // time code identification and reference epoch
         final AbsoluteDate epoch;
@@ -509,8 +508,7 @@ public class AbsoluteDate
      * or it UTC time scale cannot be retrieved
      */
     public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
-                                                              final DateComponents agencyDefinedEpoch)
-        {
+                                                              final DateComponents agencyDefinedEpoch) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -582,8 +580,7 @@ public class AbsoluteDate
      * @throws OrekitException if preamble is inconsistent with Calendar Segmented Time Code,
      * or if it is inconsistent with time field, or it UTC time scale cannot be retrieved
      */
-    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField)
-        {
+    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
@@ -913,8 +910,7 @@ public class AbsoluteDate
      * @return date/time components
           * @since 7.2
      */
-    public DateTimeComponents getComponents(final int minutesFromUTC)
-        {
+    public DateTimeComponents getComponents(final int minutesFromUTC) {
 
         final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
 
@@ -955,8 +951,7 @@ public class AbsoluteDate
      * @return date/time components
           * @since 7.2
      */
-    public DateTimeComponents getComponents(final TimeZone timeZone)
-        {
+    public DateTimeComponents getComponents(final TimeZone timeZone) {
         final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
         return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
@@ -1005,7 +1000,7 @@ public class AbsoluteDate
     /** Get a String representation of the instant location in UTC time scale.
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-          */
+     */
     public String toString() {
         return toString(TimeScalesFactory.getUTC());
     }
@@ -1026,8 +1021,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
           * @since 7.2
      */
-    public String toString(final int minutesFromUTC)
-        {
+    public String toString(final int minutesFromUTC) {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(minutesFromUTC).toString(minuteDuration);
     }
@@ -1038,8 +1032,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
           * @since 7.2
      */
-    public String toString(final TimeZone timeZone)
-        {
+    public String toString(final TimeZone timeZone) {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(timeZone).toString(minuteDuration);
     }

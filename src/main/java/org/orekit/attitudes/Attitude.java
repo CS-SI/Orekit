@@ -127,8 +127,7 @@ public class Attitude
      * @return an attitude that has the same orientation and motion as the instance,
      * but guaranteed to have the specified reference frame
      */
-    public Attitude withReferenceFrame(final Frame newReferenceFrame)
-        {
+    public Attitude withReferenceFrame(final Frame newReferenceFrame) {
 
         if (newReferenceFrame == referenceFrame) {
             // simple case, the instance is already compliant
@@ -208,8 +207,7 @@ public class Attitude
      * and numerical problems (including NaN appearing).
      * </p>
      */
-    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample)
-        {
+    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample) {
         final List<TimeStampedAngularCoordinates> datedPV =
              sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedAngularCoordinates interpolated =

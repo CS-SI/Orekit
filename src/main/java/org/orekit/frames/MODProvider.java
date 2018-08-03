@@ -60,7 +60,7 @@ class MODProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
-          */
+     */
     MODProvider(final IERSConventions conventions) {
         this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
@@ -90,8 +90,7 @@ class MODProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);

@@ -116,7 +116,7 @@ public interface DragSensitive {
      * @param parameters values of the force model parameters
      * @param paramName name of the parameter with respect to which derivatives are required
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
-          */
+     */
     FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                                         Rotation rotation, double mass,
                                                         double density, Vector3D relativeVelocity,

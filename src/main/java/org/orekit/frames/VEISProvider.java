@@ -85,8 +85,7 @@ class VEISProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // offset from FIFTIES epoch (UT1 scale)
         final T dtai = date.durationFrom(VST_REFERENCE);

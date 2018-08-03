@@ -202,8 +202,7 @@ public class DSSTZonal implements DSSTForceModel {
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
-                     final int maxFrequencyShortPeriodics)
-        {
+                     final int maxFrequencyShortPeriodics) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -238,9 +237,8 @@ public class DSSTZonal implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-          */
-    private void checkIndexRange(final int index, final int min, final int max)
-        {
+     */
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -265,8 +263,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  </p>
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
 
         computeMeanElementsTruncations(aux);
 
@@ -614,8 +611,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        {
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates) {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -664,8 +660,7 @@ public class DSSTZonal implements DSSTForceModel {
      * @param slot slot to which the coefficients belong
      * @throws OrekitException if an error occurs during the coefficient computation
      */
-    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot)
-        {
+    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot) {
         final double[] meanElementRates = computeMeanElementRates(date);
         final double[] currentDi = new double[6];
 
@@ -1073,8 +1068,7 @@ public class DSSTZonal implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-                {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1254,8 +1248,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @throws OrekitException if an error occurs while generating the coefficients
          */
         FourierCjSjCoefficients(final AbsoluteDate date,
-                                final int nMax, final int sMax, final int jMax)
-                {
+                                final int nMax, final int sMax, final int jMax) {
             this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients
             final double[][] Qns  = CoefficientsFactory.computeQns(gamma, nMax, nMax);

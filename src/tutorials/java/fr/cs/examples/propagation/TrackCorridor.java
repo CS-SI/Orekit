@@ -196,7 +196,7 @@ public class TrackCorridor {
      * @param alpha  an + ω, mean latitude argument (rad)
      * @param date date of the orbital parameters
      * @return an orbit propagator
-          */
+     */
     private Propagator createPropagator(final AbsoluteDate date,
                                         final double a, final double ex, final double ey,
                                         final double i, final double raan,
@@ -225,7 +225,7 @@ public class TrackCorridor {
      * @param line1 firs line of the TLE
      * @param line2 second line of the TLE
      * @return an orbit propagator
-          */
+     */
     private Propagator createPropagator(final String line1, final String line2)
         {
 
@@ -256,7 +256,7 @@ public class TrackCorridor {
 
         /** simple constructor.
          * @param angle angular offset of corridor boundaries
-                  */
+         */
         public CorridorHandler(final double angle) {
 
             // set up Earth model

@@ -133,9 +133,8 @@ public class PropagatorsParallelizer {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated states
-          */
-    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target)
-        {
+     */
+    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target) {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
@@ -245,11 +244,10 @@ public class PropagatorsParallelizer {
      * @param queue queue for transferring parameters
      * @param <T> type of the parameters
      * @return retrieved parameters
-          */
+     */
     private <T> T getParameters(final int index,
                                 final Future<SpacecraftState> future,
-                                final SynchronousQueue<T> queue)
-        {
+                                final SynchronousQueue<T> queue) {
         try {
             T params = null;
             while (params == null && !future.isDone()) {
@@ -269,9 +267,8 @@ public class PropagatorsParallelizer {
 
     /** Convert exceptions.
      * @param exception exception caught
-          */
-    private void manageException(final Exception exception)
-        {
+     */
+    private void manageException(final Exception exception) {
         if (exception.getCause() instanceof PropagatorStoppingException) {
             // this was an expected exception, we deliberately shut down the propagators
             // we therefore explicitly ignore this exception
@@ -322,8 +319,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-            {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
         }
 
@@ -362,8 +358,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-                        {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             try {
                 shpQueue.put(new StepHandlingParameters(interpolator, isLast));
             } catch (InterruptedException ie) {

@@ -76,11 +76,10 @@ public class EOPHistory implements Serializable {
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-          */
+     */
     protected EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
-                         final boolean simpleEOP)
-        {
+                         final boolean simpleEOP) {
         this(conventions, data, simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection()));
     }
 
@@ -88,11 +87,10 @@ public class EOPHistory implements Serializable {
      * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
      * @param tidalCorrection correction to apply to EOP
-          */
+     */
     private EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
-                         final TimeVectorFunction tidalCorrection)
-        {
+                         final TimeVectorFunction tidalCorrection) {
         this.conventions      = conventions;
         this.tidalCorrection  = tidalCorrection;
         if (data.size() >= INTERPOLATION_POINTS) {
@@ -108,9 +106,8 @@ public class EOPHistory implements Serializable {
 
     /** Get non-interpolating version of the instance.
      * @return non-interpolatig version of the instance
-          */
-    public EOPHistory getNonInterpolatingEOPHistory()
-        {
+     */
+    public EOPHistory getNonInterpolatingEOPHistory() {
         return new EOPHistory(conventions, getEntries(), conventions.getEOPTidalCorrection());
     }
 
@@ -556,7 +553,7 @@ public class EOPHistory implements Serializable {
 
     /** Check Earth orientation parameters continuity.
      * @param maxGap maximal allowed gap between entries (in seconds)
-          */
+     */
     public void checkEOPContinuity(final double maxGap) {
         TimeStamped preceding = null;
         for (final TimeStamped current : this.cache.getAll()) {

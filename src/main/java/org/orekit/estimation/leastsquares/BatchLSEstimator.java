@@ -108,8 +108,7 @@ public class BatchLSEstimator {
      * @param propagatorBuilder builders to use for propagation
      */
     public BatchLSEstimator(final LeastSquaresOptimizer optimizer,
-                            final NumericalPropagatorBuilder... propagatorBuilder)
-        {
+                            final NumericalPropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
         this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
@@ -141,8 +140,7 @@ public class BatchLSEstimator {
     /** Add a measurement.
      * @param measurement measurement to add
      */
-    public void addMeasurement(final ObservedMeasurement<?> measurement)
-        {
+    public void addMeasurement(final ObservedMeasurement<?> measurement) {
         measurements.add(measurement);
     }
 
@@ -195,8 +193,7 @@ public class BatchLSEstimator {
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return orbital parameters supported by this estimator
      */
-    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
-        {
+    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < builders.length; ++i) {
@@ -222,8 +219,7 @@ public class BatchLSEstimator {
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
      */
-    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly)
-        {
+    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList estimated = new ParameterDriversList();
         for (PropagatorBuilder builder : builders) {
@@ -243,8 +239,7 @@ public class BatchLSEstimator {
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return measurements parameters supported by this estimator
      */
-    public ParameterDriversList getMeasurementsParametersDrivers(final boolean estimatedOnly)
-        {
+    public ParameterDriversList getMeasurementsParametersDrivers(final boolean estimatedOnly) {
 
         final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  ObservedMeasurement<?> measurement : measurements) {
@@ -461,8 +456,7 @@ public class BatchLSEstimator {
      * @return covariances matrix in space flight dynamics physical units
      * @since 9.1
      */
-    public RealMatrix getPhysicalCovariances(final double threshold)
-        {
+    public RealMatrix getPhysicalCovariances(final double threshold) {
         final RealMatrix covariances;
         try {
             // get the normalized matrix
@@ -630,8 +624,7 @@ public class BatchLSEstimator {
 
         /** {@inheritDoc} */
         @Override
-        public EstimatedMeasurement<?> getEstimatedMeasurement(final int index)
-            {
+        public EstimatedMeasurement<?> getEstimatedMeasurement(final int index) {
 
             // safety checks
             if (index < 0 || index >= estimations.size()) {
@@ -686,8 +679,7 @@ public class BatchLSEstimator {
 
         /** {@inheritDoc} */
         @Override
-        public RealVector validate(final RealVector params)
-            {
+        public RealVector validate(final RealVector params) {
 
             int i = 0;
             for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {

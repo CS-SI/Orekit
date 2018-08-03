@@ -146,7 +146,7 @@ public class FieldAltitudeDetector<T extends RealFieldElement<T>> extends FieldA
      * and the threshold altitude.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public T g(final FieldSpacecraftState<T> s) {
         final Frame bodyFrame              = bodyShape.getBodyFrame();
         final FieldPVCoordinates<T> pvBody = s.getPVCoordinates(bodyFrame);

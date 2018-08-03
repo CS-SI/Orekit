@@ -281,7 +281,7 @@ public class Phasing {
      * @param ascending if true, crossing latitude is from South to North
      * @param mst desired mean solar time at reference latitude crossing
      * @return an initial guess of Earth phased, Sun synchronous orbit
-          */
+     */
     private CircularOrbit guessOrbit(AbsoluteDate date, Frame frame, int nbOrbits, int nbDays,
                                      double latitude, boolean ascending, double mst)
         {
@@ -327,7 +327,7 @@ public class Phasing {
      * @param nbDays number of days in the phasing cycle
      * @param propagator propagator to use
      * @return an improved Earth phased orbit
-          */
+     */
     private CircularOrbit improveEarthPhasing(CircularOrbit previous, int nbOrbits, int nbDays,
                                               Propagator propagator)
         {
@@ -384,7 +384,7 @@ public class Phasing {
      * @param mst desired mean solar time at reference latitude crossing
      * @param propagator propagator to use
      * @return an improved Earth phased, Sun synchronous orbit
-          */
+     */
     private CircularOrbit improveSunSynchronization(CircularOrbit previous, double duration,
                                                     double latitude, boolean ascending, double mst,
                                                     Propagator propagator)
@@ -464,7 +464,7 @@ public class Phasing {
      * @param duration sampling duration
      * @param propagator propagator to use
      * @return an improved Earth phased, Sun synchronous orbit with frozen eccentricity
-          */
+     */
     private CircularOrbit improveFrozenEccentricity(CircularOrbit previous, double duration,
                                                     Propagator propagator)
         {
@@ -528,7 +528,7 @@ public class Phasing {
      * @param orbit phased orbit
      * @param propagator propagator for orbit
      * @param nbOrbits number of orbits in the cycle
-          */
+     */
     private void printGridPoints(final PrintStream out,
                                  final double latitude, final boolean ascending,
                                  final Orbit orbit, final Propagator propagator, int nbOrbits)
@@ -569,7 +569,7 @@ public class Phasing {
     /** Compute the mean solar time.
      * @param orbit current orbit
      * @return mean solar time
-          */
+     */
     private double meanSolarTime(final Orbit orbit)
         {
 

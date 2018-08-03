@@ -195,8 +195,7 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
 
     /** {@inheritDoc} */
     @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target)
-        {
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         if (referenceDate == null) {
             referenceDate = initialState.getDate();
         }

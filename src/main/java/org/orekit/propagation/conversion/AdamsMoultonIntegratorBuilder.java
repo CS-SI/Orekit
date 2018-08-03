@@ -58,8 +58,7 @@ public class AdamsMoultonIntegratorBuilder implements ODEIntegratorBuilder {
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new AdamsMoultonIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }

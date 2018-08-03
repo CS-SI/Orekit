@@ -203,9 +203,8 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return vector with time-derivatives embedded within the coordinates
-          */
-    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order)
-        {
+     */
+    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order) {
 
         final DSFactory factory;
         final DerivativeStructure x;
@@ -259,8 +258,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return pv coordinates with time-derivatives embedded within the coordinates
           * @since 9.2
      */
-    public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order)
-        {
+    public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order) {
 
         final DSFactory factory;
         final DerivativeStructure x0;

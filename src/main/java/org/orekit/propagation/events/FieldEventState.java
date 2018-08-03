@@ -155,7 +155,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     private T g(final FieldSpacecraftState<T> s) {
         if (!s.getDate().equals(lastT)) {
             lastT = s.getDate();
@@ -167,8 +167,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
     /** Reinitialize the beginning of the step.
      * @param interpolator interpolator valid for the current step
      */
-    public void reinitializeBegin(final FieldOrekitStepInterpolator<T> interpolator)
-        {
+    public void reinitializeBegin(final FieldOrekitStepInterpolator<T> interpolator) {
         forward = interpolator.isForward();
         final FieldSpacecraftState<T> s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
@@ -259,8 +258,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
 
     private boolean findRoot(final FieldOrekitStepInterpolator<T> interpolator,
                              final FieldAbsoluteDate<T> ta, final T ga,
-                             final FieldAbsoluteDate<T> tb, final T gb)
-        {
+                             final FieldAbsoluteDate<T> tb, final T gb) {
 
         final T zero = ga.getField().getZero();
 
@@ -415,10 +413,9 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * @return if the event detector has an event it has not detected before that is on or
      * before the same time as {@code state}. In other words {@code false} means continue
      * on while {@code true} means stop and handle my event first.
-          */
+     */
     public boolean tryAdvance(final FieldSpacecraftState<T> state,
-                              final FieldOrekitStepInterpolator<T> interpolator)
-        {
+                              final FieldOrekitStepInterpolator<T> interpolator) {
         // check this is only called before a pending event.
 
         check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
@@ -458,9 +455,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * stop if the action is {@link org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
-          */
-    public EventOccurrence<T> doEvent(final FieldSpacecraftState<T> state)
-        {
+     */
+    public EventOccurrence<T> doEvent(final FieldSpacecraftState<T> state) {
         // check event is pending and is at the same time
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));

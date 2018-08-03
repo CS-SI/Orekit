@@ -103,8 +103,7 @@ public class ZipJarCrawler implements DataProvider {
      * @param classLoader class loader to use to retrieve the resources
      * @param resource name of the zip file to browse
      */
-    public ZipJarCrawler(final ClassLoader classLoader, final String resource)
-        {
+    public ZipJarCrawler(final ClassLoader classLoader, final String resource) {
         try {
             this.file        = null;
             this.resource    = resource;
@@ -132,8 +131,7 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
 
         try {
 

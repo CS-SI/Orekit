@@ -138,17 +138,17 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Get the propagator initial state.
      * @return initial state
-          */
+     */
     FieldSpacecraftState<T> getInitialState();
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
-          */
+     */
     void resetInitialState(FieldSpacecraftState<T> state);
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-          */
+     */
     void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
@@ -237,7 +237,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * target date is only a hint, not a mandatory objective.</p>
      * @param target target date towards which orbit state should be propagated
      * @return propagated state
-          */
+     */
     FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> target);
 
     /** Propagate from a start date towards a target date.
@@ -249,7 +249,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated state
-          */
+     */
     FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target);
 
 }

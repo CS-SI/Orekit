@@ -88,8 +88,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @since 7.1
      */
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale)
-        {
+                                final double positionScale) {
         super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
               positionAngle, positionScale, false);
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
@@ -120,8 +119,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit
         setParameters(normalizedParameters);

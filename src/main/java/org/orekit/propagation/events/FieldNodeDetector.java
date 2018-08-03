@@ -160,7 +160,7 @@ public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * This function computes the Z position in the defined frame.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public T g(final FieldSpacecraftState<T> s) {
         return s.getPVCoordinates(frame).getPosition().getZ();
     }

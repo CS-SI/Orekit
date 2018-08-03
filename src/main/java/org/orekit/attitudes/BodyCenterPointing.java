@@ -55,8 +55,7 @@ public class BodyCenterPointing extends GroundPointing {
      * @param shape Body shape
      * @since 7.1
      */
-    public BodyCenterPointing(final Frame inertialFrame, final Ellipsoid shape)
-        {
+    public BodyCenterPointing(final Frame inertialFrame, final Ellipsoid shape) {
         super(inertialFrame, shape.getFrame());
         this.ellipsoid = shape;
     }
@@ -64,8 +63,7 @@ public class BodyCenterPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        {
+                                                final AbsoluteDate date, final Frame frame) {
 
         // spacecraft coordinates in body frame
         final TimeStampedPVCoordinates scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());
@@ -107,8 +105,7 @@ public class BodyCenterPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        {
+                                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
 
         // spacecraft coordinates in body frame
         final TimeStampedFieldPVCoordinates<T> scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());

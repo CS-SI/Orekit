@@ -31,7 +31,7 @@ public interface StationDisplacement {
      * @param earthFrame Earth frame in which reference point is defined
      * @param referencePoint reference point position in {@code earthFrame}
      * @return displacement vector to be <em>added</em> to {@code referencePoint}
-          */
+     */
     Vector3D displacement(BodiesElements elements, Frame earthFrame, Vector3D referencePoint);
 
 }

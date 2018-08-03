@@ -87,9 +87,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
-          */
-    public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
-        {
+     */
+    public PartialDerivativesEquations(final String name, final NumericalPropagator propagator) {
         this.name                   = name;
         this.selected               = null;
         this.map                    = null;
@@ -105,8 +104,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** Freeze the selected parameters from the force models.
      */
-    private void freezeParametersSelection()
-        {
+    private void freezeParametersSelection() {
         if (selected == null) {
 
             // first pass: gather all parameters, binding similar names together
@@ -150,8 +148,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @return selected parameters, in Jacobian matrix column order which
      * is lexicographic order
      */
-    public ParameterDriversList getSelectedParameters()
-        {
+    public ParameterDriversList getSelectedParameters() {
         freezeParametersSelection();
         return selected;
     }
@@ -172,8 +169,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see #getSelectedParameters()
      * @since 9.0
      */
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0)
-        {
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
@@ -202,8 +198,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @deprecated as of 9.0, replaced by {@link #setInitialJacobians(SpacecraftState)}
      */
     @Deprecated
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension)
-        {
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension) {
         freezeParametersSelection();
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
         final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
@@ -233,8 +228,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
-                                               final double[][] dY1dY0, final double[][] dY1dP)
-        {
+                                               final double[][] dY1dY0, final double[][] dY1dP) {
 
         freezeParametersSelection();
 
@@ -281,8 +275,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
-        {
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
         // initialize acceleration Jacobians to zero
         final int paramDim = selected.getNbParams();

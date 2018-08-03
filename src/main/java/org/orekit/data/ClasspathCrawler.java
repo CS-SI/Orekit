@@ -83,8 +83,7 @@ public class ClasspathCrawler implements DataProvider {
      * @param classLoader class loader to use to retrieve the resources
      * @param list list of data file names within the classpath
      */
-    public ClasspathCrawler(final ClassLoader classLoader, final String... list)
-        {
+    public ClasspathCrawler(final ClassLoader classLoader, final String... list) {
 
         listElements = new ArrayList<String>();
         this.classLoader = classLoader;
@@ -111,8 +110,7 @@ public class ClasspathCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
 
         try {
             OrekitException delayedException = null;

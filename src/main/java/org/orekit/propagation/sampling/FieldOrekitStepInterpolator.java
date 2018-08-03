@@ -32,13 +32,13 @@ public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-          */
+     */
     FieldSpacecraftState<T> getPreviousState();
 
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-          */
+     */
     FieldSpacecraftState<T> getCurrentState();
 
     /** Get the state at interpolated date.

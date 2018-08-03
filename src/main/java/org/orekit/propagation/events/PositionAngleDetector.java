@@ -173,7 +173,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @param s the current state information: date, kinematics, attitude
      * @return angle difference between the spacecraft and the fixed
      * angle, with some sign tweaks to ensure continuity
-          */
+     */
     public double g(final SpacecraftState s) {
 
         // get angle

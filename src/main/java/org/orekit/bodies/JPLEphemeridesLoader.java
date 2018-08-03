@@ -246,8 +246,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
      */
-    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType)
-        {
+    public JPLEphemeridesLoader(final String supportedNames, final EphemerisType generateType) {
 
         this.supportedNames = supportedNames;
         constants = new AtomicReference<Map<String, Double>>();
@@ -342,8 +341,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param body body for which the gravitational coefficient is requested
      * @return gravitational coefficient in m³/s²
      */
-    public double getLoadedGravitationalCoefficient(final EphemerisType body)
-        {
+    public double getLoadedGravitationalCoefficient(final EphemerisType body) {
 
         // coefficient in au³/day²
         final double rawGM;
@@ -451,8 +449,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @param record first header record
      * @param name name of the file (or zip entry)
      */
-    private void parseFirstHeaderRecord(final byte[] record, final String name)
-        {
+    private void parseFirstHeaderRecord(final byte[] record, final String name) {
 
         // get the ephemerides type
         final int deNum = extractInt(record, HEADER_EPHEMERIS_TYPE_OFFSET);
@@ -661,8 +658,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return the record size for this file
      * @throws OrekitException if the file contains unexpected data
      */
-    private int computeRecordSize(final byte[] record, final String name)
-        {
+    private int computeRecordSize(final byte[] record, final String name) {
 
         int recordSize = 0;
         boolean ok = true;

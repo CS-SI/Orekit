@@ -47,16 +47,14 @@ public class FieldOrekitStepHandlerMultiplexer<T extends RealFieldElement<T>> im
     }
 
     /** {@inheritDoc} */
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t)
-        {
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         for (final FieldOrekitStepHandler<T> handler : handlers) {
             handler.init(s0, t);
         }
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast)
-        {
+    public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast) {
         for (final FieldOrekitStepHandler<T> handler : handlers) {
             handler.handleStep(interpolator, isLast);
         }

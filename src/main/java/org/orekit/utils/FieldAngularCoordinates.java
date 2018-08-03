@@ -111,8 +111,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      */
     public FieldAngularCoordinates(final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                    final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                   final double tolerance)
-        {
+                                   final double tolerance) {
 
         try {
             // find the initial fixed rotation
@@ -338,8 +337,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @return rotation with time-derivatives embedded within the coordinates
           * @since 9.2
      */
-    public FieldRotation<FieldDerivativeStructure<T>> toDerivativeStructureRotation(final int order)
-        {
+    public FieldRotation<FieldDerivativeStructure<T>> toDerivativeStructureRotation(final int order) {
 
         // quaternion components
         final T q0 = rotation.getQ0();

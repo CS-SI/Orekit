@@ -39,7 +39,7 @@ public interface OrekitStepHandler {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
-          */
+     */
     default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default
     }
@@ -47,7 +47,7 @@ public interface OrekitStepHandler {
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
      * @param isLast if true, this is the last integration step
-          */
+     */
     void handleStep(OrekitStepInterpolator interpolator, boolean isLast);
 
 }

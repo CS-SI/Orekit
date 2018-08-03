@@ -145,7 +145,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * and the threshold altitude.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     public double g(final SpacecraftState s) {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
         final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);

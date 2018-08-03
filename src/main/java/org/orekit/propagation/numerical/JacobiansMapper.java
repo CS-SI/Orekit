@@ -174,8 +174,7 @@ public class JacobiansMapper {
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
           * @see #getParametersJacobian(SpacecraftState, double[][])
      */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
-        {
+    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
 
         // get the conversion Jacobian between state parameters and Cartesian parameters
         final double[][] dYdC = getdYdC(state);
@@ -213,8 +212,7 @@ public class JacobiansMapper {
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
           * @see #getStateJacobian(SpacecraftState, double[][])
      */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
         if (parameters.getNbParams() != 0) {
 

@@ -182,7 +182,7 @@ public class ParameterDriversList {
 
         /** Simple constructor.
          * @param driver first driver in the series
-                  */
+         */
         DelegatingDriver(final ParameterDriver driver) {
             super(driver.getName(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue());
@@ -199,8 +199,7 @@ public class ParameterDriversList {
          * @param forwarder new changes forwarder
                   * @since 9.1
          */
-        void setForwarder(final ChangesForwarder forwarder)
-            {
+        void setForwarder(final ChangesForwarder forwarder) {
 
             // remove the previous observer if any
             if (this.forwarder != null) {
@@ -228,9 +227,8 @@ public class ParameterDriversList {
 
         /** Add a driver.
          * @param driver driver to add
-                  */
-        private void add(final ParameterDriver driver)
-            {
+         */
+        private void add(final ParameterDriver driver) {
 
             for (final ParameterDriver d : drivers) {
                 if (d == driver) {
@@ -295,8 +293,7 @@ public class ParameterDriversList {
 
         /** {@inheritDoc} */
         @Override
-        public void valueChanged(final double previousValue, final ParameterDriver driver)
-            {
+        public void valueChanged(final double previousValue, final ParameterDriver driver) {
             updateAll(driver, d -> {
                 d.setValue(driver.getValue());
             });

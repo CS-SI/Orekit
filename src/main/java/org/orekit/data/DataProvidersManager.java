@@ -336,8 +336,7 @@ public class DataProvidersManager {
      * @param loader data loader to use
      * @return true if some data has been loaded
      */
-    public boolean feed(final String supportedNames, final DataLoader loader)
-        {
+    public boolean feed(final String supportedNames, final DataLoader loader) {
 
         final Pattern supported = Pattern.compile(supportedNames);
 

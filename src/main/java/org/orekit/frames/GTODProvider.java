@@ -62,9 +62,8 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
-          */
-    protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
-        {
+     */
+    protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory) {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
@@ -79,8 +78,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public GTODProvider getNonInterpolatingProvider()
-        {
+    public GTODProvider getNonInterpolatingProvider() {
         return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 

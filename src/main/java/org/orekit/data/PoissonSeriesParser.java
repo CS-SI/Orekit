@@ -390,8 +390,7 @@ public class PoissonSeriesParser {
      * @see #withGamma(int)
      * @see #withFirstDelaunay(int)
      */
-    public PoissonSeriesParser withDoodson(final int firstMultiplierColumn, final int numberColumn)
-        {
+    public PoissonSeriesParser withDoodson(final int firstMultiplierColumn, final int numberColumn) {
 
         // check we don't try to have both τ and γ configured at the same time
         if (gamma > 0 && firstMultiplierColumn > 0) {

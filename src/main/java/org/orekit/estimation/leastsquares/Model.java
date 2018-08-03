@@ -120,8 +120,7 @@ class Model implements MultivariateJacobianFunction {
      */
     Model(final NumericalPropagatorBuilder[] builders,
           final List<ObservedMeasurement<?>> measurements, final ParameterDriversList estimatedMeasurementsParameters,
-          final ModelObserver observer)
-        {
+          final ModelObserver observer) {
 
         this.builders                        = builders;
         this.measurements                    = measurements;
@@ -225,8 +224,7 @@ class Model implements MultivariateJacobianFunction {
 
     /** {@inheritDoc} */
     @Override
-    public Pair<RealVector, RealMatrix> value(final RealVector point)
-        {
+    public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
         // Set up the propagators parallelizer
         final NumericalPropagator[] propagators = createPropagators(point);
@@ -280,8 +278,7 @@ class Model implements MultivariateJacobianFunction {
      * @param iBuilder index of the builder in the builders' array
      * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
      */
-    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder)
-        {
+    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
 
         // Lazy evaluation, create the list only if it hasn't been created yet
         if (estimatedPropagationParameters[iBuilder] == null) {
@@ -310,8 +307,7 @@ class Model implements MultivariateJacobianFunction {
      * @param point evaluation point
      * @return an array of new propagators
      */
-    public NumericalPropagator[] createPropagators(final RealVector point)
-        {
+    public NumericalPropagator[] createPropagators(final RealVector point) {
 
         final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
 
@@ -351,8 +347,7 @@ class Model implements MultivariateJacobianFunction {
      * @param point evaluation point
      * @return multi-satellites handler to handle measurements
      */
-    private MultiSatStepHandler configureMeasurements(final RealVector point)
-        {
+    private MultiSatStepHandler configureMeasurements(final RealVector point) {
 
         // Set up the measurement parameters
         int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
@@ -386,8 +381,7 @@ class Model implements MultivariateJacobianFunction {
      * @param propagator {@link Propagator} to configure
      * @return mapper for this propagator
      */
-    private JacobiansMapper configureDerivatives(final NumericalPropagator propagator)
-        {
+    private JacobiansMapper configureDerivatives(final NumericalPropagator propagator) {
 
         final String equationName = Model.class.getName() + "-derivatives";
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
@@ -405,8 +399,7 @@ class Model implements MultivariateJacobianFunction {
      * @param index index of the measurement first component
      * @param evaluation measurement evaluation
      */
-    void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation)
-        {
+    void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();

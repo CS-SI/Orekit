@@ -39,7 +39,7 @@ public interface FieldAdditionalStateProvider<T extends RealFieldElement<T>> {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-          */
+     */
     T[] getAdditionalState(FieldSpacecraftState<T> state);
 
 }

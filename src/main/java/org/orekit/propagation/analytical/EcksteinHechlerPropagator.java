@@ -107,8 +107,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param provider for un-normalized zonal coefficients
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
-        {
+                                     final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
              provider.onDate(initialOrbit.getDate()));
     }
@@ -120,13 +119,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-          */
+     */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitude,
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider,
-                                     final UnnormalizedSphericalHarmonics harmonics)
-        {
+                                     final UnnormalizedSphericalHarmonics harmonics) {
         this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
@@ -160,8 +158,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
-                                     final double c50, final double c60)
-        {
+                                     final double c50, final double c60) {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -172,8 +169,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param provider for un-normalized zonal coefficients
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
-        {
+                                     final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -198,12 +194,11 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          */
+     */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
-                                     final double c50, final double c60)
-        {
+                                     final double c50, final double c60) {
         this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -215,8 +210,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
-        {
+                                     final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -241,13 +235,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          */
+     */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
-                                     final double c50, final double c60)
-        {
+                                     final double c50, final double c60) {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
@@ -260,8 +253,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double mass,
-                                     final UnnormalizedSphericalHarmonicsProvider provider)
-        {
+                                     final UnnormalizedSphericalHarmonicsProvider provider) {
         this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -286,14 +278,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-          */
+     */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double mass,
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
-                                     final double c50, final double c60)
-        {
+                                     final double c50, final double c60) {
 
         super(attitudeProv);
 
@@ -315,8 +306,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        {
+    public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         this.initialModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                   state.getMass());
@@ -324,8 +314,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
@@ -340,8 +329,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param mass constant mass
      * @return Eckstein-Hechler mean model
      */
-    private EHModel computeMeanParameters(final CircularOrbit osculating, final double mass)
-        {
+    private EHModel computeMeanParameters(final CircularOrbit osculating, final double mass) {
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
@@ -403,8 +391,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     }
 
     /** {@inheritDoc} */
-    public CartesianOrbit propagateOrbit(final AbsoluteDate date)
-        {
+    public CartesianOrbit propagateOrbit(final AbsoluteDate date) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final EHModel current = models.get(date);
@@ -491,10 +478,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
          * @param referenceRadius reference radius of the central body attraction model (m)
          * @param mu central attraction coefficient (m³/s²)
          * @param ck0 un-normalized zonal coefficients
-                  */
+         */
         EHModel(final CircularOrbit mean, final double mass,
-                final double referenceRadius, final double mu, final double[] ck0)
-            {
+                final double referenceRadius, final double mu, final double[] ck0) {
 
             this.mean            = mean;
             this.mass            = mass;
@@ -625,9 +611,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         /** Extrapolate an orbit up to a specific target date.
          * @param date target date for the orbit
          * @return propagated parameters
-                  */
-        public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
-            {
+         */
+        public DerivativeStructure[] propagateParameters(final AbsoluteDate date) {
 
             // Keplerian evolution
             final DerivativeStructure dt = FACTORY.variable(0, date.durationFrom(mean.getDate()));

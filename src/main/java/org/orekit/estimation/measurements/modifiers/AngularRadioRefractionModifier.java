@@ -61,8 +61,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     * @throws OrekitException  if frames transformations cannot be computed
     */
     private double angularErrorRadioRefractionModel(final GroundStation station,
-                                                    final SpacecraftState state)
-        {
+                                                    final SpacecraftState state) {
 
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -82,8 +81,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated)
-        {
+    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];

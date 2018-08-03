@@ -120,8 +120,7 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
-        {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
 
         final Vector3D inertialDirection;
         if (isInertial) {
@@ -146,8 +145,7 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters)
-        {
+                                                                         final T[] parameters) {
 
         final FieldVector3D<T> inertialDirection;
         if (isInertial) {

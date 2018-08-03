@@ -71,7 +71,7 @@ public interface FieldEventDetector <T extends RealFieldElement<T>> {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-          */
+     */
     T g(FieldSpacecraftState<T> s);
 
     /** Get the convergence threshold in the event time search.

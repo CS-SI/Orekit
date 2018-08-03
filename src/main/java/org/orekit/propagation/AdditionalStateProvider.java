@@ -39,7 +39,7 @@ public interface AdditionalStateProvider {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-          */
+     */
     double[] getAdditionalState(SpacecraftState state);
 
 }

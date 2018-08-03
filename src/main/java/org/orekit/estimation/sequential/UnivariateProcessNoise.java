@@ -90,8 +90,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
                                   final LOFType lofType,
                                   final PositionAngle positionAngle,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
-                                  final UnivariateFunction[] propagationParametersEvolution)
-        {
+                                  final UnivariateFunction[] propagationParametersEvolution) {
         super(initialCovarianceMatrix);
         this.lofType = lofType;
         this.positionAngle = positionAngle;

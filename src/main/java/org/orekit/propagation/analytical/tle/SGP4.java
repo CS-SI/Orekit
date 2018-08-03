@@ -56,7 +56,7 @@ public class SGP4 extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-          */
+     */
     public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                        final double mass) {
         super(initialTLE, attitudeProvider, mass);
