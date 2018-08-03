@@ -1099,13 +1099,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     /** Get a String representation of the instant location in UTC time scale.
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
+     * @exception OrekitException if UTC time scale cannot be retrieved
      */
     public String toString() {
-        try {
-            return toString(TimeScalesFactory.getUTC());
-        } catch (OrekitException oe) {
-            throw new RuntimeException(oe);
-        }
+        return toString(TimeScalesFactory.getUTC());
     }
 
     /** Get a String representation of the instant location.
