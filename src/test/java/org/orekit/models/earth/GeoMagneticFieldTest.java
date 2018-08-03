@@ -109,7 +109,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    public void testInterpolationYYY5() throws OrekitException {
+    public void testInterpolationYYY5() {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2005);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
         GeoMagneticElements e = field.calculateField(1.2, 0.7, -2.5);
@@ -122,7 +122,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    public void testInterpolationAtEndOfEpoch() throws OrekitException {
+    public void testInterpolationAtEndOfEpoch() {
         double decimalYear = GeoMagneticField.getDecimalYear(31, 12, 2009);
         GeoMagneticField field1 = GeoMagneticFieldFactory.getIGRF(decimalYear);
         GeoMagneticField field2 = GeoMagneticFieldFactory.getIGRF(2010.0);
@@ -137,7 +137,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    public void testInterpolationAtEndOfValidity() throws OrekitException {
+    public void testInterpolationAtEndOfValidity() {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2020);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
 
@@ -146,7 +146,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test
-    public void testContinuityAtPole() throws OrekitException {
+    public void testContinuityAtPole() {
         double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2020);
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
 
@@ -159,7 +159,7 @@ public class GeoMagneticFieldTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testTransformationOutsideValidityPeriod() throws OrekitException {
+    public void testTransformationOutsideValidityPeriod() {
         double decimalYear = GeoMagneticField.getDecimalYear(10, 1, 2020);
         @SuppressWarnings("unused")
         GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);

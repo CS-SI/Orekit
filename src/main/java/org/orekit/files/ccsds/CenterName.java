@@ -30,7 +30,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getSolarSystemBarycenter();
         }
     },
@@ -39,7 +39,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getSun();
         }
     },
@@ -48,7 +48,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getMercury();
         }
     },
@@ -57,7 +57,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getVenus();
         }
     },
@@ -66,7 +66,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getEarthMoonBarycenter();
         }
     },
@@ -75,7 +75,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getEarth();
         }
     },
@@ -84,7 +84,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getMoon();
         }
     },
@@ -93,7 +93,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getMars();
         }
     },
@@ -102,7 +102,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getJupiter();
         }
     },
@@ -111,7 +111,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getSaturn();
         }
     },
@@ -120,7 +120,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getUranus();
         }
     },
@@ -129,7 +129,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getNeptune();
         }
     },
@@ -138,7 +138,7 @@ public enum CenterName {
 
         /** {@inheritDoc} */
         public CelestialBody getCelestialBody()
-            throws OrekitException {
+            {
             return CelestialBodyFactory.getPluto();
         }
     };
@@ -146,9 +146,7 @@ public enum CenterName {
     /**
      * Get the celestial body corresponding to the CCSDS constant.
      * @return celestial body corresponding to the CCSDS constant
-     * @exception OrekitException if the Celestial body cannot be retrieved
-     */
-    public abstract CelestialBody getCelestialBody()
-        throws OrekitException;
+          */
+    public abstract CelestialBody getCelestialBody();
 
 }

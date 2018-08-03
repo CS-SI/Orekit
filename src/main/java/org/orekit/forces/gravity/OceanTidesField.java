@@ -21,7 +21,6 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -74,14 +73,12 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
      * @param waves ocean tides waves
      * @param arguments object computing the fundamental arguments
      * @param poleTideFunction function computing ocean pole tide terms (ΔC₂₁, ΔS₂₁), may be null
-     * @exception OrekitException if the Love numbers embedded in the
-     * library cannot be read
      */
     OceanTidesField(final double ae, final double mu,
                            final List<OceanTidesWave> waves,
                            final FundamentalNutationArguments arguments,
                            final TimeVectorFunction poleTideFunction)
-        throws OrekitException {
+        {
 
         // store mode parameters
         this.ae  = ae;
@@ -151,7 +148,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
 
         // computed Cnm and Snm coefficients
         final int        rows = degree + 1;
@@ -223,14 +220,14 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
         /** {@inheritDoc} */
         @Override
         public double getNormalizedCnm(final int n, final int m)
-            throws OrekitException {
+            {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
         public double getNormalizedSnm(final int n, final int m)
-            throws OrekitException {
+            {
             return snm[n][m];
         }
 

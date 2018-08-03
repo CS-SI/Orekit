@@ -443,7 +443,7 @@ public class AbsoluteDate
                                                              final byte preambleField2,
                                                              final byte[] timeField,
                                                              final AbsoluteDate agencyDefinedEpoch)
-        throws OrekitException {
+        {
 
         // time code identification and reference epoch
         final AbsoluteDate epoch;
@@ -510,7 +510,7 @@ public class AbsoluteDate
      */
     public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
                                                               final DateComponents agencyDefinedEpoch)
-        throws OrekitException {
+        {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -583,7 +583,7 @@ public class AbsoluteDate
      * or if it is inconsistent with time field, or it UTC time scale cannot be retrieved
      */
     public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField)
-        throws OrekitException {
+        {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
@@ -911,11 +911,10 @@ public class AbsoluteDate
      * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
      * negative Westward UTC)
      * @return date/time components
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @since 7.2
+          * @since 7.2
      */
     public DateTimeComponents getComponents(final int minutesFromUTC)
-        throws OrekitException {
+        {
 
         final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
 
@@ -954,11 +953,10 @@ public class AbsoluteDate
     /** Split the instance into date/time components for a time zone.
      * @param timeZone time zone
      * @return date/time components
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @since 7.2
+          * @since 7.2
      */
     public DateTimeComponents getComponents(final TimeZone timeZone)
-        throws OrekitException {
+        {
         final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
         return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
@@ -1007,8 +1005,7 @@ public class AbsoluteDate
     /** Get a String representation of the instant location in UTC time scale.
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public String toString() {
         return toString(TimeScalesFactory.getUTC());
     }
@@ -1027,11 +1024,10 @@ public class AbsoluteDate
      * negative Westward UTC).
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @since 7.2
+          * @since 7.2
      */
     public String toString(final int minutesFromUTC)
-        throws OrekitException {
+        {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(minutesFromUTC).toString(minuteDuration);
     }
@@ -1040,11 +1036,10 @@ public class AbsoluteDate
      * @param timeZone time zone
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @since 7.2
+          * @since 7.2
      */
     public String toString(final TimeZone timeZone)
-        throws OrekitException {
+        {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(timeZone).toString(minuteDuration);
     }

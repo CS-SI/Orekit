@@ -41,7 +41,7 @@ import org.orekit.utils.OrekitConfiguration;
 public class CIRFProviderTest {
 
     @Test
-    public void testRotationRate() throws OrekitException {
+    public void testRotationRate() {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         TransformProvider provider =
                 new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
@@ -57,7 +57,7 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testShiftingAccuracyWithEOP() throws OrekitException {
+    public void testShiftingAccuracyWithEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that mainly the
@@ -108,7 +108,7 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testShiftingAccuracyWithoutEOP() throws OrekitException {
+    public void testShiftingAccuracyWithoutEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that only the
@@ -158,7 +158,7 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         CIRFProvider provider = new CIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

@@ -49,7 +49,7 @@ import org.orekit.time.TimeScalesFactory;
 public class IodGibbsTest {
 
     @Test
-    public void testGibbs1() throws OrekitException {
+    public void testGibbs1() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();
@@ -92,7 +92,7 @@ public class IodGibbsTest {
     }
 
     @Test
-    public void testGibbs2() throws OrekitException {
+    public void testGibbs2() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-3, p457
 
@@ -125,7 +125,7 @@ public class IodGibbsTest {
     }
 
     @Test
-    public void testGibbs3() throws OrekitException {
+    public void testGibbs3() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-4, p463
         // Remark: the test value in Vallado is performed with an Herrick-Gibbs methods but results are very close with Gibbs method.

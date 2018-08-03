@@ -214,7 +214,7 @@ public class JacobianPropagatorConverterTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

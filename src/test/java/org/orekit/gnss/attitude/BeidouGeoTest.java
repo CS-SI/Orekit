@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,7 +33,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta() {
         // the "large" error for the X axis (a few hundredth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -44,7 +43,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         // the "large" error for the X axis (a few hundredth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -54,7 +53,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         // the "large" error for the X axis (a few hundredth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -64,7 +63,7 @@ public class BeidouGeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         // the "large" error for the X axis (a few hundredth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account

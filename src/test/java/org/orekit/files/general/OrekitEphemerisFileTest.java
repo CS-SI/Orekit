@@ -67,7 +67,7 @@ public class OrekitEphemerisFileTest {
     }
 
     @Test
-    public void testWritingToOEM() throws OrekitException, IOException {
+    public void testWritingToOEM() throws IOException {
         final double muTolerance = 1e-12;
         final double positionTolerance = 1e-8;
         final double velocityTolerance = 1e-8;

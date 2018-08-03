@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
@@ -165,10 +164,9 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * (and azimuth if necessary) and the reference mask or minimum value.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
-     */
+          */
     @Override
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         final double trueElevation = topo.getElevation(s.getPVCoordinates().getPosition(),
                                                        s.getFrame(), s.getDate());

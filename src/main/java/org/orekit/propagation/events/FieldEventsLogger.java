@@ -208,13 +208,13 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
 
         /** {@inheritDoc} */
         public void init(final FieldSpacecraftState<T> s0,
-                         final FieldAbsoluteDate<T> t) throws OrekitException {
+                         final FieldAbsoluteDate<T> t) {
             super.init(s0, t);
             detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
-        public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+        public T g(final FieldSpacecraftState<T> s) {
             return detector.g(s);
         }
 
@@ -227,7 +227,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing)
-            throws OrekitException {
+            {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
@@ -235,7 +235,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
         /** {@inheritDoc} */
         @Override
         public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState)
-            throws OrekitException {
+            {
             return wrapper.detector.resetState(oldState);
         }
 

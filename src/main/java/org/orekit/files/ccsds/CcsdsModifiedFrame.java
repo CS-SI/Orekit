@@ -111,13 +111,13 @@ public class CcsdsModifiedFrame extends Frame {
 
         @Override
         public Transform getTransform(final AbsoluteDate date)
-                throws OrekitException {
+                {
             return new Transform(date, body.getPVCoordinates(date, frame));
         }
 
         @Override
         public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
-                final FieldAbsoluteDate<T> date) throws OrekitException {
+                final FieldAbsoluteDate<T> date) {
             return new FieldTransform<>(
                     date,
                     body.getPVCoordinates(date, frame));

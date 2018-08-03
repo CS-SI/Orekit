@@ -119,13 +119,11 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
      * @param tolerance relative tolerance factor used to check singularities
-     * @exception OrekitException if the vectors are inconsistent for the
-     * rotation to be found (null, aligned, ...)
      */
     public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
                               final PVCoordinates v1, final PVCoordinates v2,
                               final double tolerance)
-        throws OrekitException {
+        {
 
         try {
             // find the initial fixed rotation
@@ -171,10 +169,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
      * @param u origin vector
      * @param v desired image of u by the rotation
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
      */
-    public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) throws OrekitException {
+    public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) {
         this(new FieldRotation<>(u.toDerivativeStructureVector(2),
                                  v.toDerivativeStructureVector(2)));
     }
@@ -331,10 +327,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * </p>
      * @param order derivation order for the vector components
      * @return rotation with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
-     */
+          */
     public FieldRotation<DerivativeStructure> toDerivativeStructureRotation(final int order)
-        throws OrekitException {
+        {
 
         // quaternion components
         final double q0 = rotation.getQ0();

@@ -54,7 +54,7 @@ import org.orekit.utils.Constants;
 public class PredefinedIAUPolesTest {
 
     @Test
-    public void testGCRFAligned() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
@@ -63,7 +63,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testSun() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testSun() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
@@ -78,7 +78,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {
+    public void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));

@@ -116,7 +116,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target)
-        throws OrekitException {
+        {
         try {
 
             lastPropagationStart = start;
@@ -185,12 +185,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param target final propagation time
      * @param epsilon threshold for end date detection
      * @return state at the end of the step
-     * @exception OrekitException if the switching function cannot be evaluated
-     * @exception MathRuntimeException if an event cannot be located
+          * @exception MathRuntimeException if an event cannot be located
      */
     protected SpacecraftState acceptStep(final OrekitStepInterpolator interpolator,
                                          final AbsoluteDate target, final double epsilon)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         SpacecraftState       previous = interpolator.getPreviousState();
         final SpacecraftState current  = interpolator.getCurrentState();
@@ -324,10 +323,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Get the mass.
      * @param date target date for the orbit
      * @return mass mass
-     * @exception OrekitException if some parameters are out of bounds
-     */
-    protected abstract double getMass(AbsoluteDate date)
-        throws OrekitException;
+          */
+    protected abstract double getMass(AbsoluteDate date);
 
     /** Get PV coordinates provider.
      * @return PV coordinates provider
@@ -340,18 +337,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
-     * @exception OrekitException if initial state cannot be reset
-     */
-    protected abstract void resetIntermediateState(SpacecraftState state, boolean forward)
-        throws OrekitException;
+          */
+    protected abstract void resetIntermediateState(SpacecraftState state, boolean forward);
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
-     * @exception OrekitException if some parameters are out of bounds
-     */
-    protected abstract Orbit propagateOrbit(AbsoluteDate date)
-        throws OrekitException;
+          */
+    protected abstract Orbit propagateOrbit(AbsoluteDate date);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -360,9 +353,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
-     * @exception OrekitException if propagation cannot reach specified date
-     */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
+          */
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
             // evaluate orbit
@@ -385,7 +377,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-            throws OrekitException {
+            {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
 
@@ -444,34 +436,34 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         protected Orbit propagateOrbit(final AbsoluteDate target)
-            throws OrekitException {
+            {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
         /** {@inheritDoc} */
-        public double getMass(final AbsoluteDate date) throws OrekitException {
+        public double getMass(final AbsoluteDate date) {
             return AbstractAnalyticalPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-            throws OrekitException {
+            {
             return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */
-        public void resetInitialState(final SpacecraftState state) throws OrekitException {
+        public void resetInitialState(final SpacecraftState state) {
             AbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
         protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-            throws OrekitException {
+            {
             AbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState getInitialState() throws OrekitException {
+        public SpacecraftState getInitialState() {
             return AbstractAnalyticalPropagator.this.getInitialState();
         }
 
@@ -583,7 +575,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
-            throws OrekitException {
+            {
 
             // compute the basic spacecraft state
             final SpacecraftState basicState = basicPropagate(date);

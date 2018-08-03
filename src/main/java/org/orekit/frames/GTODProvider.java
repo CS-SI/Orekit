@@ -62,10 +62,9 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to use
      * @param eopHistory EOP history (may be null)
-     * @exception OrekitException if EOP parameters are desired but cannot be read
-     */
+          */
     protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
-        throws OrekitException {
+        {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
@@ -81,13 +80,13 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider()
-        throws OrekitException {
+        {
         return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // compute Greenwich apparent sidereal time, in radians
         final double gast = gastFunction.value(date);

@@ -104,9 +104,8 @@ public class OceanLoadingCoefficientsBLQFactory {
     }
 
     /** Lazy loading of coefficients.
-     * @exception OrekitException if coefficients cannot be read
-     */
-    private void loadsIfNeeded() throws OrekitException {
+          */
+    private void loadsIfNeeded() {
         if (coefficients.isEmpty()) {
             DataProvidersManager.getInstance().feed(supportedNames, new BLQParser());
         }
@@ -114,10 +113,9 @@ public class OceanLoadingCoefficientsBLQFactory {
 
     /** Get the list of sites for which we have found coefficients, in lexicographic order ignoring case.
      * @return list of sites for which we have found coefficients, in lexicographic order ignoring case
-     * @exception OrekitException if coefficients cannot be read
-     */
+          */
     public List<String> getSites()
-        throws OrekitException {
+        {
 
         loadsIfNeeded();
 
@@ -135,10 +133,9 @@ public class OceanLoadingCoefficientsBLQFactory {
      * @param site site name (as it appears in the Onsala Space Observatory files in BLQ format),
      * ignoring case
      * @return coefficients for the site
-     * @exception OrekitException if no coefficients are found for the specified site
-     */
+          */
     public OceanLoadingCoefficients getCoefficients(final String site)
-        throws OrekitException {
+        {
 
         loadsIfNeeded();
 

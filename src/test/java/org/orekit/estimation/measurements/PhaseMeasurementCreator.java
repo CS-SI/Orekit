@@ -42,13 +42,13 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     private final Vector3D               antennaPhaseCenter;
 
     public PhaseMeasurementCreator(final Context context, final Frequency frequency, final int ambiguity)
-        throws OrekitException {
+        {
         this(context, frequency, ambiguity, Vector3D.ZERO);
     }
 
     public PhaseMeasurementCreator(final Context context, final Frequency frequency,
                                    final int ambiguity, final Vector3D antennaPhaseCenter)
-        throws OrekitException {
+        {
         this.context            = context;
         this.wavelength         = Constants.SPEED_OF_LIGHT / (1.0e6 * frequency.getMHzFrequency());
         this.ambiguity          = new PhaseAmbiguityModifier(0, ambiguity);
@@ -75,7 +75,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+        {
         try {
             double n = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
@@ -87,7 +87,7 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitException {
+                        public double value(final double x) {
                             final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
                             final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;

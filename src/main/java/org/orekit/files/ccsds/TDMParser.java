@@ -214,10 +214,9 @@ public class TDMParser extends DefaultHandler {
     /** Parse a CCSDS Tracking Data Message.
      * @param fileName name of the file containing the message
      * @return parsed file content in a TDMFile object
-     * @exception OrekitException if Tracking Date Message cannot be parsed or if file cannot be found
-     */
+          */
     public TDMFile parse(final String fileName)
-        throws OrekitException {
+        {
         try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
         } catch (IOException ioe) {
@@ -228,10 +227,9 @@ public class TDMParser extends DefaultHandler {
     /** Parse a CCSDS Tracking Data Message.
      * @param stream stream containing message
      * @return parsed file content in a TDMFile object
-     * @exception OrekitException if Tracking Date Message cannot be parsed
-     */
+          */
     public TDMFile parse(final InputStream stream)
-        throws OrekitException {
+        {
         return parse(stream, "<unknown>");
     }
 
@@ -239,8 +237,7 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-     * @exception OrekitException if Tracking Date Message cannot be parsed or format is unknown
-     */
+          */
     public TDMFile parse(final InputStream stream, final String fileName)
         throws  OrekitException {
 
@@ -270,8 +267,7 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-     * @exception OrekitException if Tracking Date Message cannot be parsed
-     */
+          */
     public TDMFile parseKeyValue(final InputStream stream, final String fileName)
         throws  OrekitException {
 
@@ -288,10 +284,9 @@ public class TDMParser extends DefaultHandler {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed file content in a TDMFile object
-     * @exception OrekitException if Tracking Date Message cannot be parsed
-     */
+          */
     public TDMFile parseXml(final InputStream stream, final String fileName)
-        throws OrekitException {
+        {
         try {
             // Create the handler
             final XMLHandler handler = new XMLHandler(new ParseInfo(this.getMissionReferenceDate(),
@@ -386,9 +381,8 @@ public class TDMParser extends DefaultHandler {
         /** Parse a meta-data entry.<p>
          * key = value (KEYVALUE file format)<p>
          * <&lt;key>value&lt;/key> (XML file format)
-         * @exception OrekitException if error in /parsing dates or if parsing integer or double fails
-         */
-        private void parseMetaDataEntry() throws OrekitException {
+                  */
+        private void parseMetaDataEntry() {
 
             final TDMFile.TDMMetaData metaData = this.currentObservationsBlock.getMetaData();
 
@@ -585,10 +579,9 @@ public class TDMParser extends DefaultHandler {
          * @param date date to parse, as the value of a CCSDS key=value line
          * @param timeSystem time system to use
          * @return parsed date
-         * @exception OrekitException if some time scale cannot be retrieved
-         */
+                  */
         private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
-                        throws OrekitException {
+                        {
             return timeSystem.parseDate(date, conventions, missionReferenceDate);
         }
     }
@@ -610,10 +603,9 @@ public class TDMParser extends DefaultHandler {
          * Parse an observation data line and add its content to the Observations Block
          * block.
          *
-         * @exception OrekitException if error in parsing dates or inconsistent data lines or in number conversion from String
-         */
+                  */
         private void parseObservationsDataLine()
-                        throws OrekitException {
+                        {
 
             // Parse an observation line
             // An observation line should consist in the string "keyword = epoch value"
@@ -647,8 +639,7 @@ public class TDMParser extends DefaultHandler {
          * @param stream stream containing message
          * @param fileName name of the file containing the message (for error messages)
          * @return parsed file content in a TDMFile object
-         * @exception OrekitException if stream cannot be read or Tracking Date Message cannot be parsed
-         */
+                  */
         public TDMFile parse(final InputStream stream, final String fileName)
                         throws  OrekitException {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
@@ -1018,10 +1009,9 @@ public class TDMParser extends DefaultHandler {
         }
 
         /** Parse a line in an observation data block.
-         * @exception OrekitException if error in parsing dates or in conversion of number from String
-         */
+                  */
         private void parseObservationDataLine()
-                        throws OrekitException {
+                        {
 
             // Parse an observation line
             // An XML observation line should consist in the string "<KEYWORD>value</KEYWORD>

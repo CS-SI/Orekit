@@ -73,7 +73,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
     }
 
     @Override
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         return gFunction.apply(s);
     }
 
@@ -121,7 +121,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
          * @return the function result
          * @throws OrekitException if one is thrown while computing the result.
          */
-        double apply(SpacecraftState value) throws OrekitException;
+        double apply(SpacecraftState value);
 
     }
 

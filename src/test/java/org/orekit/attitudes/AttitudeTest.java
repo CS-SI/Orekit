@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -40,7 +39,7 @@ import org.orekit.utils.PVCoordinates;
 public class AttitudeTest {
 
     @Test
-    public void testZeroRate() throws OrekitException {
+    public void testZeroRate() {
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                          Vector3D.ZERO, Vector3D.ZERO);
@@ -53,7 +52,7 @@ public class AttitudeTest {
     }
 
     @Test
-    public void testShift() throws OrekitException {
+    public void testShift() {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
@@ -75,7 +74,7 @@ public class AttitudeTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
@@ -111,7 +110,7 @@ public class AttitudeTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;

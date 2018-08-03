@@ -85,13 +85,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * </p>
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
-     * @exception OrekitException if some states have incompatible additional states
-     * @exception MathIllegalArgumentException if the number of states is smaller than
+          * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @see #Ephemeris(List, int, double)
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
-        throws OrekitException, MathIllegalArgumentException {
+        throws MathIllegalArgumentException {
         this(states, interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
     }
 
@@ -100,14 +99,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @param interpolationPoints number of points to use in interpolation
      * @param extrapolationThreshold the largest time difference in seconds between
      * the start or stop boundary of the ephemeris bounds to be doing extrapolation
-     * @exception OrekitException if some states have incompatible additional states
-     * @exception MathIllegalArgumentException if the number of states is smaller than
+          * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      * @since 9.0
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints,
                      final double extrapolationThreshold)
-        throws OrekitException, MathIllegalArgumentException {
+        throws MathIllegalArgumentException {
 
         super(DEFAULT_LAW);
 
@@ -169,7 +167,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     @Override
     /** {@inheritDoc} */
-    public SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         final SpacecraftState evaluatedState;
 
         final AbsoluteDate central;
@@ -198,18 +196,18 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
-        throws OrekitException {
+        {
         return propagate(date).getPVCoordinates(f);
     }
 
@@ -218,21 +216,20 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * This method always throws an exception, as ephemerides cannot be reset.
      * </p>
      * @param state new initial state to consider
-     * @exception OrekitException always thrown as ephemerides cannot be reset
-     */
+          */
     public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+        {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+        {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return basicPropagate(getMinDate());
     }
 
@@ -346,7 +343,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
         /** {@inheritDoc} */
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
-            throws OrekitException {
+            {
             final double dt = getCurrentState().getDate().durationFrom(date);
             final double closeEnoughTimeInSec = 1e-9;
 

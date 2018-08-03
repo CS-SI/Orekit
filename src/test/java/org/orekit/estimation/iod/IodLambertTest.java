@@ -53,7 +53,7 @@ import org.orekit.utils.Constants;
 public class IodLambertTest {
 
     @Test
-    public void testLambert() throws OrekitException {
+    public void testLambert() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -113,7 +113,7 @@ public class IodLambertTest {
     }
 
     @Test
-    public void testMultiRevolutions() throws OrekitException {
+    public void testMultiRevolutions() {
 
         Utils.setDataRoot("regular-data");
         TLE aussatB1 = new TLE("1 22087U 92054A   17084.21270512 -.00000243 +00000-0 +00000-0 0  9999",

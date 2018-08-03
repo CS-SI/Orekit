@@ -19,13 +19,12 @@ package org.orekit.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class ParameterDriversListTest {
 
     @Test
-    public void testDownwardAndUpwardSettings() throws OrekitException {
+    public void testDownwardAndUpwardSettings() {
 
         // this test used to generate an infinite recursion ending with StackOverFlowError
         ParameterDriver p1A = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);

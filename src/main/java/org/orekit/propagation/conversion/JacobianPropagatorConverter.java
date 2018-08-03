@@ -52,14 +52,11 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
      * be configured to generate {@link OrbitType#CARTESIAN} states
      * @param threshold absolute threshold for optimization algorithm
      * @param maxIterations maximum number of iterations for fitting
-     * @exception OrekitException if the builder {@link
-     * NumericalPropagatorBuilder#getOrbitType() orbit type} is not
-     * {@link OrbitType#CARTESIAN}
      */
     public JacobianPropagatorConverter(final NumericalPropagatorBuilder builder,
                                        final double threshold,
                                        final int maxIterations)
-        throws OrekitException {
+        {
         super(builder, threshold, maxIterations);
         if (builder.getOrbitType() != OrbitType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
@@ -94,7 +91,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                             @Override
                             public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
                                                         final boolean increasing)
-                                throws OrekitException {
+                                {
                                 fillRows(value, row, state);
                                 return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
                             }
@@ -142,7 +139,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                             @Override
                             public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
                                                         final boolean increasing)
-                                throws OrekitException {
+                                {
                                 fillRows(value, jacobian, row, state, stateSize,
                                          orbitalParameters, propagationParameters, mapper);
                                 return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
@@ -162,10 +159,9 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
      * @param value values array
      * @param row first row index
      * @param state spacecraft state
-     * @exception OrekitException if Jacobians matrices cannot be retrieved
-     */
+          */
     private void fillRows(final double[] value, final int row, final SpacecraftState state)
-        throws OrekitException {
+        {
         final PVCoordinates pv = state.getPVCoordinates(getFrame());
         value[row    ] = pv.getPosition().getX();
         value[row + 1] = pv.getPosition().getY();
@@ -186,14 +182,13 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
      * @param orbitalParameters drivers for the orbital parameters
      * @param propagationParameters drivers for the propagation model parameters
      * @param mapper state mapper
-     * @exception OrekitException if Jacobians matrices cannot be retrieved
-     */
+          */
     private void fillRows(final RealVector value, final RealMatrix jacobian, final int row,
                           final SpacecraftState state, final int stateSize,
                           final ParameterDriversList orbitalParameters,
                           final ParameterDriversList propagationParameters,
                           final JacobiansMapper mapper)
-        throws OrekitException {
+        {
 
         // value part
         final PVCoordinates pv = state.getPVCoordinates(getFrame());

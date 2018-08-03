@@ -70,14 +70,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public InterSatellitesRange(final int satellite1Index, final int satellite2Index,
                                 final boolean twoWay,
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight)
-        throws OrekitException {
+        {
         super(date, range, sigma, baseWeight, Arrays.asList(satellite1Index, satellite2Index));
         this.twoway = twoWay;
     }
@@ -94,7 +92,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     protected EstimatedMeasurement<InterSatellitesRange> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states)
-        throws OrekitException {
+        {
 
         // Range derivatives are computed with respect to spacecrafts states in inertial frame
         // ----------------------

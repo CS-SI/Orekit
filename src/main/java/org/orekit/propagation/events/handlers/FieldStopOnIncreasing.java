@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 
@@ -43,11 +42,10 @@ public class FieldStopOnIncreasing <KK extends FieldEventDetector<T>,
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
      * @return {@link FieldEventHandler.Action#STOP} or {@link FieldEventHandler.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
+          */
     @Override
     public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing)
-        throws OrekitException {
+        {
         return increasing ? Action.STOP : Action.CONTINUE;
     }
 

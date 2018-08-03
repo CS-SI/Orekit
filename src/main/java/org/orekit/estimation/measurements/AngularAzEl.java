@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -58,12 +57,10 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight)
-        throws OrekitException {
+        {
         this(station, date, angular, sigma, baseWeight, 0);
     }
 
@@ -74,14 +71,12 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
      */
     public AngularAzEl(final GroundStation station, final AbsoluteDate date,
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final int propagatorIndex)
-        throws OrekitException {
+        {
         super(date, angular, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -106,7 +101,7 @@ public class AngularAzEl extends AbstractMeasurement<AngularAzEl> {
     @Override
     protected EstimatedMeasurement<AngularAzEl> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                       final SpacecraftState[] states)
-        throws OrekitException {
+        {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

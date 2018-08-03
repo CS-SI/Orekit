@@ -27,7 +27,6 @@ import java.util.SortedSet;
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
@@ -137,7 +136,7 @@ public class Utils {
     }
 
     public static List<EOPEntry> buildEOPList(IERSConventions conventions, ITRFVersion version,
-                                              double[][] data) throws OrekitException {
+                                              double[][] data) {
         IERSConventions.NutationCorrectionConverter converter =
                 conventions.getNutationCorrectionConverter();
         final List<EOPEntry> list = new ArrayList<EOPEntry>();

@@ -114,10 +114,9 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
-     * @exception OrekitException if yaw cannot be corrected
-     */
+          */
     GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV)
-        throws OrekitException {
+        {
 
         final Field<T> field = sunPV.getDate().getField();
         plusY  = new FieldPVCoordinates<>(field, PLUS_Y);

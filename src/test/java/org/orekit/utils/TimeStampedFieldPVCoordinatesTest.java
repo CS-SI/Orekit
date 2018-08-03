@@ -116,7 +116,7 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector2() throws OrekitException {
+    public void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Decimal64Field.getInstance()),
                                                     new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),

@@ -76,7 +76,7 @@ public class LofOffsetTest {
     /** Test is the lof offset is the one expected
      */
     @Test
-    public void testZero() throws OrekitException {
+    public void testZero() {
 
         //  Satellite position
 
@@ -94,7 +94,7 @@ public class LofOffsetTest {
     /** Test if the lof offset is the one expected
      */
     @Test
-    public void testOffset() throws OrekitException {
+    public void testOffset() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -139,7 +139,7 @@ public class LofOffsetTest {
      */
     @Test
     public void testTarget()
-        throws OrekitException {
+        {
 
         // Create target point and target pointing law towards that point
         final GeodeticPoint targetDef  = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(-40.), 0.);
@@ -170,7 +170,7 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYX, 0.1, 0.2, 0.3);
 
@@ -211,7 +211,7 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testAnglesSign() throws OrekitException {
+    public void testAnglesSign() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
@@ -247,7 +247,7 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testRetrieveAngles() throws OrekitException {
+    public void testRetrieveAngles() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -276,7 +276,7 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testTypesField() throws OrekitException {
+    public void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -312,7 +312,7 @@ public class LofOffsetTest {
     private <T extends RealFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
                                                             final Orbit orbit, final AbsoluteDate date,
                                                             final Frame frame)
-        throws OrekitException {
+        {
         Attitude attitudeD = provider.getAttitude(orbit, date, frame);
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);

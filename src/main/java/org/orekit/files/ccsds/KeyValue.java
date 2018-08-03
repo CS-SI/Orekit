@@ -170,9 +170,8 @@ class KeyValue {
 
     /** Get the value as a double number.
      * @return value
-     * @exception OrekitException if value is not a number
-     */
-    public double getDoubleValue() throws OrekitException {
+          */
+    public double getDoubleValue() {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
@@ -183,9 +182,8 @@ class KeyValue {
 
     /** Get the value as an integer number.
      * @return value
-     * @exception OrekitException if value is not a number
-     */
-    public int getIntegerValue() throws OrekitException {
+          */
+    public int getIntegerValue() {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException nfe) {

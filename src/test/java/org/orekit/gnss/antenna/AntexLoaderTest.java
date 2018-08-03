@@ -36,13 +36,13 @@ import org.orekit.utils.TimeSpanMap;
 public class AntexLoaderTest {
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:antex");
     }
 
     @Test
-    public void testSmallAntexFile() throws OrekitException {
+    public void testSmallAntexFile() {
 
         AntexLoader  loader = new AntexLoader("^igs14-small\\.atx$");
 

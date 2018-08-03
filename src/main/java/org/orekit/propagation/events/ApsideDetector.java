@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -94,9 +93,8 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * This function computes the dot product of the 2 vectors : position.velocity.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
-     */
-    public double g(final SpacecraftState s) throws OrekitException {
+          */
+    public double g(final SpacecraftState s) {
         final PVCoordinates pv = s.getPVCoordinates();
         return Vector3D.dotProduct(pv.getPosition(), pv.getVelocity());
     }

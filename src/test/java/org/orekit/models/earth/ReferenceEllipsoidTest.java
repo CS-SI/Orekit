@@ -135,7 +135,7 @@ public class ReferenceEllipsoidTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testGetWgs84() throws OrekitException {
+    public void testGetWgs84() {
         // setup
         double c20factor = GravityFieldFactory.getUnnormalizationFactors(2, 0)[2][0];
         Frame frame = FramesFactory.getGCRF();

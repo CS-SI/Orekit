@@ -100,9 +100,8 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft latitude time derivative
-     * @exception OrekitException if some specific error occurs
-     */
-    public double g(final SpacecraftState s) throws OrekitException {
+          */
+    public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
         final FieldGeodeticPoint<DerivativeStructure> gp =

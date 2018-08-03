@@ -23,7 +23,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -73,7 +72,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
 
     /** {@inheritDoc} */
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
-        throws OrekitException {
+        {
         final GeodeticPoint gp = shape.transform(position, frame, date);
         return rho0 * FastMath.exp((h0 - gp.getAltitude()) / hscale);
     }
@@ -82,7 +81,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     public <T extends RealFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                    final Frame frame)
-            throws OrekitException {
+            {
         final FieldGeodeticPoint<T> gp = shape.transform(position, frame, date);
         return gp.getAltitude().subtract(h0).divide(-hscale).exp().multiply(rho0);
     }

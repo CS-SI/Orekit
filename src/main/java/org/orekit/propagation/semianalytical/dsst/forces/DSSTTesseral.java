@@ -259,8 +259,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param maxEccPowMdailyTesseralSP maximum power of the eccentricity to use in summation over s for
      * m-daily tesseral harmonics, (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2},
      * but should typically not exceed 4 as higher values will exceed computer capacity)
-     * @exception OrekitException if degrees or powers are out of range
-     * @since 7.2
+          * @since 7.2
      */
     public DSSTTesseral(final Frame centralBodyFrame,
                         final double centralBodyRotationRate,
@@ -269,7 +268,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         final int maxEccPowTesseralSP, final int maxFrequencyShortPeriodics,
                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP,
                         final int maxEccPowMdailyTesseralSP)
-        throws OrekitException {
+        {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -321,10 +320,9 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-     * @exception OrekitException if index is out of range
-     */
+          */
     private void checkIndexRange(final int index, final int min, final int max)
-        throws OrekitException {
+        {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -333,7 +331,7 @@ public class DSSTTesseral implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
-        throws OrekitException {
+        {
 
         // Keplerian period
         orbitPeriod = aux.getKeplerianPeriod();
@@ -442,7 +440,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -505,7 +503,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState) {
 
         // Compute potential derivatives
         final double[] dU  = computeUDerivatives(spacecraftState.getDate());
@@ -538,7 +536,7 @@ public class DSSTTesseral implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+        {
 
         final Slot slot = shortPeriodTerms.createSlot(meanStates);
 
@@ -689,7 +687,7 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs
      */
-    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) {
 
         // Potential derivatives
         double dUda  = 0.;
@@ -829,7 +827,7 @@ public class DSSTTesseral implements DSSTForceModel {
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
                                    final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
-        throws OrekitException {
+        {
 
         //spherical harmonics
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
@@ -1031,7 +1029,7 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param date the current date
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        public void generateCoefficients(final AbsoluteDate date) throws OrekitException {
+        public void generateCoefficients(final AbsoluteDate date) {
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Gmsj and Hmsj polynomials
@@ -1074,7 +1072,7 @@ public class DSSTTesseral implements DSSTForceModel {
          * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final AbsoluteDate date,
-               final int m, final int j, final int maxN) throws OrekitException {
+               final int m, final int j, final int maxN) {
             // Potential derivatives components for a given non-resonant pair {j,m}
             double dRdaCos  = 0.;
             double dRdaSin  = 0.;
@@ -1304,7 +1302,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         /** {@inheritDoc} */
         @Override
-        public double[] value(final Orbit meanOrbit) throws OrekitException {
+        public double[] value(final Orbit meanOrbit) {
 
             // select the coefficients slot
             final Slot slot = slots.get(meanOrbit.getDate());
@@ -1387,7 +1385,7 @@ public class DSSTTesseral implements DSSTForceModel {
          */
         @Override
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+            {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

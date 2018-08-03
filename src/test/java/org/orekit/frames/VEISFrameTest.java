@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
 public class VEISFrameTest {
 
     @Test
-    public void testRefLEO() throws OrekitException {
+    public void testRefLEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                               new TimeComponents(07, 51, 28.386009),
@@ -69,7 +69,7 @@ public class VEISFrameTest {
     }
 
     @Test
-    public void testRefGEO() throws OrekitException{
+    public void testRefGEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                               TimeComponents.H00,

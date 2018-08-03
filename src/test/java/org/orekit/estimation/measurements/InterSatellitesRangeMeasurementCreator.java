@@ -50,7 +50,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+        {
         try {
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
@@ -58,7 +58,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) throws OrekitException {
+                public double value(final double x) {
                     final Vector3D other = ephemeris.
                                     propagate(date.shiftedBy(-x)).
                                     toTransform().
@@ -79,7 +79,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
             if ((++count % 2) == 0) {
                 // generate a two-way measurement
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) throws OrekitException {
+                    public double value(final double x) {
                         final Vector3D self = currentState.shiftedBy(-downLinkDelay - x).toTransform().getInverse().transformPosition(antennaPhaseCenter1);
                         final double d = Vector3D.distance(otherAtTransit, self);
                         return d - x * Constants.SPEED_OF_LIGHT;

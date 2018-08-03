@@ -327,14 +327,13 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception OrekitException if initial state cannot be set
-     */
-    public void setInitialState(final FieldSpacecraftState<T> initialState) throws OrekitException {
+          */
+    public void setInitialState(final FieldSpacecraftState<T> initialState) {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             setMu(state.getMu());
@@ -344,7 +343,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+        {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -381,7 +380,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         public FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final T[] yDot,
                                                        final boolean meanOnly)
-            throws OrekitException {
+            {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
             final T mass = y[6];
@@ -434,7 +433,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-            throws OrekitException {
+            {
             final SpacecraftState stateD  = initialState.toSpacecraftState();
             final AbsoluteDate    targetD = target.toAbsoluteDate();
             for (final ForceModel forceModel : forceModels) {
@@ -444,7 +443,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
         /** {@inheritDoc} */
         @Override
-        public T[] computeDerivatives(final FieldSpacecraftState<T> state) throws OrekitException {
+        public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
             final T zero = state.getA().getField().getZero();
             orbit = state.getOrbit();
             Arrays.fill(yDot, zero);
@@ -470,7 +469,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         /** {@inheritDoc} */
         @Override
         public void addNonKeplerianAcceleration(final FieldVector3D<T> gamma)
-            throws OrekitException {
+            {
             for (int i = 0; i < 6; ++i) {
                 final T[] jRow = jacobian[i];
                 yDot[i] = yDot[i].add(jRow[3].linearCombination(jRow[3], gamma.getX(),
@@ -515,11 +514,10 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
-     * @param <T> elements type
+          * @param <T> elements type
      */
     public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type)
-        throws OrekitException {
+        {
 
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();

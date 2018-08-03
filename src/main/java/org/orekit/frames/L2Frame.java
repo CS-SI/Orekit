@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -36,10 +35,9 @@ public class L2Frame extends Frame {
     /** Simple constructor.
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.
-     * @exception OrekitException If frame cannot be retrieved from {@code primaryBody}.
-     */
+          */
     public L2Frame(final CelestialBody primaryBody, final CelestialBody secondaryBody)
-        throws OrekitException {
+        {
         super(primaryBody.getInertiallyOrientedFrame(),
               new ShiftingTransformProvider(new L2TransformProvider(primaryBody, secondaryBody),
                                             CartesianDerivativesFilter.USE_P,

@@ -41,18 +41,17 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
                                       final double positionScale)
-        throws OrekitException {
+        {
         super(templateOrbit, positionAngle, positionScale, true);
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+        {
         setParameters(normalizedParameters);
         return new KeplerianPropagator(createInitialOrbit());
     }

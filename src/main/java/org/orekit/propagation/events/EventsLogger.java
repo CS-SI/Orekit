@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -214,13 +213,13 @@ public class EventsLogger implements Serializable {
 
         /** {@inheritDoc} */
         public void init(final SpacecraftState s0,
-                         final AbsoluteDate t) throws OrekitException {
+                         final AbsoluteDate t) {
             super.init(s0, t);
             detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
-        public double g(final SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) {
             return detector.g(s);
         }
 
@@ -233,7 +232,7 @@ public class EventsLogger implements Serializable {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
-            throws OrekitException {
+            {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
@@ -241,7 +240,7 @@ public class EventsLogger implements Serializable {
         /** {@inheritDoc} */
         @Override
         public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
-            throws OrekitException {
+            {
             return wrapper.detector.resetState(oldState);
         }
 

@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -49,7 +48,7 @@ import org.orekit.utils.PVCoordinates;
 public class SmallManeuverAnalyticalModelTest {
 
     @Test
-    public void testLowEarthOrbit1() throws OrekitException {
+    public void testLowEarthOrbit1() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -96,7 +95,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testLowEarthOrbit2() throws OrekitException {
+    public void testLowEarthOrbit2() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -143,7 +142,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testEccentricOrbit() throws OrekitException {
+    public void testEccentricOrbit() {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
@@ -190,7 +189,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testJacobian() throws OrekitException {
+    public void testJacobian() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
@@ -277,7 +276,7 @@ public class SmallManeuverAnalyticalModelTest {
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass,
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp)
-        throws OrekitException {
+        {
 
         AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH);
         final SpacecraftState initialState =

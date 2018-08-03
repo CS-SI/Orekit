@@ -153,9 +153,8 @@ public class TLE implements TimeStamped, Serializable {
      * before trying to build this object.<p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
-     * @exception OrekitException if some format error occurs or lines are inconsistent
-     */
-    public TLE(final String line1, final String line2) throws OrekitException {
+          */
+    public TLE(final String line1, final String line2) {
 
         // identification
         satelliteNumber = parseInteger(line1, 2, 5);
@@ -266,11 +265,9 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the first line.
      * @return first line
-     * @exception OrekitException if UTC conversion cannot be done or
-     * some parameter is too large to fit format
      */
     public String getLine1()
-        throws OrekitException {
+        {
         if (line1 == null) {
             buildLine1();
         }
@@ -279,10 +276,9 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the second line.
      * @return second line
-     * @exception OrekitException if some parameter is too large to fit format
-     */
+          */
     public String getLine2()
-        throws OrekitException {
+        {
         if (line2 == null) {
             buildLine2();
         }
@@ -290,11 +286,9 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Build the line 1 from the parsed elements.
-     * @exception OrekitException if UTC conversion cannot be done or
-     * some parameter is too large to fit format
      */
     private void buildLine1()
-        throws OrekitException {
+        {
 
         final StringBuffer buffer = new StringBuffer();
 
@@ -352,11 +346,10 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return formatted and padded number
-     * @exception OrekitException if parameter is too large to fit format
-     */
+          */
     private String formatExponentMarkerFree(final String name, final double d, final int mantissaSize,
                                             final char c, final int size, final boolean rightJustified)
-        throws OrekitException {
+        {
         final double dAbs = FastMath.abs(d);
         int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
         long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
@@ -378,9 +371,8 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Build the line 2 from the parsed elements.
-     * @exception OrekitException if some parameter is too large to fit format
-     */
-    private void buildLine2() throws OrekitException {
+          */
+    private void buildLine2() {
 
         final StringBuffer buffer = new StringBuffer();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
@@ -420,11 +412,10 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
-     * @exception OrekitException if parameter is too large to fit format
-     */
+          */
     private String addPadding(final String name, final int k, final char c,
                               final int size, final boolean rightJustified)
-        throws OrekitException {
+        {
         return addPadding(name, Integer.toString(k), c, size, rightJustified);
     }
 
@@ -436,11 +427,10 @@ public class TLE implements TimeStamped, Serializable {
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
-     * @exception OrekitException if parameter is too large to fit format
-     */
+          */
     private String addPadding(final String name, final String string, final char c,
                               final int size, final boolean rightJustified)
-        throws OrekitException {
+        {
 
         if (string.length() > size) {
             throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
@@ -639,10 +629,9 @@ public class TLE implements TimeStamped, Serializable {
      * @param line2 the second element
      * @return true if format is recognized (non null lines, 69 characters length,
      * line content), false if not
-     * @exception OrekitException if checksum is not valid
-     */
+          */
     public static boolean isFormatOK(final String line1, final String line2)
-        throws OrekitException {
+        {
 
         if (line1 == null || line1.length() != 69 ||
             line2 == null || line2.length() != 69) {

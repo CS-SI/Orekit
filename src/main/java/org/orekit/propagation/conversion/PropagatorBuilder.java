@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -33,10 +32,8 @@ public interface PropagatorBuilder {
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator
-     * @exception OrekitException if propagator cannot be build
-     */
-    Propagator buildPropagator(double[] normalizedParameters)
-        throws OrekitException;
+          */
+    Propagator buildPropagator(double[] normalizedParameters);
 
     /** Get the current value of selected normalized parameters.
      * @return current value of selected normalized parameters

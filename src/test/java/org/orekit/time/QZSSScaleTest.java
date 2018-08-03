@@ -37,7 +37,7 @@ public class QZSSScaleTest {
     }
 
     @Test
-    public void testArbitrary() throws OrekitException {
+    public void testArbitrary() {
         AbsoluteDate tQZSS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getQZSS());
         AbsoluteDate tUTC =
@@ -69,7 +69,7 @@ public class QZSSScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getQZSS();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),

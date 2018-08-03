@@ -101,10 +101,9 @@ public enum ITRFVersion {
     /** Find an ITRF version from its reference year.
      * @param year reference year of the frame version
      * @return ITRF version for specified year
-     * @exception OrekitException if no ITRF frame version is found for this year
-     */
+          */
     public static ITRFVersion getITRFVersion(final int year)
-        throws OrekitException {
+        {
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
@@ -121,10 +120,9 @@ public enum ITRFVersion {
     /** Find an ITRF version from its name.
      * @param name name of the frame version (case is ignored)
      * @return ITRF version
-     * @exception OrekitException if no ITRF frame version is found with this name
-     */
+          */
     public static ITRFVersion getITRFVersion(final String name)
-        throws OrekitException {
+        {
 
         // loop over all predefined frames versions
         for (final ITRFVersion version : values()) {
@@ -233,14 +231,14 @@ public enum ITRFVersion {
 
         /** {@inheritDoc} */
         @Override
-        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) {
             return provider.getTransform(date);
         }
 
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
+            {
             return provider.getTransform(date);
         }
 

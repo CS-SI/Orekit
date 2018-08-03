@@ -115,7 +115,6 @@ public class UnixCompressFilter implements DataFilter {
          * @param name file name
          * @param input underlying compressed stream
          * @exception IOException if first bytes cannot be read
-         * @exception OrekitException if the first bytes do not correspond to a compressed file
          */
         ZInputStream(final String name, final InputStream input)
             throws IOException, OrekitException {

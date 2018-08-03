@@ -104,14 +104,14 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            throws OrekitException {
+            {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() {
 
             // value from chapter 5, page 22
             final PolynomialNutation epsilonA =
@@ -141,7 +141,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getXYSpXY2Function()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -279,7 +279,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() {
 
             // set up the conventional polynomials
             // the following values are from Lieske et al. paper:
@@ -309,7 +309,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getNutationFunction()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -365,7 +365,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -424,7 +424,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // Radians per second of time
             final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -474,7 +474,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             // obliquity
             final TimeScalarFunction epsilonA = getMeanObliquityFunction();
@@ -528,7 +528,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getEOPTidalCorrection()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -567,13 +567,13 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public LoveNumbers getLoveNumbers() throws OrekitException {
+        public LoveNumbers getLoveNumbers() {
             return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
         public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -626,7 +626,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public double getPermanentTide() throws OrekitException {
+        public double getPermanentTide() {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
@@ -666,7 +666,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             return new TimeVectorFunction() {
 
@@ -718,7 +718,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 17, -1, 18, -1);
         }
@@ -726,7 +726,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 20, 17, 19, 18, 20);
         }
@@ -786,14 +786,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            throws OrekitException {
+            {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() {
 
             // epsilon 0 value from chapter 5, page 41, other terms from equation 32 page 45
             final PolynomialNutation epsilonA =
@@ -823,7 +823,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getXYSpXY2Function()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -864,7 +864,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() {
 
             // set up the conventional polynomials
             // the following values are from equation 32 in IERS 2003 conventions
@@ -891,7 +891,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getNutationFunction()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -965,7 +965,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -1004,7 +1004,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -1043,7 +1043,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -1126,7 +1126,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getEOPTidalCorrection()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -1164,13 +1164,13 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public LoveNumbers getLoveNumbers() throws OrekitException {
+        public LoveNumbers getLoveNumbers() {
             return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
         public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -1223,14 +1223,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public double getPermanentTide() throws OrekitException {
+        public double getPermanentTide() {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             // annual pole from ftp://tai.bipm.org/iers/conv2003/chapter7/annual.pole
             final TimeScale utc = TimeScalesFactory.getUTC();
@@ -1238,7 +1238,7 @@ public enum IERSConventions {
                 new SimpleTimeStampedTableParser.RowConverter<MeanPole>() {
                     /** {@inheritDoc} */
                     @Override
-                    public MeanPole convert(final double[] rawFields) throws OrekitException {
+                    public MeanPole convert(final double[] rawFields) {
                         return new MeanPole(new AbsoluteDate((int) rawFields[0], 1, 1, utc),
                                             rawFields[1] * Constants.ARC_SECONDS_TO_RADIANS,
                                             rawFields[2] * Constants.ARC_SECONDS_TO_RADIANS);
@@ -1436,7 +1436,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             return new TimeVectorFunction() {
 
@@ -1475,7 +1475,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 15, 16, 17, 18);
         }
@@ -1483,7 +1483,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 18, 15, 16, 17, 18);
         }
@@ -1540,14 +1540,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
-            throws OrekitException {
+            {
             return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() {
 
             // epsilon 0 value from chapter 5, page 56, other terms from equation 5.40 page 65
             final PolynomialNutation epsilonA =
@@ -1578,7 +1578,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getXYSpXY2Function() throws OrekitException {
+        public TimeVectorFunction getXYSpXY2Function() {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -1616,13 +1616,13 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public LoveNumbers getLoveNumbers() throws OrekitException {
+        public LoveNumbers getLoveNumbers() {
             return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
         public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
@@ -1675,7 +1675,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public double getPermanentTide() throws OrekitException {
+        public double getPermanentTide() {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
@@ -1788,7 +1788,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
@@ -1849,7 +1849,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             return new TimeVectorFunction() {
 
@@ -1897,7 +1897,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() {
 
             // set up the conventional polynomials
             // the following values are from equation 5.40 in IERS 2010 conventions
@@ -1930,7 +1930,7 @@ public enum IERSConventions {
          /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getNutationFunction()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -1977,7 +1977,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) throws OrekitException {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -2015,7 +2015,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) throws OrekitException {
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -2054,7 +2054,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -2121,7 +2121,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public TimeVectorFunction getEOPTidalCorrection()
-            throws OrekitException {
+            {
 
             // set up nutation arguments
             // BEWARE! Using TT as the time scale here and not UT1 is intentional!
@@ -2174,7 +2174,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionDiurnal(TIDAL_DISPLACEMENT_CORRECTION_DIURNAL,
                                                                   18, 15, 16, 17, 18);
         }
@@ -2182,7 +2182,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-            throws OrekitException {
+            {
             return getTidalDisplacementFrequencyCorrectionZonal(TIDAL_DISPLACEMENT_CORRECTION_ZONAL,
                                                                 18, 15, 16, 17, 18);
         }
@@ -2224,29 +2224,24 @@ public enum IERSConventions {
      * @param timeScale time scale for computing Greenwich Mean Sidereal Time
      * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return fundamental nutation arguments
-     * @exception OrekitException if fundamental nutation arguments cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract FundamentalNutationArguments getNutationArguments(TimeScale timeScale)
-        throws OrekitException;
+    public abstract FundamentalNutationArguments getNutationArguments(TimeScale timeScale);
 
     /** Get the function computing mean obliquity of the ecliptic.
      * @return function computing mean obliquity of the ecliptic
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeScalarFunction getMeanObliquityFunction() throws OrekitException;
+    public abstract TimeScalarFunction getMeanObliquityFunction();
 
     /** Get the function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components.
      * <p>
      * The returned function computes the two X, Y components of CIP and the S+XY/2 component of the non-rotating CIO.
      * </p>
      * @return function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getXYSpXY2Function()
-        throws OrekitException;
+    public abstract TimeVectorFunction getXYSpXY2Function();
 
     /** Get the function computing the raw Earth Orientation Angle.
      * <p>
@@ -2274,10 +2269,9 @@ public enum IERSConventions {
      * #getNutationReferenceEpoch() nutation reference epoch}.
      * </p>
      * @return function computing the precession angle
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getPrecessionFunction() throws OrekitException;
+    public abstract TimeVectorFunction getPrecessionFunction();
 
     /** Get the function computing the nutation angles.
      * <p>
@@ -2287,89 +2281,70 @@ public enum IERSConventions {
      * </p>
      * @return function computing the nutation in longitude ΔΨ and Δε
      * and the correction of equation of equinoxes
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getNutationFunction()
-        throws OrekitException;
+    public abstract TimeVectorFunction getNutationFunction();
 
     /** Get the function computing Greenwich mean sidereal time, in radians.
      * @param ut1 UT1 time scale
      * @return function computing Greenwich mean sidereal time
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1)
-        throws OrekitException;
+    public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1);
 
     /** Get the function computing Greenwich mean sidereal time rate, in radians per second.
      * @param ut1 UT1 time scale
      * @return function computing Greenwich mean sidereal time rate
-     * @exception OrekitException if table cannot be loaded
-     * @since 9.0
+          * @since 9.0
      */
-    public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1)
-        throws OrekitException;
+    public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1);
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
      * @param ut1 UT1 time scale
      * @param eopHistory EOP history
      * @return function computing Greenwich apparent sidereal time
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeScalarFunction getGASTFunction(TimeScale ut1, EOPHistory eopHistory)
-        throws OrekitException;
+    public abstract TimeScalarFunction getGASTFunction(TimeScale ut1, EOPHistory eopHistory);
 
     /** Get the function computing tidal corrections for Earth Orientation Parameters.
      * @return function computing tidal corrections for Earth Orientation Parameters,
      * for xp, yp, ut1 and lod respectively
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getEOPTidalCorrection()
-        throws OrekitException;
+    public abstract TimeVectorFunction getEOPTidalCorrection();
 
     /** Get the Love numbers.
      * @return Love numbers
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract LoveNumbers getLoveNumbers()
-        throws OrekitException;
+    public abstract LoveNumbers getLoveNumbers();
 
     /** Get the function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
      * @param ut1 UT1 time scale
      * @return frequency dependence model for tides computation (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getTideFrequencyDependenceFunction(TimeScale ut1)
-        throws OrekitException;
+    public abstract TimeVectorFunction getTideFrequencyDependenceFunction(TimeScale ut1);
 
     /** Get the permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used.
      * @return permanent tide to remove
-     * @exception OrekitException if table cannot be loaded
-     */
-    public abstract double getPermanentTide() throws OrekitException;
+          */
+    public abstract double getPermanentTide();
 
     /** Get the function computing solid pole tide (ΔC₂₁, ΔS₂₁).
      * @param eopHistory EOP history
      * @return model for solid pole tide (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getSolidPoleTide(EOPHistory eopHistory)
-        throws OrekitException;
+    public abstract TimeVectorFunction getSolidPoleTide(EOPHistory eopHistory);
 
     /** Get the function computing ocean pole tide (ΔC₂₁, ΔS₂₁).
      * @param eopHistory EOP history
      * @return model for ocean pole tide (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
-     * @exception OrekitException if table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
-    public abstract TimeVectorFunction getOceanPoleTide(EOPHistory eopHistory)
-        throws OrekitException;
+    public abstract TimeVectorFunction getOceanPoleTide(EOPHistory eopHistory);
 
     /** Get the nominal values of the displacement numbers.
      * @return an array containing h⁽⁰⁾, h⁽²⁾, h₃, hI diurnal, hI semi-diurnal,
@@ -2392,8 +2367,7 @@ public enum IERSConventions {
      * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
-    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal()
-        throws OrekitException;
+    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal();
 
     /** Get the correction function for tidal displacement for diurnal tides.
      * <ul>
@@ -2411,13 +2385,12 @@ public enum IERSConventions {
      * @param tIp column holding ∆Tf(ip) in the diurnal tides table, counting from 1
      * @param tOp column holding ∆Tf(op) in the diurnal tides table, counting from 1
      * @return correction function for tidal displacement for diurnal tides
-     * @exception OrekitException if Poisson series cannot be loaded
-     * @since 9.1
+          * @since 9.1
      */
     protected static CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal(final String tableName, final int cols,
                                                                                    final int rIp, final int rOp,
                                                                                    final int tIp, final int tOp)
-        throws OrekitException {
+        {
 
         // radial component, missing the sin 2φ factor; this corresponds to:
         //  - equation 15a in IERS conventions 1996, chapter 7
@@ -2485,8 +2458,7 @@ public enum IERSConventions {
      * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
-    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionZonal()
-        throws OrekitException;
+    public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionZonal();
 
     /** Get the correction function for tidal displacement for zonal tides.
      * <ul>
@@ -2500,13 +2472,12 @@ public enum IERSConventions {
      * @param tIp column holding ∆Tf(ip) in the table, counting from 1
      * @param tOp column holding ∆Tf(op) in the table, counting from 1
      * @return correction function for tidal displacement for zonal tides
-     * @exception OrekitException if Poisson series cannot be loaded
-     * @since 9.1
+          * @since 9.1
      */
     protected static CompiledSeries getTidalDisplacementFrequencyCorrectionZonal(final String tableName, final int cols,
                                                                                  final int rIp, final int rOp,
                                                                                  final int tIp, final int tOp)
-        throws OrekitException {
+        {
 
         // radial component, missing the 3⁄2 sin² φ - 1⁄2 factor; this corresponds to:
         //  - equation 16a in IERS conventions 1996, chapter 7
@@ -2549,20 +2520,18 @@ public enum IERSConventions {
          * @param ddPsi δΔψ part of the nutation correction
          * @param ddEpsilon δΔε part of the nutation correction
          * @return array containing δX and δY
-         * @exception OrekitException if correction cannot be converted
-         */
+                  */
         double[] toNonRotating(AbsoluteDate date, double ddPsi, double ddEpsilon)
-            throws OrekitException;
+           ;
 
         /** Convert nutation corrections.
          * @param date current date
          * @param dX δX part of the nutation correction
          * @param dY δY part of the nutation correction
          * @return array containing δΔψ and δΔε
-         * @exception OrekitException if correction cannot be converted
-         */
+                  */
         double[] toEquinox(AbsoluteDate date, double dX, double dY)
-            throws OrekitException;
+           ;
 
     }
 
@@ -2573,11 +2542,10 @@ public enum IERSConventions {
      * <li>δΔψ/δΔε nutation corrections are used with the equinox-based paradigm.</li>
      * </ul>
      * @return a new converter
-     * @exception OrekitException if some convention table cannot be loaded
-     * @since 6.1
+          * @since 6.1
      */
     public NutationCorrectionConverter getNutationCorrectionConverter()
-        throws OrekitException {
+        {
 
         // get models parameters
         final TimeVectorFunction precessionFunction = getPrecessionFunction();
@@ -2591,7 +2559,7 @@ public enum IERSConventions {
             @Override
             public double[] toNonRotating(final AbsoluteDate date,
                                           final double ddPsi, final double ddEpsilon)
-                throws OrekitException {
+                {
                 // compute precession angles psiA, omegaA and chiA
                 final double[] angles = precessionFunction.value(date);
 
@@ -2611,7 +2579,7 @@ public enum IERSConventions {
             @Override
             public double[] toEquinox(final AbsoluteDate date,
                                       final double dX, final double dY)
-                throws OrekitException {
+                {
                 // compute precession angles psiA, omegaA and chiA
                 final double[] angles   = precessionFunction.value(date);
 
@@ -2634,10 +2602,8 @@ public enum IERSConventions {
     /** Load the Love numbers.
      * @param nameLove name of the Love number resource
      * @return Love numbers
-     * @exception OrekitException if the Love numbers embedded in the
-     * library cannot be read
      */
-    protected LoveNumbers loadLoveNumbers(final String nameLove) throws OrekitException {
+    protected LoveNumbers loadLoveNumbers(final String nameLove) {
         try {
 
             // allocate the three triangular arrays for real, imaginary and time-dependent numbers

@@ -60,9 +60,8 @@ class MODProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
-     * @exception OrekitException if IERS conventions tables cannot be read
-     */
-    MODProvider(final IERSConventions conventions) throws OrekitException {
+          */
+    MODProvider(final IERSConventions conventions) {
         this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
         final TimeScalarFunction epsilonAFunction = conventions.getMeanObliquityFunction();
@@ -92,7 +91,7 @@ class MODProvider implements TransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);

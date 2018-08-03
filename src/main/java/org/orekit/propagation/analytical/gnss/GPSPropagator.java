@@ -123,7 +123,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
          * @see #eci(Frame inertial)
          * @see #ecef(Frame bodyFixed)
          */
-        public Builder(final GPSOrbitalElements gpsOrbElt) throws OrekitException {
+        public Builder(final GPSOrbitalElements gpsOrbElt) {
             this.orbit = gpsOrbElt;
             this.eci   = FramesFactory.getEME2000();
             this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -420,13 +420,13 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+        {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -436,7 +436,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) {
         // Gets the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
         // Transforms the PVCoordinates to ECI frame

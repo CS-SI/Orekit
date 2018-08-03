@@ -247,10 +247,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-     * @exception OrekitException if a set of equations with the same name is already present
-     */
+          */
     public void addAdditionalEquations(final FieldAdditionalEquations<T> additional)
-        throws OrekitException {
+        {
 
         // check if the name is already used
         if (isAdditionalStateManaged(additional.getName())) {
@@ -376,7 +375,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     protected abstract MainStateEquations<T> getMainStateEquations(FieldODEIntegrator<T> integ);
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) throws OrekitException {
+    public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) {
         try {
             if (getStartDate() == null) {
                 if (getInitialState() == null) {
@@ -400,7 +399,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tStart, final FieldAbsoluteDate<T> tEnd)
-        throws OrekitException {
+        {
         try {
 
             if (getInitialState() == null) {
@@ -433,10 +432,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param tEnd target date to which orbit should be propagated
      * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
-     * @exception OrekitException if orbit cannot be propagated
-     */
+          */
     protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers)
-        throws OrekitException {
+        {
         try {
 
             if (getInitialState().getDate().equals(tEnd)) {
@@ -512,19 +510,17 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
     /** Get the initial state for integration.
      * @return initial state for integration
-     * @exception OrekitException if initial state cannot be retrieved
-     */
-    protected FieldSpacecraftState<T> getInitialIntegrationState() throws OrekitException {
+          */
+    protected FieldSpacecraftState<T> getInitialIntegrationState() {
         return getInitialState();
     }
 
     /** Create an initial state.
      * @param initialState initial state in flight dynamics world
      * @return initial state in mathematics world
-     * @exception OrekitException if initial state cannot be mapped
-     */
+          */
     private FieldODEState<T> createInitialState(final FieldSpacecraftState<T> initialState)
-        throws OrekitException {
+        {
 
         // retrieve initial state
         final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
@@ -549,11 +545,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param integ numerical integrator to use for propagation.
      * @param mathInitialState initial state
      * @return a new ode
-     * @exception OrekitException if initial state cannot be mapped
-     */
+          */
     private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ,
                                     final FieldODEState<T> mathInitialState)
-        throws OrekitException {
+        {
 
         final FieldExpandableODE<T> ode =
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -577,11 +572,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * </p>
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
-     * @exception OrekitException if hook cannot be run
-     */
+          */
     protected void beforeIntegration(final FieldSpacecraftState<T> initialState,
                                      final FieldAbsoluteDate<T> tEnd)
-        throws OrekitException {
+        {
         // do nothing by default
     }
 
@@ -589,10 +583,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * <p>
      * The default implementation does nothing, it may be specialized in subclasses.
      * </p>
-     * @exception OrekitException if hook cannot be run
-     */
+          */
     protected void afterIntegration()
-        throws OrekitException {
+        {
         // do nothing by default
     }
 
@@ -616,10 +609,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param ts array containing the current value of the state vector
      * @param tsDot array containing the current value of the state vector derivative
      * @return complete state
-     * @exception OrekitException if state cannot be mapped
-     */
+          */
     private FieldSpacecraftState<T> getCompleteState(final T t, final T[] ts, final T[] tsDot)
-        throws OrekitException {
+        {
 
         // main state
         FieldSpacecraftState<T> state = stateMapper.mapArrayToState(t, ts, tsDot, true);  //not sure of the mean orbit, should be true
@@ -656,14 +648,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
          *                         initialization.
          */
         void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target)
-            throws OrekitException;
+           ;
 
         /** Compute differential equations for main state.
          * @param state current state
          * @return derivatives of main state
          * @throws OrekitException if differentials cannot be computed
          */
-        T[] computeDerivatives(FieldSpacecraftState<T> state) throws OrekitException;
+        T[] computeDerivatives(FieldSpacecraftState<T> state);
 
     }
 
@@ -696,7 +688,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
         /** {@inheritDoc} */
         public T[] computeDerivatives(final T t, final T[] y)
-            throws OrekitException {
+            {
 
             // increment calls counter
             ++calls;
@@ -753,7 +745,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         @Override
         public T[] computeDerivatives(final T t, final T[] primary,
                                       final T[] primaryDot, final T[] secondary)
-            throws OrekitException {
+            {
 
             // update space dynamics view
             FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
@@ -906,35 +898,33 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         /** {@inheritDoc}} */
         @Override
         public FieldSpacecraftState<T> getPreviousState()
-            throws OrekitException {
+            {
             return convert(mathInterpolator.getPreviousState());
         }
 
         /** {@inheritDoc}} */
         @Override
         public FieldSpacecraftState<T> getCurrentState()
-            throws OrekitException {
+            {
             return convert(mathInterpolator.getCurrentState());
         }
 
         /** {@inheritDoc}} */
         @Override
         public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
+            {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
         /** Get the interpolated state.
          * @param os mathematical state
          * @return interpolated state at the current interpolation date
-         * @exception OrekitException if state cannot be interpolated or converted
-         * @exception OrekitException if underlying interpolator cannot handle
-         * the date
+                           * the date
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(FieldAbsoluteDate<T>)
          */
         private FieldSpacecraftState<T> convert(final FieldODEStateAndDerivative<T> os)
-            throws OrekitException {
+            {
             try {
 
                 FieldSpacecraftState<T> s =
@@ -1005,7 +995,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast)
-            throws OrekitException {
+            {
             if (activate) {
                 model.handleStep(interpolator, isLast);
                 if (isLast) {

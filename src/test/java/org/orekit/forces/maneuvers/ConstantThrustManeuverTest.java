@@ -82,7 +82,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field firingField = ConstantThrustManeuver.class.getDeclaredField("firing");
             firingField.setAccessible(true);
@@ -109,7 +109,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() throws OrekitException {
+    public void testJacobianVs80Implementation() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -150,7 +150,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testPositiveDuration() throws OrekitException {
+    public void testPositiveDuration() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
                                              TimeScalesFactory.getUTC());
@@ -174,7 +174,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testNegativeDuration() throws OrekitException {
+    public void testNegativeDuration() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                              new TimeComponents(23, 30, 00.000),
                                              TimeScalesFactory.getUTC());
@@ -198,7 +198,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testRoughBehaviour() throws OrekitException {
+    public void testRoughBehaviour() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -260,7 +260,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException {
+    public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -409,7 +409,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -470,7 +470,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testForwardAndBackward() throws OrekitException {
+    public void testForwardAndBackward() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;
@@ -527,7 +527,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() throws OrekitException {
+    public void testParameterDerivative() {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -549,7 +549,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testInertialManeuver() throws OrekitException {
+    public void testInertialManeuver() {
         final double isp = 318;
         final double mass = 2500;
         final double a = 24396159;

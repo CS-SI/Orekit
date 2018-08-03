@@ -43,9 +43,7 @@ public interface EOPBasedTransformProvider extends TransformProvider {
      * </p>
      * @return version of the provider that does <em>not</em> cache tidal corrections
      * @see FramesFactory#getNonInterpolatingTransform(Frame, Frame, AbsoluteDate)
-     * @exception OrekitException if EOP cannot be retrieved
-     */
-    EOPBasedTransformProvider getNonInterpolatingProvider()
-        throws OrekitException;
+          */
+    EOPBasedTransformProvider getNonInterpolatingProvider();
 
 }

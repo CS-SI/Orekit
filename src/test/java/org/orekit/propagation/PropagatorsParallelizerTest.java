@@ -60,7 +60,7 @@ import org.orekit.utils.IERSConventions;
 public class PropagatorsParallelizerTest {
 
     @Test
-    public void testNumericalNotInitialized() throws OrekitException {
+    public void testNumericalNotInitialized() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -81,7 +81,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testAnalyticalAndNumericalSameOrbit() throws OrekitException {
+    public void testAnalyticalAndNumericalSameOrbit() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -112,7 +112,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testVsAnalyticalMonoSat() throws OrekitException {
+    public void testVsAnalyticalMonoSat() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -143,7 +143,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testVsNumericalMonoSat() throws OrekitException {
+    public void testVsNumericalMonoSat() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -173,7 +173,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testOrekitException() throws OrekitException {
+    public void testOrekitException() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
@@ -194,7 +194,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testEarlyStop() throws OrekitException {
+    public void testEarlyStop() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
@@ -215,7 +215,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testStopOnEarlyEvent() throws OrekitException {
+    public void testStopOnEarlyEvent() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final AbsoluteDate stopDate  = startDate.shiftedBy(0.01);
@@ -230,7 +230,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @Test
-    public void testStopOnLateEvent() throws OrekitException {
+    public void testStopOnLateEvent() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final AbsoluteDate stopDate  = startDate.shiftedBy(900.0);
@@ -244,11 +244,11 @@ public class PropagatorsParallelizerTest {
         Assert.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
     }
 
-    private EcksteinHechlerPropagator buildEcksteinHechler() throws OrekitException {
+    private EcksteinHechlerPropagator buildEcksteinHechler() {
         return new EcksteinHechlerPropagator(orbit, attitudeLaw, mass, unnormalizedGravityField);
     }
 
-    private NumericalPropagator buildNumerical() throws OrekitException {
+    private NumericalPropagator buildNumerical() {
         NumericalPropagator numericalPropagator = buildNotInitializedNumerical();
         numericalPropagator.setInitialState(new SpacecraftState(orbit,
                                                                 attitudeLaw.getAttitude(orbit,
@@ -258,7 +258,7 @@ public class PropagatorsParallelizerTest {
         return numericalPropagator;
     }
 
-    private NumericalPropagator buildNotInitializedNumerical() throws OrekitException {
+    private NumericalPropagator buildNotInitializedNumerical() {
         OrbitType type = OrbitType.CARTESIAN;
         double minStep = 0.001;
         double maxStep = 300;

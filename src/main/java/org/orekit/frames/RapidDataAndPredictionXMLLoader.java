@@ -79,7 +79,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history)
-        throws OrekitException {
+        {
         final Parser parser = new Parser(converter);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -99,10 +99,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          * @param converter converter to use
-         * @exception OrekitException if ITRF version loader cannot be parsed
-         */
+                  */
         Parser(final IERSConventions.NutationCorrectionConverter converter)
-            throws OrekitException {
+            {
             this.converter         = converter;
             this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.history           = new ArrayList<EOPEntry>();
@@ -313,9 +312,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** Handle end of an element in a daily data file.
              * @param qName name of the element
-             * @exception OrekitException if an EOP element cannot be built
-             */
-            private void endDailyElement(final String qName) throws OrekitException {
+                          */
+            private void endDailyElement(final String qName) {
                 if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
                     year = Integer.parseInt(buffer.toString());
                 } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
@@ -372,9 +370,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
             /** Handle end of an element in a final data file.
              * @param qName name of the element
-             * @exception OrekitException if an EOP element cannot be built
-             */
-            private void endFinalElement(final String qName) throws OrekitException {
+                          */
+            private void endFinalElement(final String qName) {
                 if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
@@ -449,9 +446,8 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             }
 
             /** Check if the year, month, day date and MJD date are consistent.
-             * @exception OrekitException if dates are not consistent
-             */
-            private void checkDates() throws OrekitException {
+                          */
+            private void checkDates() {
                 if (new DateComponents(year, month, day).getMJD() != mjd) {
                     throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
                                               name, year, month, day, mjd);

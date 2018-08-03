@@ -107,7 +107,7 @@ public class OEMWriter implements EphemerisFileWriter {
     /** {@inheritDoc} */
     @Override
     public void write(final Appendable writer, final EphemerisFile ephemerisFile)
-            throws OrekitException, IOException {
+            throws IOException {
 
         if (writer == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");

@@ -24,7 +24,6 @@ import java.util.Map;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -152,7 +151,7 @@ public class ShiftingTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
         // retrieve a sample from the thread-safe cache
         final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
             FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
@@ -162,7 +161,7 @@ public class ShiftingTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
         @SuppressWarnings("unchecked")
         GenericTimeStampedCache<FieldTransform<T>> fieldCache =
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());

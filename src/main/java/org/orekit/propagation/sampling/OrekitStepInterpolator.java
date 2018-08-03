@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,9 +31,8 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-     * @exception OrekitException if state cannot be retrieved
-     */
-    SpacecraftState getPreviousState() throws OrekitException;
+          */
+    SpacecraftState getPreviousState();
 
     /**
      * Determines if the {@link #getPreviousState() previous state} is computed directly
@@ -53,9 +51,8 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at current grid point date.
      * @return state at current grid point date
-     * @exception OrekitException if state cannot be retrieved
-     */
-    SpacecraftState getCurrentState() throws OrekitException;
+          */
+    SpacecraftState getCurrentState();
 
     /**
      * Determines if the {@link #getCurrentState() current state} is computed directly by
@@ -74,11 +71,8 @@ public interface OrekitStepInterpolator {
     /** Get the state at interpolated date.
      * @param date date of the interpolated state
      * @return state at interpolated date
-     * @exception OrekitException if underlying interpolator cannot handle
-     * the date
      */
-    SpacecraftState getInterpolatedState(AbsoluteDate date)
-        throws OrekitException;
+    SpacecraftState getInterpolatedState(AbsoluteDate date);
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date
@@ -92,12 +86,10 @@ public interface OrekitStepInterpolator {
      * @param newPreviousState start of the restricted step
      * @param newCurrentState end of the restricted step
      * @return restricted version of the instance
-     * @exception OrekitException if state cannot be converted
-     * @see #getPreviousState()
+          * @see #getPreviousState()
      * @see #getCurrentState()
      * @since 9.0
      */
-    OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState)
-        throws OrekitException;
+    OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState);
 
 }

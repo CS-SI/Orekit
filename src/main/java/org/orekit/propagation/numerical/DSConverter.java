@@ -26,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -55,10 +54,9 @@ class DSConverter {
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed
-     * @exception OrekitException if attitude cannot be computed
-     */
+          */
     DSConverter(final SpacecraftState state, final int freeStateParameters, final AttitudeProvider provider)
-        throws OrekitException {
+        {
 
         this.freeStateParameters = freeStateParameters;
 

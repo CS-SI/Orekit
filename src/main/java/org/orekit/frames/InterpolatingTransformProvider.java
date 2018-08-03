@@ -151,7 +151,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
         // retrieve a sample from the thread-safe cache
         final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
 
@@ -162,7 +162,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
         @SuppressWarnings("unchecked")
         GenericTimeStampedCache<FieldTransform<T>> fieldCache =
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());

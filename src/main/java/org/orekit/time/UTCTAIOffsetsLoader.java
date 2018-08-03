@@ -29,8 +29,7 @@ public interface UTCTAIOffsetsLoader {
     /** Load UTC-TAI offsets entries.
      * @return sorted UTC-TAI offsets entries (if the linear offsets used
      * prior to 1972 are missing, they will be inserted automatically)
-     * @exception OrekitException if time steps are inconsistent
-     */
-    List<OffsetModel> loadOffsets() throws OrekitException;
+          */
+    List<OffsetModel> loadOffsets();
 
 }

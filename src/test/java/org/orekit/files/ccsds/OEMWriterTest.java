@@ -65,7 +65,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testWriteOEM1() throws OrekitException, IOException {
+    public void testWriteOEM1() throws IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
@@ -87,7 +87,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testUnfoundSpaceId() throws OrekitException, IOException {
+    public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
@@ -111,7 +111,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testNullFile() throws OrekitException, IOException {
+    public void testNullFile() throws IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
@@ -134,7 +134,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testNullEphemeris() throws OrekitException, IOException {
+    public void testNullEphemeris() throws IOException {
         File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
         OEMWriter writer = new OEMWriter(InterpolationMethod.HERMITE,
                                          "NASA/JPL", "1996-062A", "MARS GLOBAL SURVEYOR");
@@ -152,7 +152,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testUnisatelliteFileWithDefault() throws OrekitException, IOException {
+    public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
@@ -170,7 +170,7 @@ public class OEMWriterTest {
     }
 
     @Test
-    public void testMultisatelliteFile() throws OrekitException, IOException {
+    public void testMultisatelliteFile() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
         StandInEphemerisFile file = new StandInEphemerisFile();

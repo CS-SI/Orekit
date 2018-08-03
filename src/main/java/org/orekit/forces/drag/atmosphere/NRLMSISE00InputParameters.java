@@ -18,7 +18,6 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -34,29 +33,25 @@ public interface NRLMSISE00InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
-     * @exception OrekitException if data cannot be loaded
-     */
-    AbsoluteDate getMinDate() throws OrekitException;
+          */
+    AbsoluteDate getMinDate();
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
-     * @exception OrekitException if data cannot be loaded
-     */
-    AbsoluteDate getMaxDate() throws OrekitException;
+          */
+    AbsoluteDate getMaxDate();
 
     /** Get the value of the daily F10.7 solar flux for previous day.
      * @param date the current date
      * @return the daily F10.7 flux for previous day
-     * @exception OrekitException if the date is out of range of available data
-     */
-    double getDailyFlux(AbsoluteDate date) throws OrekitException;
+          */
+    double getDailyFlux(AbsoluteDate date);
 
     /** Get the value of the 81 day average of F10.7 solar flux centered on current day.
      * @param date the current date
      * @return the 81 day average of F10.7 solar flux centered on current day
-     * @exception OrekitException if the date is out of range of available data
-     */
-    double getAverageFlux(AbsoluteDate date) throws OrekitException;
+          */
+    double getAverageFlux(AbsoluteDate date);
 
     /** Get the A<sub>p</sub> geomagnetic indices.
      * <p>
@@ -75,8 +70,7 @@ public interface NRLMSISE00InputParameters extends Serializable {
      * </p>
      * @param date the current date
      * @return the array of A<sub>p</sub> indices
-     * @exception OrekitException if the date is out of range of available data
-     */
-    double[] getAp(AbsoluteDate date) throws OrekitException;
+          */
+    double[] getAp(AbsoluteDate date);
 
 }

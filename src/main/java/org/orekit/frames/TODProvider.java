@@ -56,10 +56,9 @@ class TODProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param conventions IERS conventions to apply
      * @param eopHistory EOP history
-     * @exception OrekitException if IERS conventions tables cannot be read
-     */
+          */
     TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
-        throws OrekitException {
+        {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
@@ -75,13 +74,13 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TODProvider getNonInterpolatingProvider()
-        throws OrekitException {
+        {
         return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // compute nutation angles
         final double[] angles = nutationFunction.value(date);
@@ -114,7 +113,7 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         // compute nutation angles
         final T[] angles = nutationFunction.value(date);

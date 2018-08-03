@@ -63,13 +63,13 @@ public class EclipticProvider implements TransformProvider {
      * @throws OrekitException if the mean obliquity of the ecliptic function can not be
      *                         loaded.
      */
-    public EclipticProvider(final IERSConventions conventions) throws OrekitException {
+    public EclipticProvider(final IERSConventions conventions) {
         this.conventions = conventions;
         this.obliquity   = conventions.getMeanObliquityFunction();
     }
 
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
         //mean obliquity of date
         final double epsA = obliquity.value(date);
         return new Transform(date, new Rotation(Vector3D.MINUS_I, epsA, RotationConvention.VECTOR_OPERATOR));
@@ -77,7 +77,7 @@ public class EclipticProvider implements TransformProvider {
 
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
         //mean obliquity of date
         final T epsA = obliquity.value(date);
         return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getMinusI(date.getField()),

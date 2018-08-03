@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitMessages;
 public class TAIUTCDatAFilesLoaderTest {
 
     @Test
-    public void testRegularFile() throws OrekitException {
+    public void testRegularFile() {
 
         Utils.setDataRoot("USNO");
 
@@ -62,7 +62,7 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testOnlyPre1972Data() throws OrekitException {
+    public void testOnlyPre1972Data() {
 
         Utils.setDataRoot("USNO");
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-only-pre-1972-data.dat"));
@@ -95,7 +95,7 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testModifiedLinearData() throws OrekitException {
+    public void testModifiedLinearData() {
 
         Utils.setDataRoot("USNO");
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-modified-linear.dat"));
@@ -128,24 +128,24 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() throws OrekitException {
+    public void testInconsistentDate() {
         checkException("tai-utc-inconsistent-date.dat",
                        OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
     }
 
     @Test
-    public void testNonChronological() throws OrekitException {
+    public void testNonChronological() {
         checkException("tai-utc-non-chronological.dat",
                        OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE);
     }
 
     @Test
-    public void testFormatError() throws OrekitException {
+    public void testFormatError() {
         checkException("tai-utc-format-error.dat",
                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
     }
 
-    private void checkOffset(int year, int month, int day, double offset) throws OrekitException {
+    private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
         Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);

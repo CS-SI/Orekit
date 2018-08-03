@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -118,9 +117,8 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
-     */
-    public double g(final SpacecraftState s) throws OrekitException {
+          */
+    public double g(final SpacecraftState s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
             return -1.0;

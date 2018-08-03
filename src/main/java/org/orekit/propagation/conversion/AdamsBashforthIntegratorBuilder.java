@@ -59,7 +59,7 @@ public class AdamsBashforthIntegratorBuilder implements ODEIntegratorBuilder {
 
     /** {@inheritDoc} */
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        throws OrekitException {
+        {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new AdamsBashforthIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }

@@ -91,7 +91,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
                                   final PositionAngle positionAngle,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution)
-        throws OrekitException {
+        {
         super(initialCovarianceMatrix);
         this.lofType = lofType;
         this.positionAngle = positionAngle;

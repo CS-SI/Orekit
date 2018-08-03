@@ -627,12 +627,10 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
      */
     public synchronized Vector3D getNormal(final AbsoluteDate date, final Frame frame,
                                            final Vector3D position, final Rotation rotation)
-        throws OrekitException {
+        {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -664,14 +662,12 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
      * @param <T> type of the field elements
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
      */
     public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date,
                                                                                    final Frame frame,
                                                                                    final FieldVector3D<T> position,
                                                                                    final FieldRotation<T> rotation)
-        throws OrekitException {
+        {
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
@@ -703,13 +699,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lighting
-     * configuration
      */
     public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
                                                                      final FieldVector3D<DerivativeStructure> position,
                                                                      final FieldRotation<DerivativeStructure> rotation)
-        throws OrekitException {
+        {
 
         final DerivativeStructure zero = position.getX().getField().getZero();
 
@@ -745,7 +739,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                      final Rotation rotation, final double mass,
                                      final double density, final Vector3D relativeVelocity,
                                      final double[] parameters)
-        throws OrekitException {
+        {
 
         final double dragCoeff = parameters[0];
         final double liftRatio = liftParameterDriver == null ? 0.0 : parameters[1];
@@ -788,7 +782,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                final Vector3D relativeVelocity,
                                                                final double[] parameters,
                                                                final String paramName)
-        throws OrekitException {
+        {
 
         final DerivativeStructure dragCoeffDS;
         final DerivativeStructure liftRatioDS;
@@ -851,7 +845,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                   final Rotation rotation, final double mass, final Vector3D flux,
                                                   final double[] parameters)
-        throws OrekitException {
+        {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -894,7 +888,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                             final double mass, final Vector3D flux,
                                                                             final double[] parameters,
                                                                             final String paramName)
-        throws OrekitException {
+        {
 
         if (flux.getNormSq() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)
@@ -955,7 +949,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                          final FieldVector3D<T> position, final FieldRotation<T> rotation,
                          final T mass, final  T density, final FieldVector3D<T> relativeVelocity,
                          final T[] parameters)
-        throws OrekitException {
+        {
 
         final T dragCoeff = parameters[0];
         final T liftRatio = liftParameterDriver == null ? dragCoeff.getField().getZero() : parameters[1];
@@ -1001,7 +995,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters)
-        throws OrekitException {
+        {
 
         if (flux.getNormSq().getReal() < Precision.SAFE_MIN) {
             // null illumination (we are probably in umbra)

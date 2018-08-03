@@ -138,7 +138,7 @@ public class EarthObservation {
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
-                public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                public void handleStep(SpacecraftState currentState, boolean isLast) {
                     DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
                     angleDegree.setDecimalSeparator('\u00b0');
                     DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);

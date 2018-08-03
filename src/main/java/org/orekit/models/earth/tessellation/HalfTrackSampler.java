@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -58,7 +57,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
     /** {@inheritDoc} */
     @Override
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+        {
 
         // find the sliding ground point below spacecraft
         final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());

@@ -17,7 +17,6 @@
 
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -35,9 +34,8 @@ public interface PVCoordinatesProvider {
      * @param date current date
      * @param frame the frame where to define the position
      * @return time-stamped position/velocity of the body (m and m/s)
-     * @exception OrekitException if position cannot be computed in given frame
-     */
+          */
     TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
-                                              Frame frame) throws OrekitException;
+                                              Frame frame);
 
 }

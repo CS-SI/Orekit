@@ -196,7 +196,7 @@ public class HarmonicParametricAcceleration extends AbstractParametricAccelerati
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target)
-        throws OrekitException {
+        {
         if (referenceDate == null) {
             referenceDate = initialState.getDate();
         }

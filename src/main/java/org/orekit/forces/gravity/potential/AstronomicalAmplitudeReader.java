@@ -119,7 +119,7 @@ public class AstronomicalAmplitudeReader implements DataLoader {
     /** {@inheritDoc} */
     @Override
     public void loadData(final InputStream input, final String name)
-        throws OrekitException, IOException {
+        throws IOException {
 
         // parse the file
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));

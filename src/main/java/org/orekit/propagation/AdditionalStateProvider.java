@@ -39,8 +39,7 @@ public interface AdditionalStateProvider {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-     * @exception OrekitException if additional state cannot be computed
-     */
-    double[] getAdditionalState(SpacecraftState state) throws OrekitException;
+          */
+    double[] getAdditionalState(SpacecraftState state);
 
 }

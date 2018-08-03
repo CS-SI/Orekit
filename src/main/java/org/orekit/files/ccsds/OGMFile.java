@@ -233,9 +233,8 @@ public abstract class OGMFile extends ODMFile {
 
     /** Get the spacecraft mass.
      * @return the spacecraft mass
-     * @exception OrekitException if mass is unknown
-     */
-    public double getMass() throws OrekitException {
+          */
+    public double getMass() {
         if (Double.isNaN(mass)) {
             throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS);
         }

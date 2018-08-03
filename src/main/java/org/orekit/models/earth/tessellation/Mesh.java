@@ -31,7 +31,6 @@ import org.hipparchus.util.Precision;
 import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 
 /** Class creating a mesh for spherical zones tessellation.
  * @author Luc Maisonobe
@@ -78,12 +77,11 @@ class Mesh {
      * @param alongGap distance between nodes in the along direction
      * @param acrossGap distance between nodes in the across direction
      * @param start location of the first node.
-     * @exception OrekitException if along direction of first tile cannot be computed
-     */
+          */
     Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
                 final TileAiming aiming, final double alongGap, final double acrossGap,
                 final S2Point start)
-        throws OrekitException {
+        {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
         this.coverage       = null;
@@ -212,11 +210,10 @@ class Mesh {
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
      * @return node at specified indices, guaranteed to be non-null
-     * @exception OrekitException if tile direction cannot be computed
-     * @see #getNode(int, int)
+          * @see #getNode(int, int)
      */
     public Node addNode(final int alongIndex, final int acrossIndex)
-        throws OrekitException {
+        {
 
         // create intermediate (disabled) nodes, up to specified indices
         Node node = getExistingAncestor(alongIndex, acrossIndex);
@@ -502,10 +499,9 @@ class Mesh {
          * @param s2p position in spherical coordinates (my be null)
          * @param alongIndex index in the along direction
          * @param acrossIndex index in the across direction
-         * @exception OrekitException if tile direction cannot be computed
-         */
+                  */
         private Node(final S2Point s2p, final int alongIndex, final int acrossIndex)
-            throws OrekitException {
+            {
             final GeodeticPoint gp = new GeodeticPoint(0.5 * FastMath.PI - s2p.getPhi(), s2p.getTheta(), 0.0);
             this.v           = ellipsoid.transform(gp);
             this.s2p         = s2p;
@@ -602,10 +598,9 @@ class Mesh {
          * </p>
          * @param motion straight motion, which must be curved back to surface
          * @return arrival point, approximately at specified distance from node
-         * @exception OrekitException if points cannot be converted to geodetic coordinates
-         */
+                  */
         public S2Point move(final Vector3D motion)
-            throws OrekitException {
+            {
 
             // safety check for too small motion
             if (motion.getNorm() < Precision.EPSILON * v.getNorm()) {

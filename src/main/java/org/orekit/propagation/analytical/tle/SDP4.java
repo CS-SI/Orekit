@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -61,17 +60,15 @@ abstract class SDP4  extends TLEPropagator {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
-     * @exception OrekitException if some specific error occurs
-     */
+          */
     protected SDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
-                   final double mass) throws OrekitException {
+                   final double mass) {
         super(initialTLE, attitudeProvider, mass);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-     * @exception OrekitException when UTC time steps can't be read
-     */
-    protected void sxpInitialize() throws OrekitException {
+          */
+    protected void sxpInitialize() {
         luniSolarTermsComputation();
     }  // End of initialization
 
@@ -115,9 +112,8 @@ abstract class SDP4  extends TLEPropagator {
     /** Computes SPACETRACK#3 compliant earth rotation angle.
      * @param date the current date
      * @return the ERA (rad)
-     * @exception OrekitException when UTC time steps can't be read
-     */
-    protected static double thetaG(final AbsoluteDate date) throws OrekitException {
+          */
+    protected static double thetaG(final AbsoluteDate date) {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
@@ -142,9 +138,8 @@ abstract class SDP4  extends TLEPropagator {
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.
-     * @exception OrekitException when UTC time steps can't be read
-     */
-    protected abstract void luniSolarTermsComputation() throws OrekitException;
+          */
+    protected abstract void luniSolarTermsComputation();
 
     /** Computes secular terms from current coordinates and epoch.
      * @param t offset from initial epoch (min)

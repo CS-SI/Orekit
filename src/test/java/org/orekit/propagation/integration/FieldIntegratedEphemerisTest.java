@@ -45,16 +45,16 @@ import org.orekit.utils.FieldPVCoordinates;
 public class FieldIntegratedEphemerisTest {
 
     @Test
-    public void testNormalKeplerIntegration() throws OrekitException{
+    public void testNormalKeplerIntegration() {
         doTestNormalKeplerIntegration(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testGetFrame() throws OrekitException {
+    public void testGetFrame() {
         doTestGetFrame(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // Keplerian propagator definition
@@ -97,7 +97,7 @@ public class FieldIntegratedEphemerisTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestGetFrame(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestGetFrame(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // setup

@@ -77,7 +77,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state)
-        throws OrekitException {
+        {
         // The effect of ionospheric correction on the range rate is
         // computed using finite differences.
 
@@ -142,10 +142,10 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
                                                final SpacecraftState refstate)
-        throws OrekitException {
+        {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 // evaluate target's elevation with a changed target position
                                 final double value = rangeRateErrorIonosphericModel(station, state);
 
@@ -171,12 +171,12 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
                                                      final ParameterDriver driver,
                                                      final SpacecraftState state,
                                                      final double delay)
-        throws OrekitException {
+        {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeRateErrorIonosphericModel(station, state);
             }
         };
@@ -197,7 +197,7 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<RangeRate> estimated)
-        throws OrekitException {
+        {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();

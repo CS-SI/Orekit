@@ -193,10 +193,9 @@ public abstract class ODMParser {
     /** Parse a CCSDS Orbit Data Message.
      * @param fileName name of the file containing the message
      * @return parsed orbit
-     * @exception OrekitException if orbit message cannot be parsed
-     */
+          */
     public ODMFile parse(final String fileName)
-        throws OrekitException {
+        {
         try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
         } catch (IOException e) {
@@ -207,10 +206,9 @@ public abstract class ODMParser {
     /** Parse a CCSDS Orbit Data Message.
      * @param stream stream containing message
      * @return parsed orbit
-     * @exception OrekitException if orbit message cannot be parsed
-     */
+          */
     public ODMFile parse(final InputStream stream)
-        throws OrekitException {
+        {
         return parse(stream, "<unknown>");
     }
 
@@ -218,10 +216,8 @@ public abstract class ODMParser {
      * @param stream stream containing message
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed orbit
-     * @exception OrekitException if orbit message cannot be parsed
-     */
-    public abstract ODMFile parse(InputStream stream, String fileName)
-        throws OrekitException;
+          */
+    public abstract ODMFile parse(InputStream stream, String fileName);
 
     /** Parse a comment line.
      * @param keyValue key=value pair containing the comment
@@ -242,11 +238,10 @@ public abstract class ODMParser {
      * @param odmFile instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a header keyword and has been parsed
-     * @exception OrekitException if UTC time scale cannot be retrieved to parse creation date
-     */
+          */
     protected boolean parseHeaderEntry(final KeyValue keyValue,
                                        final ODMFile odmFile, final List<String> comment)
-        throws OrekitException {
+        {
         switch (keyValue.getKeyword()) {
 
             case CREATION_DATE:
@@ -273,11 +268,10 @@ public abstract class ODMParser {
      * @param metaData instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
-     * @exception OrekitException if center body or frame cannot be retrieved
-     */
+          */
     protected boolean parseMetaDataEntry(final KeyValue keyValue,
                                          final ODMMetaData metaData, final List<String> comment)
-        throws OrekitException {
+        {
         switch (keyValue.getKeyword()) {
             case OBJECT_NAME:
                 if (!comment.isEmpty()) {
@@ -351,11 +345,10 @@ public abstract class ODMParser {
      * @param general instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
-     * @exception OrekitException if center body or frame cannot be retrieved
-     */
+          */
     protected boolean parseGeneralStateDataEntry(final KeyValue keyValue,
                                                  final OGMFile general, final List<String> comment)
-        throws OrekitException {
+        {
         switch (keyValue.getKeyword()) {
 
             case EPOCH:
@@ -553,10 +546,9 @@ public abstract class ODMParser {
      * @param date date to parse, as the value of a CCSDS key=value line
      * @param timeSystem time system to use
      * @return parsed date
-     * @exception OrekitException if some time scale cannot be retrieved
-     */
+          */
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
-        throws OrekitException {
+        {
         return timeSystem.parseDate(date, conventions, missionReferenceDate);
     }
 

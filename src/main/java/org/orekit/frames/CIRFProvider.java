@@ -54,12 +54,10 @@ class CIRFProvider implements EOPBasedTransformProvider {
 
     /** Simple constructor.
      * @param eopHistory EOP history
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read.
      * @see Frame
      */
     CIRFProvider(final EOPHistory eopHistory)
-        throws OrekitException {
+        {
 
         // load the nutation model
         xysPxy2Function = eopHistory.getConventions().getXYSpXY2Function();
@@ -78,13 +76,13 @@ class CIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public CIRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+        {
         return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         final double[] xys  = xysPxy2Function.value(date);
         final double[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
@@ -119,7 +117,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         final T[] xys  = xysPxy2Function.value(date);
         final T[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);

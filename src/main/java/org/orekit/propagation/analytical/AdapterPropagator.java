@@ -63,9 +63,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
          * @param original original state <em>without</em> the effect
          * @return updated state at the same date, taking the effect
          * into account if meaningful
-         * @exception OrekitException if effect cannot be computed
-         */
-        SpacecraftState apply(SpacecraftState original) throws OrekitException;
+                  */
+        SpacecraftState apply(SpacecraftState original);
 
     }
 
@@ -109,20 +108,20 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return reference.getInitialState();
     }
 
     /** {@inheritDoc} */
     @Override
     public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+        {
         reference.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+        {
         if (reference instanceof AbstractAnalyticalPropagator) {
             ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
         } else {
@@ -132,7 +131,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
@@ -156,13 +155,13 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws OrekitException {
+        {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date)
-        throws OrekitException {
+        {
         return basicPropagate(date).getMass();
     }
 

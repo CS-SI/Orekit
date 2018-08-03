@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -77,8 +76,7 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param ddEps correction for nutation in obliquity δΔε
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     * @deprecated as of 9.2 replaced with {@link #EOPEntry(int, double, double,
+          * @deprecated as of 9.2 replaced with {@link #EOPEntry(int, double, double,
      * double, double, double, double, double, double, ITRFVersion)
      */
     @Deprecated
@@ -86,7 +84,7 @@ public class EOPEntry implements TimeStamped, Serializable {
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy)
-        throws OrekitException {
+        {
         this(mjd, dt, lod, x, y, ddPsi, ddEps, dx, dy, ITRFVersion.ITRF_2014);
     }
 
@@ -101,14 +99,13 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
      * @param itrfType ITRF version this entry defines
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public EOPEntry(final int mjd, final double dt, final double lod,
                     final double x, final double y,
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy,
                     final ITRFVersion itrfType)
-        throws OrekitException {
+        {
 
         this.mjd      = mjd;
         this.date     = AbsoluteDate.createMJDDate(mjd, 0.0, TimeScalesFactory.getUTC());

@@ -85,7 +85,7 @@ public interface AdditionalEquations {
      *                         initialization.
      */
     default void init(final SpacecraftState initialState, final AbsoluteDate target)
-        throws OrekitException {
+        {
         // nothing by default
     }
 
@@ -104,9 +104,7 @@ public interface AdditionalEquations {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
-     * @exception OrekitException if some specific error occurs
-     */
-    double[] computeDerivatives(SpacecraftState s,  double[] pDot)
-        throws OrekitException;
+          */
+    double[] computeDerivatives(SpacecraftState s,  double[] pDot);
 
 }

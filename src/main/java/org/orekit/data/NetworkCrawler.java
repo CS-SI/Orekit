@@ -103,7 +103,7 @@ public class NetworkCrawler implements DataProvider {
 
     /** {@inheritDoc} */
     public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+        {
 
         try {
             OrekitException delayedException = null;

@@ -183,7 +183,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
 
         // computed Cnm and Snm coefficients
         final double[][] cnm = buildTriangularArray(5, true);
@@ -425,14 +425,14 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
         /** {@inheritDoc} */
         @Override
         public double getNormalizedCnm(final int n, final int m)
-            throws OrekitException {
+            {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
         public double getNormalizedSnm(final int n, final int m)
-            throws OrekitException {
+            {
             return snm[n][m];
         }
 

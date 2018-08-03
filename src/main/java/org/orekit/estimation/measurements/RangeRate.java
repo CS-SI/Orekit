@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -67,15 +66,13 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate,
                      final double sigma,
                      final double baseWeight,
                      final boolean twoway)
-        throws OrekitException {
+        {
         this(station, date, rangeRate, sigma, baseWeight, twoway, 0);
     }
 
@@ -87,8 +84,6 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
@@ -97,7 +92,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double baseWeight,
                      final boolean twoway,
                      final int propagatorIndex)
-        throws OrekitException {
+        {
         super(date, rangeRate, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -130,7 +125,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     @Override
     protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                     final SpacecraftState[] states)
-        throws OrekitException {
+        {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 
@@ -258,7 +253,6 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param transitState orbital state at onboard signal transit
      * @param indices indices of the estimated parameters in derivatives computations
      * @return theoretical value
-     * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
@@ -266,7 +260,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                         final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
                                                                         final SpacecraftState transitState,
                                                                         final Map<String, Integer> indices)
-        throws OrekitException {
+        {
 
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =

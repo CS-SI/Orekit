@@ -161,7 +161,7 @@ public class CoefficientsFactory {
      * @throws OrekitException if m &gt; n
      */
     public static double getVmns(final int m, final int n, final int s)
-        throws OrekitException {
+        {
         if (m > n) {
             throw new OrekitException(OrekitMessages.DSST_VMNS_COEFFICIENT_ERROR_MS, m, n);
         }

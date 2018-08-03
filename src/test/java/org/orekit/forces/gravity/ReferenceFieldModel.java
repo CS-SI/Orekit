@@ -96,7 +96,7 @@ class ReferenceFieldModel {
     }
 
     public Dfp nonCentralPart(final AbsoluteDate date, final Vector3D position)
-            throws OrekitException {
+            {
 
         int degree = provider.getMaxDegree();
         int order  = provider.getMaxOrder();
@@ -152,17 +152,17 @@ class ReferenceFieldModel {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
-                        throws OrekitException {
+                        {
                     final NormalizedSphericalHarmonics normalized =
                             ((NormalizedSphericalHarmonicsProvider) provider).onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
-                        public double getRawCnm(int n, int m) throws OrekitException {
+                        public double getRawCnm(int n, int m) {
                             return normalized.getNormalizedCnm(n, m);
                         }
 
                         @Override
-                        public double getRawSnm(int n, int m) throws OrekitException {
+                        public double getRawSnm(int n, int m) {
                             return normalized.getNormalizedSnm(n, m);
                         }
 
@@ -177,17 +177,17 @@ class ReferenceFieldModel {
             return new RawerSphericalHarmonicsProvider(provider) {
                 @Override
                 public RawSphericalHarmonics onDate(final AbsoluteDate date)
-                        throws OrekitException {
+                        {
                     final UnnormalizedSphericalHarmonics unnormalized =
                             ((UnnormalizedSphericalHarmonicsProvider) provider).onDate(date);
                     return new RawSphericalHarmonics() {
                         @Override
-                        public double getRawCnm(int n, int m) throws OrekitException {
+                        public double getRawCnm(int n, int m) {
                             return unnormalized.getUnnormalizedCnm(n, m);
                         }
 
                         @Override
-                        public double getRawSnm(int n, int m) throws OrekitException {
+                        public double getRawSnm(int n, int m) {
                             return unnormalized.getUnnormalizedSnm(n, m);
                         }
 

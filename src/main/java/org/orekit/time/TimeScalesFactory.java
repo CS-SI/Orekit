@@ -168,11 +168,9 @@ public class TimeScalesFactory implements Serializable {
      * will be called automatically.
      * </p>
      * @return Universal Time Coordinate scale
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
      * @see #addDefaultUTCTAIOffsetsLoaders()
      */
-    public static UTCScale getUTC() throws OrekitException {
+    public static UTCScale getUTC() {
         synchronized (TimeScalesFactory.class) {
 
             if (utc == null) {
@@ -207,13 +205,11 @@ public class TimeScalesFactory implements Serializable {
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Universal Time 1 scale
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
      * @see #getUTC()
      * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
      */
     public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP)
-        throws OrekitException {
+        {
         synchronized (TimeScalesFactory.class) {
 
             final Map<IERSConventions, UT1Scale> map =
@@ -240,11 +236,9 @@ public class TimeScalesFactory implements Serializable {
      * @param history EOP parameters providing dUT1
      * (may be null if no correction is desired)
      * @return Universal Time 1 scale
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
      * @see #getUT1(IERSConventions, boolean)
      */
-    public static UT1Scale getUT1(final EOPHistory history) throws OrekitException {
+    public static UT1Scale getUT1(final EOPHistory history) {
         return new UT1Scale(history, getUTC());
     }
 
@@ -280,9 +274,8 @@ public class TimeScalesFactory implements Serializable {
 
     /** Get the GLObal NAvigation Satellite System time scale.
      * @return  GLObal NAvigation Satellite System time scale
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
-    public static GLONASSScale getGLONASS() throws OrekitException {
+          */
+    public static GLONASSScale getGLONASS() {
         synchronized (TimeScalesFactory.class) {
 
             if (glonass == null) {
@@ -373,11 +366,9 @@ public class TimeScalesFactory implements Serializable {
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Greenwich Mean Sidereal Time scale
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
      * @since 7.0
      */
-    public static GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) throws OrekitException {
+    public static GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
         synchronized (TimeScalesFactory.class) {
 
             if (gmst == null) {

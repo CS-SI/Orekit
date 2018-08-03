@@ -84,7 +84,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
+        {
         adder.addKeplerContribution(getMu());
     }
 
@@ -92,14 +92,14 @@ public class NewtonianAttraction extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
                                                                 final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
+        {
         adder.addKeplerContribution(getMu());
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+        {
         final double mu = parameters[0];
         final double r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new Vector3D(-mu / (FastMath.sqrt(r2) * r2), s.getPVCoordinates().getPosition());
@@ -109,7 +109,7 @@ public class NewtonianAttraction extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters)
-        throws OrekitException {
+        {
         final T mu = parameters[0];
         final T r2 = s.getPVCoordinates().getPosition().getNormSq();
         return new FieldVector3D<>(r2.sqrt().multiply(r2).reciprocal().multiply(mu).negate(), s.getPVCoordinates().getPosition());

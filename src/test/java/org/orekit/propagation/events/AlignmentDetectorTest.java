@@ -44,7 +44,7 @@ public class AlignmentDetectorTest {
     private NumericalPropagator  propagator;
 
     @Test
-    public void testAlignment() throws OrekitException {
+    public void testAlignment() {
 
         double alignAngle = FastMath.toRadians(0.0);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();

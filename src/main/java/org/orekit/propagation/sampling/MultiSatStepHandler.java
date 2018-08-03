@@ -18,7 +18,6 @@ package org.orekit.propagation.sampling;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -44,10 +43,9 @@ public interface MultiSatStepHandler {
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}.
      * @param t target time for the integration
-     * @exception OrekitException if step handler cannot be initialized
-     */
+          */
     default void init(final List<SpacecraftState> states0, final AbsoluteDate t)
-        throws OrekitException {
+        {
         // nothing by default
     }
 
@@ -60,9 +58,7 @@ public interface MultiSatStepHandler {
      * used to {@link org.orekit.propagation.PropagatorsParallelizer#PropagatorsParallelizer(List, MultiSatStepHandler)
      * build} the {@link org.orekit.propagation.PropagatorsParallelizer multi-sat propagator}
      * @param isLast if true, this is the last integration step
-     * @exception OrekitException if step cannot be handled
-     */
-    void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast)
-        throws OrekitException;
+          */
+    void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast);
 
 }

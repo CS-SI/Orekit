@@ -65,7 +65,6 @@ public class NamedData {
         /** Open the stream.
          * @return opened stream
          * @exception IOException if stream cannot be opened
-         * @exception OrekitException if some format error is detected
          */
         InputStream openStream() throws IOException, OrekitException;
 

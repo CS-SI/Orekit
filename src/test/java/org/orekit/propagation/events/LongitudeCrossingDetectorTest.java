@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinates;
 public class LongitudeCrossingDetectorTest {
 
     @Test
-    public void testRegularCrossing() throws OrekitException {
+    public void testRegularCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -104,7 +104,7 @@ public class LongitudeCrossingDetectorTest {
     }
 
     @Test
-    public void testZigZag() throws OrekitException {
+    public void testZigZag() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,

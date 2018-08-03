@@ -114,7 +114,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     }
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target)
-        throws OrekitException {
+        {
         try {
             lastPropagationStart = start;
 
@@ -183,12 +183,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @param target final propagation time
      * @param epsilon threshold for end date detection
      * @return state at the end of the step
-     * @exception OrekitException if the switching function cannot be evaluated
-     * @exception MathRuntimeException if an event cannot be located
+          * @exception MathRuntimeException if an event cannot be located
      */
     protected FieldSpacecraftState<T> acceptStep(final FieldBasicStepInterpolator interpolator,
                                          final FieldAbsoluteDate<T> target, final double epsilon)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         FieldSpacecraftState<T>       previous = interpolator.getPreviousState();
         final FieldSpacecraftState<T> current  = interpolator.getCurrentState();
@@ -316,10 +315,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     /** Get the mass.
      * @param date target date for the orbit
      * @return mass mass
-     * @exception OrekitException if some parameters are out of bounds
-     */
-    protected abstract T getMass(FieldAbsoluteDate<T> date)
-        throws OrekitException;
+          */
+    protected abstract T getMass(FieldAbsoluteDate<T> date);
 
     /** Get PV coordinates provider.
      * @return PV coordinates provider
@@ -337,18 +334,14 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
-     * @exception OrekitException if initial state cannot be reset
-     */
-    protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward)
-        throws OrekitException;
+          */
+    protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward);
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
-     * @exception OrekitException if some parameters are out of bounds
-     */
-    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date)
-        throws OrekitException;
+          */
+    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -357,9 +350,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
-     * @exception OrekitException if propagation cannot reach specified date
-     */
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) throws OrekitException {
+          */
+    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         try {
 
             // evaluate orbit
@@ -382,7 +374,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-            throws OrekitException {
+            {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
 
@@ -437,34 +429,34 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target)
-            throws OrekitException {
+            {
             return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
         /** {@inheritDoc} */
-        public T getMass(final FieldAbsoluteDate<T> date) throws OrekitException {
+        public T getMass(final FieldAbsoluteDate<T> date) {
             return FieldAbstractAnalyticalPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-            throws OrekitException {
+            {
             return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */
-        public void resetInitialState(final FieldSpacecraftState<T> state) throws OrekitException {
+        public void resetInitialState(final FieldSpacecraftState<T> state) {
             FieldAbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
         protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-            throws OrekitException {
+            {
             FieldAbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
         /** {@inheritDoc} */
-        public FieldSpacecraftState<T> getInitialState() throws OrekitException {
+        public FieldSpacecraftState<T> getInitialState() {
             return FieldAbstractAnalyticalPropagator.this.getInitialState();
         }
 
@@ -512,7 +504,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-            throws OrekitException {
+            {
 
             // compute the basic spacecraft state
             final FieldSpacecraftState<T> basicState = basicPropagate(date);

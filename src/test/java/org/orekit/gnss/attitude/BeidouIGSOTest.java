@@ -34,7 +34,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -44,7 +44,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -54,7 +54,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -64,7 +64,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -74,7 +74,7 @@ public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargePositiveBeta() throws OrekitException {
+    public void testLargePositiveBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account

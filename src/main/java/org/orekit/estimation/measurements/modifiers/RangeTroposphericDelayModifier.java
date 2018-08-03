@@ -78,7 +78,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorTroposphericModel(final GroundStation station, final SpacecraftState state)
-        throws OrekitException {
+        {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -110,10 +110,10 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station, final SpacecraftState refstate)
-        throws OrekitException {
+        {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 // evaluate target's elevation with a changed target position
                                 final double value = rangeErrorTroposphericModel(station, state);
 
@@ -139,12 +139,12 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state,
                                                  final double delay)
-        throws OrekitException {
+        {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeErrorTroposphericModel(station, state);
             }
         };
@@ -165,7 +165,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<Range> estimated)
-        throws OrekitException {
+        {
         final Range           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];

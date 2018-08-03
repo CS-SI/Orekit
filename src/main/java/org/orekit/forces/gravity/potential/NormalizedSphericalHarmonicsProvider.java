@@ -39,19 +39,15 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return normalized coefficient Cnm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getNormalizedCnm(int n, int m) throws OrekitException;
+        double getNormalizedCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return normalized coefficient Snm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getNormalizedSnm(int n, int m) throws OrekitException;
+        double getNormalizedSnm(int n, int m);
 
     }
 
@@ -63,6 +59,6 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      * @throws OrekitException on error
      * @since 6.1
      */
-    NormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+    NormalizedSphericalHarmonics onDate(AbsoluteDate date);
 
 }

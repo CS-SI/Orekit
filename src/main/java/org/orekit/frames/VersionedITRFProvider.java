@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -73,13 +72,13 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public VersionedITRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+        {
         return new VersionedITRFProvider(version, rawProvider.getNonInterpolatingProvider());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // get the transform from the current EOP
         final Transform rawTransform = rawProvider.getTransform(date);
@@ -97,7 +96,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         // get the transform from the current EOP
         final FieldTransform<T> rawTransform = rawProvider.getTransform(date);

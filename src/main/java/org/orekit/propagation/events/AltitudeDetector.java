@@ -145,9 +145,8 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * and the threshold altitude.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
-     */
-    public double g(final SpacecraftState s) throws OrekitException {
+          */
+    public double g(final SpacecraftState s) {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
         final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);
         final GeodeticPoint point  = bodyShape.transform(pvBody.getPosition(),

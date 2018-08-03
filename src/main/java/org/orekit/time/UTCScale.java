@@ -54,9 +54,8 @@ public class UTCScale implements TimeScale {
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
      * @param offsetModels UTC-TAI offsets
-     * @exception OrekitException if cache cannot be set up
-     */
-    UTCScale(final List<OffsetModel> offsetModels) throws OrekitException {
+          */
+    UTCScale(final List<OffsetModel> offsetModels) {
 
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually

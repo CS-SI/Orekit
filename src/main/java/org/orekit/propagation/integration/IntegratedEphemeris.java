@@ -117,8 +117,7 @@ public class IntegratedEphemeris
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-     * @exception OrekitException if several providers have the same name
-     */
+          */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final boolean meanOrbit,
@@ -126,7 +125,7 @@ public class IntegratedEphemeris
                                final Map<String, double[]> unmanaged,
                                final List<AdditionalStateProvider> providers,
                                final String[] equations)
-        throws OrekitException {
+        {
 
         super(mapper.getAttitudeProvider());
 
@@ -153,11 +152,9 @@ public class IntegratedEphemeris
     /** Interpolate the model at some date.
      * @param date desired interpolation date
      * @return state interpolated at date
-     * @exception OrekitException if specified date is outside
-     * of supported range
      */
     private ODEStateAndDerivative getInterpolatedState(final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
@@ -175,7 +172,7 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
-        throws OrekitException {
+        {
         final ODEStateAndDerivative os = getInterpolatedState(date);
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
@@ -188,18 +185,18 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws OrekitException {
+        {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) throws OrekitException {
+    protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+        {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -224,18 +221,18 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
-        throws OrekitException {
+        {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws OrekitException {
+        {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
@@ -298,7 +295,7 @@ public class IntegratedEphemeris
 
         /** {@inheritDoc} */
         public double[] getAdditionalState(final SpacecraftState state)
-            throws OrekitException {
+            {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);

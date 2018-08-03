@@ -142,7 +142,7 @@ public class VisibilityCircle {
 
     private static List<GeodeticPoint> computeCircle(double latitude, double longitude, double altitude,
                                                      String name, double minElevation, double radius, int points)
-        throws OrekitException {
+        {
 
         // define Earth shape, using WGS84 model
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

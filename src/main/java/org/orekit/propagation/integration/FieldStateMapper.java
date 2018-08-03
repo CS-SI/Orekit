@@ -18,7 +18,6 @@ package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -160,10 +159,9 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
-     */
+          */
     public FieldSpacecraftState<T> mapArrayToState(final T t, final T[] y, final T[] yDot, final boolean meanOnly)
-            throws OrekitException {
+            {
         return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
     }
 
@@ -173,18 +171,14 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param yDot state derivative components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
-     */
-    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, boolean meanOnly)
-        throws OrekitException;
+          */
+    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, boolean meanOnly);
 
     /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
      * @param yDot placeholder where to put the components derivatives
-     * @exception OrekitException if state is inconsistent or cannot be mapped
-     */
-    public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot)
-        throws OrekitException;
+          */
+    public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot);
 
 }

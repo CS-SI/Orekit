@@ -69,13 +69,11 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param wavelength phase observed value wavelength
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight)
-        throws OrekitException {
+        {
         this(station, date, phase, wavelength, sigma, baseWeight, 0);
     }
 
@@ -87,13 +85,11 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public Phase(final GroundStation station, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final int propagatorIndex)
-        throws OrekitException {
+        {
         super(date, phase, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -120,7 +116,7 @@ public class Phase extends AbstractMeasurement<Phase> {
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states)
-        throws OrekitException {
+        {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

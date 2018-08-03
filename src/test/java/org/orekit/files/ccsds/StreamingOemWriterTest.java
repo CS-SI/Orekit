@@ -51,7 +51,7 @@ public class StreamingOemWriterTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testGuessFrame() throws OrekitException {
+    public void testGuessFrame() {
         // action + verify
         // check all non-LOF frames created by OEMParser
         for (CCSDSFrame ccsdsFrame : CCSDSFrame.values()) {
@@ -118,7 +118,7 @@ public class StreamingOemWriterTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testGuessCenter() throws OrekitException {
+    public void testGuessCenter() {
         // action + verify
         // check all CCSDS common center names
         List<CenterName> centerNames =

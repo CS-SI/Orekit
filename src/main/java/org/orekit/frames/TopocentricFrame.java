@@ -158,11 +158,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return elevation of the point
-     * @exception OrekitException if frames transformations cannot be computed
-     */
+          */
     public double getElevation(final Vector3D extPoint, final Frame frame,
                                final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -180,11 +179,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return azimuth of the point
-     * @exception OrekitException if frames transformations cannot be computed
-     */
+          */
     public double getAzimuth(final Vector3D extPoint, final Frame frame,
                              final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = getTransformTo(frame, date).getInverse();
@@ -204,11 +202,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range (distance) of the point
-     * @exception OrekitException if frames transformations cannot be computed
-     */
+          */
     public double getRange(final Vector3D extPoint, final Frame frame,
                            final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -224,11 +221,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param frame frame in which the point is defined
      * @param date computation date
      * @return range rate of the point (positive if point departs from frame)
-     * @exception OrekitException if frames transformations cannot be computed
-     */
+          */
     public double getRangeRate(final PVCoordinates extPV, final Frame frame,
                                final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // Transform given point from given frame to topocentric frame
         final Transform t = frame.getTransformTo(this, date);
@@ -255,7 +251,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public GeodeticPoint computeLimitVisibilityPoint(final double radius,
                                                      final double azimuth, final double elevation)
-        throws OrekitException {
+        {
         try {
             // convergence threshold on point position: 1mm
             final double deltaP = 0.001;
@@ -286,11 +282,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param elevation pointing elevation from station
      * @param distance distance to station
      * @return observed point
-     * @exception OrekitException if point cannot be computed
-     */
+          */
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
                                          final double distance)
-        throws OrekitException {
+        {
         final double cosAz = FastMath.cos(azimuth);
         final double sinAz = FastMath.sin(azimuth);
         final double cosEl = FastMath.cos(elevation);
@@ -305,10 +300,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @param date current date
      * @param frame the frame where to define the position
      * @return position/velocity of the topocentric frame origin (m and m/s)
-     * @exception OrekitException if position cannot be computed in given frame
-     */
+          */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+        {
         return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
                                                                                                Vector3D.ZERO,
                                                                                                Vector3D.ZERO,

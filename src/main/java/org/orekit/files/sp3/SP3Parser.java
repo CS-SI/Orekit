@@ -128,7 +128,7 @@ public class SP3Parser implements EphemerisFileParser {
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
      */
-    public SP3File parse(final InputStream stream) throws OrekitException, IOException {
+    public SP3File parse(final InputStream stream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
         }
@@ -144,7 +144,7 @@ public class SP3Parser implements EphemerisFileParser {
 
     @Override
     public SP3File parse(final BufferedReader reader,
-                         final String fileName) throws OrekitException, IOException {
+                         final String fileName) throws IOException {
 
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
@@ -275,7 +275,7 @@ public class SP3Parser implements EphemerisFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi)
-                throws OrekitException {
+                {
                 try (Scanner s1      = new Scanner(line);
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
@@ -331,7 +331,7 @@ public class SP3Parser implements EphemerisFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi)
-                throws OrekitException {
+                {
                 try (Scanner s1      = new Scanner(line);
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
@@ -423,7 +423,7 @@ public class SP3Parser implements EphemerisFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi)
-                throws OrekitException {
+                {
 
                 if (pi.file.getType() == null) {
                     // this the first custom fields line, the only one really used
@@ -757,9 +757,8 @@ public class SP3Parser implements EphemerisFileParser {
         /** Parse a line.
          * @param line line to parse
          * @param pi holder for transient data
-         * @exception OrekitException if line cannot be parsed
-         */
-        public abstract void parse(String line, ParseInfo pi) throws OrekitException;
+                  */
+        public abstract void parse(String line, ParseInfo pi);
 
         /** Get the allowed parsers for next line.
          * @return allowed parsers for next line

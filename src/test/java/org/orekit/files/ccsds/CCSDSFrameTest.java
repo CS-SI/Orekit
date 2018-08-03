@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
 public class CCSDSFrameTest {
 
     @Test
-    public void testLOFFramesNotRegularFrames() throws OrekitException {
+    public void testLOFFramesNotRegularFrames() {
         for (final CCSDSFrame frame : CCSDSFrame.values()) {
             if (frame.isLof()) {
                 try {

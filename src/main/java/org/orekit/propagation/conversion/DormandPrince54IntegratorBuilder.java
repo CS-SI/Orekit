@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -53,7 +52,7 @@ public class DormandPrince54IntegratorBuilder implements ODEIntegratorBuilder {
 
     /** {@inheritDoc} */
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        throws OrekitException {
+        {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
     }

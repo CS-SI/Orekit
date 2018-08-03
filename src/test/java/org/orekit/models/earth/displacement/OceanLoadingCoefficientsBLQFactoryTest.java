@@ -60,7 +60,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
     }
 
     @Test
-    public void testOrganization() throws OrekitException {
+    public void testOrganization() {
         TimeScale                          ut1     = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments       fna     = IERSConventions.IERS_2010.getNutationArguments(ut1);
         final BodiesElements               el      = fna.evaluateAll(AbsoluteDate.J2000_EPOCH);
@@ -82,7 +82,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
     }
 
     @Test
-    public void testHardisp() throws OrekitException {
+    public void testHardisp() {
         OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^hardisp\\.blq$");
         List<String> sites = factory.getSites();
         Assert.assertEquals(2, sites.size());
@@ -133,7 +133,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
     }
 
     @Test
-    public void testCompleteFormat() throws OrekitException {
+    public void testCompleteFormat() {
         OceanLoadingCoefficientsBLQFactory factory = new OceanLoadingCoefficientsBLQFactory("^complete-format\\.blq$");
         List<String> sites = factory.getSites();
         Assert.assertEquals(4, sites.size());
@@ -163,7 +163,7 @@ public class OceanLoadingCoefficientsBLQFactoryTest {
     }
 
     @Test
-        public void testSeveralFiles() throws OrekitException {
+        public void testSeveralFiles() {
             OceanLoadingCoefficientsBLQFactory factory =
                             new OceanLoadingCoefficientsBLQFactory("^(?:(?:hardisp)|(?:complete-format))\\.blq$");
             List<String> sites = factory.getSites();

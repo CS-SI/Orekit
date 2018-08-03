@@ -94,19 +94,17 @@ public class ZipJarCrawler implements DataProvider {
      * argument.
      * </p>
      * @param resource name of the zip file to browse
-     * @exception OrekitException if resource name is malformed
      */
-    public ZipJarCrawler(final String resource) throws OrekitException {
+    public ZipJarCrawler(final String resource) {
         this(ZipJarCrawler.class.getClassLoader(), resource);
     }
 
     /** Build a zip crawler for an archive file in classpath.
      * @param classLoader class loader to use to retrieve the resources
      * @param resource name of the zip file to browse
-     * @exception OrekitException if resource name is malformed
      */
     public ZipJarCrawler(final ClassLoader classLoader, final String resource)
-        throws OrekitException {
+        {
         try {
             this.file        = null;
             this.resource    = resource;
@@ -120,9 +118,8 @@ public class ZipJarCrawler implements DataProvider {
 
     /** Build a zip crawler for an archive file on network.
      * @param url URL of the zip file on network
-     * @exception OrekitException if url syntax is malformed
      */
-    public ZipJarCrawler(final URL url) throws OrekitException {
+    public ZipJarCrawler(final URL url) {
         try {
             this.file        = null;
             this.resource    = null;
@@ -136,7 +133,7 @@ public class ZipJarCrawler implements DataProvider {
 
     /** {@inheritDoc} */
     public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+        {
 
         try {
 
@@ -172,15 +169,13 @@ public class ZipJarCrawler implements DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @param archive archive to read
-     * @exception OrekitException if some data is missing, duplicated
-     * or can't be read
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
     private boolean feed(final String prefix, final Pattern supported,
                          final DataLoader visitor, final Archive archive)
-        throws OrekitException, IOException, ParseException {
+        throws IOException, ParseException {
 
         OrekitException delayedException = null;
         boolean loaded = false;

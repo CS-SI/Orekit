@@ -66,7 +66,7 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+        {
         try {
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
@@ -77,7 +77,7 @@ public class RangeMeasurementCreator2 extends MeasurementCreator {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitException {
+                        public double value(final double x) {
                             final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
                             final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;

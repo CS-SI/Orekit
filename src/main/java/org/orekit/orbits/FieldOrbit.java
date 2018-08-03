@@ -400,11 +400,10 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
     /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return FieldPVCoordinates in the specified output frame
-     * @exception OrekitException if transformation between frames cannot be computed
-     * @see #getPVCoordinates()
+          * @see #getPVCoordinates()
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+        {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -422,7 +421,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
-        throws OrekitException {
+        {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 

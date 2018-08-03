@@ -64,7 +64,7 @@ public class Context {
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
                                                     final Force... forces)
-        throws OrekitException {
+        {
 
         final Orbit startOrbit;
         if (perfectStart) {
@@ -95,7 +95,7 @@ public class Context {
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
                                 double altitude, String name)
-        throws OrekitException {
+        {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);

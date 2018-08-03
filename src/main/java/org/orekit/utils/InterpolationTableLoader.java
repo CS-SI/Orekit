@@ -85,8 +85,6 @@ public class InterpolationTableLoader implements DataLoader {
      * @param name  the name of the input file
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
-     * @exception OrekitException if some data is missing or unexpected
-     *                            data is encountered
      */
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {

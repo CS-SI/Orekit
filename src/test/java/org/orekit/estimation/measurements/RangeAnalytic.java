@@ -53,12 +53,10 @@ public class RangeAnalytic extends Range {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public RangeAnalytic(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
-        throws OrekitException {
+        {
         super(station, date, range, sigma, baseWeight);
     }
 
@@ -66,7 +64,7 @@ public class RangeAnalytic extends Range {
      * @param Range parent class
      */
     public RangeAnalytic(final Range range)
-        throws OrekitException {
+        {
         super(range.getStation(), range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
               range.getBaseWeight()[0]);
@@ -84,7 +82,7 @@ public class RangeAnalytic extends Range {
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                         final SpacecraftState state)
-        throws OrekitException {
+        {
 
         // Station attribute from parent Range class
         final GroundStation groundStation = this.getStation();
@@ -261,7 +259,7 @@ public class RangeAnalytic extends Range {
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                           final SpacecraftState state)
-        throws OrekitException {
+        {
 
         // Station & DSFactory attributes from parent Range class
         final GroundStation groundStation             =  getStation();

@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries.CompiledSeries;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -147,15 +146,14 @@ public class TidalDisplacement implements StationDisplacement {
      * @see org.orekit.frames.FramesFactory#getEOPHistory(IERSConventions, boolean)
      * @see org.orekit.utils.Constants#JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO
      * @see org.orekit.utils.Constants#JPL_SSD_EARTH_MOON_MASS_RATIO
-     * @exception OrekitException if fundamental nutation arguments cannot be loaded
-     */
+          */
     public TidalDisplacement(final double rEarth,
                              final double sunEarthSystemMassRatio,
                              final double earthMoonMassRatio,
                              final PVCoordinatesProvider sun, final PVCoordinatesProvider moon,
                              final IERSConventions conventions,
                              final boolean removePermanentDeformation)
-        throws OrekitException {
+        {
 
         final double sunEarthMassRatio = sunEarthSystemMassRatio * (1 + 1 / earthMoonMassRatio);
         final double moonEarthMassRatio = 1.0 / earthMoonMassRatio;
@@ -195,7 +193,7 @@ public class TidalDisplacement implements StationDisplacement {
     /** {@inheritDoc} */
     @Override
     public Vector3D displacement(final BodiesElements elements, final Frame earthFrame, final Vector3D referencePoint)
-        throws OrekitException {
+        {
 
         final AbsoluteDate date = elements.getDate();
 
@@ -229,11 +227,10 @@ public class TidalDisplacement implements StationDisplacement {
      * @param sunData Sun data
      * @param moonData Moon data
      * @return displacement of the reference point
-     * @exception OrekitException if Sun or Moon position cannot be retrieved in Earth frame
-     */
+          */
     private Vector3D timeDomainCorrection(final PointData pointData,
                                           final BodyData sunData, final BodyData moonData)
-        throws OrekitException {
+        {
 
         final double h2  = hSup0 + hSup2 * pointData.f;
         final double l2  = lSup0 + lSup2 * pointData.f;

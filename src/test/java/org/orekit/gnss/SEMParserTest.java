@@ -34,7 +34,7 @@ import org.orekit.time.GPSDate;
 public class SEMParserTest {
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("gnss");
     }
 

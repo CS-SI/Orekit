@@ -36,7 +36,7 @@ public enum CcsdsTimeScale {
     GMST {
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             return TimeScalesFactory.getGMST(conventions, false);
         }
     },
@@ -62,7 +62,7 @@ public enum CcsdsTimeScale {
 
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MET");
@@ -83,7 +83,7 @@ public enum CcsdsTimeScale {
 
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     "MRT");
@@ -95,7 +95,7 @@ public enum CcsdsTimeScale {
         public AbsoluteDate parseDate(final String date,
                                       final IERSConventions conventions,
                                       final AbsoluteDate missionReferenceDate)
-                throws OrekitException {
+                {
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
                     this.name());
@@ -103,7 +103,7 @@ public enum CcsdsTimeScale {
 
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             throw new OrekitException(
                     OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
                     this.name());
@@ -127,7 +127,7 @@ public enum CcsdsTimeScale {
     TDB {
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             return TimeScalesFactory.getTDB();
         }
     },
@@ -149,7 +149,7 @@ public enum CcsdsTimeScale {
     UT1 {
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             return TimeScalesFactory.getUT1(conventions, false);
         }
     },
@@ -157,7 +157,7 @@ public enum CcsdsTimeScale {
     UTC {
         @Override
         public TimeScale getTimeScale(final IERSConventions conventions)
-                throws OrekitException {
+                {
             return TimeScalesFactory.getUTC();
         }
     };
@@ -175,7 +175,7 @@ public enum CcsdsTimeScale {
     public AbsoluteDate parseDate(final String date,
                                   final IERSConventions conventions,
                                   final AbsoluteDate missionReferenceDate)
-            throws OrekitException {
+            {
         return new AbsoluteDate(date, this.getTimeScale(conventions));
     }
 
@@ -187,7 +187,7 @@ public enum CcsdsTimeScale {
      * @throws OrekitException if the time scale cannot be constructed.
      */
     public abstract TimeScale getTimeScale(IERSConventions conventions)
-            throws OrekitException;
+           ;
 
     /**
      * Check if {@code timeScale} is one of the values supported by this enum.

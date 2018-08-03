@@ -33,6 +33,6 @@ public interface StateJacobian {
      * @return Jacobian matric
      * @throws OrekitException if evaluation cannot be performed
      */
-    double[][] value(SpacecraftState state) throws OrekitException;
+    double[][] value(SpacecraftState state);
 
 }

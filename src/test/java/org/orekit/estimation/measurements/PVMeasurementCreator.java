@@ -23,7 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 
 public class PVMeasurementCreator extends MeasurementCreator {
 
-    public void handleStep(final SpacecraftState currentState, final boolean isLast) throws OrekitException {
+    public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         final Vector3D p = currentState.getPVCoordinates().getPosition();
         final Vector3D v = currentState.getPVCoordinates().getVelocity();
         final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0);

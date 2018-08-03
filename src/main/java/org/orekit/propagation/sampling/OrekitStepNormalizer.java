@@ -67,7 +67,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t)
-        throws OrekitException {
+        {
         lastState = null;
         forward   = true;
         handler.init(s0, t, h);
@@ -87,7 +87,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * caller if the underlying user function triggers one
      */
     public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-        throws OrekitException {
+        {
 
         if (lastState == null) {
             // initialize lastState in the first step case

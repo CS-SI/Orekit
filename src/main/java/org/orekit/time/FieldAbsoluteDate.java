@@ -421,7 +421,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
                                                                                                      final byte preambleField2,
                                                                                                      final byte[] timeField,
                                                                                                      final FieldAbsoluteDate<T> agencyDefinedEpoch)
-        throws OrekitException {
+        {
 
         // time code identification and reference epoch
         final FieldAbsoluteDate<T> epochF;
@@ -490,7 +490,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
                                                                                                       final byte preambleField, final byte[] timeField,
                                                                                                       final DateComponents agencyDefinedEpoch)
-        throws OrekitException {
+        {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -563,7 +563,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * or if it is inconsistent with time field, or it UTC time scale cannot be retrieved
      */
     public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField)
-        throws OrekitException {
+        {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
@@ -998,10 +998,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
      * negative Westward UTC)
      * @return date/time components
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public DateTimeComponents getComponents(final int minutesFromUTC)
-        throws OrekitException {
+        {
 
         final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
 
@@ -1050,10 +1049,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     /** Split the instance into date/time components for a time zone.
      * @param timeZone time zone
      * @return date/time components
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public DateTimeComponents getComponents( final TimeZone timeZone)
-        throws OrekitException {
+        {
         final long milliseconds = FastMath.round((offsetFrom(getJavaEpoch(field), TimeScalesFactory.getUTC()).getReal()) * 1000);
         return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
@@ -1099,8 +1097,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     /** Get a String representation of the instant location in UTC time scale.
      * @return a string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public String toString() {
         return toString(TimeScalesFactory.getUTC());
     }
@@ -1119,10 +1116,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * negative Westward UTC).
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public String toString(final int minutesFromUTC)
-        throws OrekitException {
+        {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(minutesFromUTC).toString(minuteDuration);
     }
@@ -1131,10 +1127,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param timeZone time zone
      * @return string representation of the instance,
      * in ISO-8601 format with milliseconds accuracy
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
+          */
     public String toString(final TimeZone timeZone)
-        throws OrekitException {
+        {
         final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(timeZone).toString(minuteDuration);
     }

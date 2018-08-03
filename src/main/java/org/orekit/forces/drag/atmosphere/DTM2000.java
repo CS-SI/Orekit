@@ -176,11 +176,10 @@ public class DTM2000 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-     * @exception OrekitException if some resource file reading error occurs
-     */
+          */
     public DTM2000(final DTM2000InputParameters parameters,
                    final PVCoordinatesProvider sun, final BodyShape earth)
-        throws OrekitException {
+        {
 
         synchronized (DTM2000.class) {
             // lazy reading of model coefficients
@@ -211,13 +210,12 @@ public class DTM2000 implements Atmosphere {
      * @param akp3 3 hrs geomagnetic activity index (1-9)
      * @param akp24 Mean of last 24 hrs geomagnetic activity index (1-9)
      * @return the local density (kg/m³)
-     * @exception OrekitException if altitude is outside of supported range
-     */
+          */
     public double getDensity(final int day,
                              final double alti, final double lon, final double lat,
                              final double hl, final double f, final double fbar,
                              final double akp3, final double akp24)
-        throws OrekitException {
+        {
         final double threshold = 120000;
         if (alti < threshold) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -246,14 +244,13 @@ public class DTM2000 implements Atmosphere {
      * @param akp24 Mean of last 24 hrs geomagnetic activity index (1-9)
      * @param <T> type of the field elements
      * @return the local density (kg/m³)
-     * @exception OrekitException if altitude is outside of supported range
-     * @since 9.0
+          * @since 9.0
      */
     public <T extends RealFieldElement<T>> T getDensity(final int day,
                                                         final T alti, final T lon, final T lat,
                                                         final T hl, final double f, final double fbar,
                                                         final double akp3, final double akp24)
-        throws OrekitException {
+        {
         final double threshold = 120000;
         if (alti.getReal() < threshold) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
@@ -271,9 +268,8 @@ public class DTM2000 implements Atmosphere {
     }
 
     /** Store the DTM model elements coefficients in internal arrays.
-     * @exception OrekitException if some resource file reading error occurs
-     */
-    private static void readcoefficients() throws OrekitException {
+          */
+    private static void readcoefficients() {
 
         final int size = NLATM + 1;
         tt   = new double[size];
@@ -336,12 +332,10 @@ public class DTM2000 implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m³)
-     * @exception OrekitException if date is out of range of solar activity model
-     * or if some frame conversion cannot be performed
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position,
                              final Frame frame)
-        throws OrekitException {
+        {
 
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
@@ -382,7 +376,7 @@ public class DTM2000 implements Atmosphere {
     public <T extends RealFieldElement<T>> T
         getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
                    final Frame frame)
-            throws OrekitException {
+            {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
         if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||

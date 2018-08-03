@@ -67,7 +67,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
                                               final SpacecraftState state)
-        throws OrekitException {
+        {
 
         // State position
         final Vector3D position = state.getPVCoordinates().getPosition();
@@ -105,10 +105,10 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
                                                final SpacecraftState refstate)
-        throws OrekitException {
+        {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 // evaluate target's elevation with a changed target position
                                 final double value = rangeErrorIonosphericModel(station, state);
 
@@ -134,12 +134,12 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
                                                  final SpacecraftState state)
-        throws OrekitException {
+        {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeErrorIonosphericModel(station, state);
             }
         };
@@ -159,7 +159,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
 
     @Override
     public void modify(final EstimatedMeasurement<TurnAroundRange> estimated)
-        throws OrekitException {
+        {
         final TurnAroundRange measurement   = estimated.getObservedMeasurement();
         final GroundStation   masterStation = measurement.getMasterStation();
         final GroundStation   slaveStation  = measurement.getSlaveStation();

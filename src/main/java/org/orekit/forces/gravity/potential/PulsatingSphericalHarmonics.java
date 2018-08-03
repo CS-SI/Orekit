@@ -101,7 +101,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     @Override
-    public RawSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) {
         //raw (constant) harmonics
         final RawSphericalHarmonics raw = provider.onDate(date);
         //phase angle, will loose precision for large offsets
@@ -118,7 +118,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             public double getRawCnm(final int n, final int m)
-                throws OrekitException {
+                {
 
                 // retrieve the underlying part of the coefficient
                 double cnm = raw.getRawCnm(n, m);
@@ -133,7 +133,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             public double getRawSnm(final int n, final int m)
-                throws OrekitException {
+                {
 
                 // retrieve the constant part of the coefficient
                 double snm = raw.getRawSnm(n, m);

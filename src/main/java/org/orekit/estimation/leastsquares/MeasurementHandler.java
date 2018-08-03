@@ -67,7 +67,7 @@ class MeasurementHandler implements MultiSatStepHandler {
     /** {@inheritDoc} */
     @Override
     public void handleStep(final List<OrekitStepInterpolator> interpolators, final boolean isLast)
-        throws OrekitException {
+        {
 
         while (number < precompensated.size()) {
 

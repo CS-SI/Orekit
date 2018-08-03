@@ -59,7 +59,7 @@ public class CircularFieldOfViewDetectorTest {
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
-    public void testCircularFielOfView() throws OrekitException {
+    public void testCircularFielOfView() {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -127,7 +127,7 @@ public class CircularFieldOfViewDetectorTest {
 
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing)
-            throws OrekitException {
+            {
             if (increasing) {
                 // System.err.println(" Sun visibility starts " + s.getDate());
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),

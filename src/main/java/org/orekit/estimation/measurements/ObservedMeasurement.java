@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
@@ -106,10 +105,8 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
-     * @exception OrekitException if there is a conflict between measurement and
-     * modifiers parameters
      */
-    void addModifier(EstimationModifier<T> modifier) throws OrekitException;
+    void addModifier(EstimationModifier<T> modifier);
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
@@ -144,9 +141,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @param evaluation evaluations number
      * @param states orbital states at measurement date
      * @return estimated measurement
-     * @exception OrekitException if value cannot be computed
      */
-    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states)
-        throws OrekitException;
+    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states);
 
 }

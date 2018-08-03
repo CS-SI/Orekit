@@ -29,7 +29,7 @@ public abstract class AbstractForceModel implements ForceModel {
 
     /** {@inheritDoc} */
     public ParameterDriver getParameterDriver(final String name)
-        throws OrekitException {
+        {
 
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (name.equals(driver.getName())) {
@@ -57,10 +57,9 @@ public abstract class AbstractForceModel implements ForceModel {
 
     /** Complain if a parameter is not supported.
      * @param name name of the parameter
-     * @exception OrekitException if the parameter is not supported
-     */
+          */
     protected void complainIfNotSupported(final String name)
-        throws OrekitException {
+        {
         if (!isSupported(name)) {
             throw notSupportedException(name);
         }

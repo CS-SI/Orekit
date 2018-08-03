@@ -87,10 +87,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
-     * @exception OrekitException if a set of equations with the same name is already present
-     */
+          */
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
-        throws OrekitException {
+        {
         this.name                   = name;
         this.selected               = null;
         this.map                    = null;
@@ -105,12 +104,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Freeze the selected parameters from the force models.
-     * @exception OrekitException if an existing driver for a
-     * parameter throws one when its value is reset using the value
-     * from another driver managing the same parameter
      */
     private void freezeParametersSelection()
-        throws OrekitException {
+        {
         if (selected == null) {
 
             // first pass: gather all parameters, binding similar names together
@@ -153,12 +149,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @return selected parameters, in Jacobian matrix column order which
      * is lexicographic order
-     * @exception OrekitException if an existing driver for a
-     * parameter throws one when its value is reset using the value
-     * from another driver managing the same parameter
      */
     public ParameterDriversList getSelectedParameters()
-        throws OrekitException {
+        {
         freezeParametersSelection();
         return selected;
     }
@@ -176,13 +169,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * </p>
      * @param s0 initial state
      * @return state with initial Jacobians added
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator or if matrices dimensions are incorrect
      * @see #getSelectedParameters()
      * @since 9.0
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0)
-        throws OrekitException {
+        {
         freezeParametersSelection();
         final int stateDimension = 6;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
@@ -207,14 +198,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @param s0 initial state
      * @param stateDimension state dimension, must be either 6 for orbit only or 7 for orbit and mass
      * @return state with initial Jacobians added
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator or if matrices dimensions are incorrect
      * @see #getSelectedParameters()
      * @deprecated as of 9.0, replaced by {@link #setInitialJacobians(SpacecraftState)}
      */
     @Deprecated
     public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension)
-        throws OrekitException {
+        {
         freezeParametersSelection();
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
         final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
@@ -241,13 +230,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @param dY1dP Jacobian of current state at time t₁ with respect
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
-     * @exception OrekitException if the partial equation has not been registered in
-     * the propagator or if matrices dimensions are incorrect
      * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP)
-        throws OrekitException {
+        {
 
         freezeParametersSelection();
 
@@ -281,11 +268,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
-     * @exception OrekitException if the initial Jacobians have not been initialized yet
-     * @see #setInitialJacobians(SpacecraftState, int)
+          * @see #setInitialJacobians(SpacecraftState, int)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
-    public JacobiansMapper getMapper() throws OrekitException {
+    public JacobiansMapper getMapper() {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
@@ -296,7 +282,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
-        throws OrekitException {
+        {
 
         // initialize acceleration Jacobians to zero
         final int paramDim = selected.getNbParams();

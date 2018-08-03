@@ -73,12 +73,11 @@ public class TabulatedLofOffset implements AttitudeProvider {
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
-     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
      */
     public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
                               final List<TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter)
-        throws OrekitException {
+        {
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -99,7 +98,7 @@ public class TabulatedLofOffset implements AttitudeProvider {
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+        {
 
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
@@ -125,7 +124,7 @@ public class TabulatedLofOffset implements AttitudeProvider {
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
                                                                         final Frame frame)
-        throws OrekitException {
+        {
 
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedFieldAngularCoordinates<T>> sample =

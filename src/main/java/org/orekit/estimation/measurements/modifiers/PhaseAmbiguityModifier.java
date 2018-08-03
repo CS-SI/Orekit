@@ -54,10 +54,9 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
      * </p>
      * @param key key to identify the ambiguity
      * @param ambiguity initial value of ambiguity
-     * @exception OrekitException if parameter scale is too close to zero (never happens)
      */
     public PhaseAmbiguityModifier(final int key, final double ambiguity)
-        throws OrekitException {
+        {
         this.ambiguity = new ParameterDriver("amgiguity-" + key,
                                              ambiguity, AMBIGUITY_SCALE,
                                              Double.NEGATIVE_INFINITY,
@@ -72,7 +71,7 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
 
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated)
-        throws OrekitException {
+        {
 
         // apply the ambiguity to the measurement value
         final double[] value = estimated.getEstimatedValue();

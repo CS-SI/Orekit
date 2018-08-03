@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitException;
 public class CenterNameTest {
 
     @Test
-    public void testSupportedCenters() throws OrekitException {
+    public void testSupportedCenters() {
         for (final String name : Arrays.asList("SOLAR_SYSTEM_BARYCENTER", "SUN", "MERCURY", "VENUS",
                                                "EARTH_MOON", "EARTH", "MOON", "MARS", "JUPITER",
                                                "SATURN", "URANUS", "NEPTUNE", "PLUTO")) {
@@ -37,7 +37,7 @@ public class CenterNameTest {
     }
 
     @Test
-    public void testUnupportedCenters() throws OrekitException {
+    public void testUnupportedCenters() {
         for (final String name : Arrays.asList("CERES", "SEDNA", "ERIS", "PLANET-9")) {
             try {
                 CenterName.valueOf(name);

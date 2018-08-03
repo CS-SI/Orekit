@@ -23,7 +23,6 @@ import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -34,7 +33,7 @@ import org.orekit.utils.IERSConventions;
 public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testMissingMonths() throws OrekitException {
+    public void testMissingMonths() {
         setRoot("missing-months");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -44,7 +43,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testStartDate() throws OrekitException {
+    public void testStartDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -55,7 +54,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testEndDate() throws OrekitException {
+    public void testEndDate() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -66,7 +65,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     }
 
     @Test
-    public void testContent() throws OrekitException {
+    public void testContent() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();

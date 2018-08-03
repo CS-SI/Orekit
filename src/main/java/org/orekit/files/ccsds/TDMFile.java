@@ -137,9 +137,8 @@ public class TDMFile {
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
-     *  @exception OrekitException if some blocks do not have the same time system
-     */
-    public void checkTimeSystems() throws OrekitException {
+          */
+    public void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getObservationsBlocks().get(0).getMetaData().getTimeSystem();
         for (final ObservationsBlock block : observationsBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {

@@ -85,7 +85,7 @@ public class Relativity extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+        {
 
         final double gm = parameters[0];
 
@@ -112,7 +112,7 @@ public class Relativity extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters)
-        throws OrekitException {
+        {
 
         final T gm = parameters[0];
 

@@ -89,7 +89,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
                                 final double positionScale)
-        throws OrekitException {
+        {
         super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
               positionAngle, positionScale, false);
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
@@ -121,7 +121,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+        {
 
         // create the orbit
         setParameters(normalizedParameters);

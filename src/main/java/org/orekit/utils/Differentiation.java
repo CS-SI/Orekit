@@ -61,7 +61,7 @@ public class Differentiation {
             /** {@inheritDoc} */
             @Override
             public double value(final double normalizedValue)
-                throws OrekitException {
+                {
                 final double saved = driver.getNormalizedValue();
                 driver.setNormalizedValue(normalizedValue);
                 final double functionValue = function.value(driver);
@@ -79,7 +79,7 @@ public class Differentiation {
             /** {@inheritDoc} */
             @Override
             public double value(final ParameterDriver parameterDriver)
-                throws OrekitException {
+                {
                 if (!parameterDriver.getName().equals(driver.getName())) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                               parameterDriver.getName(), driver.getName());
@@ -109,7 +109,7 @@ public class Differentiation {
         return new StateJacobian() {
 
             @Override
-            public double[][] value(final SpacecraftState state) throws OrekitException {
+            public double[][] value(final SpacecraftState state) {
                 final double[] tolerances =
                         NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
                 final double[][] jacobian = new double[dimension][6];
@@ -183,7 +183,7 @@ public class Differentiation {
 
         /** {@inheritDoc} */
         @Override
-        public double[] value(final double x) throws OrekitException {
+        public double[] value(final double x) {
             final double[] array = new double[6];
             final double[] arrayDot = new double[6];
             orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array, arrayDot);

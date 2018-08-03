@@ -142,7 +142,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testAntipodes()
-        throws OrekitException {
+        {
 
         // First point at latitude 45° and longitude 30
         final GeodeticPoint point1 = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
@@ -169,7 +169,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testSiteAtZenith()
-        throws OrekitException {
+        {
 
         // Surface point at latitude 45°
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
@@ -189,7 +189,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testAzimuthEquatorial()
-        throws OrekitException {
+        {
 
         // Surface point at latitude 0
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(0.), FastMath.toRadians(30.), 0.);
@@ -223,7 +223,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testAzimuthPole()
-        throws OrekitException {
+        {
 
         // Surface point at latitude 0
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(89.999), FastMath.toRadians(0.), 0.);
@@ -249,7 +249,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testDoppler()
-        throws OrekitException {
+        {
 
         // Surface point at latitude 45, longitude 5
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
@@ -296,7 +296,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testEllipticEarth()  throws OrekitException {
+    public void testEllipticEarth()  {
 
         // Elliptic earth shape
         final OneAxisEllipsoid earthElliptic =
@@ -400,7 +400,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testPointAtDistance() throws OrekitException {
+    public void testPointAtDistance() {
 
         RandomGenerator random = new Well1024a(0xa1e6bd5cd0578779l);
         final OneAxisEllipsoid earth =
@@ -433,7 +433,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testIssue145() throws OrekitException {
+    public void testIssue145() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
@@ -473,7 +473,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testVisibilityCircle() throws OrekitException, IOException {
+    public void testVisibilityCircle() throws IOException {
 
         // a few random from International Laser Ranging Service
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

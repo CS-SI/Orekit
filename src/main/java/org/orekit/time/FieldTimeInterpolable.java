@@ -21,8 +21,6 @@ import org.hipparchus.RealFieldElement;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import org.orekit.errors.OrekitException;
-
 /** This interface represents objects that can be interpolated in time.
  * @param <T> Type of the object.
  * @param <KK> type of the field elements
@@ -51,10 +49,9 @@ public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, 
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if interpolation cannot be performed
-     */
+          */
     default T interpolate(FieldAbsoluteDate<KK> date, Collection<T> sample)
-        throws OrekitException {
+        {
         return interpolate(date, sample.stream());
     }
 
@@ -79,9 +76,7 @@ public interface FieldTimeInterpolable <T extends FieldTimeInterpolable<T, KK>, 
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-     * @exception OrekitException if interpolation cannot be performed
-     */
-    T interpolate(FieldAbsoluteDate<KK> date, Stream<T> sample)
-        throws OrekitException;
+          */
+    T interpolate(FieldAbsoluteDate<KK> date, Stream<T> sample);
 
 }

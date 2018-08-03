@@ -67,7 +67,7 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
 
     /** {@inheritDoc} */
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t)
-        throws OrekitException {
+        {
         lastState = null;
         forward   = true;
         handler.init(s0, t, h);
@@ -87,7 +87,7 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
      * caller if the underlying user function triggers one
      */
     public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast)
-        throws OrekitException {
+        {
 
         if (lastState == null) {
             // initialize lastState in the first step case

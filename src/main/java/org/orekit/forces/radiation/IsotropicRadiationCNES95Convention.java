@@ -129,7 +129,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters)
-        throws OrekitException {
+        {
         final T alpha = parameters[0];
         final T tau   = parameters[1];
         final T kP    = alpha.negate().add(1).multiply(tau.negate().add(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
@@ -142,7 +142,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final double[] parameters,
                                                                             final String paramName)
-        throws OrekitException {
+        {
 
         final DerivativeStructure absorptionCoeffDS;
         final DerivativeStructure specularReflectionCoeffDS;

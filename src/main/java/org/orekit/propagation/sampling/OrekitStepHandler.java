@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -40,18 +39,15 @@ public interface OrekitStepHandler {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
-     * @exception OrekitException if step handler cannot be initialized
-     */
-    default void init(SpacecraftState s0, AbsoluteDate t) throws OrekitException {
+          */
+    default void init(SpacecraftState s0, AbsoluteDate t) {
         // nothing by default
     }
 
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
      * @param isLast if true, this is the last integration step
-     * @exception OrekitException if step cannot be handled
-     */
-    void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-        throws OrekitException;
+          */
+    void handleStep(OrekitStepInterpolator interpolator, boolean isLast);
 
 }

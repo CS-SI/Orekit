@@ -45,11 +45,10 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
      * @param scale scale of the bias, for normalization
      * @param min minimum value of the bias
      * @param max maximum value of the bias
-     * @exception OrekitException if reference value cannot be set
      */
     public Bias(final String[] name, final double[] bias, final double[] scale,
                 final double[] min, final double[] max)
-        throws OrekitException {
+        {
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {

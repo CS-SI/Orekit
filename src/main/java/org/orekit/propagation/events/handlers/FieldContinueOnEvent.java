@@ -18,7 +18,6 @@ package org.orekit.propagation.events.handlers;
 
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 
@@ -38,11 +37,10 @@ public class FieldContinueOnEvent <KK extends FieldEventDetector<T>, T extends R
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return {@link FieldEventHandler.Action#CONTINUE continue} under all circumstances
-     * @exception OrekitException if some specific error occurs
-     */
+          */
     @Override
     public Action eventOccurred(final FieldSpacecraftState<T> s, final KK detector, final boolean increasing)
-        throws OrekitException {
+        {
         return Action.CONTINUE;
     }
 

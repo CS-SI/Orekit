@@ -194,7 +194,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * @param date date to bracket
      * @throws OrekitException if specified date is out of range
      */
-    private void bracketDate(final AbsoluteDate date) throws OrekitException {
+    private void bracketDate(final AbsoluteDate date) {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 0)) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
@@ -229,7 +229,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    public AbsoluteDate getMinDate() throws OrekitException {
+    public AbsoluteDate getMinDate() {
         if (firstDate == null) {
             DataProvidersManager.getInstance().feed(getSupportedNames(), this);
         }
@@ -237,7 +237,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    public AbsoluteDate getMaxDate() throws OrekitException {
+    public AbsoluteDate getMaxDate() {
         if (firstDate == null) {
             DataProvidersManager.getInstance().feed(getSupportedNames(), this);
         }
@@ -245,12 +245,12 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    public double getInstantFlux(final AbsoluteDate date) throws OrekitException {
+    public double getInstantFlux(final AbsoluteDate date) {
         return getMeanFlux(date);
     }
 
     /** {@inheritDoc} */
-    public double getMeanFlux(final AbsoluteDate date) throws OrekitException {
+    public double getMeanFlux(final AbsoluteDate date) {
 
         // get the neighboring dates
         bracketDate(date);
@@ -269,7 +269,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    public double getThreeHourlyKP(final AbsoluteDate date) throws OrekitException {
+    public double getThreeHourlyKP(final AbsoluteDate date) {
         return get24HoursKp(date);
     }
 
@@ -287,9 +287,8 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * </p>
      * @param date date of the solar activity data
      * @return date of the file
-     * @exception OrekitException if specified date is out of range
-     */
-    public DateComponents getFileDate(final AbsoluteDate date) throws OrekitException {
+          */
+    public DateComponents getFileDate(final AbsoluteDate date) {
         bracketDate(date);
         final double dtP = date.durationFrom(previousParam.getDate());
         final double dtC = currentParam.getDate().durationFrom(date);
@@ -322,9 +321,8 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * </table>
      * @param date date of the Kp data
      * @return the 24H geomagnetic index
-     * @exception OrekitException if the date is out of range of available data
-     */
-    public double get24HoursKp(final AbsoluteDate date) throws OrekitException {
+          */
+    public double get24HoursKp(final AbsoluteDate date) {
 
         // get the neighboring dates
         bracketDate(date);

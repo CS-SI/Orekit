@@ -109,7 +109,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
 
     /** Load the data using supported names .
      * @throws OrekitException */
-    public void loadKlobucharIonosphericCoefficients() throws OrekitException {
+    public void loadKlobucharIonosphericCoefficients() {
         DataProvidersManager.getInstance().feed(supportedNames, this);
 
         // Throw an exception if alphas or betas were not loaded properly
@@ -122,7 +122,7 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      * @param dateComponents day given but its DateComponents
      * @throws OrekitException if the coefficients could not be loaded
      */
-    public void loadKlobucharIonosphericCoefficients(final DateComponents dateComponents) throws OrekitException {
+    public void loadKlobucharIonosphericCoefficients(final DateComponents dateComponents) {
 
         // The files are named CGIMDDD0.YYN where DDD and YY substitute day of year and 2-digits year
         final int    doy        = dateComponents.getDayOfYear();
@@ -149,8 +149,6 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
-     * @exception OrekitException if some data is missing
-     * or if some loader specific error occurs
      */
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {

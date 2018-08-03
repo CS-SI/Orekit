@@ -203,7 +203,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void initializeStep(final AuxiliaryElements aux)
-        throws OrekitException {
+        {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -249,7 +249,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState state) {
 
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
@@ -276,9 +276,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      *  @param  state current state information: date, kinematics, attitude
      *  @return the integration limits in L
-     *  @exception OrekitException if some specific error occurs
-     */
-    protected abstract double[] getLLimits(SpacecraftState state) throws OrekitException;
+          */
+    protected abstract double[] getLLimits(SpacecraftState state);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
@@ -292,7 +291,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     private double[] getMeanElementRate(final SpacecraftState state,
             final GaussQuadrature gauss,
             final double low,
-            final double high) throws OrekitException {
+            final double high) {
         final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0), low, high);
         // Constant multiplier for integral
         final double coef = 1. / (2. * FastMath.PI * B);
@@ -328,7 +327,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void updateShortPeriodTerms(final SpacecraftState... meanStates)
-        throws OrekitException {
+        {
 
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -1206,7 +1205,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @throws OrekitException in case of an error
          */
         FourierCjSjCoefficients(final SpacecraftState state, final int jMax)
-            throws OrekitException {
+            {
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1229,7 +1228,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @throws OrekitException in case of an error
          */
         private void computeCoefficients(final SpacecraftState state)
-            throws OrekitException {
+            {
             // Computes the limits for the integral
             final double[] ll = getLLimits(state);
             // Computes integrated mean element rates if Llow < Lhigh
@@ -1343,7 +1342,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                          final FourierCjSjCoefficients fourierCjSj,
                                          final UijVijCoefficients uijvij,
                                          final double n, final double a)
-            throws OrekitException {
+            {
 
             // get the current date
             final AbsoluteDate date = state.getDate();
@@ -1491,7 +1490,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          */
         @Override
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+            {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

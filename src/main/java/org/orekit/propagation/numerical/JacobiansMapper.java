@@ -172,11 +172,10 @@ public class JacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
-     * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getParametersJacobian(SpacecraftState, double[][])
+          * @see #getParametersJacobian(SpacecraftState, double[][])
      */
     public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
-        throws OrekitException {
+        {
 
         // get the conversion Jacobian between state parameters and Cartesian parameters
         final double[][] dYdC = getdYdC(state);
@@ -212,11 +211,10 @@ public class JacobiansMapper {
      * </p>
      * @param state spacecraft state
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
-     * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getStateJacobian(SpacecraftState, double[][])
+          * @see #getStateJacobian(SpacecraftState, double[][])
      */
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        throws OrekitException {
+        {
 
         if (parameters.getNbParams() != 0) {
 

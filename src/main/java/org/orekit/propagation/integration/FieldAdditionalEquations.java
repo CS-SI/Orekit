@@ -87,7 +87,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      *                         initialization.
      */
     default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target)
-        throws OrekitException {
+        {
         // nothing by default
     }
 
@@ -106,9 +106,7 @@ public interface FieldAdditionalEquations<T extends RealFieldElement<T>> {
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
-     * @exception OrekitException if some specific error occurs
-     */
-    T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot)
-        throws OrekitException;
+          */
+    T[] computeDerivatives(FieldSpacecraftState<T> s,  T[] pDot);
 
 }

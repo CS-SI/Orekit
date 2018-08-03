@@ -98,7 +98,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
      * Thus the spacecraft date is the date when the 1st leg of the path ends and the 2nd leg begins
      */
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws OrekitException {
+        {
         try {
             for (Map.Entry<GroundStation, GroundStation> entry : context.TARstations.entrySet()) {
 
@@ -126,7 +126,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Therefore we can use the function "downlinkTimeOfFlight" from GroundStation class
                     // final double slaveTauD = slaveStation.downlinkTimeOfFlight(currentState, date);
                     final double slaveTauD  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitException {
+                        public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(-x);
                             final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                slaveStationPosition);
@@ -138,7 +138,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // A solver is used to know where the satellite is when it receives the signal
                     // back from the slave station
                     final double slaveTauU  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitException {
+                        public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(+x);
                             final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                slaveStationPosition);
@@ -164,7 +164,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // We use a solver to know where the master station is when it receives
                     // the signal back from the satellite on the 2nd leg of the path
                     final double masterTauD  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitException{
+                        public double value(final double x) {
                             final Transform t = masterStation.getOffsetToInertial(inertial, T2.shiftedBy(+x));
                             final double d = Vector3D.distance(P2, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;

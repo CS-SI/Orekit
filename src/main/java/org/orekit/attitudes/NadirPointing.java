@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -60,11 +59,10 @@ public class NadirPointing extends GroundPointing {
     /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
-     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
     public NadirPointing(final Frame inertialFrame, final BodyShape shape)
-        throws OrekitException {
+        {
         // Call constructor of superclass
         super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
@@ -73,7 +71,7 @@ public class NadirPointing extends GroundPointing {
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                 final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+        {
 
         // transform from specified reference frame to body frame
         final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
@@ -96,7 +94,7 @@ public class NadirPointing extends GroundPointing {
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                         final FieldAbsoluteDate<T> date,
                                                                                         final Frame frame)
-        throws OrekitException {
+        {
 
         // transform from specified reference frame to body frame
         final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
@@ -119,10 +117,9 @@ public class NadirPointing extends GroundPointing {
      * @param scRef spacecraft coordinates in reference frame
      * @param refToBody transform from reference frame to body frame
      * @return intersection point in body frame (only the position is set!)
-     * @exception OrekitException if line of sight does not intersect body
      */
     private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef, final Transform refToBody)
-        throws OrekitException {
+        {
 
         final Vector3D satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 
@@ -147,12 +144,11 @@ public class NadirPointing extends GroundPointing {
      * @param refToBody transform from reference frame to body frame
      * @param <T> type of the field elements
      * @return intersection point in body frame (only the position is set!)
-     * @exception OrekitException if line of sight does not intersect body
      * @since 9.0
      */
     private <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> nadirRef(final TimeStampedFieldPVCoordinates<T> scRef,
                                                                                       final FieldTransform<T> refToBody)
-        throws OrekitException {
+        {
 
         final FieldVector3D<T> satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 

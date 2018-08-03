@@ -32,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 public class UpdatableFrameTest {
 
     @Test
-    public void testUpdateTransform() throws OrekitException {
+    public void testUpdateTransform() {
         Random random     = new Random(0x2f6769c23e53e96el);
         UpdatableFrame f0 = new UpdatableFrame(FramesFactory.getGCRF(), Transform.IDENTITY, "dummy");
         AbsoluteDate date = new AbsoluteDate();
@@ -78,7 +78,7 @@ public class UpdatableFrameTest {
 
     private void checkUpdateTransform(UpdatableFrame f0, Frame f1, Frame f2,
                                       AbsoluteDate date, Random random)
-      throws OrekitException {
+      {
         Transform f1ToF2 = randomTransform(random);
 
         f0.updateTransform(f1, f2, f1ToF2, date);

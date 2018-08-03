@@ -18,7 +18,6 @@ package org.orekit.propagation.events.handlers;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
@@ -47,10 +46,9 @@ public class StopOnDecreasing <T extends EventDetector> implements EventHandler<
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
      * @return {@link EventHandler.Action#STOP} or {@link EventHandler.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
+          */
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
-        throws OrekitException {
+        {
         return increasing ? Action.CONTINUE : Action.STOP;
     }
 

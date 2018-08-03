@@ -239,10 +239,9 @@ public class Frame implements Serializable {
      * @param destination destination frame to which we want to transform vectors
      * @param date the date (can be null if it is sure than no date dependent frame is used)
      * @return transform from the instance to the destination frame
-     * @exception OrekitException if some frame specific error occurs
-     */
+          */
     public Transform getTransformTo(final Frame destination, final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         if (this == destination) {
             // shortcut for special case that may be frequent
@@ -276,10 +275,9 @@ public class Frame implements Serializable {
      * @param date the date (can be null if it is sure than no date dependent frame is used)
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
-     * @exception OrekitException if some frame specific error occurs
-     */
+          */
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         if (this == destination) {
             // shortcut for special case that may be frequent
@@ -376,11 +374,9 @@ public class Frame implements Serializable {
      * @param freezingDate freezing date
      * @param frozenName name of the frozen frame
      * @return a frozen version of the instance
-     * @exception OrekitException if transform between reference frame and instance
-     * cannot be computed at freezing frame
      */
     public Frame getFrozenFrame(final Frame reference, final AbsoluteDate freezingDate,
-                                final String frozenName) throws OrekitException {
+                                final String frozenName) {
         return new Frame(reference, reference.getTransformTo(this, freezingDate).freeze(),
                          frozenName, reference.isPseudoInertial());
     }

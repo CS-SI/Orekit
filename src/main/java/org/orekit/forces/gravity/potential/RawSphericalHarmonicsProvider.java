@@ -43,21 +43,17 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return raw coefficient Cnm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
         double getRawCnm(int n, int m)
-            throws OrekitException;
+           ;
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return raw coefficient Snm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
         double getRawSnm(int n, int m)
-            throws OrekitException;
+           ;
 
     }
 
@@ -67,6 +63,6 @@ public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvide
      * @return the raw spherical harmonics on {@code date}.
      * @throws OrekitException on error
      */
-    RawSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+    RawSphericalHarmonics onDate(AbsoluteDate date);
 
 }

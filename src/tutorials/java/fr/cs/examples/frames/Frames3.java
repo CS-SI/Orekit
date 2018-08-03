@@ -127,7 +127,7 @@ public class Frames3 {
                 PrintStream out = null;
 
                 public void init(SpacecraftState s0, AbsoluteDate t, double step)
-                    throws OrekitException {
+                    {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
                         System.out.println("Results written to file: " + file.getAbsolutePath());
@@ -141,7 +141,7 @@ public class Frames3 {
                 }
 
                 public void handleStep(SpacecraftState currentState, boolean isLast)
-                    throws OrekitException {
+                    {
 
                     // get the transform from orbit/attitude reference frame to spacecraft frame
                     Transform inertToSpacecraft = currentState.toTransform();

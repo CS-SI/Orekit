@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -77,13 +76,13 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
      * super.init(s0, t)}.
      */
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
         getHandler().init(s0, t);
     }
 
     /** {@inheritDoc} */
-    public abstract double g(SpacecraftState s) throws OrekitException;
+    public abstract double g(SpacecraftState s);
 
     /** {@inheritDoc} */
     public double getMaxCheckInterval() {
@@ -161,14 +160,14 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
 
     /** {@inheritDoc} */
     public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
+        {
         @SuppressWarnings("unchecked")
         final EventHandler.Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
         return whatNext;
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState) throws OrekitException {
+    public SpacecraftState resetState(final SpacecraftState oldState) {
         @SuppressWarnings("unchecked")
         final SpacecraftState newState = getHandler().resetState((T) this, oldState);
         return newState;

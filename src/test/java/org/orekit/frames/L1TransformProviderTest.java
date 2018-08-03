@@ -38,7 +38,7 @@ import org.orekit.utils.PVCoordinates;
 public class L1TransformProviderTest {
 
     @Test
-    public void testTransformationOrientationForEarthMoon() throws OrekitException {
+    public void testTransformationOrientationForEarthMoon() {
 
         // Load Bodies
         final CelestialBody earth = CelestialBodyFactory.getEarth();
@@ -72,7 +72,7 @@ public class L1TransformProviderTest {
 
 
     @Test
-    public void testSunEarth() throws OrekitException {
+    public void testSunEarth() {
 
         // Load Bodies
         final CelestialBody sun = CelestialBodyFactory.getSun();
@@ -105,7 +105,7 @@ public class L1TransformProviderTest {
 
 
     @Test
-    public void testSunJupiter() throws OrekitException {
+    public void testSunJupiter() {
 
         // Load Bodies
         final CelestialBody sun = CelestialBodyFactory.getSun();
@@ -137,7 +137,7 @@ public class L1TransformProviderTest {
     }
 
     @Test
-    public void testL1Orientation() throws OrekitException {
+    public void testL1Orientation() {
 
         final AbsoluteDate date0 = new AbsoluteDate(2000, 01, 1, 11, 58, 20.000,
                                                    TimeScalesFactory.getUTC());

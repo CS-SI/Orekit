@@ -34,11 +34,9 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
 
     /** Simple constructor.
      * @param normalized provider to un-normalize
-     * @exception OrekitException if degree and order are too large
-     * and the un-normalization coefficients underflow
      */
     Unnormalizer(final NormalizedSphericalHarmonicsProvider normalized)
-        throws OrekitException {
+        {
         this.normalized = normalized;
         this.factors    = GravityFieldFactory.getUnnormalizationFactors(normalized.getMaxDegree(),
                                                                         normalized.getMaxOrder());
@@ -88,7 +86,7 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
         final NormalizedSphericalHarmonics harmonics = normalized.onDate(date);
         return new UnnormalizedSphericalHarmonics() {
 
@@ -100,13 +98,13 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedCnm(final int n, final int m) throws OrekitException {
+            public double getUnnormalizedCnm(final int n, final int m) {
                 return harmonics.getNormalizedCnm(n, m) * factors[n][m];
             }
 
             /** {@inheritDoc} */
             @Override
-            public double getUnnormalizedSnm(final int n, final int m) throws OrekitException {
+            public double getUnnormalizedSnm(final int n, final int m) {
                 return harmonics.getNormalizedSnm(n, m) * factors[n][m];
             }
 

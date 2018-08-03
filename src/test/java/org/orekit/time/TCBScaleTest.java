@@ -64,7 +64,7 @@ public class TCBScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTCB();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
@@ -78,7 +78,7 @@ public class TCBScaleTest {
     }
 
     @Test
-    public void testAAS06134() throws OrekitException {
+    public void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics

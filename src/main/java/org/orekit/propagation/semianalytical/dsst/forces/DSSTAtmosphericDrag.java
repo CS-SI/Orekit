@@ -101,7 +101,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
+    protected double[] getLLimits(final SpacecraftState state) {
         final double perigee = a * (1. - ecc);
         // Trajectory entirely out of the atmosphere
         if (perigee > rbar) {

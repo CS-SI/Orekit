@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -37,7 +36,7 @@ import org.orekit.utils.PVCoordinates;
 public class FrameTest {
 
     @Test
-    public void testSameFrameRoot() throws OrekitException {
+    public void testSameFrameRoot() {
         Random random = new Random(0x29448c7d58b95565l);
         Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
@@ -46,7 +45,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testSameFrameNoRoot() throws OrekitException {
+    public void testSameFrameNoRoot() {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
         Frame frame   = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -54,7 +53,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testSimilarFrames() throws OrekitException {
+    public void testSimilarFrames() {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
         Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -63,7 +62,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFromParent() throws OrekitException {
+    public void testFromParent() {
         Random random = new Random(0xb92fba1183fe11b8l);
         Transform fromEME2000  = randomTransform(random);
         Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
@@ -72,7 +71,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDecomposedTransform() throws OrekitException {
+    public void testDecomposedTransform() {
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
         Transform t2  = randomTransform(random);
@@ -87,7 +86,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFindCommon() throws OrekitException {
+    public void testFindCommon() {
 
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
@@ -110,7 +109,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDepthAndAncestor() throws OrekitException{
+    public void testDepthAndAncestor() {
         Random random = new Random(0x01f8d3b944123044l);
         Frame root = Frame.getRoot();
 
@@ -148,7 +147,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testIsChildOf() throws OrekitException{
+    public void testIsChildOf() {
         Random random = new Random(0xb7d1a155e726da78l);
         Frame eme2000 = FramesFactory.getEME2000();
 
@@ -184,7 +183,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testH0m9() throws OrekitException {
+    public void testH0m9() {
         AbsoluteDate h0         = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
         Frame itrf              = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

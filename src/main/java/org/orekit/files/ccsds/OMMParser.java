@@ -123,18 +123,18 @@ public class OMMParser extends ODMParser {
 
     /** {@inheritDoc} */
     @Override
-    public OMMFile parse(final String fileName) throws OrekitException {
+    public OMMFile parse(final String fileName) {
         return (OMMFile) super.parse(fileName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OMMFile parse(final InputStream stream) throws OrekitException {
+    public OMMFile parse(final InputStream stream) {
         return (OMMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */
-    public OMMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+    public OMMFile parse(final InputStream stream, final String fileName) {
 
         try {
 

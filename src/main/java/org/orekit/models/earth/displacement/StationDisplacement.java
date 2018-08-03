@@ -18,7 +18,6 @@ package org.orekit.models.earth.displacement;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.BodiesElements;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 
 /** Interface for computing reference points displacement.
@@ -32,9 +31,7 @@ public interface StationDisplacement {
      * @param earthFrame Earth frame in which reference point is defined
      * @param referencePoint reference point position in {@code earthFrame}
      * @return displacement vector to be <em>added</em> to {@code referencePoint}
-     * @exception OrekitException if displacement cannot be computed
-     */
-    Vector3D displacement(BodiesElements elements, Frame earthFrame, Vector3D referencePoint)
-        throws OrekitException;
+          */
+    Vector3D displacement(BodiesElements elements, Frame earthFrame, Vector3D referencePoint);
 
 }

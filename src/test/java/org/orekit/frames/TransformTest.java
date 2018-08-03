@@ -992,7 +992,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<Transform>();

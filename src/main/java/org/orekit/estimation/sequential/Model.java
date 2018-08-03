@@ -129,7 +129,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     Model(final List<NumericalPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters)
-        throws OrekitException {
+        {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -296,12 +296,11 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @param orbitalParameters orbital parameters
      * @param propagationParameters propagation parameters
      * @param measurementParameters measurements parameters
-     * @exception OrekitException if dimension != requiredDimension
-     */
+          */
     private void checkDimension(final int dimension,
                                 final ParameterDriversList orbitalParameters,
                                 final ParameterDriversList propagationParameters,
-                                final ParameterDriversList measurementParameters) throws OrekitException {
+                                final ParameterDriversList measurementParameters) {
 
         // count parameters, taking care of counting all orbital parameters
         // regardless of them being estimated or not
@@ -420,7 +419,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if propagators cannot be build
      */
     public NumericalPropagator[] getEstimatedPropagators()
-        throws OrekitException {
+        {
 
         // Return propagators built with current instantiation of the propagator builders
         final NumericalPropagator[] propagators = new NumericalPropagator[builders.size()];
@@ -438,7 +437,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getErrorStateTransitionMatrix()
-        throws OrekitException {
+        {
 
         /* The state transition matrix is obtained as follows, with:
          *  - Y  : Current state vector
@@ -522,7 +521,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if Jacobians cannot be computed
      */
     private RealMatrix getMeasurementMatrix()
-        throws OrekitException {
+        {
 
         // Observed measurement characteristics
         final SpacecraftState[]      evaluationStates    = predictedMeasurement.getStates();
@@ -624,7 +623,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if setting up the partial derivatives failed
      */
     private void updateReferenceTrajectories(final NumericalPropagator[] propagators)
-        throws OrekitException {
+        {
 
         // Update the reference trajectory propagator
         referenceTrajectories = propagators;
@@ -728,7 +727,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      */
     private <T extends ObservedMeasurement<T>> void applyDynamicOutlierFilter(final EstimatedMeasurement<T> measurement,
                                                                               final RealMatrix innovationCovarianceMatrix)
-        throws OrekitException {
+        {
 
         // Observed measurement associated to the predicted measurement
         final ObservedMeasurement<T> observedMeasurement = measurement.getObservedMeasurement();
@@ -772,7 +771,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     @Override
     public NonLinearEvolution getEvolution(final double previousTime, final RealVector previousState,
                                            final MeasurementDecorator measurement)
-        throws OrekitException {
+        {
 
         // Set a reference date for all measurements parameters that lack one (including the not estimated ones)
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
@@ -849,7 +848,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     @Override
     public RealVector getInnovation(final MeasurementDecorator measurement, final NonLinearEvolution evolution,
                                     final RealMatrix innovationCovarianceMatrix)
-        throws OrekitException {
+        {
 
         // Apply the dynamic outlier filter, if it exists
         applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
@@ -873,11 +872,10 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     /** Finalize estimation.
      * @param observedMeasurement measurement that has just been processed
      * @param estimate corrected estimate
-     * @exception OrekitException if measurement cannot be re-estimated from corrected state
-     */
+          */
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate)
-        throws OrekitException {
+        {
         // Update the parameters with the estimated state
         // The min/max values of the parameters are handled by the ParameterDriver implementation
         correctedEstimate = estimate;
@@ -907,7 +905,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * @throws OrekitException if the propagator builder could not be reset
      */
     private RealVector predictState(final AbsoluteDate date)
-        throws OrekitException {
+        {
 
         // Predicted state is initialized to previous estimated state
         final RealVector predictedState = correctedEstimate.getState().copy();
@@ -944,7 +942,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
      * The min/max allowed values are handled by the parameter themselves.
      * @throws OrekitException if setting the normalized values failed
      */
-    private void updateParameters() throws OrekitException {
+    private void updateParameters() {
         final RealVector correctedState = correctedEstimate.getState();
         int i = 0;
         for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {

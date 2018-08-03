@@ -142,7 +142,7 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @throws OrekitException if some specific error occurs
      */
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         detector.init(s0, t);
         lastT = AbsoluteDate.PAST_INFINITY;
         lastG = Double.NaN;
@@ -153,9 +153,8 @@ public class EventState<T extends EventDetector> implements Serializable {
      * as the integrator will need to find its roots to locate the events.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
-     */
-    private double g(final SpacecraftState s) throws OrekitException {
+          */
+    private double g(final SpacecraftState s) {
         if (!s.getDate().equals(lastT)) {
             lastT = s.getDate();
             lastG = detector.g(s);
@@ -165,11 +164,9 @@ public class EventState<T extends EventDetector> implements Serializable {
 
     /** Reinitialize the beginning of the step.
      * @param interpolator interpolator valid for the current step
-     * @exception OrekitException if the event detector
-     * value cannot be evaluated at the beginning of the step
      */
     public void reinitializeBegin(final OrekitStepInterpolator interpolator)
-        throws OrekitException {
+        {
         forward = interpolator.isForward();
         final SpacecraftState s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
@@ -197,12 +194,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @return true if the event detector triggers an event before
      * the end of the proposed step (this implies the step should be
      * rejected)
-     * @exception OrekitException if the switching function
-     * cannot be evaluated
      * @exception MathRuntimeException if an event cannot be located
      */
     public boolean evaluateStep(final OrekitStepInterpolator interpolator)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         forward = interpolator.isForward();
         final SpacecraftState s1 = interpolator.getCurrentState();
@@ -263,7 +258,7 @@ public class EventState<T extends EventDetector> implements Serializable {
     private boolean findRoot(final OrekitStepInterpolator interpolator,
                              final AbsoluteDate ta, final double ga,
                              final AbsoluteDate tb, final double gb)
-            throws OrekitException {
+            {
         // check there appears to be a root in [ta, tb]
         check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
 
@@ -416,11 +411,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @return if the event detector has an event it has not detected before that is on or
      * before the same time as {@code state}. In other words {@code false} means continue
      * on while {@code true} means stop and handle my event first.
-     * @exception OrekitException if the g function throws one
-     */
+          */
     public boolean tryAdvance(final SpacecraftState state,
                               final OrekitStepInterpolator interpolator)
-        throws OrekitException {
+        {
         // check this is only called before a pending event.
         check(!(pendingEvent && strictlyAfter(pendingEventTime, state.getDate())));
 
@@ -460,10 +454,9 @@ public class EventState<T extends EventDetector> implements Serializable {
      * org.orekit.propagation.events.handlers.EventHandler.Action#STOP Action.STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
-     * @exception OrekitException if the event detector throws one
-     */
+          */
     public EventOccurrence doEvent(final SpacecraftState state)
-        throws OrekitException {
+        {
         // check event is pending and is at the same time
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));

@@ -135,10 +135,8 @@ public class DataProvidersManager {
      * System.getProperty("path.separator")}. This standard path separator is ":" on
      * Linux and Unix type systems and ";" on Windows types systems.
      * </p>
-     * @exception OrekitException if an element of the list does not exist or exists but
-     * is neither a directory nor a zip/jar archive
      */
-    public void addDefaultProviders() throws OrekitException {
+    public void addDefaultProviders() {
 
         // get the path containing all components
         final String path = System.getProperty(OREKIT_DATA_PATH);
@@ -337,11 +335,9 @@ public class DataProvidersManager {
      * @param supportedNames regular expression for file names supported by the visitor
      * @param loader data loader to use
      * @return true if some data has been loaded
-     * @exception OrekitException if the data loader cannot be fed (read error ...)
-     * or if the default configuration cannot be set up
      */
     public boolean feed(final String supportedNames, final DataLoader loader)
-        throws OrekitException {
+        {
 
         final Pattern supported = Pattern.compile(supportedNames);
 

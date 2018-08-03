@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -63,13 +62,13 @@ class ITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public ITRFProvider getNonInterpolatingProvider()
-        throws OrekitException {
+        {
         return new ITRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // offset from J2000 epoch in Julian centuries
         final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
@@ -93,7 +92,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+        {
 
         // offset from J2000 epoch in Julian centuries
         final T tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);

@@ -119,7 +119,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                       final FieldRotation<T> rotation, final T mass,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters)
-        throws OrekitException {
+        {
         final T cr = parameters[0];
         return new FieldVector3D<>(mass.reciprocal().multiply(crossSection).multiply(cr), flux);
 
@@ -131,7 +131,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                                                                             final Rotation rotation, final double mass,
                                                                             final Vector3D flux, final double[] parameters,
                                                                             final String paramName)
-        throws OrekitException {
+        {
 
         final DerivativeStructure crDS;
         if (REFLECTION_COEFFICIENT.equals(paramName)) {

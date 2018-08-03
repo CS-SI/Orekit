@@ -88,7 +88,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      */
     public double rangeRateErrorTroposphericModel(final GroundStation station,
                                                   final SpacecraftState state)
-        throws OrekitException {
+        {
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
 
@@ -142,10 +142,10 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
                                                    final SpacecraftState refstate,
                                                    final double delay)
-        throws OrekitException {
+        {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
+                            public double[] value(final SpacecraftState state) {
                                 // evaluate target's elevation with a changed target position
                                 final double value = rangeRateErrorTroposphericModel(station, state);
 
@@ -170,12 +170,12 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
                                                      final ParameterDriver driver,
                                                      final SpacecraftState state,
                                                      final double delay)
-        throws OrekitException {
+        {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeRateErrorTroposphericModel(station, state);
             }
         };
@@ -196,7 +196,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<RangeRate> estimated)
-        throws OrekitException {
+        {
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];

@@ -233,7 +233,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
                             final SortedSet<EOPEntry> history)
-        throws OrekitException {
+        {
         final Parser parser = new Parser(converter);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -271,10 +271,9 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          * @param converter converter to use
-         * @exception OrekitException if ITRF version loader cannot be parsed
-         */
+                  */
         Parser(final IERSConventions.NutationCorrectionConverter converter)
-            throws OrekitException {
+            {
             this.converter         = converter;
             this.itrfVersionLoader = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.history           = new ArrayList<EOPEntry>();
@@ -291,7 +290,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             configuration = null;
 
@@ -358,8 +357,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          * @param name name of the file (or zip entry)
          * @return the matching matcher for the line
          * @exception IOException if data can't be read
-         * @exception OrekitException if end of file is reached before line has been found
-         */
+                  */
         private Matcher seekToLine(final Pattern pattern, final BufferedReader reader, final String name)
             throws IOException, OrekitException {
 
@@ -381,10 +379,9 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
-         */
+                  */
         private void loadMJDBoundsOldFormat(final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             boolean inFinalValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -420,11 +417,10 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
-         */
+                  */
         private void loadEOPOldFormat(final boolean isNonRotatingOrigin,
                                       final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             // read the data lines in the final values part inside section 2
             line = reader.readLine();
@@ -478,10 +474,9 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
-         */
+                  */
         private void loadXYDTDxDyNewFormat(final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             boolean inFinalValuesPart = false;
             line = reader.readLine();
@@ -530,10 +525,9 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
-         */
+                  */
         private void loadLODNewFormat(final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
             line = reader.readLine();
             while (line != null) {
                 lineNumber++;
