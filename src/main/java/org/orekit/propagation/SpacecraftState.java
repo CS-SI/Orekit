@@ -33,7 +33,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -103,10 +102,8 @@ public class SpacecraftState
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit)
-        throws OrekitException {
+    public SpacecraftState(final Orbit orbit) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, null);
@@ -128,10 +125,8 @@ public class SpacecraftState
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit, final double mass)
-        throws OrekitException {
+    public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, null);
@@ -153,10 +148,8 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional)
-        throws OrekitException {
+    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
@@ -180,10 +173,8 @@ public class SpacecraftState
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-     * @exception OrekitException if default attitude cannot be computed
      */
-    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional)
-        throws OrekitException {
+    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
@@ -312,8 +303,7 @@ public class SpacecraftState
      * </p>
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Stream<SpacecraftState> sample)
-            throws OrekitException {
+                                       final Stream<SpacecraftState> sample) {
 
         // prepare interpolators
         final List<Orbit> orbits = new ArrayList<>();
@@ -326,26 +316,18 @@ public class SpacecraftState
         }
 
         // extract sample data
-        try {
-            sample.forEach(state -> {
-                try {
-                    final double deltaT = state.getDate().durationFrom(date);
-                    orbits.add(state.getOrbit());
-                    attitudes.add(state.getAttitude());
-                    massInterpolator.addSamplePoint(deltaT,
-                                                    new double[] {
-                                                         state.getMass()
-                                                    });
-                    for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-                    }
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
-            });
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
-        }
+        sample.forEach(state -> {
+            final double deltaT = state.getDate().durationFrom(date);
+            orbits.add(state.getOrbit());
+            attitudes.add(state.getAttitude());
+            massInterpolator.addSamplePoint(deltaT,
+                                            new double[] {
+                                                 state.getMass()
+                                            });
+            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+            }
+        });
 
         // perform interpolations
         final Orbit interpolatedOrbit       = orbit.interpolate(date, orbits);
@@ -405,13 +387,11 @@ public class SpacecraftState
      * not their values.
      * </p>
      * @param state state to compare to instance
-     * @exception OrekitException if either instance or state supports an additional
-     * state not supported by the other one
      * @exception MathIllegalStateException if an additional state does not have
      * the same dimension in both states
      */
     public void ensureCompatibleAdditionalStates(final SpacecraftState state)
-        throws OrekitException, MathIllegalStateException {
+        throws MathIllegalStateException {
 
         // check instance additional states is a subset of the other one
         for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
@@ -441,12 +421,11 @@ public class SpacecraftState
     /** Get an additional state.
      * @param name name of the additional state
      * @return value of the additional state
-     * @exception OrekitException if no additional state with that name exists
-     * @see #addAdditionalState(String, double[])
+          * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
-    public double[] getAdditionalState(final String name) throws OrekitException {
+    public double[] getAdditionalState(final String name) {
         if (!additional.containsKey(name)) {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
         }
@@ -606,10 +585,8 @@ public class SpacecraftState
      * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
-     * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         return orbit.getPVCoordinates(outputFrame);
     }
 

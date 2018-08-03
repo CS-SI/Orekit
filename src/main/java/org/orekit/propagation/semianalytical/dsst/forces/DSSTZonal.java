@@ -154,23 +154,16 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
-     * @exception OrekitException if degrees or powers are out of range
      * @since 7.2
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
-                     final int maxFrequencyShortPeriodics)
-        throws OrekitException {
+                     final int maxFrequencyShortPeriodics) {
 
-        try {
-            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    provider.getMu(), MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                provider.getMu(), MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -199,10 +192,8 @@ public class DSSTZonal implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-     * @exception OrekitException if index is out of range
      */
-    private void checkIndexRange(final int index, final int min, final int max)
-        throws OrekitException {
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -229,8 +220,7 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
-                                             final double[] parameters)
-        throws OrekitException {
+                                             final double[] parameters) {
 
         computeMeanElementsTruncations(auxiliaryElements, parameters);
 
@@ -271,8 +261,7 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
-                                                                                     final T[] parameters)
-        throws OrekitException {
+                                                                                     final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -310,10 +299,8 @@ public class DSSTZonal implements DSSTForceModel {
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
      * @param parameters values of the force model parameters
-     * @throws OrekitException if an error occurs
      */
-    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
@@ -413,12 +400,10 @@ public class DSSTZonal implements DSSTForceModel {
      * @param auxiliaryElements auxiliary elements
      * @param parameters values of the force model parameters
      * @param field field used by default
-     * @throws OrekitException if an error occurs
      */
     private <T extends RealFieldElement<T>> void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                 final T[] parameters,
-                                                                                final Field<T> field)
-        throws OrekitException {
+                                                                                final Field<T> field) {
 
         final T zero = field.getZero();
         final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
@@ -521,10 +506,8 @@ public class DSSTZonal implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
-    private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
         return new DSSTZonalContext(auxiliaryElements, provider, parameters);
     }
 
@@ -536,18 +519,16 @@ public class DSSTZonal implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                    final T[] parameters)
-        throws OrekitException {
+                                                                                    final T[] parameters) {
         return new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState,
+                                       final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container of attributes
         final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
@@ -562,8 +543,7 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters)
-        throws OrekitException {
+                                                                  final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -597,12 +577,10 @@ public class DSSTZonal implements DSSTForceModel {
      * @param context container for attributes
      * @param udu derivatives of the gravitational potential U
      * @return the mean element rates
-     * @throws OrekitException if an error occurs in hansen computation
      */
     private double[] computeMeanElementRates(final AbsoluteDate date,
                                              final DSSTZonalContext context,
-                                             final UAnddU udu)
-        throws OrekitException {
+                                             final UAnddU udu) {
 
         // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
@@ -632,13 +610,10 @@ public class DSSTZonal implements DSSTForceModel {
      * @param context container for attributes
      * @param udu derivatives of the gravitational potential U
      * @return the mean element rates
-     * @throws OrekitException if an error occurs in hansen computation
      */
     private <T extends RealFieldElement<T>> T[] computeMeanElementRates(final FieldAbsoluteDate<T> date,
                                                                         final FieldDSSTZonalContext<T> context,
-                                                                        final FieldUAnddU<T> udu)
-
-        throws OrekitException {
+                                                                        final FieldUAnddU<T> udu) {
 
         // Auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
@@ -692,8 +667,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -730,8 +704,7 @@ public class DSSTZonal implements DSSTForceModel {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
-                                                                       final FieldSpacecraftState<T>... meanStates)
-        throws OrekitException {
+                                                                       final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
         final Field<T> field = meanStates[0].getDate().getField();
@@ -782,13 +755,11 @@ public class DSSTZonal implements DSSTForceModel {
      * @param slot slot to which the coefficients belong
      * @param context container for attributes
      * @param udu derivatives of the gravitational potential U
-     * @throws OrekitException if an error occurs during the coefficient computation
      */
     private void computeDiCoefficients(final AbsoluteDate date,
                                        final Slot slot,
                                        final DSSTZonalContext context,
-                                       final UAnddU udu)
-        throws OrekitException {
+                                       final UAnddU udu) {
 
         final double[] meanElementRates = computeMeanElementRates(date, context, udu);
 
@@ -815,15 +786,12 @@ public class DSSTZonal implements DSSTForceModel {
      * @param context container for attributes
      * @param field field used by default
      * @param udu derivatives of the gravitational potential U
-     * @throws OrekitException if an error occurs during the coefficient computation
      */
     private <T extends RealFieldElement<T>> void computeDiCoefficients(final FieldAbsoluteDate<T> date,
                                                                        final FieldSlot<T> slot,
                                                                        final FieldDSSTZonalContext<T> context,
                                                                        final Field<T> field,
-                                                                       final FieldUAnddU<T> udu)
-
-        throws OrekitException {
+                                                                       final FieldUAnddU<T> udu) {
 
         final T[] meanElementRates = computeMeanElementRates(date, context, udu);
 
@@ -852,14 +820,12 @@ public class DSSTZonal implements DSSTForceModel {
      * @param context container for attributes
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param udu derivatives of the gravitational potential U
-     * @throws OrekitException if an error occurs
      */
     private void computeCijSijCoefficients(final AbsoluteDate date, final Slot slot,
                                            final FourierCjSjCoefficients cjsj,
                                            final double[][] rhoSigma, final DSSTZonalContext context,
                                            final AuxiliaryElements auxiliaryElements,
-                                           final UAnddU udu)
-        throws OrekitException {
+                                           final UAnddU udu) {
 
         final int nMax = maxDegreeShortPeriodics;
 
@@ -1105,7 +1071,6 @@ public class DSSTZonal implements DSSTForceModel {
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param field field used by default
      * @param udu derivatives of the gravitational potential U
-     * @throws OrekitException if an error occurs
      */
     private <T extends RealFieldElement<T>> void computeCijSijCoefficients(final FieldAbsoluteDate<T> date,
                                                                            final FieldSlot<T> slot,
@@ -1114,8 +1079,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                                            final FieldDSSTZonalContext<T> context,
                                                                            final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                            final Field<T> field,
-                                                                           final FieldUAnddU<T> udu)
-        throws OrekitException {
+                                                                           final FieldUAnddU<T> udu) {
 
         // Zero
         final T zero = field.getZero();
@@ -1552,8 +1516,7 @@ public class DSSTZonal implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-                throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -1781,8 +1744,7 @@ public class DSSTZonal implements DSSTForceModel {
         * </p>
         */
         @Override
-        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected)
-               throws OrekitException {
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected) {
 
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);
@@ -1883,12 +1845,10 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param jMax maximum possible value for j
          *  @param context container for attributes
          *  @param hansenObjects initialization of hansen objects
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         FourierCjSjCoefficients(final AbsoluteDate date,
                                 final int nMax, final int sMax, final int jMax, final DSSTZonalContext context,
-                                final HansenObjects hansenObjects)
-                throws OrekitException {
+                                final HansenObjects hansenObjects) {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
@@ -1920,13 +1880,11 @@ public class DSSTZonal implements DSSTForceModel {
          * @param context container for attributes
          * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param hansenObjects initialization of hansen objects
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         private void generateCoefficients(final AbsoluteDate date,
                                           final DSSTZonalContext context,
                                           final AuxiliaryElements auxiliaryElements,
-                                          final HansenObjects hansenObjects)
-            throws OrekitException {
+                                          final HansenObjects hansenObjects) {
 
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
             for (int j = 1; j <= jMax; j++) {
@@ -2697,13 +2655,11 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param jMax maximum possible value for j
          *  @param context container for attributes
          *  @param hansenObjects initialization of hansen objects
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         FieldFourierCjSjCoefficients(final FieldAbsoluteDate<T> date,
                                      final int nMax, final int sMax, final int jMax,
                                      final FieldDSSTZonalContext<T> context,
-                                     final FieldHansenObjects<T> hansenObjects)
-                throws OrekitException {
+                                     final FieldHansenObjects<T> hansenObjects) {
 
             //Field used by default
             final Field<T> field = date.getField();
@@ -2739,14 +2695,12 @@ public class DSSTZonal implements DSSTForceModel {
          * @param hansenObjects initialization of hansen objects
          * @param auxiliaryElements auxiliary elements related to the current orbit
          * @param field field used by default
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         private void generateCoefficients(final FieldAbsoluteDate<T> date,
                                           final FieldDSSTZonalContext<T> context,
                                           final FieldAuxiliaryElements<T> auxiliaryElements,
                                           final FieldHansenObjects<T> hansenObjects,
-                                          final Field<T> field)
-            throws OrekitException {
+                                          final Field<T> field) {
 
             //Zero
             final T zero = field.getZero();
@@ -3627,13 +3581,11 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param context container for attributes
          *  @param auxiliaryElements auxiliary elements related to the current orbit
          *  @param hansen initialization of hansen objects
-         *  @throws OrekitException if an error occurs in hansen computation
          */
         UAnddU(final AbsoluteDate date,
                final DSSTZonalContext context,
                final AuxiliaryElements auxiliaryElements,
-               final HansenObjects hansen)
-            throws OrekitException {
+               final HansenObjects hansen) {
 
             final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
@@ -3818,13 +3770,11 @@ public class DSSTZonal implements DSSTForceModel {
           *  @param context container for attributes
           *  @param auxiliaryElements auxiliary elements related to the current orbit
           *  @param hansen initialization of hansen objects
-          *  @throws OrekitException if an error occurs in hansen computation
           */
         FieldUAnddU(final FieldAbsoluteDate<T> date,
                     final FieldDSSTZonalContext<T> context,
                     final FieldAuxiliaryElements<T> auxiliaryElements,
-                    final FieldHansenObjects<T> hansen)
-            throws OrekitException {
+                    final FieldHansenObjects<T> hansen) {
 
             // Zero for initialization
             final Field<T> field = date.getField();

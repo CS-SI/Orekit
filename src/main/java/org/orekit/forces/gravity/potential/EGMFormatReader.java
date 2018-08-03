@@ -154,13 +154,10 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order or if no gravity field has read yet
      * @since 6.0
      */
     public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
-                                                     final int degree, final int order)
-        throws OrekitException {
+                                                     final int degree, final int order) {
         return getConstantProvider(wantNormalized, degree, order);
     }
 

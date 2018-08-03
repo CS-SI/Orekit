@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -58,53 +57,53 @@ public class PositionAngleDetectorTest {
     }
 
     @Test
-    public void testTrueAnomaly() throws OrekitException {
+    public void testTrueAnomaly() {
         doTest(OrbitType.KEPLERIAN, PositionAngle.TRUE, FastMath.toRadians(10.0), 15);
     }
 
     @Test
-    public void testMeanAnomaly() throws OrekitException {
+    public void testMeanAnomaly() {
         doTest(OrbitType.KEPLERIAN, PositionAngle.MEAN, FastMath.toRadians(10.0), 15);
     }
 
     @Test
-    public void testEccentricAnomaly() throws OrekitException {
+    public void testEccentricAnomaly() {
         doTest(OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, FastMath.toRadians(10.0), 15);
     }
 
     @Test
-    public void testTrueLatitudeArgument() throws OrekitException {
+    public void testTrueLatitudeArgument() {
         doTest(OrbitType.CIRCULAR, PositionAngle.TRUE, FastMath.toRadians(730.0), 15);
     }
 
     @Test
-    public void testMeanLatitudeArgument() throws OrekitException {
+    public void testMeanLatitudeArgument() {
         doTest(OrbitType.CIRCULAR, PositionAngle.MEAN, FastMath.toRadians(730.0), 15);
     }
 
     @Test
-    public void testEccentricLatitudeArgument() throws OrekitException {
+    public void testEccentricLatitudeArgument() {
         doTest(OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, FastMath.toRadians(730.0), 15);
     }
 
     @Test
-    public void testTrueLongitudeArgument() throws OrekitException {
+    public void testTrueLongitudeArgument() {
         doTest(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, FastMath.toRadians(-45.0), 15);
     }
 
     @Test
-    public void testMeanLongitudeArgument() throws OrekitException {
+    public void testMeanLongitudeArgument() {
         doTest(OrbitType.EQUINOCTIAL, PositionAngle.MEAN, FastMath.toRadians(-45.0), 15);
     }
 
     @Test
-    public void testEccentricLongitudeArgument() throws OrekitException {
+    public void testEccentricLongitudeArgument() {
         doTest(OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, FastMath.toRadians(-45.0), 15);
     }
 
     private void doTest(final OrbitType orbitType, final PositionAngle positionAngle,
                         final double angle, final int expectedCrossings)
-        throws OrekitException {
+        {
 
         PositionAngleDetector d =
                 new PositionAngleDetector(orbitType, positionAngle, angle).

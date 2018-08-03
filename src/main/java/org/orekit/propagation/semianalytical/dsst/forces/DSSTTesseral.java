@@ -213,8 +213,7 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param maxEccPowMdailyTesseralSP maximum power of the eccentricity to use in summation over s for
      * m-daily tesseral harmonics, (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2},
      * but should typically not exceed 4 as higher values will exceed computer capacity)
-     * @exception OrekitException if degrees or powers are out of range
-     * @since 7.2
+          * @since 7.2
      */
     public DSSTTesseral(final Frame centralBodyFrame,
                         final double centralBodyRotationRate,
@@ -222,17 +221,11 @@ public class DSSTTesseral implements DSSTForceModel {
                         final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
                         final int maxEccPowTesseralSP, final int maxFrequencyShortPeriodics,
                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP,
-                        final int maxEccPowMdailyTesseralSP)
-        throws OrekitException {
+                        final int maxEccPowMdailyTesseralSP) {
 
-        try {
-            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    provider.getMu(), MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                provider.getMu(), MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -284,10 +277,8 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param index index value
      * @param min minimum value for index
      * @param max maximum value for index
-     * @exception OrekitException if index is out of range
      */
-    private void checkIndexRange(final int index, final int min, final int max)
-        throws OrekitException {
+    private void checkIndexRange(final int index, final int min, final int max) {
         if (index < min || index > max) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
@@ -297,8 +288,7 @@ public class DSSTTesseral implements DSSTForceModel {
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
-                                             final double[] parameters)
-        throws OrekitException {
+                                             final double[] parameters) {
 
         // Initializes specific parameters.
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
@@ -331,8 +321,7 @@ public class DSSTTesseral implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
-                                                                                     final T[] parameters)
-        throws OrekitException {
+                                                                                     final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -379,10 +368,8 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
-    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    private DSSTTesseralContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
         return new DSSTTesseralContext(auxiliaryElements, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
@@ -394,18 +381,16 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTTesseralContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                       final T[] parameters)
-        throws OrekitException {
+                                                                                       final T[] parameters) {
         return new FieldDSSTTesseralContext<>(auxiliaryElements, bodyFrame, provider, maxFrequencyShortPeriodics, bodyPeriod, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState spacecraftState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState,
+                                       final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
@@ -435,8 +420,7 @@ public class DSSTTesseral implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> spacecraftState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters)
-        throws OrekitException {
+                                                                  final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -478,8 +462,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriodTerms.createSlot(meanStates);
 
@@ -538,8 +521,7 @@ public class DSSTTesseral implements DSSTForceModel {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
-                                                                       final FieldSpacecraftState<T>... meanStates)
-        throws OrekitException {
+                                                                       final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
         final Field<T> field = meanStates[0].getDate().getField();
@@ -801,13 +783,11 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param context container for attributes
      *  @param hansenObjects initialization of hansen objects
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
-     * @throws OrekitException if some error occurred
      */
     private double[][] computeNSum(final AbsoluteDate date,
                                    final int j, final int m, final int s, final int maxN, final double[] roaPow,
                                    final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS, final DSSTTesseralContext context,
-                                   final HansenObjects hansenObjects)
-        throws OrekitException {
+                                   final HansenObjects hansenObjects) {
 
         // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
@@ -949,15 +929,14 @@ public class DSSTTesseral implements DSSTForceModel {
      *  @param context container for attributes
      *  @param hansenObjects initialization of hansen objects
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
-     * @throws OrekitException if some error occurred
      */
-    @SuppressWarnings("unchecked")
     private <T extends RealFieldElement<T>> T[][] computeNSum(final FieldAbsoluteDate<T> date,
-                                   final int j, final int m, final int s, final int maxN, final T[] roaPow,
-                                   final FieldGHmsjPolynomials<T> ghMSJ, final FieldGammaMnsFunction<T> gammaMNS,
-                                   final FieldDSSTTesseralContext<T> context,
-                                   final FieldHansenObjects<T> hansenObjects)
-        throws OrekitException {
+                                                              final int j, final int m, final int s, final int maxN,
+                                                              final T[] roaPow,
+                                                              final FieldGHmsjPolynomials<T> ghMSJ,
+                                                              final FieldGammaMnsFunction<T> gammaMNS,
+                                                              final FieldDSSTTesseralContext<T> context,
+                                                              final FieldHansenObjects<T> hansenObjects) {
 
         // Auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
@@ -1176,12 +1155,12 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param date the current date
          * @param context container for attributes
          * @param hansenObjects initialization of hansen objects
-         * @throws OrekitException if an error occurs while generating the coefficients
          */
         public void generateCoefficients(final AbsoluteDate date, final DSSTTesseralContext context,
-                                         final HansenObjects hansenObjects) throws OrekitException {
+                                         final HansenObjects hansenObjects) {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
+
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Gmsj and Hmsj polynomials
@@ -1223,11 +1202,10 @@ public class DSSTTesseral implements DSSTForceModel {
          * @param maxN  maximum value for n index
          * @param context container for attributes
          * @param hansenObjects initialization of hansen objects
-         * @throws OrekitException in case of Hansen kernel generation error
          */
         private void buildFourierCoefficients(final AbsoluteDate date,
                final int m, final int j, final int maxN, final DSSTTesseralContext context,
-               final HansenObjects hansenObjects) throws OrekitException {
+               final HansenObjects hansenObjects) {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
@@ -1732,7 +1710,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         /** {@inheritDoc} */
         @Override
-        public double[] value(final Orbit meanOrbit) throws OrekitException {
+        public double[] value(final Orbit meanOrbit) {
 
             // select the coefficients slot
             final Slot slot = slots.get(meanOrbit.getDate());
@@ -1814,8 +1792,7 @@ public class DSSTTesseral implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -3004,7 +2981,7 @@ public class DSSTTesseral implements DSSTForceModel {
         /** Get hansen object.
          * @return hansenObjects
          */
-        public FieldHansenTesseralLinear[][] getHansenObjects() {
+        public FieldHansenTesseralLinear<T>[][] getHansenObjects() {
             return hansenObjects;
         }
 

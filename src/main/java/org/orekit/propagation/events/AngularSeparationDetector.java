@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
@@ -137,9 +136,8 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
         final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
         final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());

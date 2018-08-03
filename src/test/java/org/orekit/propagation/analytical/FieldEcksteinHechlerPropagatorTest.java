@@ -96,11 +96,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void sameDateCartesian() throws OrekitException {
+    public void sameDateCartesian() {
         doSameDateCartesian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doSameDateCartesian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doSameDateCartesian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with position and velocity
@@ -147,11 +147,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void sameDateKeplerian() throws OrekitException {
+    public void sameDateKeplerian() {
         doSameDateKeplerian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doSameDateKeplerian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
 
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
@@ -196,11 +196,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void almostSphericalBody() throws OrekitException {
+    public void almostSphericalBody() {
         doAlmostSphericalBody(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doAlmostSphericalBody(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -271,11 +271,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedCartesian() throws OrekitException {
+    public void propagatedCartesian() {
         doPropagatedCartesian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doPropagatedCartesian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doPropagatedCartesian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with position and velocity
@@ -364,13 +364,13 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedKeplerian() throws OrekitException {
+    public void propagatedKeplerian() {
 
         doPropagatedKeplerian(Decimal64Field.getInstance());
 
     }
 
-    private <T extends RealFieldElement<T>> void doPropagatedKeplerian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doPropagatedKeplerian(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // Definition of initial conditions with Keplerian parameters
@@ -453,11 +453,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void undergroundOrbit() throws OrekitException {
+    public void undergroundOrbit() {
         doUndergroundOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doUndergroundOrbit(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // for a semi major axis < equatorial radius
@@ -484,11 +484,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void equatorialOrbit() throws OrekitException {
+    public void equatorialOrbit() {
         doEquatorialOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doEquatorialOrbit(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doEquatorialOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
 
@@ -515,11 +515,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void criticalInclination() throws OrekitException {
+    public void criticalInclination() {
         doCriticalInclination(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doCriticalInclination(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doCriticalInclination(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
         FieldOrbit<T> initialOrbit = new FieldCircularOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(-3862363.8474653554),
@@ -549,11 +549,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void tooEllipticalOrbit() throws OrekitException {
+    public void tooEllipticalOrbit() {
         doTooEllipticalOrbit(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         // for an eccentricity too big for the model
@@ -580,11 +580,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void hyperbolic() throws OrekitException {
+    public void hyperbolic() {
         doHyperbolic(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doHyperbolic(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doHyperbolic(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> hyperbolic =
@@ -601,11 +601,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void wrongAttitude() throws OrekitException {
+    public void wrongAttitude() {
         doWrongAttitude(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doWrongAttitude(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doWrongAttitude(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> orbit =
@@ -619,7 +619,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             @Override
             public Attitude getAttitude(PVCoordinatesProvider pvProv,
                                         AbsoluteDate date, Frame frame)
-                throws OrekitException {
+                {
                 throw new OrekitException(gasp, new RuntimeException());
             }
 
@@ -627,7 +627,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             public <Q extends RealFieldElement<Q>> FieldAttitude<Q>
                 getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
                             FieldAbsoluteDate<Q> date, Frame frame)
-                    throws OrekitException {
+                    {
                 throw new OrekitException(gasp, new RuntimeException());
             }
         };
@@ -642,11 +642,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testAcceleration() throws OrekitException {
+    public void testAcceleration() {
         doTestAcceleration(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestAcceleration(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAcceleration(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -705,11 +705,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void ascendingNode() throws OrekitException {
+    public void ascendingNode() {
         doAscendingNode(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doAscendingNode(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doAscendingNode(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -738,11 +738,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void stopAtTargetDate() throws OrekitException {
+    public void stopAtTargetDate() {
         doStopAtTargetDate(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doStopAtTargetDate(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doStopAtTargetDate(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -759,11 +759,11 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() throws OrekitException {
+    public void perigee() {
         doPerigee(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doPerigee(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doPerigee(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -781,12 +781,12 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void date() throws OrekitException {
+    public void date() {
         doDate(Decimal64Field.getInstance());
 
     }
 
-    private <T extends RealFieldElement<T>> void doDate(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doDate(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -802,14 +802,14 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void fixedStep() throws OrekitException {
+    public void fixedStep() {
 
         doFixedStep(Decimal64Field.getInstance());
 
 
     }
 
-    private <T extends RealFieldElement<T>> void doFixedStep(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doFixedStep(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
@@ -821,7 +821,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
             public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
-            throws OrekitException {
+            {
                 if (previous != null) {
                     Assert.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
@@ -833,13 +833,13 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void setting() throws OrekitException {
+    public void setting() {
 
         doSetting(Decimal64Field.getInstance());
 
     }
 
-    private <T extends RealFieldElement<T>> void doSetting(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doSetting(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =

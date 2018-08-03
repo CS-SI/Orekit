@@ -45,21 +45,15 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return un-normalized coefficient Cnm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getUnnormalizedCnm(int n, int m)
-            throws OrekitException;
+        double getUnnormalizedCnm(int n, int m);
 
         /** Get a spherical harmonic sine coefficient.
          * @param n degree of the coefficient
          * @param m order of the coefficient
          * @return un-normalized coefficient Snm
-         * @exception OrekitException if the requested maximal degree or order exceeds the
-         * available degree or order
          */
-        double getUnnormalizedSnm(int n, int m)
-            throws OrekitException;
+        double getUnnormalizedSnm(int n, int m);
 
     }
 
@@ -72,6 +66,6 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
      * @throws OrekitException on error
      * @since 6.1
      */
-    UnnormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+    UnnormalizedSphericalHarmonics onDate(AbsoluteDate date);
 
 }

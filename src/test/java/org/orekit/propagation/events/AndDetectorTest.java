@@ -44,7 +44,7 @@ public class AndDetectorTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         // test both zero
         a.g = b.g = 0.0;
         Assert.assertEquals(0.0, and.g(s), 0);
@@ -87,7 +87,7 @@ public class AndDetectorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testCancellation() throws OrekitException {
+    public void testCancellation() {
         a.g = -1e-10;
         b.g = 1e10;
         Assert.assertTrue("negative", and.g(s) < 0);
@@ -108,7 +108,7 @@ public class AndDetectorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testInit() throws OrekitException {
+    public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         EventDetector b = Mockito.mock(EventDetector.class);
@@ -155,7 +155,7 @@ public class AndDetectorTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             return this.g;
         }
 
@@ -175,12 +175,12 @@ public class AndDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
             return null;
         }
 
         @Override
-        public SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+        public SpacecraftState resetState(SpacecraftState oldState) {
             return null;
         }
     }

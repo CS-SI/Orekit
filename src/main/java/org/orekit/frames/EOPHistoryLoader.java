@@ -33,7 +33,6 @@ public interface EOPHistoryLoader {
      * @throws OrekitException if the history cannot be loaded
      */
     void fillHistory(IERSConventions.NutationCorrectionConverter converter,
-                     SortedSet<EOPEntry> history)
-        throws OrekitException;
+                     SortedSet<EOPEntry> history);
 
 }

@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TTScale;
@@ -40,7 +39,7 @@ import org.orekit.utils.PVCoordinates;
 public class ITRFProviderTest {
 
     @Test
-    public void testTidalEffects() throws OrekitException {
+    public void testTidalEffects() {
 
         final Frame itrfWith    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         final Frame itrfWithout = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -63,7 +62,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceLEO() throws OrekitException {
+    public void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -109,7 +108,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() throws OrekitException {
+    public void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -154,7 +153,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEODX0DY0() throws OrekitException {
+    public void testAASReferenceGEODX0DY0() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -199,7 +198,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testSofaCookbook() throws OrekitException {
+    public void testSofaCookbook() {
 
         // SOFA cookbook test case:
         //     date       2007 April 05, 12h00m00s.0 UTC

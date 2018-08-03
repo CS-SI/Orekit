@@ -37,8 +37,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -142,18 +140,12 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body, final double mu) {
-        try {
-            bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
-                                                     body.getGM(), MU_SCALE,
-                                                     0.0, Double.POSITIVE_INFINITY);
-            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    mu, MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-
-        } catch (OrekitException e) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(e);
-        }
+        bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
+                                                  body.getGM(), MU_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                mu, MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
 
         this.body = body;
 
@@ -180,13 +172,11 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param type type of the elements used during the propagation
      *  @param parameters values of the force model parameters
-     *  @throws OrekitException if some specific error occurs
      */
     @Override
     public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
-                                             final double[] parameters)
-        throws OrekitException {
+                                             final double[] parameters) {
 
         // Initializes specific parameters.
         final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
@@ -210,8 +200,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
-                                                                                     final T[] parameters)
-        throws OrekitException {
+                                                                                     final T[] parameters) {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -245,10 +234,8 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
-    private DSSTThirdBodyContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    private DSSTThirdBodyContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
         return new DSSTThirdBodyContext(auxiliaryElements, body, parameters);
     }
 
@@ -260,18 +247,16 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return new force model context
-     *  @throws OrekitException if some specific error occurs
      */
     private <T extends RealFieldElement<T>> FieldDSSTThirdBodyContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                        final T[] parameters)
-        throws OrekitException {
+                                                                                        final T[] parameters) {
         return new FieldDSSTThirdBodyContext<>(auxiliaryElements, body, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState currentState, final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState currentState,
+                                       final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
         final DSSTThirdBodyContext context = initializeStep(auxiliaryElements, parameters);
@@ -302,8 +287,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> currentState,
                                                                   final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                  final T[] parameters)
-        throws OrekitException {
+                                                                  final T[] parameters) {
 
         // Parameters for array building
         final Field<T> field = currentState.getDate().getField();
@@ -348,8 +332,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
 
         final Slot slot = shortPeriods.createSlot(meanStates);
 
@@ -438,8 +421,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends RealFieldElement<T>> void updateShortPeriodTerms(final T[] parameters,
-                                                                       final FieldSpacecraftState<T>... meanStates)
-        throws OrekitException {
+                                                                       final FieldSpacecraftState<T>... meanStates) {
 
         // Field used by default
         final Field<T> field = meanStates[0].getDate().getField();
@@ -3157,8 +3139,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);
@@ -3392,8 +3373,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, T[]> getCoefficients(final FieldAbsoluteDate<T> date, final Set<String> selected) {
 
             // select the coefficients slot
             final FieldSlot<T> slot = slots.get(date);

@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,12 +33,12 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta() {
         doTestAxes("beta-large-negative-BEIDOU-2M.txt", 1.1e-15, 1.1e-15, 5.6e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -49,7 +48,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -59,7 +58,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         // the "large" error for the X axis (a few tenth of a degree)
         // are due to the reference fortran program assuming perfect circular orbits
         // whereas Orekit takes the non-orthogonality of position and velocity into account
@@ -69,7 +68,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargePositiveBeta() throws OrekitException {
+    public void testLargePositiveBeta() {
         doTestAxes("beta-large-positive-BEIDOU-2M.txt", 9.0e-16, 8.6e-16, 3.1e-16);
     }
 

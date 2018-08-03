@@ -18,7 +18,6 @@ package org.orekit.propagation.events.handlers;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
@@ -42,11 +41,9 @@ public class StopOnEvent <T extends EventDetector> implements EventHandler<T>, S
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return {@link EventHandler.Action#STOP stop} under all circumstances
-     * @exception OrekitException if some specific error occurs
      */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
-        throws OrekitException {
+    public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
         return Action.STOP;
     }
 

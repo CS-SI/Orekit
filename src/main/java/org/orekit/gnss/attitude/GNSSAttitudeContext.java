@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -105,10 +104,8 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
-     * @exception OrekitException if yaw cannot be corrected
      */
-    GNSSAttitudeContext(final TimeStampedPVCoordinates sunPV, final TimeStampedPVCoordinates svPV)
-        throws OrekitException {
+    GNSSAttitudeContext(final TimeStampedPVCoordinates sunPV, final TimeStampedPVCoordinates svPV) {
 
         final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
         this.svPV    = svPV;

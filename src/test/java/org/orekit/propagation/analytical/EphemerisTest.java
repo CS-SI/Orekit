@@ -117,7 +117,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
 
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
         int numberOfIntervals = 150;
@@ -173,7 +173,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testAdditionalStates() throws OrekitException {
+    public void testAdditionalStates() {
         final String name1  = "dt0";
         final String name2  = "dt1";
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
@@ -212,7 +212,7 @@ public class EphemerisTest {
 
     @Test
     public void testProtectedMethods()
-        throws OrekitException, SecurityException, NoSuchMethodException,
+        throws SecurityException, NoSuchMethodException,
                InvocationTargetException, IllegalAccessException {
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
 
@@ -243,7 +243,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testExtrapolation() throws OrekitException {
+    public void testExtrapolation() {
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
         List<SpacecraftState> states = new ArrayList<SpacecraftState>();

@@ -81,7 +81,7 @@ public class AttitudesSequenceTest {
     private boolean inEclipse;
 
     @Test
-    public void testDayNightSwitch() throws OrekitException {
+    public void testDayNightSwitch() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -141,7 +141,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(propagator);
 
         propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -182,12 +182,12 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testDayNightSwitchField() throws OrekitException {
+    public void testDayNightSwitchField() {
         doTestDayNightSwitchField(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
-        throws OrekitException {
+        {
 
         //  Initial state definition : date, orbit
         final FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
@@ -264,7 +264,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(field, propagator);
 
         propagator.setMasterMode(field.getZero().add(60.0), new FieldOrekitFixedStepHandler<T>() {
-            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) throws OrekitException {
+            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets
                 final FieldVector3D<T> earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
@@ -305,7 +305,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testBackwardPropagation() throws OrekitException {
+    public void testBackwardPropagation() {
 
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
@@ -370,7 +370,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testOutOfSyncCalls() throws OrekitException {
+    public void testOutOfSyncCalls() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -443,7 +443,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testResetDuringTransitionForward() throws OrekitException {
+    public void testResetDuringTransitionForward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -499,7 +499,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testResetDuringTransitionBackward() throws OrekitException {
+    public void testResetDuringTransitionBackward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);

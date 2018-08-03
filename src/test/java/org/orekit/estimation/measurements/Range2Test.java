@@ -52,7 +52,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class Range2Test {
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:rinex");
     }
@@ -63,7 +63,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Values\n");
@@ -78,7 +78,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -103,7 +103,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -128,7 +128,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -152,7 +152,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -176,7 +176,7 @@ public class Range2Test {
      * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -304,7 +304,7 @@ public class Range2Test {
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -359,7 +359,7 @@ public class Range2Test {
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) throws OrekitException {
+                        public double[] value(final SpacecraftState state) {
                             return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -450,7 +450,7 @@ public class Range2Test {
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
                                          final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -526,7 +526,7 @@ public class Range2Test {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                            public double value(final ParameterDriver parameterDriver) {
                                                 return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                             }
                                         }, drivers[i], 3, 20.0);

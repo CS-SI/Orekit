@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -151,7 +150,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     }
 
     /** {@inheritDoc} */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         return trigger.g(s);
     }
 
@@ -191,8 +190,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
-                                                 final boolean increasing)
-            throws OrekitException {
+                                                 final boolean increasing) {
 
             // filter underlying event
             final EventHandler.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
@@ -203,8 +201,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState)
-            throws OrekitException {
+        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState) {
 
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();

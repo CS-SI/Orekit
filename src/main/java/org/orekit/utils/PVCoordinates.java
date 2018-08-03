@@ -203,10 +203,8 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return vector with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
      */
-    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order)
-        throws OrekitException {
+    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order) {
 
         final DSFactory factory;
         final DerivativeStructure x;
@@ -258,11 +256,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return pv coordinates with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
-     * @since 9.2
+          * @since 9.2
      */
-    public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order)
-        throws OrekitException {
+    public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order) {
 
         final DSFactory factory;
         final DerivativeStructure x0;

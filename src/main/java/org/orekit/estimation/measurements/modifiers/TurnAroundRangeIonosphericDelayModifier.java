@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -67,8 +66,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state)
-        throws OrekitException {
+                                              final SpacecraftState state) {
 
         // State position
         final Vector3D position = state.getPVCoordinates().getPosition();
@@ -105,22 +103,16 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate)
-        throws OrekitException {
+                                               final SpacecraftState refstate) {
         final double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(new StateFunction() {
-                            public double[] value(final SpacecraftState state) throws OrekitException {
-                                try {
-                                    // evaluate target's elevation with a changed target position
-                                    final double value = rangeErrorIonosphericModel(station, state);
+                            public double[] value(final SpacecraftState state) {
+                                // evaluate target's elevation with a changed target position
+                                final double value = rangeErrorIonosphericModel(station, state);
 
-                                    return new double[] {
-                                        value
-                                    };
-
-                                } catch (OrekitException oe) {
-                                    throw new OrekitExceptionWrapper(oe);
-                                }
+                                return new double[] {
+                                    value
+                                };
                             }
                         }, 1, Propagator.DEFAULT_LAW, OrbitType.CARTESIAN,
                         PositionAngle.TRUE, 15.0, 3).value(refstate);
@@ -139,13 +131,12 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
      */
     private double rangeErrorParameterDerivative(final GroundStation station,
                                                  final ParameterDriver driver,
-                                                 final SpacecraftState state)
-        throws OrekitException {
+                                                 final SpacecraftState state) {
 
         final ParameterFunction rangeError = new ParameterFunction() {
             /** {@inheritDoc} */
             @Override
-            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+            public double value(final ParameterDriver parameterDriver) {
                 return rangeErrorIonosphericModel(station, state);
             }
         };
@@ -164,8 +155,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated)
-        throws OrekitException {
+    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
         final TurnAroundRange measurement   = estimated.getObservedMeasurement();
         final GroundStation   masterStation = measurement.getMasterStation();
         final GroundStation   slaveStation  = measurement.getSlaveStation();

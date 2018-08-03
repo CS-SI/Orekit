@@ -33,6 +33,6 @@ public interface StateFunction {
      * @return vector value of the function
      * @throws OrekitException if evaluation cannot be performed
      */
-    double[] value(SpacecraftState state) throws OrekitException;
+    double[] value(SpacecraftState state);
 
 }

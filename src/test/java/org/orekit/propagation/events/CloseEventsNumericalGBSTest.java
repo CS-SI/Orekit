@@ -39,7 +39,7 @@ public class CloseEventsNumericalGBSTest extends CloseEventsAbstractTest {
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         double[][] tol = NumericalPropagator
                 .tolerances(1e-1, initialOrbit, OrbitType.CARTESIAN);
         final NumericalPropagator propagator = new NumericalPropagator(

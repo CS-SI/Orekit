@@ -311,14 +311,13 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception OrekitException if initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState) throws OrekitException {
+    public void setInitialState(final SpacecraftState initialState) {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+    public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
@@ -328,8 +327,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -368,8 +366,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
-                                               final PropagationType type)
-            throws OrekitException {
+                                               final PropagationType type) {
             // the parameter type is ignored for the Numerical Propagator
 
             final double mass = y[6];
@@ -485,8 +482,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target)
-                throws OrekitException {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
             for (final ForceModel forceModel : forceModels) {
                 forceModel.init(initialState, target);
             }
@@ -494,7 +490,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
+        public double[] computeDerivatives(final SpacecraftState state) {
 
             orbit = state.getOrbit();
             Arrays.fill(yDot, 0.0);
@@ -518,8 +514,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void addNonKeplerianAcceleration(final Vector3D gamma)
-            throws OrekitException {
+        public void addNonKeplerianAcceleration(final Vector3D gamma) {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
                 yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
@@ -562,10 +557,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception OrekitException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
-        throws OrekitException {
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();

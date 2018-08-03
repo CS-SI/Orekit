@@ -22,7 +22,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -72,10 +71,9 @@ public interface DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
-     *  @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements, PropagationType type, double[] parameters)
-        throws OrekitException;
+    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+                                      PropagationType type, double[] parameters);
 
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
@@ -87,10 +85,9 @@ public interface DSSTForceModel {
      *  @param parameters values of the force model parameters
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
-     *  @throws OrekitException if some specific error occurs
      */
-    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements, PropagationType type, T[] parameters)
-        throws OrekitException;
+    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                              PropagationType type, T[] parameters);
 
     /** Get force model parameters.
      * @return force model parameters
@@ -126,10 +123,9 @@ public interface DSSTForceModel {
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param parameters values of the force model parameters
      *  @return the mean element rates dai/dt
-     *  @throws OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliaryElements, double[] parameters)
-         throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state,
+                                AuxiliaryElements auxiliaryElements, double[] parameters);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *  @param <T> type of the elements
@@ -137,10 +133,9 @@ public interface DSSTForceModel {
     *  @param auxiliaryElements auxiliary elements related to the current orbit
     *  @param parameters values of the force model parameters
     *  @return the mean element rates dai/dt
-    *  @throws OrekitException if some specific error occurs
     */
-    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state, FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters)
-        throws OrekitException;
+    <T extends RealFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
+                                                           FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 
 
     /** Get the discrete events related to the model.
@@ -173,10 +168,8 @@ public interface DSSTForceModel {
      * </p>
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
-     * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates)
-        throws OrekitException;
+    void updateShortPeriodTerms(double[] parameters, SpacecraftState... meanStates);
 
     /** Update the short period terms.
      * <p>
@@ -187,11 +180,9 @@ public interface DSSTForceModel {
      * @param <T> type of the elements
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
-     * @throws OrekitException if some specific error occurs
      */
     @SuppressWarnings("unchecked")
-    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates)
-        throws OrekitException;
+    <T extends RealFieldElement<T>> void updateShortPeriodTerms(T[] parameters, FieldSpacecraftState<T>... meanStates);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters

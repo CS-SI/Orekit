@@ -95,7 +95,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class EcksteinHechlerPropagatorTest {
 
     @Test
-    public void sameDateCartesian() throws OrekitException {
+    public void sameDateCartesian() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -140,7 +140,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void sameDateKeplerian() throws OrekitException {
+    public void sameDateKeplerian() {
 
         // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
@@ -182,7 +182,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void almostSphericalBody() throws OrekitException {
+    public void almostSphericalBody() {
 
         // Definition of initial conditions
         // ---------------------------------
@@ -251,7 +251,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedCartesian() throws OrekitException {
+    public void propagatedCartesian() {
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
         // with e around e = 1.4e-4 and i = 1.7 rad
@@ -336,7 +336,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void propagatedKeplerian() throws OrekitException {
+    public void propagatedKeplerian() {
         // Definition of initial conditions with Keplerian parameters
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -418,7 +418,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void undergroundOrbit() throws OrekitException {
+    public void undergroundOrbit() {
 
         // for a semi major axis < equatorial radius
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
@@ -439,7 +439,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void equatorialOrbit() throws OrekitException {
+    public void equatorialOrbit() {
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
         Orbit initialOrbit = new CircularOrbit(7000000, 1.0e-4, -1.5e-4,
                                                0.0, 1.2, 2.3, PositionAngle.MEAN,
@@ -458,7 +458,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void criticalInclination() throws OrekitException {
+    public void criticalInclination() {
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
         Orbit initialOrbit = new CircularOrbit(new PVCoordinates(new Vector3D(-3862363.8474653554,
                                                                               -3521533.9758022362,
@@ -482,7 +482,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void tooEllipticalOrbit() throws OrekitException {
+    public void tooEllipticalOrbit() {
         // for an eccentricity too big for the model
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
@@ -502,7 +502,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void hyperbolic() throws OrekitException {
+    public void hyperbolic() {
         KeplerianOrbit hyperbolic =
             new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -512,18 +512,18 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test(expected = OrekitException.class)
-    public void wrongAttitude() throws OrekitException {
+    public void wrongAttitude() {
         KeplerianOrbit orbit =
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         AttitudeProvider wrongLaw = new AttitudeProvider() {
             private static final long serialVersionUID = 5918362126173997016L;
-            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) throws OrekitException {
+            public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
             public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                                 FieldAbsoluteDate<T> date, Frame frame)
-                throws OrekitException {
+                {
                 throw new OrekitException(new DummyLocalizable("gasp"), new RuntimeException());
             }
         };
@@ -533,7 +533,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testAcceleration() throws OrekitException {
+    public void testAcceleration() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -590,7 +590,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void ascendingNode() throws OrekitException {
+    public void ascendingNode() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -613,7 +613,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void stopAtTargetDate() throws OrekitException {
+    public void stopAtTargetDate() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -627,7 +627,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void perigee() throws OrekitException {
+    public void perigee() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
@@ -643,7 +643,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void date() throws OrekitException {
+    public void date() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -657,7 +657,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void fixedStep() throws OrekitException {
+    public void fixedStep() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -667,7 +667,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
             public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+            {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -679,7 +679,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void setting() throws OrekitException {
+    public void setting() {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -707,7 +707,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void testInitializationCorrectness()
-        throws OrekitException, IOException {
+        throws IOException {
 
         //  Definition of initial conditions
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
@@ -773,7 +773,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testNonSerializableStateProvider() throws OrekitException, IOException {
+    public void testNonSerializableStateProvider() throws IOException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
         Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000     = FramesFactory.getEME2000();
@@ -813,7 +813,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue223()
-        throws OrekitException, IOException, ClassNotFoundException {
+        throws IOException, ClassNotFoundException {
 
         //  Definition of initial conditions
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
@@ -862,7 +862,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue224Forward()
-        throws OrekitException, IOException, ClassNotFoundException {
+        throws IOException, ClassNotFoundException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
         Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -926,7 +926,7 @@ public class EcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue224Backward()
-        throws OrekitException, IOException, ClassNotFoundException {
+        throws IOException, ClassNotFoundException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
         Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

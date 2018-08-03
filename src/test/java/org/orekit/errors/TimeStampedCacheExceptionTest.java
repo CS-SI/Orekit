@@ -93,7 +93,7 @@ public class TimeStampedCacheExceptionTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

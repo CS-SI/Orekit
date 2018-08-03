@@ -26,7 +26,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -417,11 +416,9 @@ public abstract class Orbit
     /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return pvCoordinates in the specified output frame
-     * @exception OrekitException if transformation between frames cannot be computed
-     * @see #getPVCoordinates()
+          * @see #getPVCoordinates()
      */
-    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -438,8 +435,7 @@ public abstract class Orbit
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 

@@ -41,8 +41,7 @@ public interface AttitudeProvider extends Serializable {
      * @return attitude attitude on the specified date and position-velocity state
      * @throws OrekitException if attitude cannot be computed
      */
-    Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame)
-        throws OrekitException;
+    Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
@@ -55,6 +54,5 @@ public interface AttitudeProvider extends Serializable {
      */
     <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
                                                                  FieldAbsoluteDate<T> date,
-                                                                 Frame frame)
-        throws OrekitException;
+                                                                 Frame frame);
 }

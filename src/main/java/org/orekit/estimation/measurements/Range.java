@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -79,12 +78,9 @@ public class Range extends AbstractMeasurement<Range> {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public Range(final GroundStation station, final AbsoluteDate date,
-                 final double range, final double sigma, final double baseWeight)
-        throws OrekitException {
+                 final double range, final double sigma, final double baseWeight) {
         this(station, true, date, range, sigma, baseWeight, 0);
     }
 
@@ -100,12 +96,9 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoWay flag indicating whether it is a two-way measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public Range(final GroundStation station, final AbsoluteDate date, final double range,
-                 final double sigma, final double baseWeight, final boolean twoWay)
-        throws OrekitException {
+                 final double sigma, final double baseWeight, final boolean twoWay) {
         this(station, twoWay, date, range, sigma, baseWeight, 0);
     }
 
@@ -116,14 +109,11 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
-                 final int propagatorIndex)
-        throws OrekitException {
+                 final int propagatorIndex) {
         this(station, true, date, range, sigma, baseWeight, 0);
     }
 
@@ -135,14 +125,11 @@ public class Range extends AbstractMeasurement<Range> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param propagatorIndex index of the propagator related to this measurement
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      * @since 9.0
      */
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
-                 final int propagatorIndex)
-        throws OrekitException {
+                 final int propagatorIndex) {
         super(date, range, sigma, baseWeight, Arrays.asList(propagatorIndex),
               station.getEastOffsetDriver(),
               station.getNorthOffsetDriver(),
@@ -175,8 +162,7 @@ public class Range extends AbstractMeasurement<Range> {
     @Override
     protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
-                                                                final SpacecraftState[] states)
-        throws OrekitException {
+                                                                final SpacecraftState[] states) {
 
         final SpacecraftState state = states[getPropagatorsIndices().get(0)];
 

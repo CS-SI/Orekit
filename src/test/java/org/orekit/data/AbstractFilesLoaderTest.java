@@ -20,13 +20,12 @@ import java.util.SortedSet;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
 public abstract class AbstractFilesLoaderTest {
 
-    protected void setRoot(String directoryName) throws OrekitException {
+    protected void setRoot(String directoryName) {
         Utils.setDataRoot(directoryName);
     }
 

@@ -29,7 +29,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
@@ -110,11 +109,9 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
      * </p>
      * @param baseUT1 underlying base UT1
-     * @exception OrekitException if scales are too close to zero (never happens)
      * @since 9.1
      */
-    public EstimatedEarthFrameProvider(final UT1Scale baseUT1)
-        throws OrekitException {
+    public EstimatedEarthFrameProvider(final UT1Scale baseUT1) {
 
         this.primeMeridianOffsetDriver = new ParameterDriver("prime-meridian-offset",
                                                              0.0, ANGULAR_SCALE,
@@ -218,8 +215,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date)
-        throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) {
 
         // take parametric prime meridian shift into account
         final double theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
@@ -249,8 +245,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         final T zero = date.getField().getZero();
 
@@ -273,12 +268,10 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param factory factory for the derivatives
      * @param indices indices of the estimated parameters in derivatives computations
      * @return computed transform with derivatives
-     * @exception OrekitException if some frame transforms cannot be computed
      */
     public FieldTransform<DerivativeStructure> getTransform(final FieldAbsoluteDate<DerivativeStructure> date,
                                                             final DSFactory factory,
-                                                            final Map<String, Integer> indices)
-        throws OrekitException {
+                                                            final Map<String, Integer> indices) {
 
         // prime meridian shift parameters
         final DerivativeStructure theta    = linearModel(factory, date,
@@ -308,13 +301,11 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param ypNegDot opposite of the angular rate of the pole motion along Y
      * @param <T> type of the field elements
      * @return computed transform with derivatives
-     * @exception OrekitException if some frame transforms cannot be computed
      */
     private <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date,
                                                                            final T theta, final T thetaDot,
                                                                            final T xpNeg, final T xpNegDot,
-                                                                           final T ypNeg, final T ypNegDot)
-        throws OrekitException {
+                                                                           final T ypNeg, final T ypNegDot) {
 
         final T                zero  = date.getField().getZero();
         final FieldVector3D<T> plusI = FieldVector3D.getPlusI(date.getField());
@@ -346,12 +337,9 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param offsetDriver driver for the offset parameter
      * @param driftDriver driver for the drift parameter
      * @return current value of the linear model
-     * @exception OrekitException if reference date has not been set for the
-     * offset driver
      */
     private double linearModel(final AbsoluteDate date,
-                               final ParameterDriver offsetDriver, final ParameterDriver driftDriver)
-        throws OrekitException {
+                               final ParameterDriver offsetDriver, final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
@@ -367,14 +355,11 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param offsetDriver driver for the offset parameter
      * @param driftDriver driver for the drift parameter
      * @return current value of the linear model
-     * @exception OrekitException if reference date has not been set for the
-     * offset driver
      * @param <T> type of the filed elements
      */
     private <T extends RealFieldElement<T>> T linearModel(final FieldAbsoluteDate<T> date,
                                                           final ParameterDriver offsetDriver,
-                                                          final ParameterDriver driftDriver)
-        throws OrekitException {
+                                                          final ParameterDriver driftDriver) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
@@ -392,13 +377,10 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
      * @param driftDriver driver for the drift parameter
      * @param indices indices of the estimated parameters in derivatives computations
      * @return current value of the linear model
-     * @exception OrekitException if reference date has not been set for the
-     * offset driver
      */
     private DerivativeStructure linearModel(final DSFactory factory, final FieldAbsoluteDate<DerivativeStructure> date,
                                             final ParameterDriver offsetDriver, final ParameterDriver driftDriver,
-                                            final Map<String, Integer> indices)
-        throws OrekitException {
+                                            final Map<String, Integer> indices) {
         if (offsetDriver.getReferenceDate() == null) {
             throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
                                       offsetDriver.getName());
@@ -463,23 +445,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-            try {
-                final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
-                return baseUT1.offsetFromTAI(date).add(dut1);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
+            return baseUT1.offsetFromTAI(date).add(dut1);
         }
 
         /** {@inheritDoc} */
         @Override
-        public double offsetFromTAI(final AbsoluteDate date) throws OrekitExceptionWrapper {
-            try {
-                final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
-                return baseUT1.offsetFromTAI(date) + dut1;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+        public double offsetFromTAI(final AbsoluteDate date) {
+            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
+            return baseUT1.offsetFromTAI(date) + dut1;
         }
 
         /** {@inheritDoc} */

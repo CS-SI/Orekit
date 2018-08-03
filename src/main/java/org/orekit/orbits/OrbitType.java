@@ -152,8 +152,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -286,8 +285,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -426,8 +424,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -566,8 +563,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
-            throws OrekitException {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -764,11 +760,9 @@ public enum OrbitType {
      * @param orbit reference orbit
      * @param type type of the angle
      * @return parameters drivers initialized from reference orbit
-     * @exception OrekitException if Jacobian is singular
      */
     public abstract ParameterDriversList getDrivers(double dP, Orbit orbit,
-                                                    PositionAngle type)
-        throws OrekitException;
+                                                    PositionAngle type);
 
     /** Compute scaling factor for parameters drivers.
      * <p>
@@ -786,10 +780,8 @@ public enum OrbitType {
      * @param dP user specified position error
      * @param orbit reference orbit
      * @return scaling factor array
-     * @exception OrekitException if Jacobian is singular
      */
-    protected double[] scale(final double dP, final Orbit orbit)
-        throws OrekitException {
+    protected double[] scale(final double dP, final Orbit orbit) {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();

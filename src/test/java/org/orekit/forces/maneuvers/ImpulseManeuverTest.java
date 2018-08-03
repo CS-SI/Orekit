@@ -32,7 +32,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -54,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ImpulseManeuverTest {
     @Test
-    public void testInclinationManeuver() throws OrekitException {
+    public void testInclinationManeuver() {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
                                PositionAngle.MEAN, FramesFactory.getEME2000(),
@@ -77,7 +76,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testInertialManeuver() throws OrekitException {
+    public void testInertialManeuver() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -125,7 +124,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackward() throws OrekitException {
+    public void testBackward() {
 
         final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
         final Orbit initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
@@ -153,7 +152,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackAndForth() throws OrekitException {
+    public void testBackAndForth() {
 
         final AttitudeProvider lof = new LofOffset(FramesFactory.getEME2000(), LOFType.VNC);
         final double mu = Constants.EIGEN5C_EARTH_MU;
@@ -195,7 +194,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateKeplerian() throws OrekitException {
+    public void testAdditionalStateKeplerian() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -238,7 +237,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateNumerical() throws OrekitException {
+    public void testAdditionalStateNumerical() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;

@@ -58,9 +58,8 @@ public class DirectoryCrawler implements DataProvider {
 
     /** Build a data files crawler.
      * @param root root of the directories tree (must be a directory)
-     * @exception OrekitException if root is not a directory
      */
-    public DirectoryCrawler(final File root) throws OrekitException {
+    public DirectoryCrawler(final File root) {
         if (!root.isDirectory()) {
             throw new OrekitException(OrekitMessages.NOT_A_DIRECTORY, root.getAbsolutePath());
         }
@@ -68,8 +67,7 @@ public class DirectoryCrawler implements DataProvider {
     }
 
     /** {@inheritDoc} */
-    public boolean feed(final Pattern supported, final DataLoader visitor)
-        throws OrekitException {
+    public boolean feed(final Pattern supported, final DataLoader visitor) {
         try {
             return feed(supported, visitor, root);
         } catch (IOException ioe) {
@@ -83,14 +81,12 @@ public class DirectoryCrawler implements DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to feed
      * @param directory current directory
-     * @exception OrekitException if some data is missing, duplicated
-     * or can't be read
      * @return true if something has been loaded
      * @exception IOException if data cannot be read
      * @exception ParseException if data cannot be read
      */
     private boolean feed(final Pattern supported, final DataLoader visitor, final File directory)
-        throws OrekitException, IOException, ParseException {
+        throws IOException, ParseException {
 
         // search in current directory
         final File[] list = directory.listFiles();

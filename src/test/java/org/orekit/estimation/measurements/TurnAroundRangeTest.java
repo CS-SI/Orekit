@@ -55,7 +55,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     @Test
-    public void testValues() throws OrekitException {
+    public void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Values\n");
@@ -70,7 +70,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivatives() throws OrekitException {
+    public void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -96,7 +96,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     @Test
-    public void testStateDerivativesWithModifier() throws OrekitException {
+    public void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -122,7 +122,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivatives() throws OrekitException {
+    public void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -150,7 +150,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     @Test
-    public void testParameterDerivativesWithModifier() throws OrekitException {
+    public void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -177,7 +177,7 @@ public class TurnAroundRangeTest {
      * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
-                    throws OrekitException {
+                    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -273,7 +273,7 @@ public class TurnAroundRangeTest {
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-        throws OrekitException {
+        {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         //Context context = EstimationTestUtils.geoStationnaryContext();
@@ -337,7 +337,7 @@ public class TurnAroundRangeTest {
 
             // Compute a reference value using finite differences
             jacobianRef = Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) throws OrekitException {
+                public double[] value(final SpacecraftState state) {
                     return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
                 }
             }, measurement.getDimension(), propagator.getAttitudeProvider(),
@@ -407,7 +407,7 @@ public class TurnAroundRangeTest {
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,
                                          final double refErrorQSMedian, final double refErrorQSMean, final double refErrorQSMax)
-        throws OrekitException {
+        {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -506,7 +506,7 @@ public class TurnAroundRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                                    public double value(final ParameterDriver parameterDriver) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, drivers[i], 3, 20.0);

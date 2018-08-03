@@ -63,10 +63,8 @@ public class AntexLoader {
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
-     * @exception OrekitException if no antex file can be read
      */
-    public AntexLoader(final String supportedNames)
-        throws OrekitException {
+    public AntexLoader(final String supportedNames) {
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
@@ -98,11 +96,9 @@ public class AntexLoader {
      * @param satelliteSystem satellite system
      * @param prnNumber number within the satellite system
      * @return time map for the antenna
-     * @exception OrekitException if satellite cannot be found
      */
     public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
-                                                              final int prnNumber)
-        throws OrekitException {
+                                                              final int prnNumber) {
         final Optional<TimeSpanMap<SatelliteAntenna>> existing =
                         satellitesAntennas.
                         stream().

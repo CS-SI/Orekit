@@ -63,7 +63,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerPV() throws OrekitException {
+    public void testKeplerPV() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -107,7 +107,7 @@ public class BatchLSEstimatorTest {
     
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() throws OrekitException {
+    public void testKeplerPVBackward() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -154,7 +154,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerRange() throws OrekitException {
+    public void testKeplerRange() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -190,7 +190,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -250,7 +250,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() throws OrekitException {
+    public void testKeplerRangeWithOnBoardAntennaOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -290,7 +290,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -346,7 +346,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() throws OrekitException {
+    public void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -408,7 +408,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -513,7 +513,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testMultiSatWithParameters() throws OrekitException {
+    public void testMultiSatWithParameters() {
 
         // Test: Set the propagator drivers to estimate for each satellite
         final boolean muEstimated  = true;
@@ -618,7 +618,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
-                throws OrekitException {
+                {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
                 } else {
@@ -705,7 +705,7 @@ public class BatchLSEstimatorTest {
     }
     
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -768,7 +768,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeRate() throws OrekitException {
+    public void testKeplerRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -809,7 +809,7 @@ public class BatchLSEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerRangeAndRangeRate() throws OrekitException {
+    public void testKeplerRangeAndRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

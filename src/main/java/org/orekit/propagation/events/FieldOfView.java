@@ -90,13 +90,11 @@ public class FieldOfView implements Serializable {
      * @param margin angular margin to apply to the zone (if positive,
      * the Field Of View will consider points slightly outside of the
      * zone are still visible)
-     * @exception OrekitException if half aperture is larger than π/2
      */
     public FieldOfView(final Vector3D center,
                        final Vector3D axis1, final double halfAperture1,
                        final Vector3D axis2, final double halfAperture2,
-                       final double margin)
-        throws OrekitException {
+                       final double margin) {
 
         // build zone
         final RegionFactory<Sphere2D> factory = new RegionFactory<Sphere2D>();
@@ -155,12 +153,10 @@ public class FieldOfView implements Serializable {
      * must be less than π/2, i.e. full dihedra must be smaller then
      * an hemisphere
      * @return dihedra
-     * @exception OrekitException if half aperture is larger than π/2
      */
     private Region<Sphere2D> buildDihedra(final RegionFactory<Sphere2D> factory,
                                           final double tolerance, final Vector3D center,
-                                          final Vector3D axis, final double halfAperture)
-        throws OrekitException {
+                                          final Vector3D axis, final double halfAperture) {
         if (halfAperture > 0.5 * FastMath.PI) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
                                       halfAperture, 0.0, 0.5 * FastMath.PI);
@@ -299,8 +295,7 @@ public class FieldOfView implements Serializable {
      * below body surface
      */
     List<List<GeodeticPoint>> getFootprint(final Transform fovToBody, final OneAxisEllipsoid body,
-                                           final double angularStep)
-        throws OrekitException {
+                                           final double angularStep) {
 
         final Frame     bodyFrame = body.getBodyFrame();
         final Vector3D  position  = fovToBody.transformPosition(Vector3D.ZERO);

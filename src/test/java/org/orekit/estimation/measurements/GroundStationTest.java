@@ -71,7 +71,7 @@ public class GroundStationTest {
 
     @Deprecated
     @Test
-    public void testDeprecatedMethod() throws OrekitException {
+    public void testDeprecatedMethod() {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         for (final GroundStation station : context.stations) {
             Assert.assertThat(station.getOffsetGeodeticPoint(),
@@ -80,7 +80,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testEstimateStationPosition() throws OrekitException, IOException, ClassNotFoundException {
+    public void testEstimateStationPosition() throws IOException, ClassNotFoundException {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -197,7 +197,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testEstimateEOP() throws OrekitException {
+    public void testEstimateEOP() {
 
         Context linearEOPContext = EstimationTestUtils.eccentricContext("linear-EOP:regular-data/de431-ephemerides:potential:tides");
 
@@ -320,7 +320,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxPyPz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.9e-15;
         double relativeTolerancePositionDerivative =  1.9e-10;
         double relativeToleranceVelocityValue      =  5.5e-15;
@@ -332,7 +332,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxPyPz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue            =  2.1e-15;
         double toleranceRotationDerivative       =  4.2e-18;
         double toleranceRotationRateValue        =  2.7e-19;
@@ -344,7 +344,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxPyMz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  8.1e-11;
         double relativeToleranceVelocityValue      =  4.7e-15;
@@ -356,7 +356,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxPyMz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  3.7e-18;
         double toleranceRotationRateValue        =  1.6e-19;
@@ -368,7 +368,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxMyPz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  3.7e-15;
         double relativeTolerancePositionDerivative =  1.7e-10;
         double relativeToleranceVelocityValue      =  4.9e-15;
@@ -380,7 +380,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxMyPz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  3.6e-18;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -392,7 +392,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxMyMz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  7.5e-11;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -404,7 +404,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxMyMz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  4.1e-18;
         double toleranceRotationRateValue        =  1.4e-19;
@@ -416,7 +416,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxPyPz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  1.4e-10;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -428,7 +428,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxPyPz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  4.0e-18;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -440,7 +440,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxPyMz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  1.4e-10;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -452,7 +452,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxPyMz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  4.0e-18;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -464,7 +464,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxMyPz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  1.5e-10;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -476,7 +476,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxMyPz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  4.7e-18;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -488,7 +488,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxMyMz() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  1.5e-10;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -500,7 +500,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxMyMz() throws OrekitException {
+    public void testStationOffsetAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  4.7e-18;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -512,7 +512,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesNearPole() throws OrekitException {
+    public void testStationOffsetCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  5.2e-15;
         double relativeTolerancePositionDerivative =  8.0e-10;
         double relativeToleranceVelocityValue      =  2.7e-13;
@@ -524,7 +524,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesNearPole() throws OrekitException {
+    public void testStationOffsetAngularDerivativesNearPole() {
         double toleranceRotationValue            =  4.5e-15;
         double toleranceRotationDerivative       =  8.1e-02; // near pole, the East and North directions are singular
         double toleranceRotationRateValue        =  3.2e-19;
@@ -536,7 +536,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxPyPz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.9e-15;
         double relativeTolerancePositionDerivative =  1.9e-08;
         double relativeToleranceVelocityValue      =  5.5e-15;
@@ -549,7 +549,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxPyPz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue            =  2.1e-15;
         double toleranceRotationDerivative       =  7.7e-09;
         double toleranceRotationRateValue        =  2.7e-19;
@@ -562,7 +562,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxPyMz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  1.2e-08;
         double relativeToleranceVelocityValue      =  4.7e-15;
@@ -575,7 +575,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxPyMz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  8.4e-09;
         double toleranceRotationRateValue        =  1.6e-19;
@@ -588,7 +588,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxMyPz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  3.7e-15;
         double relativeTolerancePositionDerivative =  1.5e-08;
         double relativeToleranceVelocityValue      =  4.9e-15;
@@ -601,7 +601,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxMyPz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  9.2e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -614,7 +614,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxMyMz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  1.1e-08;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -627,7 +627,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxMyMz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  8.3e-09;
         double toleranceRotationRateValue        =  1.4e-19;
@@ -640,7 +640,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxPyPz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  2.1e-08;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -653,7 +653,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxPyPz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.6e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -666,7 +666,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxPyMz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  2.1e-08;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -679,7 +679,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxPyMz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.6e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -692,7 +692,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxMyPz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  1.5e-08;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -705,7 +705,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxMyPz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  9.4e-09;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -718,7 +718,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxMyMz() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  1.5e-08;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -731,7 +731,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxMyMz() throws OrekitException {
+    public void testPolarMotionAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  9.4e-09;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -744,7 +744,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesNearPole() throws OrekitException {
+    public void testPolarMotionCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  4.2e-15;
         double relativeTolerancePositionDerivative =  1.7e-08;
         double relativeToleranceVelocityValue      =  2.7e-13;
@@ -757,7 +757,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesNearPole() throws OrekitException {
+    public void testPolarMotionAngularDerivativesNearPole() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  7.4e-09;
         double toleranceRotationRateValue        =  3.2e-19;
@@ -770,7 +770,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxPyPz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.9e-15;
         double relativeTolerancePositionDerivative =  1.3e-08;
         double relativeToleranceVelocityValue      =  5.5e-15;
@@ -782,7 +782,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxPyPz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue            =  2.1e-15;
         double toleranceRotationDerivative       =  8.4e-09;
         double toleranceRotationRateValue        =  2.7e-19;
@@ -794,7 +794,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxPyMz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  7.6e-09;
         double relativeToleranceVelocityValue      =  4.7e-15;
@@ -806,7 +806,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxPyMz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.8e-09;
         double toleranceRotationRateValue        =  1.6e-19;
@@ -818,7 +818,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxMyPz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  3.7e-15;
         double relativeTolerancePositionDerivative =  1.2e-08;
         double relativeToleranceVelocityValue      =  4.9e-15;
@@ -830,7 +830,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxMyPz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.5e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -842,7 +842,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxMyMz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  2.2e-15;
         double relativeTolerancePositionDerivative =  6.5e-09;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -854,7 +854,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxMyMz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  8.0e-09;
         double toleranceRotationRateValue        =  1.4e-19;
@@ -866,7 +866,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxPyPz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  1.4e-08;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -878,7 +878,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxPyPz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.3e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -890,7 +890,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxPyMz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  3.2e-15;
         double relativeTolerancePositionDerivative =  1.4e-08;
         double relativeToleranceVelocityValue      =  3.9e-15;
@@ -902,7 +902,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxPyMz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue            =  2.0e-15;
         double toleranceRotationDerivative       =  7.3e-09;
         double toleranceRotationRateValue        =  2.6e-19;
@@ -914,7 +914,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxMyPz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  9.1e-09;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -926,7 +926,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxMyPz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  7.7e-09;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -938,7 +938,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxMyMz() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  2.7e-15;
         double relativeTolerancePositionDerivative =  9.1e-09;
         double relativeToleranceVelocityValue      =  3.8e-15;
@@ -950,7 +950,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxMyMz() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  7.7e-09;
         double toleranceRotationRateValue        =  1.7e-19;
@@ -962,7 +962,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesNearPole() throws OrekitException {
+    public void testPrimeMeridianCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  4.2e-15;
         double relativeTolerancePositionDerivative =  1.8e-03; // near pole, the East and North directions are singular
         double relativeToleranceVelocityValue      =  2.7e-13;
@@ -974,7 +974,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesNearPole() throws OrekitException {
+    public void testPrimeMeridianAngularDerivativesNearPole() {
         double toleranceRotationValue            =  1.9e-15;
         double toleranceRotationDerivative       =  8.1e-09;
         double toleranceRotationRateValue        =  3.2e-19;
@@ -986,7 +986,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testNoReferenceDate() throws OrekitException {
+    public void testNoReferenceDate() {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -1033,7 +1033,7 @@ public class GroundStationTest {
                                             double relativeTolerancePositionValue, double relativeTolerancePositionDerivative,
                                             double relativeToleranceVelocityValue, double relativeToleranceVelocityDerivative,
                                             String... parameterPattern)
-        throws OrekitException {
+        {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -1137,7 +1137,7 @@ public class GroundStationTest {
                                           double toleranceRotationValue,     double toleranceRotationDerivative,
                                           double toleranceRotationRateValue, double toleranceRotationRateDerivative,
                                           String... parameterPattern)
-        throws OrekitException {
+        {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;

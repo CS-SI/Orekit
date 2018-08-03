@@ -362,11 +362,9 @@ public class PoissonSeriesParser {
     /** Set up column of GMST tide multiplier.
      * @param column column of the GMST tide multiplier (counting from 1)
      * @return a new parser, with updated columns settings
-     * @exception OrekitException if τ has been configured by a previous call
-     * to {@link #withDoodson(int, int)}
      * @see #withDoodson(int, int)
      */
-    public PoissonSeriesParser withGamma(final int column) throws OrekitException {
+    public PoissonSeriesParser withGamma(final int column) {
 
         // check we don't try to have both τ and γ configured at the same time
         if (firstDoodson > 0 && column > 0) {
@@ -389,13 +387,10 @@ public class PoissonSeriesParser {
      * corresponds to τ (counting from 1)
      * @param numberColumn column of the Doodson number (counting from 1)
      * @return a new parser, with updated columns settings
-     * @exception OrekitException if γ has been configured by a previous call
-     * to {@link #withGamma(int)}
      * @see #withGamma(int)
      * @see #withFirstDelaunay(int)
      */
-    public PoissonSeriesParser withDoodson(final int firstMultiplierColumn, final int numberColumn)
-        throws OrekitException {
+    public PoissonSeriesParser withDoodson(final int firstMultiplierColumn, final int numberColumn) {
 
         // check we don't try to have both τ and γ configured at the same time
         if (gamma > 0 && firstMultiplierColumn > 0) {
@@ -501,9 +496,8 @@ public class PoissonSeriesParser {
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @return parsed Poisson series
-     * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public PoissonSeries parse(final InputStream stream, final String name) throws OrekitException {
+    public PoissonSeries parse(final InputStream stream, final String name) {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);

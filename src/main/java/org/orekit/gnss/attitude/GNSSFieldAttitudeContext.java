@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.LOFType;
 import org.orekit.time.FieldAbsoluteDate;
@@ -114,10 +113,8 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
     /** Simple constructor.
      * @param sunPV Sun position-velocity in inertial frame
      * @param svPV spacecraft position-velocity in inertial frame
-     * @exception OrekitException if yaw cannot be corrected
      */
-    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV)
-        throws OrekitException {
+    GNSSFieldAttitudeContext(final TimeStampedFieldPVCoordinates<T> sunPV, final TimeStampedFieldPVCoordinates<T> svPV) {
 
         final Field<T> field = sunPV.getDate().getField();
         plusY  = new FieldPVCoordinates<>(field, PLUS_Y);

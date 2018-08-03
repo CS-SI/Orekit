@@ -20,7 +20,6 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -137,8 +136,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
-        throws OrekitException {
+    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0) {
 
         // get the conversion Jacobian
         final double[][] dYdC = getJacobianConversion(state);
@@ -164,8 +162,7 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
-        throws OrekitException {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP) {
 
         if (parameters.getNbParams() != 0) {
 

@@ -72,7 +72,7 @@ public class FieldOfViewDetectorTest {
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
-    public void testDihedralFielOfView() throws OrekitException {
+    public void testDihedralFielOfView() {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -112,7 +112,7 @@ public class FieldOfViewDetectorTest {
 
     /** check the default behavior to stop propagation on FoV exit. */
     @Test
-    public void testStopOnExit() throws OrekitException {
+    public void testStopOnExit() {
         //setup
         double pi = FastMath.PI;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date
@@ -190,7 +190,7 @@ public class FieldOfViewDetectorTest {
 
         public Action eventOccurred(final SpacecraftState s, final FieldOfViewDetector detector,
                                     final boolean increasing)
-            throws OrekitException {
+            {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),

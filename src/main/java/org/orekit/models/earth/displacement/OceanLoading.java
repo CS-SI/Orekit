@@ -28,7 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 
 /**
@@ -360,8 +359,7 @@ public class OceanLoading implements StationDisplacement {
     /** {@inheritDoc} */
     @Override
     public Vector3D displacement(final BodiesElements elements, final Frame earthFrame,
-                                 final Vector3D referencePoint)
-        throws OrekitException {
+                                 final Vector3D referencePoint) {
 
         // allocate arrays for each species splines
         final UnivariateFunction[] realZSpline      = new UnivariateFunction[mainTides.length];

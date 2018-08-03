@@ -60,12 +60,12 @@ public class FieldEventDetectorTest {
     private double mu;
 
     @Test
-    public void testEventHandlerInit() throws OrekitException {
+    public void testEventHandlerInit() {
         doTestEventHandlerInit(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestEventHandlerInit(Field<T> field)
-            throws OrekitException {
+            {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -110,11 +110,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testBasicScheduling() throws OrekitException {
+    public void testBasicScheduling() {
         doTestBasicScheduling(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestBasicScheduling(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestBasicScheduling(Field<T> field) {
 
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -176,11 +176,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() throws OrekitException {
+    public void testIssue108Numerical() {
         doTestIssue108Numerical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Numerical(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue108Numerical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -205,11 +205,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testIssue108Analytical() throws OrekitException {
+    public void testIssue108Analytical() {
         doTestIssue108Analytical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue108Analytical(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue108Analytical(Field<T> field) {
         final T zero = field.getZero();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6142438.668),
@@ -263,11 +263,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() throws OrekitException {
+    public void testNoisyGFunction() {
         doTestNoisyGFunction(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoisyGFunction(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNoisyGFunction(Field<T> field) {
 
         final T zero = field.getZero();
 
@@ -316,7 +316,7 @@ public class FieldEventDetectorTest {
             this.provider = provider;
         }
 
-        public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+        public T g(final FieldSpacecraftState<T> s) {
             FieldPVCoordinates<T> pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
             FieldPVCoordinates<T> pv2     = s.getPVCoordinates();
             FieldVector3D<T> deltaP       = pv1.getPosition().subtract(pv2.getPosition());
@@ -335,11 +335,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
         doTestWrappedException(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestWrappedException(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
         try {
@@ -358,7 +358,7 @@ public class FieldEventDetectorTest {
                                             eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
             k.addEventDetector(new FieldDateDetector<T>(initialDate.shiftedBy(Constants.JULIAN_DAY)) {
                 @Override
-                public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+                public T g(final FieldSpacecraftState<T> s) {
                     final T dt = s.getDate().durationFrom(exceptionDate);
                     if (dt.abs().getReal() < 1.0) {
                         throw new OrekitException(dummyCause, LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy");
@@ -374,11 +374,11 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testDefaultMethods() throws OrekitException {
+    public void testDefaultMethods() {
         doTestDefaultMethods(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestDefaultMethods(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDefaultMethods(final Field<T> field) {
         FieldEventDetector<T> dummyDetector = new FieldEventDetector<T>() {
 
             @Override

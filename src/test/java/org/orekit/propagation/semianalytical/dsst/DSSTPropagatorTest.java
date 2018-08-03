@@ -97,7 +97,7 @@ public class DSSTPropagatorTest {
     private DSSTPropagator dsstProp;
 
     @Test
-    public void testIssue363() throws OrekitException {
+    public void testIssue363() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
         CircularOrbit orbit = new CircularOrbit(7389068.5, 1.0e-15, 1.0e-15, 1.709573, 1.308398, 0, PositionAngle.MEAN,
@@ -121,7 +121,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue364() throws OrekitException {
+    public void testIssue364() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
         CircularOrbit orbit = new CircularOrbit(7389068.5, 0.0, 0.0, 1.709573, 1.308398, 0, PositionAngle.MEAN,
@@ -145,7 +145,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testHighDegreesSetting() throws OrekitException {
+    public void testHighDegreesSetting() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -175,7 +175,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDates() throws OrekitException {
+    public void testEphemerisDates() {
         //setup
         TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
@@ -214,7 +214,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testNoExtrapolation() throws OrekitException {
+    public void testNoExtrapolation() {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
@@ -239,7 +239,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testKepler() throws OrekitException {
+    public void testKepler() {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
@@ -259,7 +259,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemeris() throws OrekitException {
+    public void testEphemeris() {
         SpacecraftState state = getGEOState();
         setDSSTProp(state);
 
@@ -288,7 +288,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testImpulseManeuver() throws OrekitException {
+    public void testImpulseManeuver() {
         final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0, PositionAngle.MEAN, FramesFactory.getEME2000(), new AbsoluteDate(new DateComponents(2008, 06, 23), new TimeComponents(14, 18, 37), TimeScalesFactory.getUTC()), 3.986004415e14);
         final double a = initialOrbit.getA();
         final double e = initialOrbit.getE();
@@ -358,7 +358,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithThirdBody() throws OrekitException, IOException {
+    public void testPropagationWithThirdBody() throws IOException {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -415,22 +415,22 @@ public class DSSTPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testTooSmallMaxDegree() throws OrekitException {
+    public void testTooSmallMaxDegree() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 1, 0, 3);
     }
 
     @Test(expected=OrekitException.class)
-    public void testTooLargeMaxDegree() throws OrekitException {
+    public void testTooLargeMaxDegree() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0), 8, 0, 8);
     }
 
     @Test(expected=OrekitException.class)
-    public void testWrongMaxPower() throws OrekitException {
+    public void testWrongMaxPower() {
         new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(8, 8), 4, 4, 4);
     }
 
     @Test
-    public void testPropagationWithDrag() throws OrekitException {
+    public void testPropagationWithDrag() {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -498,7 +498,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithSolarRadiationPressure() throws OrekitException {
+    public void testPropagationWithSolarRadiationPressure() {
 
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
@@ -554,7 +554,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testStopEvent() throws OrekitException {
+    public void testStopEvent() {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
@@ -568,7 +568,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testContinueEvent() throws OrekitException {
+    public void testContinueEvent() {
         SpacecraftState state = getLEOState();
         setDSSTProp(state);
 
@@ -589,7 +589,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue157() throws OrekitException {
+    public void testIssue157() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
@@ -635,7 +635,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testEphemerisGeneration() throws OrekitException {
+    public void testEphemerisGeneration() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
@@ -771,7 +771,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testShortPeriodCoefficients() throws OrekitException {
+    public void testShortPeriodCoefficients() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(4, 4);
@@ -825,7 +825,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssueMeanInclination() throws OrekitException {
+    public void testIssueMeanInclination() {
 
         final double earthAe = 6378137.0;
         final double earthMu = 3.9860044E14;
@@ -856,7 +856,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue257() throws OrekitException {
+    public void testIssue257() {
         final SpacecraftState meanState = getGEOState();
 
         // Third Bodies Force Model (Moon + Sun)
@@ -887,7 +887,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue339() throws OrekitException {
+    public void testIssue339() {
 
         final SpacecraftState osculatingState = getLEOState();
 
@@ -929,7 +929,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testIssue339WithAccelerations() throws OrekitException {
+    public void testIssue339WithAccelerations() {
         final SpacecraftState osculatingState = getLEOStatePropagatedBy30Minutes();
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
@@ -973,7 +973,7 @@ public class DSSTPropagatorTest {
                                                         3.986004415E14));
     }
 
-    private void setDSSTProp(SpacecraftState initialState) throws OrekitException {
+    private void setDSSTProp(SpacecraftState initialState) {
         initialState.getDate();
         final double minStep = initialState.getKeplerianPeriod();
         final double maxStep = 100. * minStep;
@@ -1006,7 +1006,7 @@ public class DSSTPropagatorTest {
     }
 
     @Before
-    public void setUp() throws OrekitException, IOException, ParseException {
+    public void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

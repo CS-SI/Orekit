@@ -92,11 +92,11 @@ public class FieldNumericalPropagatorTest {
     private double               mu;
 
     @Test(expected=OrekitException.class)
-    public void testNotInitialised1() throws OrekitException{
+    public void testNotInitialised1() {
         doTestNotInitialised1(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestNotInitialised1(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestNotInitialised1(Field<T> field) {
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
 
@@ -106,11 +106,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNotInitialised2() throws OrekitException{
+    public void testNotInitialised2() {
         doTestNotInitialised2(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestNotInitialised2(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestNotInitialised2(Field<T> field) {
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldAbstractIntegratedPropagator<T> notInitialised =
@@ -120,13 +120,13 @@ public class FieldNumericalPropagatorTest {
 
     @Deprecated
     @Test
-    public void testDeprecatedMethods() throws OrekitException {
+    public void testDeprecatedMethods() {
         doTestDeprecatedMethods(Decimal64Field.getInstance());
     }
 
     @Deprecated
     private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestDeprecatedMethods(Field<T> field)
-        throws OrekitException {
+        {
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
         propagator.addForceModel(new Relativity(mu));
         Assert.assertEquals(2, propagator.getAllForceModels().size());
@@ -136,11 +136,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventAtEndOfEphemeris() throws OrekitException {
+    public void testEventAtEndOfEphemeris() {
         doTestEventAtEndOfEphemeris(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtEndOfEphemeris(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtEndOfEphemeris(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -167,12 +167,12 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventAtBeginningOfEphemeris() throws OrekitException {
+    public void testEventAtBeginningOfEphemeris() {
         doTestEventAtBeginningOfEphemeris(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field)
-        throws OrekitException {
+        {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -229,11 +229,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testCloseEventDates() throws OrekitException {
+    public void testCloseEventDates() {
         doTestCloseEventDates(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestCloseEventDates(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestCloseEventDates(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -256,11 +256,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDates() throws OrekitException {
+    public void testEphemerisDates() {
         doTestEphemerisDates(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEphemerisDates(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemerisDates(Field<T> field) {
 
         T zero = field.getZero();
 
@@ -303,11 +303,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDatesBackward() throws OrekitException {
+    public void testEphemerisDatesBackward() {
         doTestEphemerisDatesBackward(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestEphemerisDatesBackward(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEphemerisDatesBackward(Field<T> field) {
 
         T zero = field.getZero();
           //setup
@@ -348,11 +348,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testNoExtrapolation() throws OrekitException {
+    public void testNoExtrapolation() {
         doTestNoExtrapolation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestNoExtrapolation(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestNoExtrapolation(Field<T> field) {
 
         T zero = field.getZero();
         // setup
@@ -399,11 +399,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testKepler() throws OrekitException {
+    public void testKepler() {
         doTestKepler(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestKepler(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestKepler(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -441,11 +441,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testCartesian() throws OrekitException {
+    public void testCartesian() {
         doTestCartesian(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestCartesian(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestCartesian(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -490,11 +490,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() throws OrekitException {
+    public void testPropagationTypesElliptical() {
         doTestPropagationTypesElliptical(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestPropagationTypesElliptical(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestPropagationTypesElliptical(Field<T> field) {
 
         T zero = field.getZero();
         // setup
@@ -569,11 +569,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testPropagationTypesHyperbolic() throws OrekitException {
+    public void testPropagationTypesHyperbolic() {
         doTestPropagationTypesHyperbolic(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestPropagationTypesHyperbolic(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestPropagationTypesHyperbolic(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -635,7 +635,7 @@ public class FieldNumericalPropagatorTest {
 
     private <T extends RealFieldElement<T>> FieldPVCoordinates<T> propagateInType(FieldSpacecraftState<T> state, T dP,
                                           OrbitType type , PositionAngle angle, FieldNumericalPropagator<T> propagator)
-        throws OrekitException {
+        {
         T zero = dP.getField().getZero();
         final T dt = zero.add(3200);
         final double minStep = 0.001;
@@ -655,11 +655,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testException() throws OrekitException {
+    public void testException() {
         doTestException(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestException(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestException(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -686,7 +686,7 @@ public class FieldNumericalPropagatorTest {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
-                                   boolean isLast) throws OrekitException {
+                                   boolean isLast) {
                 if (previousCall != null) {
                     System.out.println(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
@@ -700,11 +700,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testStopEvent() throws OrekitException {
+    public void testStopEvent() {
         doTestStopEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestStopEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestStopEvent(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -739,11 +739,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testResetStateEvent() throws OrekitException {
+    public void testResetStateEvent() {
         doTestResetStateEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestResetStateEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestResetStateEvent(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -777,11 +777,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testResetDerivativesEvent() throws OrekitException {
+    public void testResetDerivativesEvent() {
         doTestResetDerivativesEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestResetDerivativesEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestResetDerivativesEvent(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -822,11 +822,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testContinueEvent() throws OrekitException {
+    public void testContinueEvent() {
         doTestContinueEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestContinueEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestContinueEvent(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -871,11 +871,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testAdditionalStateEvent() throws OrekitException {
+    public void testAdditionalStateEvent() {
         doTestAdditionalStateEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestAdditionalStateEvent(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestAdditionalStateEvent(Field<T> field) {
         T zero = field.getZero();
         // setup
         final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -986,7 +986,7 @@ public class FieldNumericalPropagatorTest {
             return new AdditionalStateLinearDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
-        public T g(FieldSpacecraftState<T> s) throws OrekitException {
+        public T g(FieldSpacecraftState<T> s) {
             return s.getAdditionalState("linear")[0].subtract(3.0);
         }
 
@@ -994,11 +994,11 @@ public class FieldNumericalPropagatorTest {
 
 
     @Test
-    public void testResetAdditionalStateEvent() throws OrekitException {
+    public void testResetAdditionalStateEvent() {
         doTestResetAdditionalStateEvent(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestResetAdditionalStateEvent(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestResetAdditionalStateEvent(final Field<T> field) {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
 
 
@@ -1019,7 +1019,7 @@ public class FieldNumericalPropagatorTest {
         CheckingHandler<AdditionalStateLinearDetector<T>, T> checking =
             new CheckingHandler<AdditionalStateLinearDetector<T>, T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(AdditionalStateLinearDetector<T> detector, FieldSpacecraftState<T> oldState)
-                throws OrekitException {
+                {
                 return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0].multiply(2));
             }
         };
@@ -1038,11 +1038,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventDetectionBug() throws OrekitException {
+    public void testEventDetectionBug() {
         doTestEventDetectionBug(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>  void doTestEventDetectionBug(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestEventDetectionBug(final Field<T> field) {
 
         T zero = field.getZero();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -1105,12 +1105,12 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisGenerationIssue14() throws OrekitException {
+    public void testEphemerisGenerationIssue14() {
         doTestEphemerisGenerationIssue14(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestEphemerisGenerationIssue14(Field<T> field)
-        throws OrekitException {
+        {
 
         // Propagation of the initial at t + dt
         FieldNumericalPropagator<T> propagator = createPropagator(field);
@@ -1142,12 +1142,12 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisAdditionalState() throws OrekitException {
+    public void testEphemerisAdditionalState() {
         doTestEphemerisAdditionalState(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>>  void doTestEphemerisAdditionalState(final Field<T> field)
-        throws OrekitException {
+        {
 
         // Propagation of the initial at t + dt
         final double dt = -3200;
@@ -1213,11 +1213,11 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testIssue157() throws OrekitException {
+    public void testIssue157() {
         doTestIssue157(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestIssue157(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue157(final Field<T> field) {
         try {
             FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(field.getZero().add(13378000),
                                                             field.getZero().add(0.05),
@@ -1237,361 +1237,361 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticTrueWithoutDerivatives() {
         doTestShiftKeplerianEllipticTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftKeplerianEllipticTrueWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticTrueWithDerivatives() {
         doTestShiftKeplerianEllipticTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftKeplerianEllipticEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticEccentricWithoutDerivatives() {
         doTestShiftKeplerianEllipticEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftKeplerianEllipticEcentricWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticEcentricWithDerivatives() {
         doTestShiftKeplerianEllipticEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftKeplerianEllipticMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticMeanWithoutDerivatives() {
         doTestShiftKeplerianEllipticMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftKeplerianEllipticMeanWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianEllipticMeanWithDerivatives() {
         doTestShiftKeplerianEllipticMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicTrueWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicTrueWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicTrueWithDerivatives() {
         doTestShiftKeplerianHyperbolicTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicEcentricWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicEcentricWithDerivatives() {
         doTestShiftKeplerianHyperbolicEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicMeanWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicMeanWithDerivatives() throws OrekitException {
+    public void testShiftKeplerianHyperbolicMeanWithDerivatives() {
         doTestShiftKeplerianHyperbolicMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftCartesianEllipticTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticTrueWithoutDerivatives() {
         doTestShiftCartesianEllipticTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCartesianEllipticTrueWithDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticTrueWithDerivatives() {
         doTestShiftCartesianEllipticTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftCartesianEllipticEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticEccentricWithoutDerivatives() {
         doTestShiftCartesianEllipticEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCartesianEllipticEcentricWithDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticEcentricWithDerivatives() {
         doTestShiftCartesianEllipticEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftCartesianEllipticMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticMeanWithoutDerivatives() {
         doTestShiftCartesianEllipticMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCartesianEllipticMeanWithDerivatives() throws OrekitException {
+    public void testShiftCartesianEllipticMeanWithDerivatives() {
         doTestShiftCartesianEllipticMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicTrueWithoutDerivatives() {
         doTestShiftCartesianHyperbolicTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicTrueWithDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicTrueWithDerivatives() {
         doTestShiftCartesianHyperbolicTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicEccentricWithoutDerivatives() {
         doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicEcentricWithDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicEcentricWithDerivatives() {
         doTestShiftCartesianHyperbolicEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicMeanWithoutDerivatives() {
         doTestShiftCartesianHyperbolicMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
-    public void testShiftCartesianHyperbolicMeanWithDerivatives() throws OrekitException {
+    public void testShiftCartesianHyperbolicMeanWithDerivatives() {
         doTestShiftCartesianHyperbolicMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithDerivatives(final Field<T> field) {
         doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
-    public void testShiftCircularTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftCircularTrueWithoutDerivatives() {
         doTestShiftCircularTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCircularTrueWithDerivatives() throws OrekitException {
+    public void testShiftCircularTrueWithDerivatives() {
         doTestShiftCircularTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftCircularEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftCircularEccentricWithoutDerivatives() {
         doTestShiftCircularEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCircularEcentricWithDerivatives() throws OrekitException {
+    public void testShiftCircularEcentricWithDerivatives() {
         doTestShiftCircularEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftCircularMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftCircularMeanWithoutDerivatives() {
         doTestShiftCircularMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftCircularMeanWithDerivatives() throws OrekitException {
+    public void testShiftCircularMeanWithDerivatives() {
         doTestShiftCircularMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftEquinoctialTrueWithoutDerivatives() throws OrekitException {
+    public void testShiftEquinoctialTrueWithoutDerivatives() {
         doTestShiftEquinoctialTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftEquinoctialTrueWithDerivatives() throws OrekitException {
+    public void testShiftEquinoctialTrueWithDerivatives() {
         doTestShiftEquinoctialTrueWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftEquinoctialEccentricWithoutDerivatives() throws OrekitException {
+    public void testShiftEquinoctialEccentricWithoutDerivatives() {
         doTestShiftEquinoctialEccentricWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialEccentricWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftEquinoctialEcentricWithDerivatives() throws OrekitException {
+    public void testShiftEquinoctialEcentricWithDerivatives() {
         doTtestShiftEquinoctialEcentricWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTtestShiftEquinoctialEcentricWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTtestShiftEquinoctialEcentricWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
-    public void testShiftEquinoctialMeanWithoutDerivatives() throws OrekitException {
+    public void testShiftEquinoctialMeanWithoutDerivatives() {
         doTestShiftEquinoctialMeanWithoutDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithoutDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
-    public void testShiftEquinoctialMeanWithDerivatives() throws OrekitException {
+    public void testShiftEquinoctialMeanWithDerivatives() {
         doTestShiftEquinoctialMeanWithDerivatives(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) {
         doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
@@ -1601,7 +1601,7 @@ public class FieldNumericalPropagatorTest {
                                                                     final double error60s, final double error120s,
                                                                     final double error300s, final double error600s,
                                                                     final double error900s)
-        throws OrekitException {
+        {
 
         T zero = orbit.getDate().getField().getZero();
 
@@ -1659,7 +1659,7 @@ public class FieldNumericalPropagatorTest {
         @Override
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldDateDetector<T> detector,
                                     final boolean increasing)
-            throws OrekitException {
+            {
             if (referenceState == null) {
                 // first event, we retrieve the reference state for later use
                 if (withDerivatives) {
@@ -1709,7 +1709,7 @@ public class FieldNumericalPropagatorTest {
     private static <T extends RealFieldElement<T>> FieldNumericalPropagator<T> createPropagator(FieldSpacecraftState<T> spacecraftState,
                                                                                                 OrbitType orbitType,
                                                                                                 PositionAngle angleType)
-        throws OrekitException {
+        {
 
         final Field<T> field                          = spacecraftState.getDate().getField();
         final T       zero                            = field.getZero();
@@ -1758,7 +1758,7 @@ public class FieldNumericalPropagatorTest {
 
     }
 
-    private static <T extends RealFieldElement<T>> FieldCartesianOrbit<T> createEllipticOrbit(Field<T> field) throws OrekitException {
+    private static <T extends RealFieldElement<T>> FieldCartesianOrbit<T> createEllipticOrbit(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(zero.add(6896874.444705),
@@ -1773,7 +1773,7 @@ public class FieldNumericalPropagatorTest {
         return new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
     }
 
-    private static <T extends RealFieldElement<T>> FieldCartesianOrbit<T> createHyperbolicOrbit(Field<T> field) throws OrekitException {
+    private static <T extends RealFieldElement<T>> FieldCartesianOrbit<T> createHyperbolicOrbit(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(zero.add(224267911.905821),
@@ -1810,7 +1810,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>>  FieldNumericalPropagator<T> createPropagator(Field<T> field)
-        throws OrekitException {
+        {
         T zero = field.getZero();
         final FieldVector3D<T> position = new FieldVector3D<>(zero.add(7.0e6),
                                                               zero.add(1.0e6),
@@ -1844,7 +1844,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();

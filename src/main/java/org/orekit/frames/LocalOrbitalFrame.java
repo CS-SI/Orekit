@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -90,7 +89,7 @@ public class LocalOrbitalFrame extends Frame {
         }
 
         /** {@inheritDoc} */
-        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) {
             return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 

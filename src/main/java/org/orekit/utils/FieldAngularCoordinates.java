@@ -108,13 +108,10 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
      * @param tolerance relative tolerance factor used to check singularities
-     * @exception OrekitException if the vectors are inconsistent for the
-     * rotation to be found (null, aligned, ...)
      */
     public FieldAngularCoordinates(final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
                                    final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                                   final double tolerance)
-        throws OrekitException {
+                                   final double tolerance) {
 
         try {
             // find the initial fixed rotation
@@ -338,11 +335,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * </p>
      * @param order derivation order for the vector components
      * @return rotation with time-derivatives embedded within the coordinates
-     * @exception OrekitException if the user specified order is too large
-     * @since 9.2
+          * @since 9.2
      */
-    public FieldRotation<FieldDerivativeStructure<T>> toDerivativeStructureRotation(final int order)
-        throws OrekitException {
+    public FieldRotation<FieldDerivativeStructure<T>> toDerivativeStructureRotation(final int order) {
 
         // quaternion components
         final T q0 = rotation.getQ0();

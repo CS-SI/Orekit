@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,12 +33,12 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBeta() throws OrekitException {
+    public void testLargeNegativeBeta() {
         doTestAxes("beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
     }
 
     @Test
-    public void testSmallNegativeBeta() throws OrekitException {
+    public void testSmallNegativeBeta() {
         // the differences with the reference Kouba models are due to the following changes:
         // - Orekit computes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
@@ -50,7 +49,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testCrossingBeta() throws OrekitException {
+    public void testCrossingBeta() {
         // TODO: these results are not good,
         // however the reference data is also highly suspicious
         // this needs to be investigated
@@ -58,7 +57,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testSmallPositiveBeta() throws OrekitException {
+    public void testSmallPositiveBeta() {
         // the differences with the reference Kouba models are due to the following changes:
         // - Orekit computes angular velocity taking eccentricity into account
         //   Kouba assumes a perfectly circular orbit
@@ -69,7 +68,7 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargePositiveBeta() throws OrekitException {
+    public void testLargePositiveBeta() {
         doTestAxes("beta-large-positive-BLOCK-IIR.txt", 1.3e-15, 7.0e-15, 8.5e-16);
     }
 

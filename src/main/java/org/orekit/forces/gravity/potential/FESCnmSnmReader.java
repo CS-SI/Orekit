@@ -59,7 +59,7 @@ public class FESCnmSnmReader extends OceanTidesReader {
     /** {@inheritDoc} */
     @Override
     public void loadData(final InputStream input, final String name)
-        throws OrekitException, IOException {
+        throws IOException {
 
         // FES ocean tides models have the following form:
         //    Coefficients to compute variations in normalized Stokes coefficients (unit = 10^-12)

@@ -358,8 +358,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser();
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         parser.fill(history);
@@ -399,10 +398,8 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         private int firstMJD;
 
         /** Simple constructor.
-         * @exception OrekitException if ITRF version loader cannot be parsed
          */
-        Parser()
-            throws OrekitException {
+        Parser() {
             this.eopFieldsMap         = new HashMap<Integer, double[]>();
             this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
             this.itrfVersionLoader    = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
@@ -419,7 +416,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             this.configuration = null;
             this.fileName      = name;
@@ -474,10 +471,8 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
         /** Fill EOP history obtained after reading several files.
          * @param history history to fill up
-         * @exception OrekitException if UTC time scale cannot be retrieved
          */
-        public void fill(final SortedSet<EOPEntry> history)
-            throws OrekitException {
+        public void fill(final SortedSet<EOPEntry> history) {
 
             double[] currentEOP = null;
             double[] nextEOP    = eopFieldsMap.get(mjdMin);
@@ -586,10 +581,9 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
          */
         private void loadXYDT(final Section section, final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -655,11 +649,10 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
          */
         private void loadPoleOffsets(final Section section, final boolean isNonRotatingOrigin,
                                      final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

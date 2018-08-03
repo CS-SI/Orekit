@@ -21,7 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -33,21 +32,21 @@ import org.orekit.utils.Constants;
 public class FieldStopOnIncreasingTest {
 
     @Test
-    public void testNoReset() throws OrekitException {
+    public void testNoReset() {
         doTestNoReset(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testIbcreasing() throws OrekitException {
+    public void testIbcreasing() {
         doTestIncreasing(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testDecreasing() throws OrekitException {
+    public void testDecreasing() {
         doTestDecreasing(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
@@ -60,7 +59,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(s, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
-    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
@@ -73,7 +72,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(FieldEventHandler.Action.STOP, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
-    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),

@@ -32,8 +32,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
@@ -127,15 +125,13 @@ public class DSSTModel implements ODModel {
      * @param observer observer to be notified at model calls
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @exception OrekitException if some propagator parameter cannot be set properly
      */
     public DSSTModel(final IntegratedPropagatorBuilder[] builders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer,
                      final PropagationType propagationType,
-                     final PropagationType stateType)
-        throws OrekitException {
+                     final PropagationType stateType) {
 
         this.builders                        = builders;
         this.measurements                    = measurements;
@@ -235,45 +231,40 @@ public class DSSTModel implements ODModel {
 
     /** {@inheritDoc} */
     @Override
-    public Pair<RealVector, RealMatrix> value(final RealVector point)
-        throws OrekitExceptionWrapper {
-        try {
+    public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
-            // Set up the propagators parallelizer
-            final DSSTPropagator[] propagators = createPropagators(point);
-            final Orbit[] orbits = new Orbit[propagators.length];
-            for (int i = 0; i < propagators.length; ++i) {
-                mappers[i] = configureDerivatives(propagators[i]);
-                orbits[i]  = propagators[i].getInitialState().getOrbit();
-            }
-            final PropagatorsParallelizer parallelizer =
-                            new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
-
-            // Reset value and Jacobian
-            evaluations.clear();
-            value.set(0.0);
-            for (int i = 0; i < jacobian.getRowDimension(); ++i) {
-                for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
-                    jacobian.setEntry(i, j, 0.0);
-                }
-            }
-
-            // Run the propagation, gathering residuals on the fly
-            if (forwardPropagation) {
-                // Propagate forward from firstDate
-                parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
-            } else {
-                // Propagate backward from lastDate
-                parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
-            }
-
-            observer.modelCalled(orbits, evaluations);
-
-            return new Pair<RealVector, RealMatrix>(value, jacobian);
-
-        } catch (OrekitException oe) {
-            throw new OrekitExceptionWrapper(oe);
+        // Set up the propagators parallelizer
+        final DSSTPropagator[] propagators = createPropagators(point);
+        final Orbit[] orbits = new Orbit[propagators.length];
+        for (int i = 0; i < propagators.length; ++i) {
+            mappers[i] = configureDerivatives(propagators[i]);
+            orbits[i]  = propagators[i].getInitialState().getOrbit();
         }
+        final PropagatorsParallelizer parallelizer =
+                        new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
+
+        // Reset value and Jacobian
+        evaluations.clear();
+        value.set(0.0);
+        for (int i = 0; i < jacobian.getRowDimension(); ++i) {
+            for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
+                jacobian.setEntry(i, j, 0.0);
+            }
+        }
+
+        // Run the propagation, gathering residuals on the fly
+        if (forwardPropagation) {
+            // Propagate forward from firstDate
+            parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+        } else {
+            // Propagate backward from lastDate
+            parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
+        }
+
+        observer.modelCalled(orbits, evaluations);
+
+        return new Pair<RealVector, RealMatrix>(value, jacobian);
+
     }
 
     /** {@inheritDoc} */
@@ -287,8 +278,7 @@ public class DSSTModel implements ODModel {
     }
 
     /** {@inheritDoc} */
-    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder)
-        throws OrekitException {
+    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
 
         // Lazy evaluation, create the list only if it hasn't been created yet
         if (estimatedPropagationParameters[iBuilder] == null) {
@@ -314,8 +304,7 @@ public class DSSTModel implements ODModel {
     }
 
     /** {@inheritDoc} */
-    public DSSTPropagator[] createPropagators(final RealVector point)
-        throws OrekitException {
+    public DSSTPropagator[] createPropagators(final RealVector point) {
 
         final DSSTPropagator[] propagators = new DSSTPropagator[builders.length];
 
@@ -354,10 +343,8 @@ public class DSSTModel implements ODModel {
     /** Configure the multi-satellites handler to handle measurements.
      * @param point evaluation point
      * @return multi-satellites handler to handle measurements
-     * @exception OrekitException if measurements parameters cannot be set with the current point
      */
-    private MultiSatStepHandler configureMeasurements(final RealVector point)
-        throws OrekitException {
+    private MultiSatStepHandler configureMeasurements(final RealVector point) {
 
         // Set up the measurement parameters
         int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
@@ -390,10 +377,8 @@ public class DSSTModel implements ODModel {
     /** Configure the propagator to compute derivatives.
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    private DSSTJacobiansMapper configureDerivatives(final DSSTPropagator propagators)
-        throws OrekitException {
+    private DSSTJacobiansMapper configureDerivatives(final DSSTPropagator propagators) {
 
         final String equationName = DSSTModel.class.getName() + "-derivatives";
 
@@ -409,8 +394,7 @@ public class DSSTModel implements ODModel {
     }
 
     /** {@inheritDoc} */
-    public void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation)
-        throws OrekitException {
+    public void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();

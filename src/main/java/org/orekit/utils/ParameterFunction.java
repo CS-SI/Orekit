@@ -30,6 +30,6 @@ public interface ParameterFunction {
      * @return scalar value of the function
      * @throws OrekitException if evaluation cannot be performed
      */
-    double value(ParameterDriver parameterDriver) throws OrekitException;
+    double value(ParameterDriver parameterDriver);
 
 }

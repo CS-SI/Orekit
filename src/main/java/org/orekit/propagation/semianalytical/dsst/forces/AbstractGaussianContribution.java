@@ -39,7 +39,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -230,8 +229,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     @Override
     public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
-                                                                                     final T[] parameters)
-        throws OrekitException {
+                                                                                     final T[] parameters) {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
 
@@ -277,8 +275,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getMeanElementRate(final SpacecraftState state, final AuxiliaryElements auxiliaryElements, final double[] parameters)
-        throws OrekitException {
+    public double[] getMeanElementRate(final SpacecraftState state,
+                                       final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container for attributes
         final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
@@ -341,20 +339,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @param  state current state information: date, kinematics, attitude
      *  @param context container for attributes
      *  @return the integration limits in L
-     *  @exception OrekitException if some specific error occurs
      */
-    protected abstract double[] getLLimits(SpacecraftState state, AbstractGaussianContributionContext context) throws OrekitException;
+    protected abstract double[] getLLimits(SpacecraftState state, AbstractGaussianContributionContext context);
 
     /** Compute the limits in L, the true longitude, for integration.
     *  @param <T> type of the elements
     *  @param state current state information: date, kinematics, attitude
     *  @param context container for attributes
     *  @return the integration limits in L
-    *  @exception OrekitException if some specific error occurs
     */
     protected abstract <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
-                                                                      FieldAbstractGaussianContributionContext<T> context)
-        throws OrekitException;
+                                                                      FieldAbstractGaussianContributionContext<T> context);
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
     *
@@ -365,19 +360,19 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     *  @param context container for attributes
     *  @param parameters values of the force model parameters
     *  @return the mean element rates
-    *  @throws OrekitException if some specific error occurs
     */
     private double[] getMeanElementRate(final SpacecraftState state,
-           final GaussQuadrature gauss,
-           final double low,
-           final double high,
-           final AbstractGaussianContributionContext context,
-           final double[] parameters) throws OrekitException {
+                                        final GaussQuadrature gauss,
+                                        final double low,
+                                        final double high,
+                                        final AbstractGaussianContributionContext context,
+                                        final double[] parameters) {
 
         // Auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state, true, 0, parameters), low, high);
+
         // Constant multiplier for integral
         final double coef = 1. / (2. * FastMath.PI * auxiliaryElements.getB());
         // Corrects mean element rates
@@ -473,8 +468,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates)
-        throws OrekitException {
+    public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
 
         final Slot slot = gaussianSPCoefs.createSlot(meanStates);
         for (final SpacecraftState meanState : meanStates) {
@@ -687,39 +681,34 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Compute acceleration
             FieldVector3D<T> acc = FieldVector3D.getZero(field);
-            try {
 
-                // shift the orbit to dt
-                final FieldOrbit<T> shiftedOrbit = state.getOrbit().shiftedBy(dt);
+            // shift the orbit to dt
+            final FieldOrbit<T> shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
-                // Recompose an orbit with time held fixed to be compliant with DSST theory
-                final FieldOrbit<T> recomposedOrbit =
-                        new FieldEquinoctialOrbit<>(shiftedOrbit.getA(),
-                                             shiftedOrbit.getEquinoctialEx(),
-                                             shiftedOrbit.getEquinoctialEy(),
-                                             shiftedOrbit.getHx(),
-                                             shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
-                                             shiftedOrbit.getFrame(),
-                                             state.getDate(),
-                                             context.getMu());
+            // Recompose an orbit with time held fixed to be compliant with DSST theory
+            final FieldOrbit<T> recomposedOrbit =
+                            new FieldEquinoctialOrbit<>(shiftedOrbit.getA(),
+                                            shiftedOrbit.getEquinoctialEx(),
+                                            shiftedOrbit.getEquinoctialEy(),
+                                            shiftedOrbit.getHx(),
+                                            shiftedOrbit.getHy(),
+                                            shiftedOrbit.getLv(),
+                                            PositionAngle.TRUE,
+                                            shiftedOrbit.getFrame(),
+                                            state.getDate(),
+                                            context.getMu());
 
-                // Get the corresponding attitude
-                final FieldAttitude<T> recomposedAttitude =
-                        attitudeProvider.getAttitude(recomposedOrbit,
-                                                     recomposedOrbit.getDate(),
-                                                     recomposedOrbit.getFrame());
+            // Get the corresponding attitude
+            final FieldAttitude<T> recomposedAttitude =
+                            attitudeProvider.getAttitude(recomposedOrbit,
+                                                         recomposedOrbit.getDate(),
+                                                         recomposedOrbit.getFrame());
 
-                // create shifted SpacecraftState with attitude at specified time
-                final FieldSpacecraftState<T> shiftedState =
-                        new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude, state.getMass());
+            // create shifted SpacecraftState with attitude at specified time
+            final FieldSpacecraftState<T> shiftedState =
+                            new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, parameters);
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            acc = contribution.acceleration(shiftedState, parameters);
 
             //Compute the derivatives of the elements by the speed
             final T[] deriv = MathArrays.buildArray(field, dimension);
@@ -933,39 +922,35 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
-            try {
 
-                // shift the orbit to dt
-                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
+            // shift the orbit to dt
+            final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
-                // Recompose an orbit with time held fixed to be compliant with DSST theory
-                final Orbit recomposedOrbit =
-                        new EquinoctialOrbit(shiftedOrbit.getA(),
-                                             shiftedOrbit.getEquinoctialEx(),
-                                             shiftedOrbit.getEquinoctialEy(),
-                                             shiftedOrbit.getHx(),
-                                             shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
-                                             shiftedOrbit.getFrame(),
-                                             state.getDate(),
-                                             context.getMu());
+            // Recompose an orbit with time held fixed to be compliant with DSST theory
+            final Orbit recomposedOrbit =
+                            new EquinoctialOrbit(shiftedOrbit.getA(),
+                                                 shiftedOrbit.getEquinoctialEx(),
+                                                 shiftedOrbit.getEquinoctialEy(),
+                                                 shiftedOrbit.getHx(),
+                                                 shiftedOrbit.getHy(),
+                                                 shiftedOrbit.getLv(),
+                                                 PositionAngle.TRUE,
+                                                 shiftedOrbit.getFrame(),
+                                                 state.getDate(),
+                                                 context.getMu());
 
-                // Get the corresponding attitude
-                final Attitude recomposedAttitude =
-                        attitudeProvider.getAttitude(recomposedOrbit,
-                                                     recomposedOrbit.getDate(),
-                                                     recomposedOrbit.getFrame());
+            // Get the corresponding attitude
+            final Attitude recomposedAttitude =
+                    attitudeProvider.getAttitude(recomposedOrbit,
+                                                 recomposedOrbit.getDate(),
+                                                 recomposedOrbit.getFrame());
 
-                // create shifted SpacecraftState with attitude at specified time
-                final SpacecraftState shiftedState =
-                        new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
+            // create shifted SpacecraftState with attitude at specified time
+            final SpacecraftState shiftedState =
+                    new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, parameters);
+            acc = contribution.acceleration(shiftedState, parameters);
 
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
             //Compute the derivatives of the elements by the speed
             final double[] deriv = new double[6];
             // da/dv
@@ -1808,11 +1793,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param jMax maximum value for j
          * @param context container for attributes
          * @param parameters values of the force model parameters
-         * @throws OrekitException in case of an error
          */
         FourierCjSjCoefficients(final SpacecraftState state, final int jMax,
-                                final AbstractGaussianContributionContext context, final double[] parameters)
-            throws OrekitException {
+                                final AbstractGaussianContributionContext context, final double[] parameters) {
+
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1834,12 +1818,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param state the current state
          * @param context container for attributes
          * @param parameters values of the force model parameters
-         * @throws OrekitException in case of an error
          */
         private void computeCoefficients(final SpacecraftState state,
                                          final AbstractGaussianContributionContext context,
-                                         final double[] parameters)
-            throws OrekitException {
+                                         final double[] parameters) {
+
             // Computes the limits for the integral
             final double[] ll = getLLimits(state, context);
             // Computes integrated mean element rates if Llow < Lhigh
@@ -2074,8 +2057,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private void computeCoefficients(final SpacecraftState state, final Slot slot,
                                          final FourierCjSjCoefficients fourierCjSj,
                                          final UijVijCoefficients uijvij,
-                                         final double n, final double a)
-            throws OrekitException {
+                                         final double n, final double a) {
 
             // get the current date
             final AbsoluteDate date = state.getDate();
@@ -2222,8 +2204,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * </p>
          */
         @Override
-        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
-            throws OrekitException {
+        public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected) {
 
             // select the coefficients slot
             final Slot slot = slots.get(date);

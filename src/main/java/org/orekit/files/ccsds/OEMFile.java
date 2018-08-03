@@ -66,9 +66,8 @@ public class OEMFile extends ODMFile implements EphemerisFile {
     }
 
     /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
-     *  @exception OrekitException if some blocks do not have the same time system
      */
-    void checkTimeSystems() throws OrekitException {
+    void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
@@ -209,7 +208,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
 
         @Override
-        public Frame getFrame() throws OrekitException {
+        public Frame getFrame() {
             return this.getMetaData().getFrame();
         }
 
@@ -219,7 +218,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
 
         @Override
-        public TimeScale getTimeScale() throws OrekitException {
+        public TimeScale getTimeScale() {
             return this.getMetaData().getTimeSystem().getTimeScale(getConventions());
         }
 

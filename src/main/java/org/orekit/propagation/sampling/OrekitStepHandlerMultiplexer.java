@@ -19,7 +19,6 @@ package org.orekit.propagation.sampling;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -46,16 +45,14 @@ public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t)
-        throws OrekitException {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         for (final OrekitStepHandler handler : handlers) {
             handler.init(s0, t);
         }
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-        throws OrekitException {
+    public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
         for (final OrekitStepHandler handler : handlers) {
             handler.handleStep(interpolator, isLast);
         }

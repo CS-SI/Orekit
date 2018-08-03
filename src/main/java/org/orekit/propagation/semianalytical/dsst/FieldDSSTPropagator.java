@@ -38,7 +38,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -1037,26 +1036,20 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         /** {@inheritDoc} */
         @SuppressWarnings("unchecked")
         @Override
-        public void init(final FieldODEStateAndDerivative<T> initialState, final T finalTime)
-            throws OrekitExceptionWrapper {
-            try {
+        public void init(final FieldODEStateAndDerivative<T> initialState, final T finalTime) {
 
-                // Zero
-                final T zero = field.getZero();
-                // Build the mean state interpolated at initial point
-                final FieldSpacecraftState<T> meanStates = mapper.mapArrayToState(zero,
-                                                                          initialState.getPrimaryState(),
-                                                                          initialState.getPrimaryDerivative(),
-                                                                          PropagationType.MEAN);
+            // Zero
+            final T zero = field.getZero();
+            // Build the mean state interpolated at initial point
+            final FieldSpacecraftState<T> meanStates = mapper.mapArrayToState(zero,
+                                                                              initialState.getPrimaryState(),
+                                                                              initialState.getPrimaryDerivative(),
+                                                                              PropagationType.MEAN);
 
-                // Compute short periodic coefficients for this point
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
 
-                }
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
 
         }
@@ -1064,35 +1057,29 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         /** {@inheritDoc} */
         @SuppressWarnings("unchecked")
         @Override
-        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast)
-            throws OrekitExceptionWrapper {
+        public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
 
-            try {
-                // Get the grid points to compute
-                final T[] interpolationPoints =
-                        interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
-                                                        interpolator.getCurrentState().getTime());
+            // Get the grid points to compute
+            final T[] interpolationPoints =
+                            interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
+                                                            interpolator.getCurrentState().getTime());
 
-                final FieldSpacecraftState<T>[] meanStates = new FieldSpacecraftState[interpolationPoints.length];
-                for (int i = 0; i < interpolationPoints.length; ++i) {
+            final FieldSpacecraftState<T>[] meanStates = new FieldSpacecraftState[interpolationPoints.length];
+            for (int i = 0; i < interpolationPoints.length; ++i) {
 
-                    // Build the mean state interpolated at grid point
-                    final T time = interpolationPoints[i];
-                    final FieldODEStateAndDerivative<T> sd = interpolator.getInterpolatedState(time);
-                    meanStates[i] = mapper.mapArrayToState(time,
-                                                           sd.getPrimaryState(),
-                                                           sd.getPrimaryDerivative(),
-                                                           PropagationType.MEAN);
+                // Build the mean state interpolated at grid point
+                final T time = interpolationPoints[i];
+                final FieldODEStateAndDerivative<T> sd = interpolator.getInterpolatedState(time);
+                meanStates[i] = mapper.mapArrayToState(time,
+                                                       sd.getPrimaryState(),
+                                                       sd.getPrimaryDerivative(),
+                                                       PropagationType.MEAN);
 
-                }
+            }
 
-                // Computate short periodic coefficients for this step
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
-                }
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            // Compute short periodic coefficients for this step
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
             }
 
         }

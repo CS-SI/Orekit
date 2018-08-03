@@ -45,7 +45,7 @@ public class OMMParserTest {
 
     @Test
     public void testParseOMM1()
-        throws OrekitException {
+        {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/OMMExample.txt";
@@ -125,7 +125,7 @@ public class OMMParserTest {
 
     @Test
     public void testParseOMM2()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OMMExample2.txt").toURI().getPath();
@@ -175,7 +175,7 @@ public class OMMParserTest {
 
     @Test
     public void testWrongKeyword()
-        throws OrekitException, URISyntaxException {
+        throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OMM-wrong-keyword.txt").toURI().getPath();
@@ -193,7 +193,7 @@ public class OMMParserTest {
     }
 
     @Test
-    public void testOrbitFileInterface() throws OrekitException {
+    public void testOrbitFileInterface() {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String ex = "/ccsds/OMMExample.txt";
 

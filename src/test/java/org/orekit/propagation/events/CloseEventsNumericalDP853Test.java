@@ -39,7 +39,7 @@ public class CloseEventsNumericalDP853Test extends CloseEventsAbstractTest {
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         double[][] tol = NumericalPropagator
                 .tolerances(1e-3, initialOrbit, OrbitType.CARTESIAN);
         final NumericalPropagator propagator = new NumericalPropagator(

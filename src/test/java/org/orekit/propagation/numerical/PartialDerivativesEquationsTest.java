@@ -72,7 +72,7 @@ public class PartialDerivativesEquationsTest {
      * @throws OrekitException on error
      */
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         forceModel = new MockForceModel();
         propagator.addForceModel(forceModel);
@@ -93,7 +93,7 @@ public class PartialDerivativesEquationsTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testComputeDerivativesStateVelocity() throws OrekitException {
+    public void testComputeDerivativesStateVelocity() {
         //setup
         double[] pdot = new double[36];
 
@@ -134,7 +134,7 @@ public class PartialDerivativesEquationsTest {
 
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-            throws OrekitException {
+            {
             return s.getPVCoordinates().getPosition();
         }
 
@@ -142,7 +142,7 @@ public class PartialDerivativesEquationsTest {
         @Override
         public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters)
-            throws OrekitException {
+            {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
             this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
             return s.getPVCoordinates().getPosition();

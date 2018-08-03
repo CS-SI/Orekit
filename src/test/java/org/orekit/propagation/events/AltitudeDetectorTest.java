@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -38,7 +37,7 @@ import org.orekit.time.TimeScalesFactory;
 public class AltitudeDetectorTest {
 
     @Test
-    public void testBackAndForth() throws OrekitException {
+    public void testBackAndForth() {
 
         final Frame EME2000 = FramesFactory.getEME2000();
         final AbsoluteDate initialDate = new AbsoluteDate(2009, 1, 1, TimeScalesFactory.getUTC());

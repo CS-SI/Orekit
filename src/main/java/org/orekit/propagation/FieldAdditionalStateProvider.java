@@ -17,7 +17,6 @@
 package org.orekit.propagation;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
@@ -40,8 +39,7 @@ public interface FieldAdditionalStateProvider<T extends RealFieldElement<T>> {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-     * @exception OrekitException if additional state cannot be computed
      */
-    T[] getAdditionalState(FieldSpacecraftState<T> state) throws OrekitException;
+    T[] getAdditionalState(FieldSpacecraftState<T> state);
 
 }

@@ -17,7 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -161,10 +160,8 @@ public abstract class StateMapper {
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
      * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final PropagationType type)
-            throws OrekitException {
+    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot, final PropagationType type) {
         return mapArrayToState(mapDoubleToDate(t), y, yDot, type);
     }
 
@@ -174,18 +171,14 @@ public abstract class StateMapper {
      * @param yDot time derivatives of the state components (null if unknown, in which case Keplerian motion is assumed)
      * @param type type of the elements used to build the state (mean or osculating).
      * @return spacecraft state
-     * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type)
-        throws OrekitException;
+    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type);
 
     /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
      * @param yDot placeholder where to put the components derivatives
-     * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public abstract void mapStateToArray(SpacecraftState state, double[] y, double[] yDot)
-        throws OrekitException;
+    public abstract void mapStateToArray(SpacecraftState state, double[] y, double[] yDot);
 
 }

@@ -236,7 +236,7 @@ public class FieldPropagation {
         @Override
         public void handleStep(FieldSpacecraftState<T> currentState,
                                boolean isLast)
-            throws OrekitException {
+            {
             @SuppressWarnings("unchecked")
             TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getPVCoordinates();
 

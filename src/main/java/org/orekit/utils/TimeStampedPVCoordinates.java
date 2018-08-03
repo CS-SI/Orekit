@@ -25,7 +25,6 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -220,8 +219,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
         return new PVCoordinatesProvider() {
             /** {@inheritDoc} */
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f)
-                throws OrekitException {
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
                 final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));
                 final Transform                transform = instanceFrame.getTransformTo(f, d);
                 return transform.transformPVCoordinates(shifted);

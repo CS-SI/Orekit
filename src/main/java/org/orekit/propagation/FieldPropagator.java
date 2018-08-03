@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
@@ -139,23 +138,18 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Get the propagator initial state.
      * @return initial state
-     * @exception OrekitException if state cannot be retrieved
      */
-    FieldSpacecraftState<T> getInitialState() throws OrekitException;
+    FieldSpacecraftState<T> getInitialState();
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
-     * @exception OrekitException if initial state cannot be reset
      */
-    void resetInitialState(FieldSpacecraftState<T> state)
-        throws OrekitException;
+    void resetInitialState(FieldSpacecraftState<T> state);
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
-     * @exception OrekitException if an additional state with the same name is already present
      */
-    void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider)
-        throws OrekitException;
+    void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
@@ -243,9 +237,8 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * target date is only a hint, not a mandatory objective.</p>
      * @param target target date towards which orbit state should be propagated
      * @return propagated state
-     * @exception OrekitException if state cannot be propagated
      */
-    FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> target) throws OrekitException;
+    FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> target);
 
     /** Propagate from a start date towards a target date.
      * <p>Those propagators use a start date and a target date to
@@ -256,8 +249,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated state
-     * @exception OrekitException if state cannot be propagated
      */
-    FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target) throws OrekitException;
+    FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target);
 
 }

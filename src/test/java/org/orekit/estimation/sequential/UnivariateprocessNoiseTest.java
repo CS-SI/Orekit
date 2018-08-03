@@ -16,7 +16,6 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.frames.LOFType;
@@ -33,7 +32,7 @@ public class UnivariateprocessNoiseTest {
     
     /** Test different functions and check the conversion from LOF to ECI (and back) of the covariances. */
     @Test
-    public void testUnivariateProcessNoise() throws OrekitException {
+    public void testUnivariateProcessNoise() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -252,7 +251,7 @@ public class UnivariateprocessNoiseTest {
      */
     @Ignore
     @Test
-    public void testBugVy() throws OrekitException {
+    public void testBugVy() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -331,7 +330,7 @@ public class UnivariateprocessNoiseTest {
     /** Bugs with Keplerian formalism, all components are out. */
     @Ignore
     @Test
-    public void testBugKeplerian() throws OrekitException {
+    public void testBugKeplerian() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

@@ -85,7 +85,7 @@ public class BodyCenterPointingTest {
     /** Test if target is on Earth surface
      */
     @Test
-    public void testTarget() throws OrekitException {
+    public void testTarget() {
 
         // Call get target method
         TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
@@ -100,7 +100,7 @@ public class BodyCenterPointingTest {
     /** Test if body center belongs to the direction pointed by the satellite
      */
     @Test
-    public void testBodyCenterInPointingDirection() throws OrekitException {
+    public void testBodyCenterInPointingDirection() {
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
@@ -131,7 +131,7 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testQDot() throws OrekitException {
+    public void testQDot() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -191,7 +191,7 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testSpin() throws OrekitException {
+    public void testSpin() {
 
         Utils.setDataRoot("regular-data");
         final double ehMu  = 3.9860047e14;
@@ -238,25 +238,25 @@ public class BodyCenterPointingTest {
     }
 
     @Test
-    public void testTargetField() throws OrekitException{
+    public void testTargetField() {
         doTestTarget(Decimal64Field.getInstance());
     }
     @Test
-    public void doxBodyCenterInPointingDirectionTest() throws OrekitException{
+    public void doxBodyCenterInPointingDirectionTest() {
         doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testQDotField() throws OrekitException{
+    public void testQDotField() {
         doTestQDot(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testSpinField() throws OrekitException {
+    public void testSpinField() {
         doTestSpin(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>>void doTestTarget(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>void doTestTarget(final Field<T> field) {
 
         T mu = field.getZero().add(3.9860047e14);
         T zero = field.getZero();
@@ -294,7 +294,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field)  {
 
         T zero = field.getZero();
         T mu = zero.add(3.9860047e14);
@@ -355,7 +355,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestQDot(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestQDot(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;
@@ -440,7 +440,7 @@ public class BodyCenterPointingTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final double ae  = 6.378137e6;
         final double c20 = -1.08263e-3;

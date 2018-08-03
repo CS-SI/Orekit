@@ -22,7 +22,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -110,7 +109,6 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
-     * @exception OrekitException if several providers have the same name
      */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
@@ -118,8 +116,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
                                final FieldDenseOutputModel<T> model,
                                final Map<String, T[]> unmanaged,
                                final List<FieldAdditionalStateProvider<T>> providers,
-                               final String[] equations)
-        throws OrekitException {
+                               final String[] equations) {
 
         super(startDate.getField(), mapper.getAttitudeProvider());
 
@@ -145,11 +142,9 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     /** Interpolate the model at some date.
      * @param date desired interpolation date
      * @return state interpolated at date
-     * @exception OrekitException if specified date is outside
-     * of supported range
+          * of supported range
      */
-    private FieldODEStateAndDerivative<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    private FieldODEStateAndDerivative<T> getInterpolatedState(final FieldAbsoluteDate<T> date) {
 
         // compare using double precision instead of FieldAbsoluteDate<T>.compareTo(...)
         // because time is expressed as a double when searching for events
@@ -166,36 +161,29 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
-        try {
-            final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
-            FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                                   os.getPrimaryState(), os.getPrimaryDerivative(),
-                                                                   type);
-            for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
-                state = state.addAdditionalState(initial.getKey(), initial.getValue());
-            }
-            return state;
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
+    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+        final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
+        FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
+                                                               os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                               type);
+        for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
+            state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
+        return state;
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected T getMass(final FieldAbsoluteDate<T> date) throws OrekitException {
+    protected T getMass(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
@@ -219,19 +207,17 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final FieldSpacecraftState<T> state)
-        throws OrekitException {
+    public void resetInitialState(final FieldSpacecraftState<T> state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
-        throws OrekitException {
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public FieldSpacecraftState<T> getInitialState() throws OrekitException {
+    public FieldSpacecraftState<T> getInitialState() {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
@@ -259,8 +245,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         }
 
         /** {@inheritDoc} */
-        public T[] getAdditionalState(final FieldSpacecraftState<T> state)
-            throws OrekitException {
+        public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);

@@ -74,7 +74,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerianPV() throws OrekitException {
+    public void testKeplerianPV() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -145,7 +145,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerianRange() throws OrekitException {
+    public void testKeplerianRange() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -229,7 +229,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() throws OrekitException {
+    public void testKeplerianRangeWithOnBoardAntennaOffset() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -323,7 +323,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testCartesianRangeRate() throws OrekitException {
+    public void testCartesianRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -405,7 +405,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testCircularAzimuthElevation() throws OrekitException {
+    public void testCircularAzimuthElevation() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -486,7 +486,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testEquinoctialRightAscensionDeclination() throws OrekitException {
+    public void testEquinoctialRightAscensionDeclination() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -565,7 +565,7 @@ public class KalmanEstimatorTest {
      *  Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeAzElAndRangeRate() throws OrekitException {
+    public void testKeplerianRangeAzElAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -671,7 +671,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testKeplerianRangeAndRangeRate() throws OrekitException {
+    public void testKeplerianRangeAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -757,7 +757,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() throws OrekitException {
+    public void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -875,7 +875,7 @@ public class KalmanEstimatorTest {
      * @throws OrekitException
      */
     @Test
-    public void testWrappedException() throws OrekitException {
+    public void testWrappedException() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");

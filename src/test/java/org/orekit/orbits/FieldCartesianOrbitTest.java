@@ -41,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -68,94 +67,94 @@ public class FieldCartesianOrbitTest {
 
     @Test
     public void testCartesianToCartesian()
-        throws OrekitException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         doTestCartesianToCartesian(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testCartesianToEquinoctial() throws OrekitException{
+    public void testCartesianToEquinoctial() {
         doTestCartesianToEquinoctial(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testCartesianToKeplerian() throws OrekitException{
+    public void testCartesianToKeplerian() {
         doTestCartesianToKeplerian(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testPositionVelocityNorms() throws OrekitException{
+    public void testPositionVelocityNorms() {
         doTestPositionVelocityNorms(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testGeometry() throws OrekitException{
+    public void testGeometry() {
         doTestGeometry(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testHyperbola1() throws OrekitException{
+    public void testHyperbola1() {
         doTestHyperbola1(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testHyperbola2() throws OrekitException{
+    public void testHyperbola2() {
         doTestHyperbola2(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testNumericalIssue25() throws OrekitException{
+    public void testNumericalIssue25() {
         doTestNumericalIssue25(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() throws OrekitException{
+    public void testDerivativesConversionSymmetry() {
         doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testDerivativesConversionSymmetryHyperbolic() throws OrekitException{
+    public void testDerivativesConversionSymmetryHyperbolic() {
         doTestDerivativesConversionSymmetryHyperbolic(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testShiftElliptic() throws OrekitException{
+    public void testShiftElliptic() {
         doTestShiftElliptic(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testShiftCircular() throws OrekitException{
+    public void testShiftCircular() {
         doTestShiftCircular(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testShiftEquinoctial() throws OrekitException{
+    public void testShiftEquinoctial() {
         doTestShiftEquinoctial(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testShiftHyperbolic() throws OrekitException{
+    public void testShiftHyperbolic() {
         doTestShiftHyperbolic(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testNumericalIssue135() throws OrekitException{
+    public void testNumericalIssue135() {
         doTestNumericalIssue135(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testJacobianReference() throws OrekitException{
+    public void testJacobianReference() {
         doTestJacobianReference(Decimal64Field.getInstance());
     }
 
     @Test
-    public void testInterpolationWithDerivatives() throws OrekitException {
+    public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
                             394, 2.15e-8, 3.21, 1.39e-9,
                             2474, 6842, 6.55, 186);
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() throws OrekitException {
+    public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), false,
                             394, 2.61, 3.21, 0.154,
                             2474, 2.28e12, 6.55, 6.22e10);
@@ -182,7 +181,7 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() throws OrekitException {
+    public void testNonKeplerianDerivatives() {
         doTestNonKeplerianDerivatives(Decimal64Field.getInstance());
     }
 
@@ -192,7 +191,7 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+    public void testCopyNonKeplerianAcceleration() {
         doTestCopyNonKeplerianAcceleration(Decimal64Field.getInstance());
     }
 
@@ -404,7 +403,7 @@ public class FieldCartesianOrbitTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNumericalIssue25(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(3782116.14107698), zero.add(416663.11924914), zero.add(5875541.62103057));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-6349.7848910501), zero.add(288.4061811651), zero.add(4066.9366759691));
@@ -416,7 +415,7 @@ public class FieldCartesianOrbitTest {
         Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
-    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
@@ -450,7 +449,7 @@ public class FieldCartesianOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetryHyperbolic(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetryHyperbolic(Field<T> field) {
         T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         FieldVector3D<T> position     = new FieldVector3D<>(zero.add(224267911.905821),
@@ -523,7 +522,7 @@ public class FieldCartesianOrbitTest {
         testShift(orbit, new FieldKeplerianOrbit<>(orbit), 2.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void doTestNumericalIssue135(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNumericalIssue135(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(-6.7884943832e7), zero.add(-2.1423006112e7), zero.add(-3.1603915377e7));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-4732.55), zero.add(-2472.086), zero.add(-3022.177));
@@ -611,7 +610,7 @@ public class FieldCartesianOrbitTest {
         Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getZ().getReal(), 0));
     }
 
-    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0));
@@ -654,7 +653,7 @@ public class FieldCartesianOrbitTest {
                                                                      double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
                                                                      double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
                                                                      double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
-        throws OrekitException {
+        {
         T zero = field.getZero();
         final T ehMu       = zero.add(3.9860047e14);
         
@@ -745,7 +744,7 @@ public class FieldCartesianOrbitTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final FieldVector3D<T>     position     = new FieldVector3D<>(field.getZero().add(6896874.444705),  field.getZero().add(1956581.072644),  field.getZero().add(-147476.245054));
@@ -841,8 +840,7 @@ public class FieldCartesianOrbitTest {
                             orbit.toString());
     }
 
-    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field)
-        throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestCopyNonKeplerianAcceleration(Field<T> field) {
 
         final T zero = field.getZero();
         final Frame eme2000     = FramesFactory.getEME2000();

@@ -104,12 +104,10 @@ public class ParameterDriver {
      * parameter), it must be non-zero
      * @param minValue minimum value
      * @param maxValue maximum value
-     * @exception OrekitException if scale is too close to zero
      */
     public ParameterDriver(final String name, final double referenceValue,
                            final double scale, final double minValue,
-                           final double maxValue)
-        throws OrekitException {
+                           final double maxValue) {
         if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
             throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
                                       name, scale);
@@ -133,11 +131,9 @@ public class ParameterDriver {
      * observer is added, and then called at each value change.
      * </p>
      * @param observer observer to add
-     * @exception OrekitException if the observer triggers one
-     * while being updated
+          * while being updated
      */
-    public void addObserver(final ParameterObserver observer)
-        throws OrekitException {
+    public void addObserver(final ParameterObserver observer) {
         observers.add(observer);
         observer.valueChanged(getValue(), this);
     }
@@ -228,9 +224,8 @@ public class ParameterDriver {
      * process. It is computed as {@code (current - reference)/scale}.
      * </p>
      * @param normalized value
-     * @exception OrekitException if an observer throws one
      */
-    public void setNormalizedValue(final double normalized) throws OrekitException {
+    public void setNormalizedValue(final double normalized) {
         setValue(referenceValue + scale * normalized);
     }
 
@@ -269,9 +264,8 @@ public class ParameterDriver {
      * #getMaxValue()}.
      * </p>
      * @param newValue new value
-     * @exception OrekitException if an observer throws one
      */
-    public void setValue(final double newValue) throws OrekitException {
+    public void setValue(final double newValue) {
         final double previousValue = getValue();
         value = FastMath.max(minValue, FastMath.min(maxValue, newValue));
         for (final ParameterObserver observer : observers) {

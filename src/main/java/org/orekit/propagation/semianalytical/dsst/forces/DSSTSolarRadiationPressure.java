@@ -25,7 +25,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
@@ -283,8 +282,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
                 /** {@inheritDoc} */
                 @Override
-                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
+                public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
                     // delegate to raw Sun provider
                     return sun.getPVCoordinates(date, frame);
                 }
@@ -292,8 +290,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 /** {@inheritDoc} */
                 @Override
                 public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
-                        throws OrekitException {
+                    getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
                     // SRP was created with a provider that does not support fields,
                     // but the fields methods are called
                     throw new OrekitIllegalArgumentException(LocalizedCoreFormats.UNSUPPORTED_OPERATION);
@@ -361,7 +358,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
+    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) {
 
         // AuxiliaryElements auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
@@ -454,8 +451,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
-                                                             final FieldAbstractGaussianContributionContext<T> context)
-        throws OrekitException {
+                                                             final FieldAbstractGaussianContributionContext<T> context) {
 
         // AuxiliaryElements auxiliary elements related to the current orbit
         final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();

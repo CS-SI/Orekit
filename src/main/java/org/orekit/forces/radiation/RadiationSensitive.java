@@ -61,8 +61,7 @@ public interface RadiationSensitive {
      */
     Vector3D radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                            Rotation rotation, double mass, Vector3D flux,
-                                           double[] parameters)
-        throws OrekitException;
+                                           double[] parameters);
 
     /** Compute the acceleration due to radiation pressure.
      * @param date current date
@@ -78,8 +77,7 @@ public interface RadiationSensitive {
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
                                                                                    FieldRotation<T> rotation, T mass, FieldVector3D<T> flux,
-                                                                                   T[] parameters)
-        throws OrekitException;
+                                                                                   T[] parameters);
 
     /** Compute the acceleration due to radiation pressure, with parameters derivatives.
      * @param date current date
@@ -96,7 +94,6 @@ public interface RadiationSensitive {
     FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                                                      Rotation rotation, double mass, Vector3D flux,
                                                                      double[] parameters,
-                                                                     String paramName)
-        throws OrekitException;
+                                                                     String paramName);
 
 }

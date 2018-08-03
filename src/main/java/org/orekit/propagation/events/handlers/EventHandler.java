@@ -86,8 +86,7 @@ public interface EventHandler<T extends EventDetector> {
      *
      * @throws OrekitException if some specific error occurs
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target)
-            throws OrekitException {
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
         // nothing by default
     }
 
@@ -103,9 +102,8 @@ public interface EventHandler<T extends EventDetector> {
      * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
      *
-     * @exception OrekitException if some specific error occurs
      */
-    Action eventOccurred(SpacecraftState s, T detector, boolean increasing) throws OrekitException;
+    Action eventOccurred(SpacecraftState s, T detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -121,10 +119,8 @@ public interface EventHandler<T extends EventDetector> {
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param oldState old state
      * @return new state
-     * @exception OrekitException if the state cannot be reseted
      */
-    default SpacecraftState resetState(T detector, SpacecraftState oldState)
-        throws OrekitException {
+    default SpacecraftState resetState(T detector, SpacecraftState oldState) {
         return oldState;
     }
 

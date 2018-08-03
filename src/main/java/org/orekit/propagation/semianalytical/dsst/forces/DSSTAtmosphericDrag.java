@@ -21,7 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -117,12 +116,13 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) throws OrekitException {
+    protected double[] getLLimits(final SpacecraftState state, final AbstractGaussianContributionContext context) {
 
         // AuxiliaryElements auxiliary elements related to the current orbit
         final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
         final double perigee = auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc());
+
         // Trajectory entirely out of the atmosphere
         if (perigee > rbar) {
             return new double[2];
@@ -141,8 +141,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     protected <T extends RealFieldElement<T>> T[] getLLimits(final FieldSpacecraftState<T> state,
-                                                             final FieldAbstractGaussianContributionContext<T> context)
-        throws OrekitException {
+                                                             final FieldAbstractGaussianContributionContext<T> context) {
 
         final Field<T> field = state.getDate().getField();
         final T zero = field.getZero();

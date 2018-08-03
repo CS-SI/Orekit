@@ -66,7 +66,7 @@ public class MarshallSolarActivityFutureEstimationTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testGetKp() throws OrekitException {
+    public void testGetKp() {
         //setup
         DTM2000InputParameters flux = getFlux();
         final AbsoluteDate july = new AbsoluteDate(2008, 7, 1, utc);
@@ -94,7 +94,7 @@ public class MarshallSolarActivityFutureEstimationTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testWithPropagator() throws OrekitException {
+    public void testWithPropagator() {
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Frame eci = FramesFactory.getGCRF();
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -148,7 +148,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     private NumericalPropagator getNumericalPropagator(CelestialBody sun,
                                                        OneAxisEllipsoid earth,
                                                        SpacecraftState ic)
-            throws OrekitException {
+            {
         // some non-integer step size to induce truncation error in flux interpolation
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(120 + 0.1);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -169,7 +169,7 @@ public class MarshallSolarActivityFutureEstimationTest {
      * @return loaded flux file.
      * @throws OrekitException on error.
      */
-    private DTM2000InputParameters getFlux() throws OrekitException {
+    private DTM2000InputParameters getFlux() {
         MarshallSolarActivityFutureEstimation flux =
                 new MarshallSolarActivityFutureEstimation(
                         "Jan2000F10-edited-data.txt$",
@@ -179,7 +179,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testFileDate() throws OrekitException {
+    public void testFileDate() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
@@ -195,7 +195,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testFluxStrong() throws OrekitException {
+    public void testFluxStrong() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
@@ -218,7 +218,7 @@ public class MarshallSolarActivityFutureEstimationTest {
 
 
     @Test
-    public void testFluxAverage() throws OrekitException {
+    public void testFluxAverage() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
@@ -240,7 +240,7 @@ public class MarshallSolarActivityFutureEstimationTest {
 
 
     @Test
-    public void testFluxWeak() throws OrekitException {
+    public void testFluxWeak() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
@@ -262,7 +262,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     private MarshallSolarActivityFutureEstimation loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel strength)
-        throws OrekitException {
+        {
 
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation("(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}F10\\.(?:txt|TXT)",
@@ -273,7 +273,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testKpStrong() throws OrekitException {
+    public void testKpStrong() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
@@ -295,7 +295,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testKpAverage() throws OrekitException {
+    public void testKpAverage() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
@@ -315,7 +315,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testKpWeak() throws OrekitException {
+    public void testKpWeak() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
@@ -335,7 +335,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testMinDate() throws OrekitException {
+    public void testMinDate() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
@@ -346,7 +346,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test
-    public void testMaxDate() throws OrekitException {
+    public void testMaxDate() {
 
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
@@ -357,21 +357,21 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testPastOutOfRange() throws OrekitException {
+    public void testPastOutOfRange() {
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
         msafe.get24HoursKp(new AbsoluteDate("1960-10-01", utc));
     }
 
     @Test(expected=OrekitException.class)
-    public void testFutureOutOfRange() throws OrekitException {
+    public void testFutureOutOfRange() {
         MarshallSolarActivityFutureEstimation msafe =
             loadMsafe(MarshallSolarActivityFutureEstimation.StrengthLevel.WEAK);
         msafe.get24HoursKp(new AbsoluteDate("2060-10-01", utc));
     }
 
     @Test(expected=OrekitException.class)
-    public void testExtraData() throws OrekitException {
+    public void testExtraData() {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation("Jan2011F10-extra-data\\.txt",
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
@@ -380,7 +380,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNoData() throws OrekitException {
+    public void testNoData() {
         MarshallSolarActivityFutureEstimation msafe =
             new MarshallSolarActivityFutureEstimation("Jan2011F10-no-data\\.txt",
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
@@ -389,7 +389,7 @@ public class MarshallSolarActivityFutureEstimationTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }

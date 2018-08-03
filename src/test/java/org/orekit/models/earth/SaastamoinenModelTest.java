@@ -39,7 +39,7 @@ public class SaastamoinenModelTest {
     private static double epsilon = 1e-6;
 
     @Test
-    public void testFixedElevation() throws OrekitException {
+    public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
         double lastDelay = Double.MAX_VALUE;
@@ -52,7 +52,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testFixedHeight() throws OrekitException {
+    public void testFixedHeight() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
         double lastDelay = Double.MAX_VALUE;
@@ -78,7 +78,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testSerialization()
-      throws OrekitException, IOException, ClassNotFoundException {
+      throws IOException, ClassNotFoundException {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
 
@@ -119,7 +119,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void compareDefaultAndLoaded() throws OrekitException {
+    public void compareDefaultAndLoaded() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel defaultModel = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, null);
         SaastamoinenModel loadedModel  = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, SaastamoinenModel.DELTA_R_FILE_NAME);
@@ -149,7 +149,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testNegativeHeight() throws OrekitException {
+    public void testNegativeHeight() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
         final double height = -500.0;
@@ -159,7 +159,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void compareExpectedValues() throws OrekitException {
+    public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
         double[] heights = new double[] {

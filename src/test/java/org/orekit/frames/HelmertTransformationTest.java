@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -32,7 +31,7 @@ import org.orekit.utils.IERSConventions;
 public class HelmertTransformationTest {
 
     @Test
-    public void testHelmert20052008() throws OrekitException {
+    public void testHelmert20052008() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         HelmertTransformation.Predefined ht = HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
@@ -65,7 +64,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert20002005() throws OrekitException {
+    public void testHelmert20002005() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -96,7 +95,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert19972000() throws OrekitException {
+    public void testHelmert19972000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -127,7 +126,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void testHelmert19932000() throws OrekitException {
+    public void testHelmert19932000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -158,7 +157,7 @@ public class HelmertTransformationTest {
     }
 
     @Test
-    public void test2014PivotVs2008Pivot() throws OrekitException {
+    public void test2014PivotVs2008Pivot() {
 
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2014
         Frame itrf2014 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

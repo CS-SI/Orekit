@@ -58,7 +58,7 @@ public interface EphemerisFileWriter {
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    void write(Appendable writer, EphemerisFile ephemerisFile) throws OrekitException, IOException;
+    void write(Appendable writer, EphemerisFile ephemerisFile) throws IOException;
 
     /**
      * Write the passed in {@link EphemerisFile} to a file at the output path
@@ -77,7 +77,7 @@ public interface EphemerisFileWriter {
      *             the origin at an unspecified celestial body, etc.)
      */
     default void write(final String outputFilePath, EphemerisFile ephemerisFile)
-            throws OrekitException, IOException {
+            throws IOException {
         try (BufferedWriter writer =
                         Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
             write(writer, ephemerisFile);

@@ -28,6 +28,6 @@ public interface CelestialBodyLoader {
      * @return loaded celestial body
      * @throws OrekitException if the body cannot be loaded
      */
-    CelestialBody loadCelestialBody(String name) throws OrekitException;
+    CelestialBody loadCelestialBody(String name);
 
 }

@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
@@ -107,7 +106,7 @@ public class OEMWriter implements EphemerisFileWriter {
     /** {@inheritDoc} */
     @Override
     public void write(final Appendable writer, final EphemerisFile ephemerisFile)
-            throws OrekitException, IOException {
+            throws IOException {
 
         if (writer == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");

@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -39,7 +38,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class EllipseTest {
 
     @Test
-    public void testMeridianShape() throws OrekitException {
+    public void testMeridianShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -59,7 +58,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testEquatorialShape() throws OrekitException {
+    public void testEquatorialShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -75,7 +74,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testProjectionDerivatives() throws OrekitException {
+    public void testProjectionDerivatives() {
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 6.4e6, 6.3e6, FramesFactory.getGCRF());
         TimeStampedPVCoordinates linearMotion =

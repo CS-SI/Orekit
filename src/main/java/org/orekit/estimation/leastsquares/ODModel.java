@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Incrementor;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -29,23 +28,20 @@ public interface ODModel extends MultivariateJacobianFunction {
     /** Get the selected propagation drivers for a propagatorBuilder.
      * @param iBuilder index of the builder in the builders' array
      * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    ParameterDriversList getSelectedPropagationDriversForBuilder(int iBuilder) throws OrekitException;
+    ParameterDriversList getSelectedPropagationDriversForBuilder(int iBuilder);
 
     /** Create the propagators and parameters corresponding to an evaluation point.
      * @param point evaluation point
      * @return an array of new propagators
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    AbstractIntegratedPropagator[] createPropagators(RealVector point) throws OrekitException;
+    AbstractIntegratedPropagator[] createPropagators(RealVector point);
 
     /** Fetch a measurement that was evaluated during propagation.
      * @param index index of the measurement first component
      * @param evaluation measurement evaluation
-     * @exception OrekitException if Jacobians cannot be computed
      */
-    void fetchEvaluatedMeasurement(int index, EstimatedMeasurement<?> evaluation) throws OrekitException;
+    void fetchEvaluatedMeasurement(int index, EstimatedMeasurement<?> evaluation);
 
     /** Set the counter for evaluations.
      * @param evaluationsCounter counter for evaluations
