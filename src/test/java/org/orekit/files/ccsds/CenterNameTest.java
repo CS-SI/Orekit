@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 
 public class CenterNameTest {

@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 

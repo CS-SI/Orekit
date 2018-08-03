@@ -33,7 +33,6 @@ import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;

@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 
 public class AstronomicalAmplitudeReaderTest {
 

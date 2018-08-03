@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;

@@ -18,7 +18,6 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 

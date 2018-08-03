@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.FrameAncestorException;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 public class UpdatableFrameTest {

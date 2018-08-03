@@ -21,7 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;

@@ -24,7 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;

@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.LOFType;
 import org.orekit.time.FieldAbsoluteDate;

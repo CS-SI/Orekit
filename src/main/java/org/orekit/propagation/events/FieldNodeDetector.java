@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;

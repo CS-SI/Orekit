@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.orekit.errors.OrekitException;
-
 
 /** Interface for retrieving estimated measurements during orbit determination.
  * <p>

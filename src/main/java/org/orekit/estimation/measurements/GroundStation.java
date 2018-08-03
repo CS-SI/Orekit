@@ -29,7 +29,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;

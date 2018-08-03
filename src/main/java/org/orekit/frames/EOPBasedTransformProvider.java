@@ -17,8 +17,6 @@
 
 package org.orekit.frames;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for Transform providers that use {@link EOPHistory Earth Orientation Parameters}.
  * @author Luc Maisonobe
  * @since 7.1

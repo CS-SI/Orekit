@@ -42,7 +42,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;

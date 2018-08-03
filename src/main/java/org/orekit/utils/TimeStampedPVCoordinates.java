@@ -25,7 +25,6 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;

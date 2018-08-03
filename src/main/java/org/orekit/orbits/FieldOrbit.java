@@ -26,7 +26,6 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;

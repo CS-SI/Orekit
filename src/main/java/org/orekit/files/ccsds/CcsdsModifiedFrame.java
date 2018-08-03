@@ -18,7 +18,6 @@ package org.orekit.files.ccsds;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;

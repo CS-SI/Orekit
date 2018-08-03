@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 public class PVMeasurementCreator extends MeasurementCreator {

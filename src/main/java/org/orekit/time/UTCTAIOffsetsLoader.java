@@ -18,8 +18,6 @@ package org.orekit.time;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for loading UTC-TAI offsets data files.
  * @author Luc Maisonobe
  * @since 7.1

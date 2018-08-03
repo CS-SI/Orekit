@@ -36,7 +36,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;

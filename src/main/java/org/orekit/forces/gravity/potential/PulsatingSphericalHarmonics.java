@@ -18,7 +18,6 @@ package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /** Simple implementation of {@link RawSphericalHarmonicsProvider} for pulsating gravity fields.

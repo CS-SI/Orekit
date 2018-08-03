@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;

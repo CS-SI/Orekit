@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 

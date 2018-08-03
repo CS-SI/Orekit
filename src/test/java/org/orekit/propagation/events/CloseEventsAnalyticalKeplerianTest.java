@@ -17,7 +17,6 @@
  
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 

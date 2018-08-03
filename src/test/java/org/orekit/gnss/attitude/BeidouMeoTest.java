@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;

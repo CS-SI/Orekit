@@ -18,7 +18,6 @@ package org.orekit.propagation.events.handlers;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 

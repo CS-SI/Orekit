@@ -18,7 +18,6 @@ package org.orekit.files.ccsds;
 
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 
 /** Orbit central bodies for which a Celestial body can be created.
  * @author sports

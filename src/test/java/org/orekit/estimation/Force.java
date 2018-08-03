@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;

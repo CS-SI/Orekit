@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;

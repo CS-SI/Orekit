@@ -19,7 +19,6 @@ package org.orekit.propagation.sampling;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 

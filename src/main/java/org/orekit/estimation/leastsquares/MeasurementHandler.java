@@ -18,7 +18,6 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;

@@ -31,7 +31,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;

@@ -19,7 +19,6 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;

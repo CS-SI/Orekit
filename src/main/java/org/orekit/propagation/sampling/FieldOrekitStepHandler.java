@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 

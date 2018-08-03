@@ -24,7 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;

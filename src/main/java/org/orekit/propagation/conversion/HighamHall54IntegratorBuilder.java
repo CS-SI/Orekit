@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.HighamHall54Integrator;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;

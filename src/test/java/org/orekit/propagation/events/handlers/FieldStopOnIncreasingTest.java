@@ -21,7 +21,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.PositionAngle;

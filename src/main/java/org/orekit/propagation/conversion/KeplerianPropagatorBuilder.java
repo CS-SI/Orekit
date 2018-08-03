@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;

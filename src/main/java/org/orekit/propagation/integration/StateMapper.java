@@ -17,7 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;

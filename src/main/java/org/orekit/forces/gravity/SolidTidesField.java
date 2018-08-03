@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;

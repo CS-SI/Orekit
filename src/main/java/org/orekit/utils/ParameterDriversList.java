@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 

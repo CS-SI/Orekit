@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.IAUPoleFactory.OldIAUPole;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;

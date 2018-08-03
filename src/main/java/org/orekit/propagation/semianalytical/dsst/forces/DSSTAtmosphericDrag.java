@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;

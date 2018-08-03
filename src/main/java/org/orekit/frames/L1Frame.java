@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;

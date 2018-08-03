@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation;
 
-import org.orekit.errors.OrekitException;
-
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
  * This interface is the analytical (read already integrated) counterpart of
