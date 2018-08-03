@@ -84,7 +84,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) throws OrekitException {
+                                  final ParameterDriver... supportedParameters) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
@@ -124,7 +124,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<Integer> propagatorsIndices,
-                                  final ParameterDriver... supportedParameters) throws OrekitException {
+                                  final ParameterDriver... supportedParameters) {
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);
@@ -192,16 +192,13 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param evaluation evaluation number
      * @param states orbital states at measurement date
      * @return theoretical value
-     * @exception OrekitException if value cannot be computed
      * @see #estimate(int, int, SpacecraftState[])
      */
-    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states)
-        throws OrekitException;
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
 
     /** {@inheritDoc} */
     @Override
-    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states)
-        throws OrekitException {
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation, final SpacecraftState[] states) {
 
         // compute the theoretical value
         final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, states);
@@ -229,8 +226,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EstimationModifier<T> modifier)
-        throws OrekitException {
+    public void addModifier(final EstimationModifier<T> modifier) {
 
         // combine the measurement parameters and the modifier parameters
         supportedParameters.addAll(modifier.getParametersDrivers());

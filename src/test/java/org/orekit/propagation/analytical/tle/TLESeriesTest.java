@@ -239,7 +239,7 @@ public class TLESeriesTest {
     }
 
     @Test
-    public void testTLEFrame() throws OrekitException {
+    public void testTLEFrame() {
 
         TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");

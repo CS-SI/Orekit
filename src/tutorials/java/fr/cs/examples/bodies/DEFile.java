@@ -312,7 +312,7 @@ public class DEFile {
     }
 
     private byte[] readFirstRecord()
-        throws OrekitException, IOException {
+        throws IOException {
 
         // read first part of record, up to the record number
         final byte[] firstPart = new byte[HEADER_RECORD_SIZE_OFFSET + 4];
@@ -400,7 +400,7 @@ public class DEFile {
     private static int computeRecordSize(final byte[] record,
                                          final boolean bigEndian,
                                          final String name)
-        throws OrekitException {
+        {
 
         int recordSize = 0;
         boolean ok = true;

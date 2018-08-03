@@ -102,8 +102,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
 
         // apply the scale factor to raw position-velocity
         final PVCoordinates rawPV    = rawPVProvider.getRawPV(date);
@@ -122,11 +121,9 @@ class JPLCelestialBody implements CelestialBody {
      * @param frame the frame where to define the position
      * @param <T> type fo the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
-     * @exception OrekitException if position cannot be computed in given frame
      */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                             final Frame frame)
-        throws OrekitException {
+                                                                                             final Frame frame) {
 
         // apply the scale factor to raw position-velocity
         final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
@@ -190,7 +187,7 @@ class JPLCelestialBody implements CelestialBody {
                 private static final long serialVersionUID = -8610328386110652400L;
 
                 /** {@inheritDoc} */
-                public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+                public Transform getTransform(final AbsoluteDate date) {
 
                     // compute translation from parent frame to self
                     final PVCoordinates pv = getPVCoordinates(date, definingFrame);
@@ -216,8 +213,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                    throws OrekitException {
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
                     // compute translation from parent frame to self
                     final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
@@ -283,7 +279,7 @@ class JPLCelestialBody implements CelestialBody {
                 private static final long serialVersionUID = 20170109L;
 
                 /** {@inheritDoc} */
-                public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+                public Transform getTransform(final AbsoluteDate date) {
                     final double dt = 10.0;
                     final double w0 = iauPole.getPrimeMeridianAngle(date);
                     final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
@@ -293,8 +289,7 @@ class JPLCelestialBody implements CelestialBody {
                 }
 
                 /** {@inheritDoc} */
-                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-                    throws OrekitException {
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                     final double dt = 10.0;
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));

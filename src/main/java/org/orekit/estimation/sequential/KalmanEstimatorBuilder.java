@@ -67,8 +67,7 @@ public class KalmanEstimatorBuilder {
      * @return a new {@link KalmanEstimatorReal}.
      * @throws OrekitException if some configuration parameters are missing
      */
-    public KalmanEstimator build()
-        throws OrekitException {
+    public KalmanEstimator build() {
         final int n = propagatorBuilders.size();
         if (n == 0) {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);

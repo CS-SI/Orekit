@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -508,7 +507,7 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public Frame getFrame() throws OrekitException {
+        public Frame getFrame() {
             return frameBuilder.apply(getFrameString());
         }
 
@@ -518,7 +517,7 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public TimeScale getTimeScale() throws OrekitException {
+        public TimeScale getTimeScale() {
             return timeScale;
         }
 
@@ -554,7 +553,7 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public BoundedPropagator getPropagator() throws OrekitException {
+        public BoundedPropagator getPropagator() {
             return EphemerisSegment.super.getPropagator();
         }
 

@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="484" due-to="Yannick Jeandroz">
+        Changed OrekitException from checked to unchecked exception.
+        Most functions do throw such exceptions. As they are unchecked, they are
+        not advertised in either `throws` statements in the function signature or
+        in the javadoc. So users must consider that as soon as they use any Orekit
+        feature, an unchecked `OrekitException` may be thrown. In most cases, users
+        will not attempt to recover for this but will only use them to display or
+        log a meaningful error message.
+        Fixes #484.
+      </action>
       <action dev="luc" type="fix" issue="480">
         Added GPSDate class to convert back and forth with AbsoluteDate.
         Fixes #480.

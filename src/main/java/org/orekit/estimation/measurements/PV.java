@@ -70,7 +70,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @throws OrekitException if the built inside covariance matrix does not have the proper size
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double sigmaPosition, final double sigmaVelocity, final double baseWeight) throws OrekitException {
+              final double sigmaPosition, final double sigmaVelocity, final double baseWeight) {
         this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, 0);
     }
 
@@ -92,7 +92,7 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double sigmaPosition, final double sigmaVelocity, final double baseWeight,
-              final int propagatorIndex) throws OrekitException {
+              final int propagatorIndex) {
         this(date, position, velocity,
              new double[] {
                  sigmaPosition,
@@ -122,7 +122,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPosition, final double[] sigmaVelocity, final double baseWeight) throws OrekitException {
+              final double[] sigmaPosition, final double[] sigmaVelocity, final double baseWeight) {
         this(date, position, velocity, sigmaPosition, sigmaVelocity, baseWeight, 0);
     }
 
@@ -143,7 +143,7 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[] sigmaPosition, final double[] sigmaVelocity,
-              final double baseWeight, final int propagatorIndex) throws OrekitException {
+              final double baseWeight, final int propagatorIndex) {
         this(date, position, velocity,
              buildPvCovarianceMatrix(sigmaPosition, sigmaVelocity),
              baseWeight, propagatorIndex);
@@ -164,7 +164,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPV, final double baseWeight) throws OrekitException {
+              final double[] sigmaPV, final double baseWeight) {
         this(date, position, velocity, sigmaPV, baseWeight, 0);
     }
 
@@ -181,7 +181,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[] sigmaPV, final double baseWeight, final int propagatorIndex) throws OrekitException {
+              final double[] sigmaPV, final double baseWeight, final int propagatorIndex) {
         this(date, position, velocity,
              buildPvCovarianceMatrix(sigmaPV),
              baseWeight, propagatorIndex);
@@ -206,7 +206,7 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
-              final double baseWeight) throws OrekitException {
+              final double baseWeight) {
         this(date, position, velocity, positionCovarianceMatrix, velocityCovarianceMatrix, baseWeight, 0);
     }
 
@@ -227,7 +227,7 @@ public class PV extends AbstractMeasurement<PV> {
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
               final double[][] positionCovarianceMatrix, final double[][] velocityCovarianceMatrix,
-              final double baseWeight, final int propagatorIndex) throws OrekitException {
+              final double baseWeight, final int propagatorIndex) {
         this(date, position, velocity,
              buildPvCovarianceMatrix(positionCovarianceMatrix, velocityCovarianceMatrix),
              baseWeight, propagatorIndex);
@@ -249,7 +249,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight) throws OrekitException {
+              final double[][] covarianceMatrix, final double baseWeight) {
         this(date, position, velocity, covarianceMatrix, baseWeight, 0);
     }
 
@@ -266,8 +266,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @since 9.2
      */
     public PV(final AbsoluteDate date, final Vector3D position, final Vector3D velocity,
-              final double[][] covarianceMatrix, final double baseWeight, final int propagatorIndex)
-        throws OrekitException {
+              final double[][] covarianceMatrix, final double baseWeight, final int propagatorIndex) {
         super(date,
               new double[] {
                   position.getX(), position.getY(), position.getZ(),
@@ -332,8 +331,7 @@ public class PV extends AbstractMeasurement<PV> {
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                             final SpacecraftState[] states)
-        throws OrekitException {
+                                                             final SpacecraftState[] states) {
 
         // PV value
         final TimeStampedPVCoordinates pv = states[getPropagatorsIndices().get(0)].getPVCoordinates();
@@ -363,7 +361,7 @@ public class PV extends AbstractMeasurement<PV> {
      * the square roots of the diagonal elements of the covariance matrix in input.
      * @throws OrekitException if the PV covariance matrix is not a 6x6 matrix
      */
-    private static double[] extractSigmas(final double[][] pvCovarianceMatrix) throws OrekitException {
+    private static double[] extractSigmas(final double[][] pvCovarianceMatrix) {
 
         // Check the size of the covariance matrix, should be 6x6
         if (pvCovarianceMatrix[0].length != 6 || pvCovarianceMatrix[1].length != 6) {
@@ -388,8 +386,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @throws OrekitException if the matrices do not have the proper size
      */
     private static double[][] buildPvCovarianceMatrix(final double[][] positionCovarianceMatrix,
-                                                      final double[][] velocityCovarianceMatrix)
-        throws OrekitException {
+                                                      final double[][] velocityCovarianceMatrix) {
         // Check the sizes of the matrices first
         if (positionCovarianceMatrix[0].length != 3 || positionCovarianceMatrix[1].length != 3) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH_2x2,
@@ -420,7 +417,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @return the 6x6 PV covariance matrix
      * @throws OrekitException if the size of the vector is different from 6
      */
-    private static double[][] buildPvCovarianceMatrix(final double[] sigmaPV) throws OrekitException {
+    private static double[][] buildPvCovarianceMatrix(final double[] sigmaPV) {
         // Check the size of the vector first
         if (sigmaPV.length != 6) {
             throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, sigmaPV.length, 6);
@@ -443,8 +440,7 @@ public class PV extends AbstractMeasurement<PV> {
      * @throws OrekitException if the vectors do not have the proper sizes
      */
     private static double[][] buildPvCovarianceMatrix(final double[] sigmaPosition,
-                                                      final double[] sigmaVelocity)
-        throws OrekitException {
+                                                      final double[] sigmaVelocity) {
 
         // Check the sizes of the vectors first
         if (sigmaPosition.length != 3) {

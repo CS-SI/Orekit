@@ -152,8 +152,7 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -185,10 +184,8 @@ class EOPC04FilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          * @param converter converter to use
-         * @exception OrekitException if ITRF version loader cannot be parsed
          */
-        Parser(final IERSConventions.NutationCorrectionConverter converter)
-            throws OrekitException {
+        Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.history             = new ArrayList<EOPEntry>();

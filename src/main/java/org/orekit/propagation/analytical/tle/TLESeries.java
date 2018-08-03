@@ -140,12 +140,10 @@ public class TLESeries implements DataLoader {
      * already set up by either the instance configuration (supported file
      * names) or by the {@link DataProvidersManager data providers manager}
      * configuration and the local filtering feature provided here can be ignored.</p>
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no TLE data is available
      * @see #loadTLEData(int)
      * @see #loadTLEData(int, int, String)
      */
-    public void loadTLEData() throws OrekitException {
+    public void loadTLEData() {
 
         availableSatNums.clear();
 
@@ -171,7 +169,7 @@ public class TLESeries implements DataLoader {
      * @throws OrekitException if some data can't be read, some
      * file content is corrupted or no TLE data is available
      */
-    public Set<Integer> getAvailableSatelliteNumbers() throws OrekitException {
+    public Set<Integer> getAvailableSatelliteNumbers() {
         if (availableSatNums.isEmpty()) {
             loadTLEData();
         }
@@ -184,12 +182,10 @@ public class TLESeries implements DataLoader {
      * <p>Calling this method with the satellite number set to a negative value,
      * is equivalent to call {@link #loadTLEData()}.</p>
      * @param satelliteNumber satellite number
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no TLE data is available for the selected object
      * @see #loadTLEData()
      * @see #loadTLEData(int, int, String)
      */
-    public void loadTLEData(final int satelliteNumber) throws OrekitException {
+    public void loadTLEData(final int satelliteNumber) {
 
         if (satelliteNumber < 0) {
             // no filtering at all
@@ -222,13 +218,11 @@ public class TLESeries implements DataLoader {
      * @param launchYear launch year (all digits)
      * @param launchNumber launch number
      * @param launchPiece launch piece
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no TLE data is available for the selected object
      * @see #loadTLEData()
      * @see #loadTLEData(int)
      */
     public void loadTLEData(final int launchYear, final int launchNumber,
-                            final String launchPiece) throws OrekitException {
+                            final String launchPiece) {
 
         if ((launchYear < 0) || (launchNumber < 0) ||
             (launchPiece == null) || (launchPiece.length() == 0)) {
@@ -334,10 +328,8 @@ public class TLESeries implements DataLoader {
      * [{@link #getFirstDate() first date} ; {@link #getLastDate() last date}].
      * @param date the final date
      * @return the final PVCoordinates
-     * @exception OrekitException if the underlying propagator cannot be initialized
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date)
-        throws OrekitException {
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
         final TLE toExtrapolate = getClosestTLE(date);
         if (toExtrapolate != lastTLE) {
             lastTLE = toExtrapolate;

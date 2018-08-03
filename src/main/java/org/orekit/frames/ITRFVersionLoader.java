@@ -76,9 +76,8 @@ class ITRFVersionLoader {
 
     /** Build a loader for ITRF version configuration file.
      * @param supportedNames regular expression for supported files names
-     * @exception OrekitException if configuration file cannot be loaded
      */
-    ITRFVersionLoader(final String supportedNames) throws OrekitException {
+    ITRFVersionLoader(final String supportedNames) {
         this.configurations = new ArrayList<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
     }
@@ -130,7 +129,7 @@ class ITRFVersionLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             // regular expressions for date lines
             final Pattern patternII = Pattern.compile(START + NON_BLANK_FIELD + INFINITY_DATE + INFINITY_DATE + ITRF + END);

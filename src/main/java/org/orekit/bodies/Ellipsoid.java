@@ -239,13 +239,12 @@ public class Ellipsoid implements Serializable {
      * @param observer observer position in ellipsoid frame
      * @param outside point outside ellipsoid in ellipsoid frame, defining the phase around limb
      * @return point on ellipsoid limb
-     * @exception OrekitException if the observer is inside the ellipsoid
      * @exception MathRuntimeException if ellipsoid center, observer and outside
      * points are aligned
      * @since 7.1
      */
     public Vector3D pointOnLimb(final Vector3D observer, final Vector3D outside)
-        throws OrekitException, MathRuntimeException {
+        throws MathRuntimeException {
 
         // there is no limb if we are inside the ellipsoid
         if (isInside(observer)) {

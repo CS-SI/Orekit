@@ -53,7 +53,7 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
 
     /** {@inheritDoc} */
     @Override
-    public List<OffsetModel> loadOffsets() throws OrekitException {
+    public List<OffsetModel> loadOffsets() {
         final Parser parser = new Parser();
         DataProvidersManager.getInstance().feed(SUPPORTED_NAMES, parser);
         return parser.getOffsets();
@@ -137,11 +137,9 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
          * @exception ParseException if data can't be parsed
-         * @exception OrekitException if some data is missing
-         * or if some loader specific error occurs
          */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException, ParseException {
+            throws IOException, ParseException {
 
             offsets.clear();
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -41,18 +40,15 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @exception OrekitException if parameters drivers cannot be scaled
-     * @since 8.0
+          * @since 8.0
      */
     public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                      final double positionScale)
-        throws OrekitException {
+                                      final double positionScale) {
         super(templateOrbit, positionAngle, positionScale, true);
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters)
-        throws OrekitException {
+    public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         return new KeplerianPropagator(createInitialOrbit());
     }

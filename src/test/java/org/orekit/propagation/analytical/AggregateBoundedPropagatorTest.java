@@ -208,7 +208,7 @@ public class AggregateBoundedPropagatorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testResetState() throws OrekitException {
+    public void testResetState() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -234,7 +234,7 @@ public class AggregateBoundedPropagatorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testEmptyList() throws OrekitException {
+    public void testEmptyList() {
         // action + verify
         try {
             new AggregateBoundedPropagator(Collections.emptyList());
@@ -255,7 +255,7 @@ public class AggregateBoundedPropagatorTest {
      */
     private BoundedPropagator createPropagator(AbsoluteDate start,
                                                AbsoluteDate end,
-                                               double v) throws OrekitException {
+                                               double v) {
         double gm = Constants.EGM96_EARTH_MU;
         KeplerianPropagator propagator = new KeplerianPropagator(new KeplerianOrbit(
                 6778137, 0, 0, 0, 0, v, PositionAngle.TRUE, frame, start, gm));

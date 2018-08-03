@@ -110,7 +110,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                          final FieldVector3D<DerivativeStructure> velocity,
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass)
-        throws OrekitException {
+        {
         try {
             java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
@@ -161,7 +161,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private GradientHessian gradientHessian(final HolmesFeatherstoneAttractionModel hfModel,
                                            final AbsoluteDate date, final Vector3D position)
-        throws OrekitException {
+        {
         try {
 
         java.lang.reflect.Field providerField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("provider");
@@ -369,7 +369,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testRelativeNumericPrecision() throws OrekitException {
+    public void testRelativeNumericPrecision() {
 
         // this test is similar in spirit to section 4.2 of Holmes and Featherstone paper,
         // but reduced to lower degree since our reference implementation is MUCH slower
@@ -404,7 +404,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testValue() throws OrekitException {
+    public void testValue() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -431,7 +431,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException {
+    public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
         DerivativeStructure e_0 = factory.variable(1, 1e-3);
@@ -587,7 +587,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException {
+    public void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
         DerivativeStructure e_0 = factory.variable(1, 1e-3);
@@ -653,7 +653,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
-    public void testGradient() throws OrekitException {
+    public void testGradient() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -683,7 +683,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testHessian() throws OrekitException {
+    public void testHessian() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -719,7 +719,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private double[] gradient(final HolmesFeatherstoneAttractionModel model,
                               final AbsoluteDate date, final Vector3D position, final double h)
-        throws OrekitException {
+        {
         return new double[] {
             differential8(model.nonCentralPart(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
                           model.nonCentralPart(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
@@ -753,7 +753,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private double[][] hessian(final HolmesFeatherstoneAttractionModel model,
                                final AbsoluteDate date, final Vector3D position, final double h)
-        throws OrekitException {
+        {
         return new double[][] {
             differential8(model.gradient(date, position.add(new Vector3D(-4 * h, Vector3D.PLUS_I)), model.getMu()),
                           model.gradient(date, position.add(new Vector3D(-3 * h, Vector3D.PLUS_I)), model.getMu()),
@@ -830,15 +830,15 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         }
 
         @Override
-        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
             return new NormalizedSphericalHarmonics() {
                 @Override
-                public double getNormalizedCnm(int n, int m) throws OrekitException {
+                public double getNormalizedCnm(int n, int m) {
                     return 1;
                 }
 
                 @Override
-                public double getNormalizedSnm(int n, int m) throws OrekitException {
+                public double getNormalizedSnm(int n, int m) {
                     return 1;
                 }
 
@@ -854,7 +854,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
     public void testHelioSynchronous()
-        throws OrekitException {
+        {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -890,7 +890,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private static class SpotStepHandler implements OrekitFixedStepHandler {
 
-        public SpotStepHandler(AbsoluteDate date, double mu) throws OrekitException {
+        public SpotStepHandler(AbsoluteDate date, double mu) {
             sun       = CelestialBodyFactory.getSun();
             previous  = Double.NaN;
         }
@@ -898,7 +898,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         private PVCoordinatesProvider sun;
         private double previous;
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws OrekitException {
+            {
 
 
             AbsoluteDate current = currentState.getDate();
@@ -916,7 +916,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
     public void testEcksteinHechlerReference()
-        throws OrekitException {
+        {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -961,14 +961,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         private EckStepHandler(Orbit initialOrbit, double ae,
                                double c20, double c30, double c40, double c50, double c60)
-        throws OrekitException {
+        {
             referencePropagator =
                 new EcksteinHechlerPropagator(initialOrbit,
                                               ae, mu, c20, c30, c40, c50, c60);
         }
 
         private EcksteinHechlerPropagator referencePropagator;
-        public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException{
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
             Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
@@ -993,7 +993,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     @Test
     @Deprecated
     public void testZonalWithCunninghamReference()
-        throws OrekitException {
+        {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -1045,7 +1045,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     @Test
     @Deprecated
     public void testCompleteWithCunninghamReference()
-        throws OrekitException {
+        {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1085,7 +1085,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Test
     @Deprecated
-    public void testIssue97() throws OrekitException {
+    public void testIssue97() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1113,7 +1113,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testParameterDerivative() throws OrekitException {
+    public void testParameterDerivative() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1138,7 +1138,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private double accelerationRelativeError(ForceModel testModel, ForceModel referenceModel,
                                              SpacecraftState state)
-        throws OrekitException {
+        {
 
         final Vector3D testAcceleration = testModel.acceleration(state, testModel.getParameters());
         final Vector3D referenceAcceleration = referenceModel.acceleration(state, referenceModel.getParameters());
@@ -1149,7 +1149,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testTimeDependentField() throws OrekitException {
+    public void testTimeDependentField() {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -1197,7 +1197,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private BoundedPropagator createEphemeris(double dP, SpacecraftState initialState, double duration,
                                               NormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException {
+        {
         double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), OrbitType.CARTESIAN);
         AbstractIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
@@ -1212,7 +1212,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Test
     public void testStateJacobian()
-        throws OrekitException {
+        {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1245,7 +1245,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Test
     public void testStateJacobianVs80Implementation()
-        throws OrekitException {
+        {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1273,7 +1273,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Test
     public void testStateJacobianVsFiniteDifferences()
-        throws OrekitException {
+        {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1378,7 +1378,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
        */
         public CunninghamAttractionModel(final Frame centralBodyFrame,
                                          final UnnormalizedSphericalHarmonicsProvider provider)
-            throws OrekitException {
+            {
             this.provider     = provider;
             try {
                 gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
@@ -1405,7 +1405,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         /** {@inheritDoc} */
         @Override
         public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-            throws OrekitException {
+            {
 
             final double mu = parameters[0];
 

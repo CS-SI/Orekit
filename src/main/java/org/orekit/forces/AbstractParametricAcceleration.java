@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -121,8 +120,7 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
 
         final Vector3D inertialDirection;
         if (isInertial) {
@@ -147,8 +145,7 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final FieldVector3D<T> inertialDirection;
         if (isInertial) {

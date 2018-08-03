@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -53,7 +52,7 @@ public class TCGScaleTest {
     }
 
     @Test
-    public void testDuringLeap() throws OrekitException {
+    public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTCG();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
@@ -67,7 +66,7 @@ public class TCGScaleTest {
     }
 
     @Test
-    public void testReference() throws OrekitException {
+    public void testReference() {
         DateComponents  referenceDate = new DateComponents(1977, 01, 01);
         TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
         AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
@@ -90,7 +89,7 @@ public class TCGScaleTest {
     }
 
     @Test
-    public void testAAS06134() throws OrekitException {
+    public void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics

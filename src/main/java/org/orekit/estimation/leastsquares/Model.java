@@ -33,8 +33,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFu
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
@@ -119,12 +117,10 @@ class Model implements MultivariateJacobianFunction {
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
-     * @exception OrekitException if some propagator parameter cannot be set properly
      */
     Model(final NumericalPropagatorBuilder[] builders,
           final List<ObservedMeasurement<?>> measurements, final ParameterDriversList estimatedMeasurementsParameters,
-          final ModelObserver observer)
-        throws OrekitException {
+          final ModelObserver observer) {
 
         this.builders                        = builders;
         this.measurements                    = measurements;
@@ -228,45 +224,40 @@ class Model implements MultivariateJacobianFunction {
 
     /** {@inheritDoc} */
     @Override
-    public Pair<RealVector, RealMatrix> value(final RealVector point)
-        throws OrekitExceptionWrapper {
-        try {
+    public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
-            // Set up the propagators parallelizer
-            final NumericalPropagator[] propagators = createPropagators(point);
-            final Orbit[] orbits = new Orbit[propagators.length];
-            for (int i = 0; i < propagators.length; ++i) {
-                mappers[i] = configureDerivatives(propagators[i]);
-                orbits[i]  = propagators[i].getInitialState().getOrbit();
-            }
-            final PropagatorsParallelizer parallelizer =
-                            new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
-
-            // Reset value and Jacobian
-            evaluations.clear();
-            value.set(0.0);
-            for (int i = 0; i < jacobian.getRowDimension(); ++i) {
-                for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
-                    jacobian.setEntry(i, j, 0.0);
-                }
-            }
-
-            // Run the propagation, gathering residuals on the fly
-            if (forwardPropagation) {
-                // Propagate forward from firstDate
-                parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
-            } else {
-                // Propagate backward from lastDate
-                parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
-            }
-
-            observer.modelCalled(orbits, evaluations);
-
-            return new Pair<RealVector, RealMatrix>(value, jacobian);
-
-        } catch (OrekitException oe) {
-            throw new OrekitExceptionWrapper(oe);
+        // Set up the propagators parallelizer
+        final NumericalPropagator[] propagators = createPropagators(point);
+        final Orbit[] orbits = new Orbit[propagators.length];
+        for (int i = 0; i < propagators.length; ++i) {
+            mappers[i] = configureDerivatives(propagators[i]);
+            orbits[i]  = propagators[i].getInitialState().getOrbit();
         }
+        final PropagatorsParallelizer parallelizer =
+                        new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
+
+        // Reset value and Jacobian
+        evaluations.clear();
+        value.set(0.0);
+        for (int i = 0; i < jacobian.getRowDimension(); ++i) {
+            for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
+                jacobian.setEntry(i, j, 0.0);
+            }
+        }
+
+        // Run the propagation, gathering residuals on the fly
+        if (forwardPropagation) {
+            // Propagate forward from firstDate
+            parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+        } else {
+            // Propagate backward from lastDate
+            parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
+        }
+
+        observer.modelCalled(orbits, evaluations);
+
+        return new Pair<RealVector, RealMatrix>(value, jacobian);
+
     }
 
     /** Get the iterations count.
@@ -286,10 +277,8 @@ class Model implements MultivariateJacobianFunction {
     /** Get the selected propagation drivers for a propagatorBuilder.
      * @param iBuilder index of the builder in the builders' array
      * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder)
-        throws OrekitException {
+    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
 
         // Lazy evaluation, create the list only if it hasn't been created yet
         if (estimatedPropagationParameters[iBuilder] == null) {
@@ -317,10 +306,8 @@ class Model implements MultivariateJacobianFunction {
     /** Create the propagators and parameters corresponding to an evaluation point.
      * @param point evaluation point
      * @return an array of new propagators
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    public NumericalPropagator[] createPropagators(final RealVector point)
-        throws OrekitException {
+    public NumericalPropagator[] createPropagators(final RealVector point) {
 
         final NumericalPropagator[] propagators = new NumericalPropagator[builders.length];
 
@@ -359,10 +346,8 @@ class Model implements MultivariateJacobianFunction {
     /** Configure the multi-satellites handler to handle measurements.
      * @param point evaluation point
      * @return multi-satellites handler to handle measurements
-     * @exception OrekitException if measurements parameters cannot be set with the current point
      */
-    private MultiSatStepHandler configureMeasurements(final RealVector point)
-        throws OrekitException {
+    private MultiSatStepHandler configureMeasurements(final RealVector point) {
 
         // Set up the measurement parameters
         int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
@@ -395,10 +380,8 @@ class Model implements MultivariateJacobianFunction {
     /** Configure the propagator to compute derivatives.
      * @param propagator {@link Propagator} to configure
      * @return mapper for this propagator
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    private JacobiansMapper configureDerivatives(final NumericalPropagator propagator)
-        throws OrekitException {
+    private JacobiansMapper configureDerivatives(final NumericalPropagator propagator) {
 
         final String equationName = Model.class.getName() + "-derivatives";
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
@@ -415,10 +398,8 @@ class Model implements MultivariateJacobianFunction {
     /** Fetch a measurement that was evaluated during propagation.
      * @param index index of the measurement first component
      * @param evaluation measurement evaluation
-     * @exception OrekitException if Jacobians cannot be computed
      */
-    void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation)
-        throws OrekitException {
+    void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement
         final SpacecraftState[]      evaluationStates    = evaluation.getStates();

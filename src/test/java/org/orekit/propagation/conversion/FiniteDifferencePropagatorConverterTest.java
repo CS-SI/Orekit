@@ -52,7 +52,7 @@ public class FiniteDifferencePropagatorConverterTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testGetObjectiveFunctionParametersOnlyScaledOnce() throws OrekitException {
+    public void testGetObjectiveFunctionParametersOnlyScaledOnce() {
         // setup
         // create some arbitrary sample data to run with
         Frame eci = FramesFactory.getGCRF();

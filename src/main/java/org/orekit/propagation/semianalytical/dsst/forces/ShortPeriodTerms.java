@@ -37,9 +37,8 @@ public interface ShortPeriodTerms extends Serializable {
     /** Evaluate the contributions of the short period terms.
      * @param meanOrbit mean orbit to which the short period contribution applies
      * @return short period terms contributions
-     * @exception OrekitException if short period terms cannot be computed
      */
-    double[] value(Orbit meanOrbit) throws OrekitException;
+    double[] value(Orbit meanOrbit);
 
     /** Get the prefix for short period coefficients keys.
      * <p>
@@ -69,7 +68,6 @@ public interface ShortPeriodTerms extends Serializable {
      * in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
      * @throws OrekitException if some specific error occurs
      */
-    Map<String, double[]> getCoefficients(AbsoluteDate date, Set<String> selected)
-        throws OrekitException;
+    Map<String, double[]> getCoefficients(AbsoluteDate date, Set<String> selected);
 
 }

@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -43,7 +42,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OnBoardAntennaInterSatellitesRangeModifierTest {
 
     @Test
-    public void testPreliminary() throws OrekitException {
+    public void testPreliminary() {
 
         // this test does not check OnBoardAntennaInterSatellitesRangeModifier at all,
         // it just checks InterSatellitesRangeMeasurementCreator behaves as necessary for the other test
@@ -98,7 +97,7 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
     }
 
     @Test
-    public void testEffect() throws OrekitException {
+    public void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

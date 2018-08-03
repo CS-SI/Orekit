@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TTScale;
@@ -44,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
 public class ITRFEquinoxProviderTest {
 
     @Test
-    public void testEquinoxVersusCIO() throws OrekitException {
+    public void testEquinoxVersusCIO() {
         Frame itrfEquinox  = FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true);
         Frame itrfCIO      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         AbsoluteDate start = new AbsoluteDate(2011, 4, 10, TimeScalesFactory.getUTC());
@@ -57,7 +56,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testAASReferenceLEO() throws OrekitException {
+    public void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -95,7 +94,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() throws OrekitException {
+    public void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -134,7 +133,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testSofaCookbook() throws OrekitException {
+    public void testSofaCookbook() {
 
         // SOFA cookbook test case:
         //     date       2007 April 05, 12h00m00s.0 UTC
@@ -215,7 +214,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxRealEOP() throws OrekitException {
+    public void testNROvsEquinoxRealEOP() {
         Utils.setDataRoot("regular-data");
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
@@ -223,7 +222,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP2010() throws OrekitException {
+    public void testNROvsEquinoxNoEOP2010() {
         Utils.setLoaders(IERSConventions.IERS_2010, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
@@ -231,7 +230,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP2003() throws OrekitException {
+    public void testNROvsEquinoxNoEOP2003() {
         Utils.setLoaders(IERSConventions.IERS_2003, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2003, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2003, true),
@@ -239,7 +238,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP1996() throws OrekitException {
+    public void testNROvsEquinoxNoEOP1996() {
         Utils.setLoaders(IERSConventions.IERS_1996, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_1996, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true),
@@ -247,7 +246,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     private void checkFrames(Frame frame1, Frame frame2, double toleranceMicroAS)
-        throws OrekitException {
+        {
         AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
         for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY / 4) {
             AbsoluteDate date = t0.shiftedBy(dt);

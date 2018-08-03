@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.utils.Constants;
@@ -90,7 +89,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
 
     @Test
-    public void testEarthITU453AtmosphereRefractionHighest() throws OrekitException {
+    public void testEarthITU453AtmosphereRefractionHighest() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -105,7 +104,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefractionLowest() throws OrekitException {
+    public void testEarthITU453AtmosphereRefractionLowest() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -120,7 +119,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction2degree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefraction2degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -141,7 +140,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction4degree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefraction4degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(4.0);
@@ -156,7 +155,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction10degree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefraction10degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(10.0);
@@ -171,7 +170,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction30degree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefraction30degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(30.0);
@@ -186,7 +185,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction90degree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefraction90degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(90.0);
@@ -201,7 +200,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
     }
     @Test
-    public void testEarthITU453AtmosphereRefractionminusdegree() throws OrekitException {
+    public void testEarthITU453AtmosphereRefractionminusdegree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(-10.);
@@ -216,7 +215,7 @@ public class EarthITU453AtmosphereRefractionTest {
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefractiontable() throws OrekitException {
+    public void testEarthITU453AtmosphereRefractiontable() {
 
         // Station altitude
         final double altitude = stationa.getPoint().getAltitude();

@@ -38,7 +38,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -1176,11 +1175,11 @@ public class FieldTransformTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
         doTestInterpolation(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInterpolation(Field<T> field) {
         FieldAbsoluteDate<T> t0 = FieldAbsoluteDate.getGalileoEpoch(field);
         List<FieldTransform<T>> sample = new ArrayList<FieldTransform<T>>();
         for (int i = 0; i < 5; ++i) {

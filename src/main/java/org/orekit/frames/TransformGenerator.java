@@ -20,8 +20,6 @@ package org.orekit.frames;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
@@ -58,42 +56,38 @@ public class TransformGenerator implements TimeStampedGenerator<Transform> {
     /** {@inheritDoc} */
     public List<Transform> generate(final AbsoluteDate existingDate, final AbsoluteDate date) {
 
-        try {
-            final List<Transform> generated = new ArrayList<>();
+        final List<Transform> generated = new ArrayList<>();
 
-            if (existingDate == null) {
+        if (existingDate == null) {
 
-                // no prior existing transforms, just generate a first one
-                for (int i = 0; i < neighborsSize; ++i) {
-                    generated.add(provider.getTransform(date.shiftedBy(i * step)));
-                }
-
-            } else {
-
-                // some transforms have already been generated
-                // add the missing ones up to specified date
-                AbsoluteDate t = existingDate;
-                if (date.compareTo(t) > 0) {
-                    // forward generation
-                    do {
-                        t = t.shiftedBy(step);
-                        generated.add(generated.size(), provider.getTransform(t));
-                    } while (t.compareTo(date) <= 0);
-                } else {
-                    // backward generation
-                    do {
-                        t = t.shiftedBy(-step);
-                        generated.add(0, provider.getTransform(t));
-                    } while (t.compareTo(date) >= 0);
-                }
-
+            // no prior existing transforms, just generate a first one
+            for (int i = 0; i < neighborsSize; ++i) {
+                generated.add(provider.getTransform(date.shiftedBy(i * step)));
             }
 
-            // return the generated transforms
-            return generated;
-        } catch (OrekitException oe) {
-            throw new OrekitExceptionWrapper(oe);
+        } else {
+
+            // some transforms have already been generated
+            // add the missing ones up to specified date
+            AbsoluteDate t = existingDate;
+            if (date.compareTo(t) > 0) {
+                // forward generation
+                do {
+                    t = t.shiftedBy(step);
+                    generated.add(generated.size(), provider.getTransform(t));
+                } while (t.compareTo(date) <= 0);
+            } else {
+                // backward generation
+                do {
+                    t = t.shiftedBy(-step);
+                    generated.add(0, provider.getTransform(t));
+                } while (t.compareTo(date) >= 0);
+            }
+
         }
+
+        // return the generated transforms
+        return generated;
 
     }
 

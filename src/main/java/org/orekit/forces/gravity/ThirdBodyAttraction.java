@@ -84,8 +84,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters)
-        throws OrekitException {
+    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final double gm = parameters[0];
 
@@ -104,8 +103,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters)
-        throws OrekitException {
+                                                                         final T[] parameters) {
 
         final T gm = parameters[0];
 

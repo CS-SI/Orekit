@@ -38,7 +38,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     private static final ChronologicalComparator COMP = new ChronologicalComparator();
 
     @Test
-    public void testExternalResourcesAreIgnoredIssue368() throws OrekitException {
+    public void testExternalResourcesAreIgnoredIssue368() {
         // setup
         setRoot("external-resources");
         IERSConventions.NutationCorrectionConverter converter =
@@ -65,7 +65,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateDaily1980() throws OrekitException {
+    public void testStartDateDaily1980() {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -76,7 +76,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateDaily1980() throws OrekitException {
+    public void testEndDateDaily1980() {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -87,7 +87,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateDaily2000() throws OrekitException {
+    public void testStartDateDaily2000() {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -98,7 +98,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateDaily2000() throws OrekitException {
+    public void testEndDateDaily2000() {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -109,7 +109,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateFinals1980() throws OrekitException {
+    public void testStartDateFinals1980() {
         setRoot("compressed-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -120,7 +120,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateFinals1980() throws OrekitException {
+    public void testEndDateFinals1980() {
         setRoot("compressed-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -131,7 +131,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateFinals2000() throws OrekitException {
+    public void testStartDateFinals2000() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -142,7 +142,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateFinals2000() throws OrekitException {
+    public void testEndDateFinals2000() {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -153,7 +153,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testIssue139() throws OrekitException {
+    public void testIssue139() {
         setRoot("zipped-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();

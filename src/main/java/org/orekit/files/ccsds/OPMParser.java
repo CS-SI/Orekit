@@ -118,18 +118,18 @@ public class OPMParser extends ODMParser {
 
     /** {@inheritDoc} */
     @Override
-    public OPMFile parse(final String fileName) throws OrekitException {
+    public OPMFile parse(final String fileName) {
         return (OPMFile) super.parse(fileName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OPMFile parse(final InputStream stream) throws OrekitException {
+    public OPMFile parse(final InputStream stream) {
         return (OPMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */
-    public OPMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+    public OPMFile parse(final InputStream stream, final String fileName) {
 
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));

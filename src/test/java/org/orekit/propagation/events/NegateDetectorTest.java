@@ -22,7 +22,7 @@ public class NegateDetectorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testInit() throws OrekitException {
+    public void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         @SuppressWarnings("unchecked")
@@ -46,7 +46,7 @@ public class NegateDetectorTest {
      * @throws OrekitException on error
      */
     @Test
-    public void testG() throws OrekitException {
+    public void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         NegateDetector detector = new NegateDetector(a);

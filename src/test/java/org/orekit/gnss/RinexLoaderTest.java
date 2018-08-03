@@ -36,13 +36,13 @@ public class RinexLoaderTest {
     
     
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:rinex");
     }
 
     @Test
-    public void testRinex2Header() throws OrekitException {
+    public void testRinex2Header() {
         
         //Tests Rinex 2 with only GPS Constellation
         RinexLoader  loader = new RinexLoader("^jnu10110\\.17o$");
@@ -77,7 +77,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testRinex3Header() throws OrekitException {
+    public void testRinex3Header() {
 
         //Tests Rinex 3 with Multiple Constellations
         RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
@@ -134,7 +134,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testGPSFile() throws OrekitException {
+    public void testGPSFile() {
 
         //Tests Rinex 2 with only GPS Constellation
         RinexLoader  loader = new RinexLoader("^jnu10110\\.17o$");
@@ -177,7 +177,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testGPSGlonassFile() throws OrekitException {
+    public void testGPSGlonassFile() {
         //Tests Rinex 2 with GPS and GLONASS Constellations
         RinexLoader  loader = new RinexLoader("^aiub0000\\.00o$");
         String[] typesobs2 = {"P1","L1","L2","P2"};
@@ -218,7 +218,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testMultipleConstellationsFile() throws OrekitException {
+    public void testMultipleConstellationsFile() {
         //Tests Rinex 3 with Multiple Constellations
         RinexLoader  loader = new RinexLoader("^aaaa0000\\.00o$");
 
@@ -261,7 +261,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testMultipleConstellationsGlonassScaleFactorFile() throws OrekitException {
+    public void testMultipleConstellationsGlonassScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for some GLONASS Observations
         RinexLoader  loader = new RinexLoader("^bbbb0000\\.00o$");
         String[] typesobsG2 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
@@ -316,7 +316,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testMultipleConstellationsGalileoScaleFactorFile() throws OrekitException {
+    public void testMultipleConstellationsGalileoScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for all GALILEO Observations
         RinexLoader  loader = new RinexLoader("^bbbb0000\\.01o$");
         String[] typesobsG4 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
@@ -378,7 +378,7 @@ public class RinexLoaderTest {
     
     
     @Test
-    public void testUnknownSatelliteSystemHeader() throws OrekitException {
+    public void testUnknownSatelliteSystemHeader() {
         try {
             //Test with RinexV3 Unknown Satellite System inside Header
             new RinexLoader("^unknown-satsystem\\.00o$");
@@ -390,7 +390,7 @@ public class RinexLoaderTest {
     }
     
     @Test
-    public void testInconsistentNumSatellites() throws OrekitException {
+    public void testInconsistentNumSatellites() {
         try {
             //Test with RinexV3 inconsistent number of sats in an observation w/r to max sats in header
             new RinexLoader("^inconsistent-satsnum\\.00o$");
@@ -403,7 +403,7 @@ public class RinexLoaderTest {
     }
     
     @Test
-    public void testInconsistentSatSystem() throws OrekitException {
+    public void testInconsistentSatSystem() {
         try {
             //Test with RinexV3 inconsistent satellite system in an observation w/r to file sat system
             new RinexLoader("^inconsistent-satsystem\\.00o$");
@@ -428,7 +428,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testDCBSApplied() throws OrekitException {
+    public void testDCBSApplied() {
         RinexLoader  loader = new RinexLoader("^dcbs\\.00o$");
         for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             RinexHeader header = entry.getKey();
@@ -444,7 +444,7 @@ public class RinexLoaderTest {
     }
 
     @Test
-    public void testPCVSApplied() throws OrekitException {
+    public void testPCVSApplied() {
         RinexLoader  loader = new RinexLoader("^pcvs\\.00o$");
         for (Map.Entry<RinexHeader, List<ObservationDataSet>> entry : loader.getObservations().entrySet()) {
             RinexHeader header = entry.getKey();

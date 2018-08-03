@@ -41,7 +41,7 @@ public class CloseEventsNumericalAMTest extends CloseEventsAbstractTest {
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public Propagator getPropagator(double stepSize) throws OrekitException {
+    public Propagator getPropagator(double stepSize) {
         double[][] tol = NumericalPropagator
                 .tolerances(1, initialOrbit, OrbitType.CARTESIAN);
         final AdamsMoultonIntegrator integrator =

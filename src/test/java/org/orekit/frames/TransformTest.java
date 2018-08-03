@@ -36,7 +36,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -992,7 +991,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testInterpolation() throws OrekitException {
+    public void testInterpolation() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<Transform>();

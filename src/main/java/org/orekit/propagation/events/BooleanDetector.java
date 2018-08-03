@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -216,7 +215,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
         // can't use stream/lambda here because g(s) throws a checked exception
         // so write out and combine the map and reduce loops
         double ret = Double.NaN; // return value
@@ -244,7 +243,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
     @Override
     public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) throws OrekitException {
+                     final AbsoluteDate t) {
         super.init(s0, t);
         for (final EventDetector detector : detectors) {
             detector.init(s0, t);

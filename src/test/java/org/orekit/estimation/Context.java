@@ -24,7 +24,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -64,7 +63,7 @@ public class Context {
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
                                                     final Force... forces)
-        throws OrekitException {
+        {
 
         final Orbit startOrbit;
         if (perfectStart) {
@@ -95,7 +94,7 @@ public class Context {
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
                                 double altitude, String name)
-        throws OrekitException {
+        {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);

@@ -43,7 +43,7 @@ public class BiasTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testEstimateBias() throws OrekitException {
+    public void testEstimateBias() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -129,7 +129,7 @@ public class BiasTest {
     }
 
     @Test
-    public void testTooSmallScale() throws OrekitException {
+    public void testTooSmallScale() {
         try {
             new Bias<Range>(new String[] { "OK", "not-OK" },
                             new double[] { 1000.0,    1000.0 },

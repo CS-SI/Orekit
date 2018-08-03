@@ -18,8 +18,6 @@ package org.orekit.data;
 
 import java.util.regex.Pattern;
 
-import org.orekit.errors.OrekitException;
-
 /** Interface for providing data files to {@link DataLoader file loaders}.
  * <p>
  * This interface defines a generic way to explore some collection holding
@@ -72,10 +70,7 @@ public interface DataProvider {
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
      * @return true if some data has been loaded
-     * @exception OrekitException if the data loader cannot be fed
-     * (read error ...)
      */
-    boolean feed(Pattern supported, DataLoader visitor)
-        throws OrekitException;
+    boolean feed(Pattern supported, DataLoader visitor);
 
 }

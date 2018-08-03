@@ -33,7 +33,7 @@ import org.orekit.utils.Constants;
 public class ICGEMFormatReaderTest {
 
     @Test
-    public void testReadLimits() throws OrekitException {
+    public void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
@@ -61,7 +61,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cNormalized() throws OrekitException {
+    public void testRegular05cNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -84,7 +84,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testMoonGravityField() throws OrekitException {
+    public void testMoonGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("GrazLGM300c.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -94,7 +94,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testVenusGravityField() throws OrekitException {
+    public void testVenusGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("shgj180ua01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -104,7 +104,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testMarsGravityField() throws OrekitException {
+    public void testMarsGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("jgm85f01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -114,7 +114,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cUnnormalized() throws OrekitException {
+    public void testRegular05cUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -142,7 +142,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testEigen06() throws OrekitException {
+    public void testEigen06() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -173,35 +173,35 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws OrekitException {
+    public void testCorruptedFile1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-1-g007_eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws OrekitException {
+    public void testCorruptedFile2() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-2-g007_eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testInvalidNorm() throws OrekitException {
+    public void testInvalidNorm() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_norm_icgem", false));
         GravityFieldFactory.getUnnormalizedProvider(3, 3);
     }
 
     @Test(expected=OrekitException.class)
-    public void testInvalidTide() throws OrekitException {
+    public void testInvalidTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_tide_icgem", false));
         GravityFieldFactory.getUnnormalizedProvider(3, 3);
     }
 
     @Test
-    public void testZeroTide() throws OrekitException {
+    public void testZeroTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_zero_tide_icgem", false));
         Assert.assertEquals(TideSystem.ZERO_TIDE,
@@ -209,7 +209,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testUnknownTide() throws OrekitException {
+    public void testUnknownTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unknown_tide_icgem", false));
         Assert.assertEquals(TideSystem.UNKNOWN,
@@ -218,7 +218,7 @@ public class ICGEMFormatReaderTest {
 
     /** Check numbers in the format 1.0d0 can be parsed. */
     @Test
-    public void testLowercaseD() throws OrekitException {
+    public void testLowercaseD() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_small_d_icgem", false));
         Assert.assertEquals(10.0,
@@ -231,7 +231,7 @@ public class ICGEMFormatReaderTest {
 
     /** check files without 1,0 and 1,1 can be parsed. */
     @Test
-    public void testMissingDegree1() throws OrekitException {
+    public void testMissingDegree1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_missing_degree_1", false));
         UnnormalizedSphericalHarmonics harmonics = GravityFieldFactory
@@ -251,7 +251,7 @@ public class ICGEMFormatReaderTest {
                             final double cosYear, final double sinYear,
                             final double cosHalfYear, final double sinHalfYear,
                             final int maxUlps)
-        throws OrekitException {
+        {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;

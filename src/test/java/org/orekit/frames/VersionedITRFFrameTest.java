@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -44,7 +43,7 @@ import org.orekit.utils.IERSConventions;
 public class VersionedITRFFrameTest {
 
     @Test
-    public void testBulletinABefore2018Jump() throws OrekitException {
+    public void testBulletinABefore2018Jump() {
         // before 2018-03-23, bulletin-A EOP were referenced to ITRF-2008
         doTestBulletinA2018Jump(new AbsoluteDate(2018, 3, 20, 12, 34, 56.7,
                                                  TimeScalesFactory.getUTC()),
@@ -52,7 +51,7 @@ public class VersionedITRFFrameTest {
     }
 
     @Test
-    public void testBulletinAAfter2018Jump() throws OrekitException {
+    public void testBulletinAAfter2018Jump() {
         // after 2018-03-23, bulletin-A EOP were referenced to ITRF-2014
         doTestBulletinA2018Jump(new AbsoluteDate(2018, 3, 26, 12, 34, 56.7,
                                                  TimeScalesFactory.getUTC()),
@@ -63,7 +62,7 @@ public class VersionedITRFFrameTest {
                                          double expectedDistance2008,
                                          double expectedDistance2014,
                                          double tolerance)
-        throws OrekitException {
+        {
         Frame eme2000          = FramesFactory.getEME2000();
         Frame unspecifiedITRF  = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         VersionedITRF itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008,
@@ -108,7 +107,7 @@ public class VersionedITRFFrameTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         VersionedITRF itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008,
                                                        IERSConventions.IERS_2010, false);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

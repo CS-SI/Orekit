@@ -56,13 +56,11 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
-     * name conflict occurs
      */
     public TurnAroundRangeAnalytic(final GroundStation masterStation, final GroundStation slaveStation,
                                    final AbsoluteDate date, final double turnAroundRange,
                                    final double sigma, final double baseWeight)
-        throws OrekitException {
+        {
         super(masterStation, slaveStation, date, turnAroundRange, sigma, baseWeight);
     }
 
@@ -70,7 +68,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      * @param Range parent class
      */
     public TurnAroundRangeAnalytic(final TurnAroundRange turnAroundRange)
-        throws OrekitException {
+        {
         super(turnAroundRange.getMasterStation(), turnAroundRange.getSlaveStation(),
               turnAroundRange.getDate(), turnAroundRange.getObservedValue()[0],
               turnAroundRange.getTheoreticalStandardDeviation()[0],
@@ -92,7 +90,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                                   final SpacecraftState initialState,
                                                                                   final SpacecraftState state)
-        throws OrekitException {
+        {
 
         // Stations attributes from parent Range class
         final GroundStation masterGroundStation = this.getMasterStation();
@@ -551,7 +549,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
      */
     protected EstimatedMeasurement<TurnAroundRange> theoreticalEvaluationValidation(final int iteration, final int evaluation,
                                                                                     final SpacecraftState state)
-        throws OrekitException {
+        {
         // Stations & DSFactory attributes from parent TurnArounsRange class
         final GroundStation masterGroundStation       = getMasterStation();
         final GroundStation slaveGroundStation        = getSlaveStation();

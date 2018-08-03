@@ -99,10 +99,8 @@ public class RinexLoader {
      * global {@link DataProvidersManager DataProvidersManager}.
      * </p>
      * @param supportedNames regular expression for supported files names
-     * @exception OrekitException if no rinex file can be read
      */
-    public RinexLoader(final String supportedNames)
-        throws OrekitException {
+    public RinexLoader(final String supportedNames) {
         observations = new HashMap<>();
         DataProvidersManager.getInstance().feed(supportedNames, new Parser());
     }
@@ -110,10 +108,8 @@ public class RinexLoader {
     /** Simple constructor.
      * @param input data input stream
      * @param name name of the file (or zip entry)
-     * @exception OrekitException if no rinex file can be read
      */
-    public RinexLoader(final InputStream input, final String name)
-        throws OrekitException {
+    public RinexLoader(final InputStream input, final String name) {
         try {
             observations = new HashMap<>();
             new Parser().loadData(input, name);

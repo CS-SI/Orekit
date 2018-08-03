@@ -102,7 +102,7 @@ public class EphemerisEventsTest {
         return new Ephemeris(tab, 2);
     }
 
-    private EclipseDetector buildEclipsDetector(final OrbitType type) throws OrekitException {
+    private EclipseDetector buildEclipsDetector(final OrbitType type) {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
@@ -113,7 +113,7 @@ public class EphemerisEventsTest {
                               withHandler(new EventHandler<EclipseDetector>() {
                                 public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                             boolean increasing)
-                                    throws OrekitException {
+                                    {
                                     Assert.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;

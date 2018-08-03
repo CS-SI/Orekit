@@ -18,7 +18,6 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
@@ -32,19 +31,17 @@ public interface CelestialBody extends Serializable, ExtendedPVCoordinatesProvid
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to other inertial frames.</p>
      * @return an inertially oriented, body centered frame
-     * @exception OrekitException if frame cannot be retrieved
      * @see #getBodyOrientedFrame()
      */
-    Frame getInertiallyOrientedFrame() throws OrekitException;
+    Frame getInertiallyOrientedFrame();
 
     /** Get a body oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to the celestial body.</p>
      * @return a body oriented, body centered frame
-     * @exception OrekitException if frame cannot be retrieved
      * @see #getInertiallyOrientedFrame()
      */
-    Frame getBodyOrientedFrame() throws OrekitException;
+    Frame getBodyOrientedFrame();
 
     /** Get the name of the body.
      * @return name of the body

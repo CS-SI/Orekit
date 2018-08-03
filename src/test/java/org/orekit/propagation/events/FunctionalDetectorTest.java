@@ -43,7 +43,7 @@ public class FunctionalDetectorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testFunctionalDetector() throws OrekitException {
+    public void testFunctionalDetector() {
         // setup
         GFunction g = SpacecraftState::getMass;
         EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;

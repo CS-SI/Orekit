@@ -51,7 +51,7 @@ import org.orekit.utils.PVCoordinates;
 public class GeographicZoneDetectorTest {
 
     @Test
-    public void testFrance() throws OrekitException {
+    public void testFrance() {
 
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,

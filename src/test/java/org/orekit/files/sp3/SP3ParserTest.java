@@ -50,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
 public class SP3ParserTest {
 
     @Test
-    public void testParseSP3a1() throws OrekitException, IOException, URISyntaxException {
+    public void testParseSP3a1() throws IOException, URISyntaxException {
         // simple test for version sp3-a, only contains position entries
         final String ex = "/sp3/example-a-1.sp3";
 
@@ -94,7 +94,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3a2() throws OrekitException, IOException {
+    public void testParseSP3a2() throws IOException {
         // simple test for version sp3-a, contains p/v entries
         final String ex = "/sp3/example-a-2.sp3";
 
@@ -124,7 +124,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c1() throws OrekitException, IOException {
+    public void testParseSP3c1() throws IOException {
         // simple test for version sp3-c, contains p entries
         final String ex = "/sp3/example-c-1.sp3";
 
@@ -153,7 +153,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c2() throws OrekitException, IOException {
+    public void testParseSP3c2() throws IOException {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String ex = "/sp3/example-c-2.sp3";
 
@@ -183,7 +183,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d1() throws OrekitException, IOException {
+    public void testParseSP3d1() throws IOException {
         // simple test for version sp3-d, contains p entries
         final String ex = "/sp3/example-d-1.sp3";
 
@@ -212,7 +212,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d2() throws OrekitException, IOException {
+    public void testParseSP3d2() throws IOException {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String ex = "/sp3/example-d-2.sp3";
 
@@ -242,7 +242,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3GFZ() throws OrekitException, IOException {
+    public void testSP3GFZ() throws IOException {
         // simple test for version sp3-c, contains more than 85 satellites
         final String ex = "/sp3/gbm19500_truncated.sp3";
 
@@ -315,7 +315,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3Compressed() throws OrekitException, IOException {
+    public void testSP3Compressed() throws IOException {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser parser = new SP3Parser();
@@ -450,7 +450,7 @@ public class SP3ParserTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 }

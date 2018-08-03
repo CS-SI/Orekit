@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 
 public class GPSDateTest {
 
@@ -58,7 +57,7 @@ public class GPSDateTest {
     }
 
     @Test
-    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+    public void testSerialization() throws IOException, ClassNotFoundException {
         GPSDate date = new GPSDate(1387, 318677000.0);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -81,7 +80,7 @@ public class GPSDateTest {
     }
 
     @Before
-    public void setUp() throws OrekitException {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }

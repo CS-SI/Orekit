@@ -26,8 +26,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -152,55 +150,38 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** {@inheritDoc} */
     @Override
-    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
-        try {
+    public Transform getTransform(final AbsoluteDate date) {
+        // retrieve a sample from the thread-safe cache
+        final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
 
-            // retrieve a sample from the thread-safe cache
-            final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
-
-            // interpolate to specified date
-            return Transform.interpolate(date, cFilter, aFilter, sample);
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
-        }
+        // interpolate to specified date
+        return Transform.interpolate(date, cFilter, aFilter, sample);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
-        throws OrekitException {
-        try {
-
-            @SuppressWarnings("unchecked")
-            GenericTimeStampedCache<FieldTransform<T>> fieldCache =
-                (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
-            if (fieldCache == null) {
-                fieldCache =
-                    new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
-                                                                   cache.getMaxSlots(),
-                                                                   cache.getMaxSpan(),
-                                                                   cache.getNewSlotQuantumGap(),
-                                                                   new FieldTransformGenerator<>(date.getField(),
-                                                                                                 cache.getNeighborsSize(),
-                                                                                                 rawProvider,
-                                                                                                 step));
-                fieldCaches.put(date.getField(), fieldCache);
-            }
-
-            // retrieve a sample from the thread-safe cache
-            final Stream<FieldTransform<T>> sample = fieldCache.getNeighbors(date.toAbsoluteDate());
-
-            // interpolate to specified date
-            return FieldTransform.interpolate(date, cFilter, aFilter, sample);
-
-        } catch (OrekitExceptionWrapper oew) {
-            // something went wrong while generating the sample,
-            // we just forward the exception up
-            throw oew.getException();
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        @SuppressWarnings("unchecked")
+        GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+            (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
+        if (fieldCache == null) {
+            fieldCache =
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                               cache.getMaxSlots(),
+                                                               cache.getMaxSpan(),
+                                                               cache.getNewSlotQuantumGap(),
+                                                               new FieldTransformGenerator<>(date.getField(),
+                                                                                             cache.getNeighborsSize(),
+                                                                                             rawProvider,
+                                                                                             step));
+            fieldCaches.put(date.getField(), fieldCache);
         }
+
+        // retrieve a sample from the thread-safe cache
+        final Stream<FieldTransform<T>> sample = fieldCache.getNeighbors(date.toAbsoluteDate());
+
+        // interpolate to specified date
+        return FieldTransform.interpolate(date, cFilter, aFilter, sample);
     }
 
     /** Replace the instance with a data transfer object for serialization.

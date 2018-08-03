@@ -66,7 +66,7 @@ public class FootprintOverlapDetectorTest {
     private OneAxisEllipsoid earth;
 
     @Test
-    public void testRightForwardView() throws OrekitException, IOException {
+    public void testRightForwardView() throws IOException {
 
         propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                       RotationOrder.XYZ,
@@ -124,7 +124,7 @@ public class FootprintOverlapDetectorTest {
                                 final double expectedStart, final double expectedDuration,
                                 final double spacecraftLatitude, final double spacecraftLongitude,
                                 final double fovCenterLatitude, final double fovCenterLongitude)
-        throws OrekitException {
+        {
 
         Assert.assertFalse(start.isIncreasing());
         Assert.assertTrue(end.isIncreasing());

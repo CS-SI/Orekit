@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
@@ -183,7 +182,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) {
 
         // computed Cnm and Snm coefficients
         final double[][] cnm = buildTriangularArray(5, true);
@@ -424,15 +423,13 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedCnm(final int n, final int m)
-            throws OrekitException {
+        public double getNormalizedCnm(final int n, final int m) {
             return cnm[n][m];
         }
 
         /** {@inheritDoc} */
         @Override
-        public double getNormalizedSnm(final int n, final int m)
-            throws OrekitException {
+        public double getNormalizedSnm(final int n, final int m) {
             return snm[n][m];
         }
 

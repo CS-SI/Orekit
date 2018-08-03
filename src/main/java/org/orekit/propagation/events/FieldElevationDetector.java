@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.models.AtmosphericRefractionModel;
@@ -168,10 +167,9 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
      * (and azimuth if necessary) and the reference mask or minimum value.
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
-     * @exception OrekitException if some specific error occurs
      */
     @Override
-    public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+    public T g(final FieldSpacecraftState<T> s) {
 
         final Transform t = s.getFrame().getTransformTo(topo, s.getDate().toAbsoluteDate());
         final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPVCoordinates().getPosition());

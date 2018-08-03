@@ -420,7 +420,7 @@ public class DSSTPropagation {
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
                               final TimeScale scale, final double mu)
-        throws OrekitException, NoSuchElementException, IOException {
+        throws NoSuchElementException, IOException {
 
         final Frame frame;
         if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
@@ -515,7 +515,7 @@ public class DSSTPropagation {
                                           final double maxStep,
                                           final double dP,
                                           final List<String> shortPeriodCoefficients)
-        throws OrekitException {
+        {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
@@ -539,7 +539,7 @@ public class DSSTPropagation {
      *  @param mass S/C mass (kg)
      *  @throws OrekitException
      */
-    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
+    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
         final double minStep = 1.e-3;
         final double maxStep = 1.e+3;
@@ -741,7 +741,7 @@ public class DSSTPropagation {
 
         /** {@inheritDoc} */
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
-            throws OrekitException {
+            {
             try {
                 nbColumns           = 0;
                 outputStream        = new PrintStream(outputFile, "UTF-8");
@@ -787,7 +787,7 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState s, boolean isLast) throws OrekitException {
+        public void handleStep(SpacecraftState s, boolean isLast) {
             if (isFirst) {
                 if (shortPeriodCoefficients != null) {
                     if (shortPeriodCoefficients.isEmpty()) {

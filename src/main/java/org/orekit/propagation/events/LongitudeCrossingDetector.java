@@ -20,7 +20,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -132,9 +131,8 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * @param s the current state information: date, kinematics, attitude
      * @return longitude difference between the spacecraft and the fixed
      * longitude, with some sign tweaks to ensure continuity
-     * @exception OrekitException if some specific error occurs
      */
-    public double g(final SpacecraftState s) throws OrekitException {
+    public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
         final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),

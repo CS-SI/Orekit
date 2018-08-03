@@ -17,7 +17,6 @@
 package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
 /** Provider for process noise matrices.
@@ -49,12 +48,10 @@ public interface CovarianceMatrixProvider {
      * </p>
      * @param initial initial state state
      * @return physical (i.e. non normalized) initial covariance matrix
-     * @exception OrekitException if matrix cannot be computed
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParametersDrivers()
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
      */
-    RealMatrix getInitialCovarianceMatrix(SpacecraftState initial)
-        throws OrekitException;
+    RealMatrix getInitialCovarianceMatrix(SpacecraftState initial);
 
     /** Get the process noise matrix between previous and current states.
      * <p>
@@ -82,11 +79,9 @@ public interface CovarianceMatrixProvider {
      * @param current current state
      * @return physical (i.e. non normalized) process noise matrix between
      * previous and current states
-     * @exception OrekitException if matrix cannot be computed
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getOrbitalParametersDrivers()
      * @see org.orekit.propagation.conversion.PropagatorBuilder#getPropagationParametersDrivers()
      */
-    RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current)
-        throws OrekitException;
+    RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current);
 
 }

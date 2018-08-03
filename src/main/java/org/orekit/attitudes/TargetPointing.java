@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -60,11 +59,9 @@ public class TargetPointing extends GroundPointing {
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame body frame.
      * @param target target position in body frame
-     * @exception OrekitException if the first frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
-    public TargetPointing(final Frame inertialFrame, final Frame bodyFrame, final Vector3D target)
-        throws OrekitException {
+    public TargetPointing(final Frame inertialFrame, final Frame bodyFrame, final Vector3D target) {
         super(inertialFrame, bodyFrame);
         this.target = target;
     }
@@ -73,11 +70,9 @@ public class TargetPointing extends GroundPointing {
      * @param inertialFrame frame in which orbital velocities are computed
      * @param targetGeo target defined as a geodetic point in body shape frame
      * @param shape body shape
-     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
      * @since 7.1
      */
-    public TargetPointing(final Frame inertialFrame, final GeodeticPoint targetGeo, final BodyShape shape)
-        throws OrekitException {
+    public TargetPointing(final Frame inertialFrame, final GeodeticPoint targetGeo, final BodyShape shape) {
         super(inertialFrame, shape.getBodyFrame());
         // Transform target from geodetic coordinates to Cartesian coordinates
         target = shape.transform(targetGeo);
@@ -86,8 +81,7 @@ public class TargetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                                final AbsoluteDate date, final Frame frame) {
         final Transform t = getBodyFrame().getTransformTo(frame, date);
         final TimeStampedPVCoordinates pv =
                 new TimeStampedPVCoordinates(date, target, Vector3D.ZERO, Vector3D.ZERO);
@@ -97,8 +91,7 @@ public class TargetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date, final Frame frame)
-        throws OrekitException {
+                                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
         final FieldTransform<T> t = getBodyFrame().getTransformTo(frame, date);
         final FieldVector3D<T> zero = FieldVector3D.getZero(date.getField());
         final TimeStampedFieldPVCoordinates<T> pv =

@@ -133,10 +133,8 @@ public class PropagatorsParallelizer {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated states
-     * @exception OrekitException if state cannot be propagated
      */
-    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target)
-        throws OrekitException {
+    public List<SpacecraftState> propagate(final AbsoluteDate start, final AbsoluteDate target) {
 
         if (propagators.size() == 1) {
             // special handling when only one propagator is used
@@ -246,12 +244,10 @@ public class PropagatorsParallelizer {
      * @param queue queue for transferring parameters
      * @param <T> type of the parameters
      * @return retrieved parameters
-     * @exception OrekitException if tasks stops before parameters are available
      */
     private <T> T getParameters(final int index,
                                 final Future<SpacecraftState> future,
-                                final SynchronousQueue<T> queue)
-        throws OrekitException {
+                                final SynchronousQueue<T> queue) {
         try {
             T params = null;
             while (params == null && !future.isDone()) {
@@ -271,10 +267,8 @@ public class PropagatorsParallelizer {
 
     /** Convert exceptions.
      * @param exception exception caught
-     * @exception OrekitException if the exception caught was unexpected
      */
-    private void manageException(final Exception exception)
-        throws OrekitException {
+    private void manageException(final Exception exception) {
         if (exception.getCause() instanceof PropagatorStoppingException) {
             // this was an expected exception, we deliberately shut down the propagators
             // we therefore explicitly ignore this exception
@@ -319,14 +313,13 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
             globalHandler.init(Collections.singletonList(s0), t);
         }
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-            throws OrekitException {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             globalHandler.handleStep(Collections.singletonList(interpolator), isLast);
         }
 
@@ -354,7 +347,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
             try {
                 initQueue.put(s0);
             } catch (InterruptedException ie) {
@@ -365,8 +358,7 @@ public class PropagatorsParallelizer {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-                        throws OrekitException {
+        public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast) {
             try {
                 shpQueue.put(new StepHandlingParameters(interpolator, isLast));
             } catch (InterruptedException ie) {

@@ -46,7 +46,7 @@ public class UnixCompressFilterTest {
     }
 
     @Test
-    public void testPrematureEnd() throws OrekitException {
+    public void testPrematureEnd() {
         try {
             tryRead("premature-end.Z", 0x1f, 0x9d, 0x90, 0x23);
             Assert.fail("an exception should have been thrown");
@@ -58,7 +58,7 @@ public class UnixCompressFilterTest {
     }
 
     @Test
-    public void testUninitializedRepetition() throws OrekitException {
+    public void testUninitializedRepetition() {
         try {
             tryRead("uninitialized-repetition.Z", 0x1f, 0x9d, 0x90, 0x01, 0x01, 0x00);
             Assert.fail("an exception should have been thrown");
@@ -124,7 +124,7 @@ public class UnixCompressFilterTest {
         }
     }
 
-    private int[] tryRead(String name, int... bytes) throws OrekitException, IOException {
+    private int[] tryRead(String name, int... bytes) throws IOException {
         final byte[] array = new byte[bytes.length];
         for (int i = 0; i < bytes.length; ++i) {
             array[i] = (byte) bytes[i];

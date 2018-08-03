@@ -41,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -344,7 +343,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue25() throws OrekitException {
+    public void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         CircularOrbit orbit = new CircularOrbit(new PVCoordinates(position, velocity),
@@ -356,7 +355,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testPerfectlyEquatorial() throws OrekitException {
+    public void testPerfectlyEquatorial() {
         Vector3D position = new Vector3D(-7293947.695148368, 5122184.668436634, 0.0);
         Vector3D velocity = new Vector3D(-3890.4029433398, -5369.811285264604, 0.0);
         CircularOrbit orbit = new CircularOrbit(new PVCoordinates(position, velocity),
@@ -538,7 +537,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testJacobianReference() throws OrekitException {
+    public void testJacobianReference() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -619,7 +618,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferences() throws OrekitException {
+    public void testJacobianFinitedifferences() {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
@@ -664,7 +663,7 @@ public class CircularOrbitTest {
     }
 
     private double[][] finiteDifferencesJacobian(PositionAngle type, CircularOrbit orbit, double hP)
-        throws OrekitException {
+        {
         double[][] jacobian = new double[6][6];
         for (int i = 0; i < 6; ++i) {
             fillColumn(type, i, orbit, hP, jacobian);
@@ -755,7 +754,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithDerivatives() throws OrekitException {
+    public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
                             397, 2.27e-8,
                             610, 3.24e-6,
@@ -763,7 +762,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithoutDerivatives() throws OrekitException {
+    public void testInterpolationWithoutDerivatives() {
         doTestInterpolation(false,
                             397, 0.0372,
                             610.0, 1.23,
@@ -774,7 +773,7 @@ public class CircularOrbitTest {
                                      double shiftErrorWithin, double interpolationErrorWithin,
                                      double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
                                      double shiftErrorFarPast, double interpolationErrorFarPast)
-        throws OrekitException {
+        {
 
         final double ehMu  = 3.9860047e14;
         final double ae  = 6.378137e6;
@@ -982,7 +981,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() throws OrekitException {
+    public void testNonKeplerianDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1062,7 +1061,7 @@ public class CircularOrbitTest {
      }
 
     @Test
-    public void testPositionAngleDerivatives() throws OrekitException {
+    public void testPositionAngleDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -1129,7 +1128,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() throws OrekitException {
+    public void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -1169,7 +1168,7 @@ public class CircularOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() throws OrekitException {
+    public void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 

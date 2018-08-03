@@ -17,7 +17,6 @@
 package org.orekit.gnss.attitude;
 
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -34,52 +33,52 @@ public class GenericGNCCTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testLargeNegativeBetaGalileo() throws OrekitException {
+    public void testLargeNegativeBetaGalileo() {
         doTestAxes("beta-large-negative-GALILEO.txt", 1.3e-15, 1.2e-15, 5.5e-16);
     }
 
     @Test
-    public void testLargePositiveBetaGalileo() throws OrekitException {
+    public void testLargePositiveBetaGalileo() {
         doTestAxes("beta-large-positive-GALILEO.txt", 1.4e-15, 5.5e-16, 7.1e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlonass() throws OrekitException {
+    public void testLargeNegativeBetaBlonass() {
         doTestAxes("beta-large-negative-GLONASS.txt", 1.5e-15, 1.1e-15, 3.1e-16);
     }
 
     @Test
-    public void testLargePositiveBetaGLONASS() throws OrekitException {
+    public void testLargePositiveBetaGLONASS() {
         doTestAxes("beta-large-positive-GLONASS.txt", 1.3e-15, 7.7e-16, 5.4e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIA() throws OrekitException {
+    public void testLargeNegativeBetaBlockIIA() {
         doTestAxes("beta-large-negative-BLOCK-IIA.txt", 1.1e-15, 8.4e-15, 4.0e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIA() throws OrekitException {
+    public void testLargePositiveBetaBlockIIA() {
         doTestAxes("beta-large-positive-BLOCK-IIA.txt", 9.0e-16, 1.2e-15, 8.0e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIF() throws OrekitException {
+    public void testLargeNegativeBetaBlockIIF() {
         doTestAxes("beta-large-negative-BLOCK-IIF.txt", 1.1e-15, 8.9e-16, 4.2e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIF() throws OrekitException {
+    public void testLargePositiveBetaBlockIIF() {
         doTestAxes("beta-large-positive-BLOCK-IIF.txt", 1.1e-15, 7.7e-16, 3.2e-16);
     }
 
     @Test
-    public void testLargeNegativeBetaBlockIIR() throws OrekitException {
+    public void testLargeNegativeBetaBlockIIR() {
         doTestAxes("beta-large-negative-BLOCK-IIR.txt", 1.5e-15, 1.2e-15, 8.8e-16);
     }
 
     @Test
-    public void testLargePositiveBetaBlockIIR() throws OrekitException {
+    public void testLargePositiveBetaBlockIIR() {
         doTestAxes("beta-large-positive-BLOCK-IIR.txt",  1.3e-15, 7.0e-15, 8.5e-16);
     }
 

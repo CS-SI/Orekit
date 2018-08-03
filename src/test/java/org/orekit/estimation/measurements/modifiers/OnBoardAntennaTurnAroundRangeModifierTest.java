@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -39,7 +38,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 public class OnBoardAntennaTurnAroundRangeModifierTest {
 
     @Test
-    public void testPreliminary() throws OrekitException {
+    public void testPreliminary() {
 
         // this test does not check OnBoardAntennaTurnAroundRangeModifier at all,
         // it just checks TurnAroundRangeMeasurementCreator behaves as necessary for the other test
@@ -78,7 +77,7 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
     }
 
     @Test
-    public void testEffect() throws OrekitException {
+    public void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

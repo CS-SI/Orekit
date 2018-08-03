@@ -68,10 +68,10 @@ public abstract class CloseEventsAbstractTest {
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public abstract Propagator getPropagator(double stepSize) throws OrekitException;
+    public abstract Propagator getPropagator(double stepSize);
 
     @Test
-    public void testCloseEventsFirstOneIsReset() throws OrekitException {
+    public void testCloseEventsFirstOneIsReset() {
         // setup
         // a fairly rare state to reproduce this bug. Two dates, d1 < d2, that
         // are very close. Event triggers on d1 will reset state to break out of
@@ -107,7 +107,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testCloseEvents() throws OrekitException {
+    public void testCloseEvents() {
         // setup
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
@@ -137,7 +137,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testSimultaneousEvents() throws OrekitException {
+    public void testSimultaneousEvents() {
         // setup
         Propagator propagator = getPropagator(10);
 
@@ -172,7 +172,7 @@ public abstract class CloseEventsAbstractTest {
      * preserve the alternating increasing / decreasing sequence.
      */
     @Test
-    public void testFastSwitching() throws OrekitException {
+    public void testFastSwitching() {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
@@ -197,7 +197,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** "A Tricky Problem" from bug #239. */
     @Test
-    public void testTrickyCaseLower() throws OrekitException {
+    public void testTrickyCaseLower() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -247,7 +247,7 @@ public abstract class CloseEventsAbstractTest {
      * t3.
      */
     @Test
-    public void testRootFindingTolerance() throws OrekitException {
+    public void testRootFindingTolerance() {
         //setup
         double maxCheck = 10;
         double t2 = 11, t3 = t2 + 1e-5;
@@ -285,7 +285,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSign() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -329,7 +329,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignAndLessThanTb() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignAndLessThanTb() {
         // setup
         // test is fragile w.r.t. implementation and these parameters
         double maxCheck = 10;
@@ -360,7 +360,7 @@ public abstract class CloseEventsAbstractTest {
      * < 0.
      */
     @Test
-    public void testDoubleRoot() throws OrekitException {
+    public void testDoubleRoot() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -398,7 +398,7 @@ public abstract class CloseEventsAbstractTest {
      * > 0.
      */
     @Test
-    public void testDoubleRootOppositeSign() throws OrekitException {
+    public void testDoubleRootOppositeSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -433,7 +433,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfInterval() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfInterval() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -461,7 +461,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalOppositeSign() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalOppositeSign() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -490,7 +490,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test where an event detector has to back up multiple times. */
     @Test
-    public void testMultipleBackups() throws OrekitException {
+    public void testMultipleBackups() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -550,7 +550,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test a reset event triggering another event at the same time. */
     @Test
-    public void testEventCausedByStateReset() throws OrekitException {
+    public void testEventCausedByStateReset() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -596,7 +596,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when t + tolerance == t. */
     @Test
-    public void testConvergenceTooTight() throws OrekitException {
+    public void testConvergenceTooTight() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18;
@@ -627,7 +627,7 @@ public abstract class CloseEventsAbstractTest {
      * too hard to implement.
      */
     @Test
-    public void testEventChangesGFunctionDefinition() throws OrekitException {
+    public void testEventChangesGFunctionDefinition() {
         // setup
         double maxCheck = 5;
         double tolerance = 1e-6;
@@ -655,7 +655,7 @@ public abstract class CloseEventsAbstractTest {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public double g(SpacecraftState s) throws OrekitException {
+            public double g(SpacecraftState s) {
                 if (swap[0]) {
                     return detectorB.g(s);
                 } else {
@@ -691,7 +691,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceStop() throws OrekitException {
+    public void testToleranceStop() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -729,7 +729,7 @@ public abstract class CloseEventsAbstractTest {
      * detector to force a very small window for the first event detector.
      */
     @Test
-    public void testShortBracketingInterval() throws OrekitException {
+    public void testShortBracketingInterval() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -789,7 +789,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceMaxIterations() throws OrekitException {
+    public void testToleranceMaxIterations() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -821,7 +821,7 @@ public abstract class CloseEventsAbstractTest {
 
 
     @Test
-    public void testCloseEventsFirstOneIsResetReverse() throws OrekitException {
+    public void testCloseEventsFirstOneIsResetReverse() {
         // setup
         // a fairly rare state to reproduce this bug. Two dates, d1 < d2, that
         // are very close. Event triggers on d1 will reset state to break out of
@@ -861,7 +861,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testCloseEventsReverse() throws OrekitException {
+    public void testCloseEventsReverse() {
         // setup
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
@@ -892,7 +892,7 @@ public abstract class CloseEventsAbstractTest {
     }
 
     @Test
-    public void testSimultaneousEventsReverse() throws OrekitException {
+    public void testSimultaneousEventsReverse() {
         // setup
         Propagator propagator = getPropagator(10);
 
@@ -927,7 +927,7 @@ public abstract class CloseEventsAbstractTest {
      * preserve the alternating increasing / decreasing sequence.
      */
     @Test
-    public void testFastSwitchingReverse() throws OrekitException {
+    public void testFastSwitchingReverse() {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
@@ -951,7 +951,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** "A Tricky Problem" from bug #239. */
     @Test
-    public void testTrickyCaseLowerReverse() throws OrekitException {
+    public void testTrickyCaseLowerReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1001,7 +1001,7 @@ public abstract class CloseEventsAbstractTest {
      * t3.
      */
     @Test
-    public void testRootFindingToleranceReverse() throws OrekitException {
+    public void testRootFindingToleranceReverse() {
         //setup
         double maxCheck = 10;
         double t2 = -11, t3 = t2 - 1e-5;
@@ -1039,7 +1039,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignReverse() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1083,7 +1083,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
     @Test
-    public void testRootPlusToleranceHasWrongSignAndLessThanTbReverse() throws OrekitException {
+    public void testRootPlusToleranceHasWrongSignAndLessThanTbReverse() {
         // setup
         // test is fragile w.r.t. implementation and these parameters
         double maxCheck = 10;
@@ -1114,7 +1114,7 @@ public abstract class CloseEventsAbstractTest {
      * < 0.
      */
     @Test
-    public void testDoubleRootReverse() throws OrekitException {
+    public void testDoubleRootReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1152,7 +1152,7 @@ public abstract class CloseEventsAbstractTest {
      * > 0.
      */
     @Test
-    public void testDoubleRootOppositeSignReverse() throws OrekitException {
+    public void testDoubleRootOppositeSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1188,7 +1188,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalReverse() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1217,7 +1217,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check root finding when zero at both ends. */
     @Test
-    public void testZeroAtBeginningAndEndOfIntervalOppositeSignReverse() throws OrekitException {
+    public void testZeroAtBeginningAndEndOfIntervalOppositeSignReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1246,7 +1246,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test where an event detector has to back up multiple times. */
     @Test
-    public void testMultipleBackupsReverse() throws OrekitException {
+    public void testMultipleBackupsReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1306,7 +1306,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** Test a reset event triggering another event at the same time. */
     @Test
-    public void testEventCausedByStateResetReverse() throws OrekitException {
+    public void testEventCausedByStateResetReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1352,7 +1352,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when t + tolerance == t. */
     @Test
-    public void testConvergenceTooTightReverse() throws OrekitException {
+    public void testConvergenceTooTightReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18;
@@ -1383,7 +1383,7 @@ public abstract class CloseEventsAbstractTest {
      * too hard to implement.
      */
     @Test
-    public void testEventChangesGFunctionDefinitionReverse() throws OrekitException {
+    public void testEventChangesGFunctionDefinitionReverse() {
         // setup
         double maxCheck = 5;
         double tolerance = 1e-6;
@@ -1411,7 +1411,7 @@ public abstract class CloseEventsAbstractTest {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public double g(SpacecraftState state) throws OrekitException {
+            public double g(SpacecraftState state) {
                 if (swap[0]) {
                     return detectorB.g(state);
                 } else {
@@ -1447,7 +1447,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceStopReverse() throws OrekitException {
+    public void testToleranceStopReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -1485,7 +1485,7 @@ public abstract class CloseEventsAbstractTest {
      * detector to force a very small window for the first event detector.
      */
     @Test
-    public void testShortBracketingIntervalReverse() throws OrekitException {
+    public void testShortBracketingIntervalReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-6;
@@ -1545,7 +1545,7 @@ public abstract class CloseEventsAbstractTest {
 
     /** check when root finding tolerance > event finding tolerance. */
     @Test
-    public void testToleranceMaxIterationsReverse() throws OrekitException {
+    public void testToleranceMaxIterationsReverse() {
         // setup
         double maxCheck = 10;
         double tolerance = 1e-18; // less than 1 ulp
@@ -1582,7 +1582,7 @@ public abstract class CloseEventsAbstractTest {
      * @param t time of state.
      * @return new state.
      */
-    private SpacecraftState state(double t) throws OrekitException {
+    private SpacecraftState state(double t) {
         return new SpacecraftState(
                 new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
                         PositionAngle.TRUE, eci, epoch.shiftedBy(t),
@@ -1636,7 +1636,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             final AbsoluteDate t = s.getDate();
             int i = 0;
             while (i < eventTs.size() && t.compareTo(eventTs.get(i)) > 0) {
@@ -1692,7 +1692,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             return FastMath.signum(g.g(s));
         }
 
@@ -1729,7 +1729,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(SpacecraftState s) {
             final AbsoluteDate t = s.getDate();
             int i = 0;
             while (i < eventTs.size() && t.compareTo(eventTs.get(i)) > 0) {

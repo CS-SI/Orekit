@@ -54,7 +54,7 @@ public class OrekitStepHandlerTest {
 
     @Test
     public void testForwardBackwardStep()
-        throws OrekitException, InterruptedException, ExecutionException {
+        throws InterruptedException, ExecutionException {
         final AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 00, 00,
                                                           00.000,
                                                           TimeScalesFactory
@@ -100,7 +100,7 @@ public class OrekitStepHandlerTest {
                 .submit(new Callable<SpacecraftState>() {
 
                     public SpacecraftState call()
-                        throws OrekitException {
+                        {
                         return kepler.propagate(initialDate.shiftedBy(dt));
                     }
                 });
@@ -119,7 +119,7 @@ public class OrekitStepHandlerTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testIsInterpolated() throws OrekitException {
+    public void testIsInterpolated() {
         // setup
         NumericalPropagator propagator =
                 new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60));
@@ -151,7 +151,7 @@ public class OrekitStepHandlerTest {
 
     @Before
     public void setUp()
-        throws OrekitException {
+        {
         Utils.setDataRoot("regular-data");
     }
 }

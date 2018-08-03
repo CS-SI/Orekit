@@ -73,7 +73,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
 
     /** {@inheritDoc} */
     @Override
-    public List<OffsetModel> loadOffsets() throws OrekitException {
+    public List<OffsetModel> loadOffsets() {
 
         final Parser parser = new Parser();
         DataProvidersManager.getInstance().feed(supportedNames, parser);
@@ -387,7 +387,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
         /** {@inheritDoc} */
         @Override
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             // set up a reader for line-oriented bulletin A files
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
@@ -448,10 +448,9 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
          */
         private void loadTaiUtc(final Section section, final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
@@ -475,10 +474,9 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
          * @param reader reader from where file content is obtained
          * @param name name of the file (or zip entry)
          * @exception IOException if data can't be read
-         * @exception OrekitException if some data is missing or if some loader specific error occurs
          */
         private void loadTimeSteps(final Section section, final BufferedReader reader, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             boolean inValuesPart = false;
             for (line = reader.readLine(); line != null; line = reader.readLine()) {

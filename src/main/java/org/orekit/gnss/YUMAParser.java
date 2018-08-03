@@ -113,10 +113,8 @@ public class YUMAParser implements DataLoader {
      * <p>This feature is useful when the file selection is already set up by
      * the {@link DataProvidersManager data providers manager} configuration.</p>
      *
-     * @exception OrekitException if some data can't be read, some
-     * file content is corrupted or no GPS almanac is available.
      */
-    public void loadData() throws OrekitException {
+    public void loadData() {
         // load the data from the configured data providers
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (almanacs.isEmpty()) {
@@ -205,8 +203,7 @@ public class YUMAParser implements DataLoader {
      * @return a {@link GPSAlmanac GPS almanac}
      * @throws OrekitException if a GPSAlmanac can't be built from the gathered entries
      */
-    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name)
-        throws OrekitException {
+    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
         try {
             // Initializes fields
             int prn = 0;

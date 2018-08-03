@@ -18,7 +18,6 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
  *
@@ -48,10 +47,9 @@ public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
 
     /** Add the contribution of an acceleration expressed in some inertial frame.
      * @param gamma acceleration vector in the same inertial frame the spacecraft state is defined in (m/s²)
-     * @exception OrekitException if frame transforms cannot be computed
-     * @since 9.0
+          * @since 9.0
      */
-    void addNonKeplerianAcceleration(FieldVector3D<T> gamma) throws OrekitException;
+    void addNonKeplerianAcceleration(FieldVector3D<T> gamma);
 
     /** Add the contribution of the flow rate (dm/dt).
      * @param q the flow rate, must be negative (dm/dt)

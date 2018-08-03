@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation;
 
-import org.orekit.errors.OrekitException;
-
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
  * This interface is the analytical (read already integrated) counterpart of
@@ -39,8 +37,7 @@ public interface AdditionalStateProvider {
     /** Get the additional state.
      * @param state spacecraft state to which additional state should correspond
      * @return additional state corresponding to spacecraft state
-     * @exception OrekitException if additional state cannot be computed
      */
-    double[] getAdditionalState(SpacecraftState state) throws OrekitException;
+    double[] getAdditionalState(SpacecraftState state);
 
 }

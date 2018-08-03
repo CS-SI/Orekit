@@ -49,7 +49,7 @@ public class EventsLoggerTest {
     private EventDetector        penumbraDetector;
 
     @Test
-    public void testLogUmbra() throws OrekitException {
+    public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
         @SuppressWarnings("unchecked")
         EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
@@ -65,7 +65,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogPenumbra() throws OrekitException {
+    public void testLogPenumbra() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -76,7 +76,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogAll() throws OrekitException {
+    public void testLogAll() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -87,7 +87,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testImmutableList() throws OrekitException {
+    public void testImmutableList() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -115,7 +115,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testClearLog() throws OrekitException {
+    public void testClearLog() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -159,7 +159,7 @@ public class EventsLoggerTest {
         Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private EventDetector buildDetector(final boolean totalEclipse) throws OrekitException {
+    private EventDetector buildDetector(final boolean totalEclipse) {
 
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,

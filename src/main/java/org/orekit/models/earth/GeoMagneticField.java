@@ -235,7 +235,7 @@ public class GeoMagneticField {
      *                         model or the model does not support time transformations
      *                         (i.e. no secular variations available)
      */
-    public GeoMagneticField transformModel(final double year) throws OrekitException {
+    public GeoMagneticField transformModel(final double year) {
 
         if (!supportsTimeTransform()) {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_TIME_TRANSFORM, modelName, String.valueOf(epoch));
@@ -283,8 +283,7 @@ public class GeoMagneticField {
      *                         model or the model does not support time transformations
      *                         (i.e. no secular variations available)
      */
-    public GeoMagneticField transformModel(final GeoMagneticField otherModel, final double year)
-        throws OrekitException {
+    public GeoMagneticField transformModel(final GeoMagneticField otherModel, final double year) {
 
         // the model can only be transformed within its validity period
         if (year < validityStart || year > validityEnd) {

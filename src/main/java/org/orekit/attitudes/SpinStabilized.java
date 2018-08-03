@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -84,8 +83,7 @@ public class SpinStabilized implements AttitudeProviderModifier {
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
+                                final AbsoluteDate date, final Frame frame) {
 
         // get attitude from underlying non-rotating law
         final Attitude base = nonRotatingLaw.getAttitude(pvProv, date, frame);
@@ -111,8 +109,7 @@ public class SpinStabilized implements AttitudeProviderModifier {
     /** {@inheritDoc} */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                         final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame)
-        throws OrekitException {
+                                                                        final Frame frame) {
 
         // get attitude from underlying non-rotating law
         final FieldAttitude<T> base = nonRotatingLaw.getAttitude(pvProv, date, frame);

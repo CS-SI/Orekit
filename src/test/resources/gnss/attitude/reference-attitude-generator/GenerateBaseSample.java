@@ -196,7 +196,7 @@ public class GenerateBaseSample {
 
         SunHandler(final CelestialBody sun, final AntexLoader loader,
                    final double betaRef, final PrintStream out, final String sat)
-            throws OrekitException {
+            {
             this.sun     = sun;
             this.betaRef = betaRef;
             this.sat     = sat;
@@ -209,7 +209,7 @@ public class GenerateBaseSample {
 
         @Override
         public Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
-            throws OrekitException {
+            {
             if (FastMath.abs(beta(s) - betaRef) < 0.5 &&
                 (beta(s.shiftedBy(-1800)) - betaRef) * (beta(s.shiftedBy(+1800)) - betaRef) < 0) {
                 for (int dt = -39; dt <= 39; dt += 6) {
@@ -219,7 +219,7 @@ public class GenerateBaseSample {
             return Action.CONTINUE;
         }
 
-        private void display(final SpacecraftState s) throws OrekitException {
+        private void display(final SpacecraftState s) {
             SatelliteAntenna antenna = map.get(s.getDate());
             int week = gpsWeek(s.getDate());
             double milli = gpsMilli(s.getDate());
@@ -248,13 +248,13 @@ public class GenerateBaseSample {
             return 1000 * date.durationFrom(AbsoluteDate.createGPSDate(gpsWeek(date), 0));
         }
 
-        private double beta(final SpacecraftState s) throws OrekitException{
+        private double beta(final SpacecraftState s) {
             final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
             final Vector3D mSat = s.getPVCoordinates().getMomentum();
             return FastMath.toDegrees(0.5 * FastMath.PI - Vector3D.angle(pSun, mSat));
         }
 
-        private double delta(final SpacecraftState s) throws OrekitException{
+        private double delta(final SpacecraftState s) {
             final Vector3D pSun = sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
             return FastMath.toDegrees(Vector3D.angle(pSun, s.getPVCoordinates().getPosition()));
         }

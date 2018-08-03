@@ -63,7 +63,7 @@ public class GroundFieldOfViewDetectorTest {
      * @throws OrekitException on error.
      */
     @Test
-    public void testCaseSimilarToElevationDetector() throws OrekitException {
+    public void testCaseSimilarToElevationDetector() {
         //setup
         double pi = FastMath.PI;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date

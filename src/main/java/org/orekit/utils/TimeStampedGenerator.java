@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.List;
 
-import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -79,8 +78,7 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * @param existingDate date of the closest already existing entry (may be null)
      * @param date date that must be covered by the range of the generated array
      * @return chronologically sorted list of generated entries
-     * @exception TimeStampedCacheException if time stamped data cannot be generated
      */
-    List<T> generate(AbsoluteDate existingDate, AbsoluteDate date) throws TimeStampedCacheException;
+    List<T> generate(AbsoluteDate existingDate, AbsoluteDate date);
 
 }

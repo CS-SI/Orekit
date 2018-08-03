@@ -29,11 +29,9 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
@@ -133,12 +131,9 @@ public class GroundStation {
      * </p>
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
-     * @exception OrekitException if some frame transforms cannot be computed
-     * or if Earth Orientation Parameters cannot be retrieved from the base frame.
      * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
      */
-    public GroundStation(final TopocentricFrame baseFrame)
-        throws OrekitException {
+    public GroundStation(final TopocentricFrame baseFrame) {
         this(baseFrame, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
     }
 
@@ -159,13 +154,10 @@ public class GroundStation {
      * @param eopHistory EOP history associated with Earth frames
      * @param displacements ground station displacement model (tides, ocean loading,
      * atmospheric loading, thermal effects...)
-     * @exception OrekitException if some frame transforms cannot be computed
-     * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
      * @since 9.1
      */
     public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
-                         final StationDisplacement... displacements)
-        throws OrekitException {
+                         final StationDisplacement... displacements) {
 
         this.baseFrame = baseFrame;
 
@@ -338,12 +330,10 @@ public class GroundStation {
 
     /** Get the geodetic point at the center of the offset frame.
      * @return geodetic point at the center of the offset frame
-     * @exception OrekitException if frames transforms cannot be computed
      * @deprecated as of 9.1, replaced by {@link #getOffsetGeodeticPoint(AbsoluteDate)}
      */
     @Deprecated
-    public GeodeticPoint getOffsetGeodeticPoint()
-        throws OrekitException {
+    public GeodeticPoint getOffsetGeodeticPoint() {
         return getOffsetGeodeticPoint(null);
     }
 
@@ -352,35 +342,27 @@ public class GroundStation {
      * @param position raw position of the station in Earth frame
      * before displacement is applied
      * @return station displacement
-     * @exception OrekitException if displacement cannot be computed
      * @since 9.1
      */
-    private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position)
-        throws OrekitException {
-        try {
-            Vector3D displacement = Vector3D.ZERO;
-            if (arguments != null) {
-                final BodiesElements elements = arguments.evaluateAll(date);
-                for (final StationDisplacement sd : displacements) {
-                    // we consider all displacements apply to the same initial position,
-                    // i.e. they apply simultaneously, not according to some order
-                    displacement = displacement.add(sd.displacement(elements, estimatedEarthFrame, position));
-                }
+    private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position) {
+        Vector3D displacement = Vector3D.ZERO;
+        if (arguments != null) {
+            final BodiesElements elements = arguments.evaluateAll(date);
+            for (final StationDisplacement sd : displacements) {
+                // we consider all displacements apply to the same initial position,
+                // i.e. they apply simultaneously, not according to some order
+                displacement = displacement.add(sd.displacement(elements, estimatedEarthFrame, position));
             }
-            return displacement;
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
+        return displacement;
     }
 
     /** Get the geodetic point at the center of the offset frame.
      * @param date current date (may be null if displacements are ignored)
      * @return geodetic point at the center of the offset frame
-     * @exception OrekitException if frames transforms cannot be computed
      * @since 9.1
      */
-    public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date)
-        throws OrekitException {
+    public GeodeticPoint getOffsetGeodeticPoint(final AbsoluteDate date) {
 
         // take station offset into account
         final double    x          = parametricModel(eastOffsetDriver);
@@ -410,10 +392,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param date date of the transform
      * @return offset frame defining vectors
-     * @exception OrekitException if offset frame cannot be computed for current offset values
      */
-    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date)
-        throws OrekitException {
+    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate date) {
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(date).getInverse();
@@ -455,14 +435,12 @@ public class GroundStation {
      * @param factory factory for the derivatives
      * @param indices indices of the estimated parameters in derivatives computations
      * @return offset frame defining vectors with derivatives
-     * @exception OrekitException if some frame transforms cannot be computed
      * @since 9.0
      */
     public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
                                                                    final FieldAbsoluteDate<DerivativeStructure> date,
                                                                    final DSFactory factory,
-                                                                   final Map<String, Integer> indices)
-        throws OrekitException {
+                                                                   final Map<String, Integer> indices) {
 
         final Field<DerivativeStructure>         field = date.getField();
         final FieldVector3D<DerivativeStructure> zero  = FieldVector3D.getZero(field);

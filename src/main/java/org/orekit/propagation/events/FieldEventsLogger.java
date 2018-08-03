@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -208,13 +207,13 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
 
         /** {@inheritDoc} */
         public void init(final FieldSpacecraftState<T> s0,
-                         final FieldAbsoluteDate<T> t) throws OrekitException {
+                         final FieldAbsoluteDate<T> t) {
             super.init(s0, t);
             detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
-        public T g(final FieldSpacecraftState<T> s) throws OrekitException {
+        public T g(final FieldSpacecraftState<T> s) {
             return detector.g(s);
         }
 
@@ -226,16 +225,14 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
     private class FieldLocalHandler<D extends FieldEventDetector<T>> implements FieldEventHandler<FieldLoggingWrapper<D>, T> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldLoggingWrapper<D> wrapper, final boolean increasing) {
             wrapper.logEvent(s, increasing);
             return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState)
-            throws OrekitException {
+        public FieldSpacecraftState<T> resetState(final FieldLoggingWrapper<D> wrapper, final FieldSpacecraftState<T> oldState) {
             return wrapper.detector.resetState(oldState);
         }
 

@@ -149,8 +149,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
     /** {@inheritDoc} */
     public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
-                            final SortedSet<EOPEntry> history)
-        throws OrekitException {
+                            final SortedSet<EOPEntry> history) {
         final Parser parser = new Parser(converter, isNonRotatingOrigin);
         DataProvidersManager.getInstance().feed(supportedNames, parser);
         history.addAll(parser.history);
@@ -180,11 +179,9 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
         /** Simple constructor.
          * @param converter converter to use
          * @param isNonRotatingOrigin type of nutation correction
-         * @exception OrekitException if ITRF version loader cannot be parsed
          */
         Parser(final IERSConventions.NutationCorrectionConverter converter,
-                      final boolean isNonRotatingOrigin)
-            throws OrekitException {
+               final boolean isNonRotatingOrigin) {
             this.converter           = converter;
             this.itrfVersionLoader   = new ITRFVersionLoader(ITRFVersionLoader.SUPPORTED_NAMES);
             this.isNonRotatingOrigin = isNonRotatingOrigin;
@@ -199,7 +196,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
         /** {@inheritDoc} */
         public void loadData(final InputStream input, final String name)
-            throws OrekitException, IOException {
+            throws IOException {
 
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
