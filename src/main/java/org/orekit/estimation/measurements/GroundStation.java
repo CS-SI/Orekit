@@ -33,7 +33,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldTransform;
@@ -357,20 +356,16 @@ public class GroundStation {
      */
     private Vector3D computeDisplacement(final AbsoluteDate date, final Vector3D position)
         throws OrekitException {
-        try {
-            Vector3D displacement = Vector3D.ZERO;
-            if (arguments != null) {
-                final BodiesElements elements = arguments.evaluateAll(date);
-                for (final StationDisplacement sd : displacements) {
-                    // we consider all displacements apply to the same initial position,
-                    // i.e. they apply simultaneously, not according to some order
-                    displacement = displacement.add(sd.displacement(elements, estimatedEarthFrame, position));
-                }
+        Vector3D displacement = Vector3D.ZERO;
+        if (arguments != null) {
+            final BodiesElements elements = arguments.evaluateAll(date);
+            for (final StationDisplacement sd : displacements) {
+                // we consider all displacements apply to the same initial position,
+                // i.e. they apply simultaneously, not according to some order
+                displacement = displacement.add(sd.displacement(elements, estimatedEarthFrame, position));
             }
-            return displacement;
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
+        return displacement;
     }
 
     /** Get the geodetic point at the center of the offset frame.

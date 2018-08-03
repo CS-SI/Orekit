@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -135,29 +134,23 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
 
-        try {
+        // compute reference state
+        SpacecraftState state = reference.propagate(date);
+        final Map<String, double[]> before = state.getAdditionalStates();
 
-            // compute reference state
-            SpacecraftState state = reference.propagate(date);
-            final Map<String, double[]> before = state.getAdditionalStates();
-
-            // add all the effects
-            for (final DifferentialEffect effect : effects) {
-                state = effect.apply(state);
-            }
-
-            // forward additional states from the reference propagator
-            for (final Map.Entry<String, double[]> entry : before.entrySet()) {
-                if (!state.hasAdditionalState(entry.getKey())) {
-                    state = state.addAdditionalState(entry.getKey(), entry.getValue());
-                }
-            }
-
-            return state;
-
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
+        // add all the effects
+        for (final DifferentialEffect effect : effects) {
+            state = effect.apply(state);
         }
+
+        // forward additional states from the reference propagator
+        for (final Map.Entry<String, double[]> entry : before.entrySet()) {
+            if (!state.hasAdditionalState(entry.getKey())) {
+                state = state.addAdditionalState(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return state;
 
     }
 

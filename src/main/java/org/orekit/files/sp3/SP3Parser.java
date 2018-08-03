@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
@@ -112,11 +111,7 @@ public class SP3Parser implements EphemerisFileParser {
      * with tidal effects considered during EOP interpolation.
      */
     private static Frame guessFrame(final String name) {
-        try {
-            return FramesFactory.getITRF(IERSConventions.IERS_2010, false);
-        } catch (OrekitException e) {
-            throw new OrekitExceptionWrapper(e);
-        }
+        return FramesFactory.getITRF(IERSConventions.IERS_2010, false);
     }
 
     /**

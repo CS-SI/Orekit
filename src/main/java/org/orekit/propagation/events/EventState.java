@@ -24,7 +24,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -324,35 +323,27 @@ public class EventState<T extends EventDetector> implements Serializable {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             } else {
                 // both non-zero, the usual case, use a root finder.
-                try {
-                    // time zero for evaluating the function f. Needs to be final
-                    final AbsoluteDate fT0 = loopT;
-                    final UnivariateFunction f = dt -> {
-                        try {
-                            return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
-                    };
-                    // tb as a double for use in f
-                    final double tbDouble = tb.durationFrom(fT0);
-                    if (forward) {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        beforeRootG = interval.getLeftValue();
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = interval.getRightValue();
-                    } else {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        beforeRootG = interval.getRightValue();
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = interval.getLeftValue();
-                    }
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
+                // time zero for evaluating the function f. Needs to be final
+                final AbsoluteDate fT0 = loopT;
+                final UnivariateFunction f = dt -> {
+                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
+                };
+                // tb as a double for use in f
+                final double tbDouble = tb.durationFrom(fT0);
+                if (forward) {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    beforeRootG = interval.getLeftValue();
+                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    afterRootG = interval.getRightValue();
+                } else {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    beforeRootG = interval.getRightValue();
+                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    afterRootG = interval.getLeftValue();
                 }
             }
             // tolerance is set to less than 1 ulp

@@ -26,7 +26,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -327,35 +326,27 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             } else {
                 // both non-zero, the usual case, use a root finder.
-                try {
-                    // time zero for evaluating the function f. Needs to be final
-                    final FieldAbsoluteDate<T> fT0 = loopT;
-                    final UnivariateFunction f = dt -> {
-                        try {
-                            return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
-                    };
-                    // tb as a double for use in f
-                    final T tbDouble = tb.durationFrom(fT0);
-                    if (forward) {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
-                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        beforeRootG = zero.add(interval.getLeftValue());
-                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        afterRootG = zero.add(interval.getRightValue());
-                    } else {
-                        final Interval interval =
-                                solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
-                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
-                        beforeRootG = zero.add(interval.getRightValue());
-                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
-                        afterRootG = zero.add(interval.getLeftValue());
-                    }
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
+                // time zero for evaluating the function f. Needs to be final
+                final FieldAbsoluteDate<T> fT0 = loopT;
+                final UnivariateFunction f = dt -> {
+                    return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt))).getReal();
+                };
+                // tb as a double for use in f
+                final T tbDouble = tb.durationFrom(fT0);
+                if (forward) {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, 0, tbDouble.getReal());
+                    beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    beforeRootG = zero.add(interval.getLeftValue());
+                    afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    afterRootG = zero.add(interval.getRightValue());
+                } else {
+                    final Interval interval =
+                            solver.solveInterval(maxIterationCount, f, tbDouble.getReal(), 0);
+                    beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                    beforeRootG = zero.add(interval.getRightValue());
+                    afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                    afterRootG = zero.add(interval.getLeftValue());
                 }
             }
             // tolerance is set to less than 1 ulp

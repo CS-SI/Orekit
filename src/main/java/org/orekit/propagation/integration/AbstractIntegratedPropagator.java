@@ -40,7 +40,6 @@ import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -466,14 +465,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
-            try {
-                beforeIntegration(getInitialState(), tEnd);
-                mathFinalState = integrator.integrate(mathODE, mathInitialState,
-                                                      tEnd.durationFrom(getInitialState().getDate()));
-                afterIntegration();
-            } catch (OrekitExceptionWrapper oew) {
-                throw oew.getException();
-            }
+            beforeIntegration(getInitialState(), tEnd);
+            mathFinalState = integrator.integrate(mathODE, mathInitialState,
+                                                  tEnd.durationFrom(getInitialState().getDate()));
+            afterIntegration();
 
             // get final state
             SpacecraftState finalState =
@@ -676,35 +671,27 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         @Override
         public void init(final double t0, final double[] y0, final double finalTime) {
-            try {
-                // update space dynamics view
-                SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
-                initialState = updateAdditionalStates(initialState);
-                final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-                main.init(initialState, target);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            // update space dynamics view
+            SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, true);
+            initialState = updateAdditionalStates(initialState);
+            final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
+            main.init(initialState, target);
         }
 
         /** {@inheritDoc} */
         public double[] computeDerivatives(final double t, final double[] y)
-            throws OrekitExceptionWrapper {
-            try {
+            throws OrekitException {
 
-                // increment calls counter
-                ++calls;
+            // increment calls counter
+            ++calls;
 
-                // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
-                currentState = updateAdditionalStates(currentState);
+            // update space dynamics view
+            SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, true);
+            currentState = updateAdditionalStates(currentState);
 
-                // compute main state differentials
-                return main.computeDerivatives(currentState);
+            // compute main state differentials
+            return main.computeDerivatives(currentState);
 
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
         }
 
     }
@@ -738,16 +725,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public void init(final double t0, final double[] primary0,
                          final double[] secondary0, final double finalTime) {
-            try {
-                // update space dynamics view
-                SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
-                initialState = updateAdditionalStates(initialState);
-                initialState = initialState.addAdditionalState(equations.getName(), secondary0);
-                final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
-                equations.init(initialState, target);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            // update space dynamics view
+            SpacecraftState initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+            initialState = updateAdditionalStates(initialState);
+            initialState = initialState.addAdditionalState(equations.getName(), secondary0);
+            final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
+            equations.init(initialState, target);
 
         }
 
@@ -755,30 +738,24 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public double[] computeDerivatives(final double t, final double[] primary,
                                            final double[] primaryDot, final double[] secondary)
-            throws OrekitExceptionWrapper {
+            throws OrekitException {
 
-            try {
+            // update space dynamics view
+            SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
+            currentState = updateAdditionalStates(currentState);
+            currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
-                // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
-                currentState = updateAdditionalStates(currentState);
-                currentState = currentState.addAdditionalState(equations.getName(), secondary);
-
-                // compute additional derivatives
-                final double[] secondaryDot = new double[secondary.length];
-                final double[] additionalMainDot =
-                        equations.computeDerivatives(currentState, secondaryDot);
-                if (additionalMainDot != null) {
-                    // the additional equations have an effect on main equations
-                    for (int i = 0; i < additionalMainDot.length; ++i) {
-                        primaryDot[i] += additionalMainDot[i];
-                    }
+            // compute additional derivatives
+            final double[] secondaryDot = new double[secondary.length];
+            final double[] additionalMainDot =
+                    equations.computeDerivatives(currentState, secondaryDot);
+            if (additionalMainDot != null) {
+                // the additional equations have an effect on main equations
+                for (int i = 0; i < additionalMainDot.length; ++i) {
+                    primaryDot[i] += additionalMainDot[i];
                 }
-                return secondaryDot;
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
+            return secondaryDot;
 
         }
 
@@ -811,78 +788,59 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
-            try {
-
-                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                              stateMapper.mapDoubleToDate(t));
-                this.lastT = Double.NaN;
-                this.lastG = Double.NaN;
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                          stateMapper.mapDoubleToDate(t));
+            this.lastT = Double.NaN;
+            this.lastG = Double.NaN;
         }
 
         /** {@inheritDoc} */
         public double g(final ODEStateAndDerivative s) {
-            try {
-                if (!Precision.equals(lastT, s.getTime(), 0)) {
-                    lastT = s.getTime();
-                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
-                }
-                return lastG;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            if (!Precision.equals(lastT, s.getTime(), 0)) {
+                lastT = s.getTime();
+                lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
             }
+            return lastG;
         }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            try {
+            final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
+                                                                                         s.getCompleteState(),
+                                                                                         s.getCompleteDerivative()),
+                                                                        increasing);
 
-                final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                             s.getCompleteState(),
-                                                                                             s.getCompleteDerivative()),
-                                                                            increasing);
-
-                switch (whatNext) {
-                    case STOP :
-                        return Action.STOP;
-                    case RESET_STATE :
-                        return Action.RESET_STATE;
-                    case RESET_DERIVATIVES :
-                        return Action.RESET_DERIVATIVES;
-                    default :
-                        return Action.CONTINUE;
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            switch (whatNext) {
+                case STOP :
+                    return Action.STOP;
+                case RESET_STATE :
+                    return Action.RESET_STATE;
+                case RESET_DERIVATIVES :
+                    return Action.RESET_DERIVATIVES;
+                default :
+                    return Action.CONTINUE;
             }
         }
 
         /** {@inheritDoc} */
         public ODEState resetState(final ODEStateAndDerivative s) {
-            try {
 
-                final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
-                final SpacecraftState newState = detector.resetState(oldState);
+            final SpacecraftState oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
+            final SpacecraftState newState = detector.resetState(oldState);
 
-                // main part
-                final double[] primary    = new double[s.getPrimaryStateDimension()];
-                stateMapper.mapStateToArray(newState, primary, null);
+            // main part
+            final double[] primary    = new double[s.getPrimaryStateDimension()];
+            stateMapper.mapStateToArray(newState, primary, null);
 
-                // secondary part
-                final double[][] secondary    = new double[additionalEquations.size()][];
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
-                }
-
-                return new ODEState(newState.getDate().durationFrom(getStartDate()),
-                                    primary, secondary);
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            // secondary part
+            final double[][] secondary    = new double[additionalEquations.size()][];
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
             }
+
+            return new ODEState(newState.getDate().durationFrom(getStartDate()),
+                                primary, secondary);
+
         }
 
     }
@@ -914,24 +872,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
-            try {
-                if (activate) {
-                    handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                                 stateMapper.mapDoubleToDate(t));
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            if (activate) {
+                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                             stateMapper.mapDoubleToDate(t));
             }
         }
 
         /** {@inheritDoc} */
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
-            try {
-                if (activate) {
-                    handler.handleStep(new AdaptedStepInterpolator(interpolator), isLast);
-                }
-            } catch (OrekitException pe) {
-                throw new OrekitExceptionWrapper(pe);
+            if (activate) {
+                handler.handleStep(new AdaptedStepInterpolator(interpolator), isLast);
             }
         }
 
@@ -1113,59 +1063,55 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
-            throws OrekitExceptionWrapper {
-            try {
-                if (activate) {
-                    if (this.handler != null) {
-                        this.handler.handleStep(interpolator, isLast);
-                    }
-
-                    model.handleStep(interpolator, isLast);
-                    if (isLast) {
-
-                        // set up the boundary dates
-                        final double tI = model.getInitialTime();
-                        final double tF = model.getFinalTime();
-                        // tI is almost? always zero
-                        final AbsoluteDate startDate =
-                                stateMapper.mapDoubleToDate(tI);
-                        final AbsoluteDate finalDate =
-                                stateMapper.mapDoubleToDate(tF, this.endDate);
-                        final AbsoluteDate minDate;
-                        final AbsoluteDate maxDate;
-                        if (tF < tI) {
-                            minDate = finalDate;
-                            maxDate = startDate;
-                        } else {
-                            minDate = startDate;
-                            maxDate = finalDate;
-                        }
-
-                        // get the initial additional states that are not managed
-                        final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
-                        for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                            if (!isAdditionalStateManaged(initial.getKey())) {
-                                // this additional state was in the initial state, but is unknown to the propagator
-                                // we simply copy its initial value as is
-                                unmanaged.put(initial.getKey(), initial.getValue());
-                            }
-                        }
-
-                        // get the names of additional states managed by differential equations
-                        final String[] names = new String[additionalEquations.size()];
-                        for (int i = 0; i < names.length; ++i) {
-                            names[i] = additionalEquations.get(i).getName();
-                        }
-
-                        // create the ephemeris
-                        ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                            stateMapper, meanOrbit, model, unmanaged,
-                                                            getAdditionalStateProviders(), names);
-
-                    }
+            throws OrekitException {
+            if (activate) {
+                if (this.handler != null) {
+                    this.handler.handleStep(interpolator, isLast);
                 }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+
+                model.handleStep(interpolator, isLast);
+                if (isLast) {
+
+                    // set up the boundary dates
+                    final double tI = model.getInitialTime();
+                    final double tF = model.getFinalTime();
+                    // tI is almost? always zero
+                    final AbsoluteDate startDate =
+                            stateMapper.mapDoubleToDate(tI);
+                    final AbsoluteDate finalDate =
+                            stateMapper.mapDoubleToDate(tF, this.endDate);
+                    final AbsoluteDate minDate;
+                    final AbsoluteDate maxDate;
+                    if (tF < tI) {
+                        minDate = finalDate;
+                        maxDate = startDate;
+                    } else {
+                        minDate = startDate;
+                        maxDate = finalDate;
+                    }
+
+                    // get the initial additional states that are not managed
+                    final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
+                    for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                        if (!isAdditionalStateManaged(initial.getKey())) {
+                            // this additional state was in the initial state, but is unknown to the propagator
+                            // we simply copy its initial value as is
+                            unmanaged.put(initial.getKey(), initial.getValue());
+                        }
+                    }
+
+                    // get the names of additional states managed by differential equations
+                    final String[] names = new String[additionalEquations.size()];
+                    for (int i = 0; i < names.length; ++i) {
+                        names[i] = additionalEquations.get(i).getName();
+                    }
+
+                    // create the ephemeris
+                    ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
+                                                        stateMapper, meanOrbit, model, unmanaged,
+                                                        getAdditionalStateProviders(), names);
+
+                }
             }
         }
 

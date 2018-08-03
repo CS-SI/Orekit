@@ -26,7 +26,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -227,8 +226,6 @@ public class KalmanEstimator {
             return processModel.getEstimatedPropagators();
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
     }
 

@@ -21,7 +21,6 @@ import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -59,18 +58,14 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                public double value(final double x) throws OrekitExceptionWrapper {
-                    try {
-                        final Vector3D other = ephemeris.
-                                        propagate(date.shiftedBy(-x)).
-                                        toTransform().
-                                        getInverse().
-                                        transformPosition(antennaPhaseCenter2);
-                        final double d = Vector3D.distance(position, other);
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
+                public double value(final double x) throws OrekitException {
+                    final Vector3D other = ephemeris.
+                                    propagate(date.shiftedBy(-x)).
+                                    toTransform().
+                                    getInverse().
+                                    transformPosition(antennaPhaseCenter2);
+                    final double d = Vector3D.distance(position, other);
+                    return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
             final AbsoluteDate transitDate = currentState.getDate().shiftedBy(-downLinkDelay);
@@ -84,7 +79,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
             if ((++count % 2) == 0) {
                 // generate a two-way measurement
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) throws OrekitExceptionWrapper {
+                    public double value(final double x) throws OrekitException {
                         final Vector3D self = currentState.shiftedBy(-downLinkDelay - x).toTransform().getInverse().transformPosition(antennaPhaseCenter1);
                         final double d = Vector3D.distance(otherAtTransit, self);
                         return d - x * Constants.SPEED_OF_LIGHT;
@@ -100,8 +95,6 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
                 addMeasurement(new InterSatellitesRange(0, 1, false, date, downLinkDistance, 1.0, 10));
             }
 
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
         }

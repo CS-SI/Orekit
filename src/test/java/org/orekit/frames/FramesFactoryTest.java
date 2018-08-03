@@ -47,7 +47,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -608,13 +607,9 @@ public class FramesFactoryTest {
                 UnivariateDifferentiableVectorFunction dCartesian = differentiator.differentiate(new UnivariateVectorFunction() {
                     @Override
                     public double[] value(double t) {
-                        try {
-                            return forbidInterpolation ?
-                                   FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
-                                   parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
+                        return forbidInterpolation ?
+                               FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
+                               parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
                     }
                 });
 
@@ -623,20 +618,16 @@ public class FramesFactoryTest {
                     Rotation previous = Rotation.IDENTITY;
                     @Override
                     public double[] value(double t) {
-                        try {
-                            AngularCoordinates ac = forbidInterpolation ?
-                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
-                                                    parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
-                            final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
-                                                                            ac.getRotation().getQ1(), previous.getQ1(),
-                                                                            ac.getRotation().getQ2(), previous.getQ2(),
-                                                                            ac.getRotation().getQ3(), previous.getQ3());
-                            sign = FastMath.copySign(1.0, dot * sign);
-                            previous = ac.getRotation();
-                            return ac.getModifiedRodrigues(sign)[0];
-                        } catch (OrekitException oe) {
-                            throw new OrekitExceptionWrapper(oe);
-                        }
+                        AngularCoordinates ac = forbidInterpolation ?
+                                                FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
+                                                parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
+                        final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
+                                                                        ac.getRotation().getQ1(), previous.getQ1(),
+                                                                        ac.getRotation().getQ2(), previous.getQ2(),
+                                                                        ac.getRotation().getQ3(), previous.getQ3());
+                        sign = FastMath.copySign(1.0, dot * sign);
+                        previous = ac.getRotation();
+                        return ac.getModifiedRodrigues(sign)[0];
                     }
                 });
 

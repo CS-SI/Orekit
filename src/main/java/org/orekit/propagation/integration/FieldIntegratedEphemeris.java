@@ -22,7 +22,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -167,18 +166,14 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     @Override
     protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date)
         throws OrekitException {
-        try {
-            final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
-            FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                                   os.getPrimaryState(), os.getPrimaryDerivative(),
-                                                                   meanFieldOrbit);
-            for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
-                state = state.addAdditionalState(initial.getKey(), initial.getValue());
-            }
-            return state;
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
+        final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
+        FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
+                                                               os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                               meanFieldOrbit);
+        for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
+            state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
+        return state;
     }
 
     /** {@inheritDoc} */

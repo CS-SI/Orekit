@@ -34,7 +34,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
@@ -415,26 +414,18 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         }
 
         // extract sample data
-        try {
-            sample.forEach(state -> {
-                try {
-                    final T deltaT = state.getDate().durationFrom(date);
-                    orbits.add(state.getOrbit());
-                    attitudes.add(state.getAttitude());
-                    final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
-                    mm[0] = state.getMass();
-                    massInterpolator.addSamplePoint(deltaT,
-                                                    mm);
-                    for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-                    }
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
-            });
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
-        }
+        sample.forEach(state -> {
+            final T deltaT = state.getDate().durationFrom(date);
+            orbits.add(state.getOrbit());
+            attitudes.add(state.getAttitude());
+            final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
+            mm[0] = state.getMass();
+            massInterpolator.addSamplePoint(deltaT,
+                                            mm);
+            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
+                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+            }
+        });
 
         // perform interpolations
         final FieldOrbit<T> interpolatedOrbit       = orbit.interpolate(date, orbits);

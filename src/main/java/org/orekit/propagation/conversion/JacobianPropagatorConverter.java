@@ -26,7 +26,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
@@ -75,43 +74,38 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
             /** {@inheritDoc} */
             public double[] value(final double[] arg)
-                throws IllegalArgumentException, OrekitExceptionWrapper {
-                try {
-                    final double[] value = new double[getTargetSize()];
+                throws IllegalArgumentException, OrekitException {
 
-                    final NumericalPropagator prop = builder.buildPropagator(arg);
+                final double[] value = new double[getTargetSize()];
 
-                    final int stateSize = isOnlyPosition() ? 3 : 6;
-                    final List<SpacecraftState> sample = getSample();
-                    for (int i = 0; i < sample.size(); ++i) {
-                        final int row = i * stateSize;
-                        if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
-                            // use initial state
-                            fillRows(value, row, prop.getInitialState());
-                        } else {
-                            // use a date detector to pick up states
-                            prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
-                                /** {@inheritDoc} */
-                                @Override
-                                public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
-                                                            final boolean increasing)
-                                    throws OrekitException {
-                                    fillRows(value, row, state);
-                                    return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
-                                }
-                            }));
-                        }
+                final NumericalPropagator prop = builder.buildPropagator(arg);
+
+                final int stateSize = isOnlyPosition() ? 3 : 6;
+                final List<SpacecraftState> sample = getSample();
+                for (int i = 0; i < sample.size(); ++i) {
+                    final int row = i * stateSize;
+                    if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
+                        // use initial state
+                        fillRows(value, row, prop.getInitialState());
+                    } else {
+                        // use a date detector to pick up states
+                        prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
+                            /** {@inheritDoc} */
+                            @Override
+                            public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
+                                                        final boolean increasing)
+                                throws OrekitException {
+                                fillRows(value, row, state);
+                                return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
+                            }
+                        }));
                     }
-
-                    prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
-
-                    return value;
-
-                } catch (OrekitException ex) {
-                    throw new OrekitExceptionWrapper(ex);
                 }
-            }
 
+                prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+
+                return value;
+            }
         };
     }
 
@@ -121,52 +115,46 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
             /** {@inheritDoc} */
             public Pair<RealVector, RealMatrix> value(final RealVector point)
-                throws IllegalArgumentException, OrekitExceptionWrapper {
-                try {
+                throws IllegalArgumentException, OrekitException {
 
-                    final RealVector value    = new ArrayRealVector(getTargetSize());
-                    final RealMatrix jacobian = MatrixUtils.createRealMatrix(getTargetSize(), point.getDimension());
+                final RealVector value    = new ArrayRealVector(getTargetSize());
+                final RealMatrix jacobian = MatrixUtils.createRealMatrix(getTargetSize(), point.getDimension());
 
-                    final NumericalPropagator prop  = builder.buildPropagator(point.toArray());
-                    final int stateSize = isOnlyPosition() ? 3 : 6;
-                    final ParameterDriversList orbitalParameters = builder.getOrbitalParametersDrivers();
-                    final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
-                    final ParameterDriversList propagationParameters = pde.getSelectedParameters();
-                    prop.setInitialState(pde.setInitialJacobians(prop.getInitialState()));
-                    final JacobiansMapper mapper  = pde.getMapper();
+                final NumericalPropagator prop  = builder.buildPropagator(point.toArray());
+                final int stateSize = isOnlyPosition() ? 3 : 6;
+                final ParameterDriversList orbitalParameters = builder.getOrbitalParametersDrivers();
+                final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
+                final ParameterDriversList propagationParameters = pde.getSelectedParameters();
+                prop.setInitialState(pde.setInitialJacobians(prop.getInitialState()));
+                final JacobiansMapper mapper  = pde.getMapper();
 
-                    final List<SpacecraftState> sample = getSample();
-                    for (int i = 0; i < sample.size(); ++i) {
-                        final int row = i * stateSize;
-                        if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
-                            // use initial state and Jacobians
-                            fillRows(value, jacobian, row, prop.getInitialState(), stateSize,
-                                     orbitalParameters, propagationParameters, mapper);
-                        } else {
-                            // use a date detector to pick up state and Jacobians
-                            prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
-                                /** {@inheritDoc} */
-                                @Override
-                                public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
-                                                            final boolean increasing)
-                                    throws OrekitException {
-                                    fillRows(value, jacobian, row, state, stateSize,
-                                             orbitalParameters, propagationParameters, mapper);
-                                    return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
-                                }
-                            }));
-                        }
+                final List<SpacecraftState> sample = getSample();
+                for (int i = 0; i < sample.size(); ++i) {
+                    final int row = i * stateSize;
+                    if (prop.getInitialState().getDate().equals(sample.get(i).getDate())) {
+                        // use initial state and Jacobians
+                        fillRows(value, jacobian, row, prop.getInitialState(), stateSize,
+                                 orbitalParameters, propagationParameters, mapper);
+                    } else {
+                        // use a date detector to pick up state and Jacobians
+                        prop.addEventDetector(new DateDetector(sample.get(i).getDate()).withHandler(new EventHandler<DateDetector>() {
+                            /** {@inheritDoc} */
+                            @Override
+                            public Action eventOccurred(final SpacecraftState state, final DateDetector detector,
+                                                        final boolean increasing)
+                                throws OrekitException {
+                                fillRows(value, jacobian, row, state, stateSize,
+                                         orbitalParameters, propagationParameters, mapper);
+                                return row + stateSize >= getTargetSize() ? Action.STOP : Action.CONTINUE;
+                            }
+                        }));
                     }
-
-                    prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
-
-                    return new Pair<RealVector, RealMatrix>(value, jacobian);
-
-                } catch (OrekitException ex) {
-                    throw new OrekitExceptionWrapper(ex);
                 }
-            }
 
+                prop.propagate(sample.get(sample.size() - 1).getDate().shiftedBy(10.0));
+
+                return new Pair<RealVector, RealMatrix>(value, jacobian);
+            }
         };
     }
 

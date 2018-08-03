@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -304,17 +303,9 @@ public class ParameterDriversList {
         @Override
         public void valueChanged(final double previousValue, final ParameterDriver driver)
             throws OrekitException {
-            try {
-                updateAll(driver, d -> {
-                    try {
-                        d.setValue(driver.getValue());
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
-                });
-            } catch (OrekitExceptionWrapper oew) {
-                throw oew.getException();
-            }
+            updateAll(driver, d -> {
+                d.setValue(driver.getValue());
+            });
         }
 
         /** {@inheritDoc} */

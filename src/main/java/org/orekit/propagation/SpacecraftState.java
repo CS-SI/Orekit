@@ -33,7 +33,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -326,26 +325,18 @@ public class SpacecraftState
         }
 
         // extract sample data
-        try {
-            sample.forEach(state -> {
-                try {
-                    final double deltaT = state.getDate().durationFrom(date);
-                    orbits.add(state.getOrbit());
-                    attitudes.add(state.getAttitude());
-                    massInterpolator.addSamplePoint(deltaT,
-                                                    new double[] {
-                                                         state.getMass()
-                                                    });
-                    for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-                    }
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
-            });
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
-        }
+        sample.forEach(state -> {
+            final double deltaT = state.getDate().durationFrom(date);
+            orbits.add(state.getOrbit());
+            attitudes.add(state.getAttitude());
+            massInterpolator.addSamplePoint(deltaT,
+                                            new double[] {
+                                                 state.getMass()
+                                            });
+            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+            }
+        });
 
         // perform interpolations
         final Orbit interpolatedOrbit       = orbit.interpolate(date, orbits);

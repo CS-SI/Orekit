@@ -37,7 +37,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -955,58 +954,47 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         @Override
         public void init(final ODEStateAndDerivative initialState, final double finalTime)
-            throws OrekitExceptionWrapper {
-            try {
-                // Build the mean state interpolated at initial point
-                final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
-                                                                          initialState.getPrimaryState(),
-                                                                          initialState.getPrimaryDerivative(),
-                                                                          true);
+            throws OrekitException {
+            // Build the mean state interpolated at initial point
+            final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
+                                                                      initialState.getPrimaryState(),
+                                                                      initialState.getPrimaryDerivative(),
+                                                                      true);
 
-                // Compute short periodic coefficients for this point
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(meanStates);
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(meanStates);
 
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
-
         }
 
         /** {@inheritDoc} */
         @Override
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
-            throws OrekitExceptionWrapper {
+            throws OrekitException {
 
-            try {
-                // Get the grid points to compute
-                final double[] interpolationPoints =
-                        interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
-                                                        interpolator.getCurrentState().getTime());
+            // Get the grid points to compute
+            final double[] interpolationPoints =
+                    interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
+                                                    interpolator.getCurrentState().getTime());
 
-                final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
-                for (int i = 0; i < interpolationPoints.length; ++i) {
+            final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
+            for (int i = 0; i < interpolationPoints.length; ++i) {
 
-                    // Build the mean state interpolated at grid point
-                    final double time = interpolationPoints[i];
-                    final ODEStateAndDerivative sd = interpolator.getInterpolatedState(time);
-                    meanStates[i] = mapper.mapArrayToState(time,
-                                                           sd.getPrimaryState(),
-                                                           sd.getPrimaryDerivative(),
-                                                           true);
+                // Build the mean state interpolated at grid point
+                final double time = interpolationPoints[i];
+                final ODEStateAndDerivative sd = interpolator.getInterpolatedState(time);
+                meanStates[i] = mapper.mapArrayToState(time,
+                                                       sd.getPrimaryState(),
+                                                       sd.getPrimaryDerivative(),
+                                                       true);
 
-                }
-
-                // Computate short periodic coefficients for this step
-                for (DSSTForceModel forceModel : forceModels) {
-                    forceModel.updateShortPeriodTerms(meanStates);
-                }
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
 
+            // Computate short periodic coefficients for this step
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(meanStates);
+            }
         }
     }
 }

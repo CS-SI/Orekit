@@ -24,7 +24,6 @@ import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.measurements.modifiers.PhaseAmbiguityModifier;
 import org.orekit.frames.Frame;
@@ -88,14 +87,10 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                        public double value(final double x) throws OrekitExceptionWrapper {
-                            try {
-                                final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
-                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                                return d - x * Constants.SPEED_OF_LIGHT;
-                            } catch (OrekitException oe) {
-                                throw new OrekitExceptionWrapper(oe);
-                            }
+                        public double value(final double x) throws OrekitException {
+                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                            final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                            return d - x * Constants.SPEED_OF_LIGHT;
                         }
                     }, -1.0, 1.0);
                     final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
@@ -111,8 +106,6 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
                 }
 
             }
-        } catch (OrekitExceptionWrapper oew) {
-            throw new OrekitException(oew.getException());
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
         }

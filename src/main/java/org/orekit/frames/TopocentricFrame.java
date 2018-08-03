@@ -27,7 +27,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -269,12 +268,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
             final double distance = solver.solve(1000, new UnivariateFunction() {
                 /** {@inheritDoc} */
                 public double value(final double x) {
-                    try {
-                        final GeodeticPoint gp = pointAtDistance(azimuth, elevation, x);
-                        return parentShape.transform(gp).getNorm() - radius;
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
+                    final GeodeticPoint gp = pointAtDistance(azimuth, elevation, x);
+                    return parentShape.transform(gp).getNorm() - radius;
                 }
             }, 0, 2 * radius);
 
@@ -283,8 +278,6 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper lwe) {
-            throw lwe.getException();
         }
     }
 

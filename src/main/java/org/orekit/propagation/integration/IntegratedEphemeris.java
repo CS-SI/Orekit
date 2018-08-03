@@ -27,7 +27,6 @@ import java.util.Map;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -177,18 +176,14 @@ public class IntegratedEphemeris
     @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws OrekitException {
-        try {
-            final ODEStateAndDerivative os = getInterpolatedState(date);
-            SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                           os.getPrimaryState(), os.getPrimaryDerivative(),
-                                                           meanOrbit);
-            for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
-                state = state.addAdditionalState(initial.getKey(), initial.getValue());
-            }
-            return state;
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
+        final ODEStateAndDerivative os = getInterpolatedState(date);
+        SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
+                                                       os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                       meanOrbit);
+        for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+            state = state.addAdditionalState(initial.getKey(), initial.getValue());
         }
+        return state;
     }
 
     /** {@inheritDoc} */

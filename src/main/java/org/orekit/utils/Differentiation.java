@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -62,16 +61,12 @@ public class Differentiation {
             /** {@inheritDoc} */
             @Override
             public double value(final double normalizedValue)
-                throws OrekitExceptionWrapper {
-                try {
-                    final double saved = driver.getNormalizedValue();
-                    driver.setNormalizedValue(normalizedValue);
-                    final double functionValue = function.value(driver);
-                    driver.setNormalizedValue(saved);
-                    return functionValue;
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
+                throws OrekitException {
+                final double saved = driver.getNormalizedValue();
+                driver.setNormalizedValue(normalizedValue);
+                final double functionValue = function.value(driver);
+                driver.setNormalizedValue(saved);
+                return functionValue;
             }
         };
 
@@ -89,13 +84,9 @@ public class Differentiation {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                               parameterDriver.getName(), driver.getName());
                 }
-                try {
-                    final DerivativeStructure dsParam = FACTORY.variable(0, parameterDriver.getNormalizedValue());
-                    final DerivativeStructure dsValue = differentiated.value(dsParam);
-                    return dsValue.getPartialDerivative(1);
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
-                }
+                final DerivativeStructure dsParam = FACTORY.variable(0, parameterDriver.getNormalizedValue());
+                final DerivativeStructure dsValue = differentiated.value(dsParam);
+                return dsValue.getPartialDerivative(1);
             }
         };
 
@@ -119,35 +110,31 @@ public class Differentiation {
 
             @Override
             public double[][] value(final SpacecraftState state) throws OrekitException {
-                try {
-                    final double[] tolerances =
-                            NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
-                    final double[][] jacobian = new double[dimension][6];
-                    for (int j = 0; j < 6; ++j) {
+                final double[] tolerances =
+                        NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
+                final double[][] jacobian = new double[dimension][6];
+                for (int j = 0; j < 6; ++j) {
 
-                        // compute partial derivatives with respect to state component j
-                        final UnivariateVectorFunction componentJ =
-                                new StateComponentFunction(j, function, provider, state,
-                                                           orbitType, positionAngle);
-                        final FiniteDifferencesDifferentiator differentiator =
-                                new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
-                        final UnivariateDifferentiableVectorFunction differentiatedJ =
-                                differentiator.differentiate(componentJ);
+                    // compute partial derivatives with respect to state component j
+                    final UnivariateVectorFunction componentJ =
+                            new StateComponentFunction(j, function, provider, state,
+                                                       orbitType, positionAngle);
+                    final FiniteDifferencesDifferentiator differentiator =
+                            new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
+                    final UnivariateDifferentiableVectorFunction differentiatedJ =
+                            differentiator.differentiate(componentJ);
 
-                        final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
+                    final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
 
-                        // populate the j-th column of the Jacobian
-                        for (int i = 0; i < dimension; ++i) {
-                            jacobian[i][j] = c[i].getPartialDerivative(1);
-                        }
-
+                    // populate the j-th column of the Jacobian
+                    for (int i = 0; i < dimension; ++i) {
+                        jacobian[i][j] = c[i].getPartialDerivative(1);
                     }
 
-                    return jacobian;
-
-                } catch (OrekitExceptionWrapper oew) {
-                    throw oew.getException();
                 }
+
+                return jacobian;
+
             }
 
         };
@@ -196,25 +183,21 @@ public class Differentiation {
 
         /** {@inheritDoc} */
         @Override
-        public double[] value(final double x) throws OrekitExceptionWrapper {
-            try {
-                final double[] array = new double[6];
-                final double[] arrayDot = new double[6];
-                orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array, arrayDot);
-                array[index] += x;
-                final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
-                                                              positionAngle,
-                                                              baseState.getDate(),
-                                                              baseState.getMu(),
-                                                              baseState.getFrame());
-                final SpacecraftState state =
-                        new SpacecraftState(orbit,
-                                            provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-                                            baseState.getMass());
-                return f.value(state);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+        public double[] value(final double x) throws OrekitException {
+            final double[] array = new double[6];
+            final double[] arrayDot = new double[6];
+            orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array, arrayDot);
+            array[index] += x;
+            final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
+                                                          positionAngle,
+                                                          baseState.getDate(),
+                                                          baseState.getMu(),
+                                                          baseState.getFrame());
+            final SpacecraftState state =
+                    new SpacecraftState(orbit,
+                                        provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+                                        baseState.getMass());
+            return f.value(state);
         }
 
     }

@@ -31,7 +31,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -430,39 +429,35 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
-            try {
 
-                // shift the orbit to dt
-                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
+            // shift the orbit to dt
+            final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
-                // Recompose an orbit with time held fixed to be compliant with DSST theory
-                final Orbit recomposedOrbit =
-                        new EquinoctialOrbit(shiftedOrbit.getA(),
-                                             shiftedOrbit.getEquinoctialEx(),
-                                             shiftedOrbit.getEquinoctialEy(),
-                                             shiftedOrbit.getHx(),
-                                             shiftedOrbit.getHy(),
-                                             shiftedOrbit.getLv(),
-                                             PositionAngle.TRUE,
-                                             shiftedOrbit.getFrame(),
-                                             state.getDate(),
-                                             shiftedOrbit.getMu());
+            // Recompose an orbit with time held fixed to be compliant with DSST theory
+            final Orbit recomposedOrbit =
+                    new EquinoctialOrbit(shiftedOrbit.getA(),
+                                         shiftedOrbit.getEquinoctialEx(),
+                                         shiftedOrbit.getEquinoctialEy(),
+                                         shiftedOrbit.getHx(),
+                                         shiftedOrbit.getHy(),
+                                         shiftedOrbit.getLv(),
+                                         PositionAngle.TRUE,
+                                         shiftedOrbit.getFrame(),
+                                         state.getDate(),
+                                         shiftedOrbit.getMu());
 
-                // Get the corresponding attitude
-                final Attitude recomposedAttitude =
-                        attitudeProvider.getAttitude(recomposedOrbit,
-                                                     recomposedOrbit.getDate(),
-                                                     recomposedOrbit.getFrame());
+            // Get the corresponding attitude
+            final Attitude recomposedAttitude =
+                    attitudeProvider.getAttitude(recomposedOrbit,
+                                                 recomposedOrbit.getDate(),
+                                                 recomposedOrbit.getFrame());
 
-                // create shifted SpacecraftState with attitude at specified time
-                final SpacecraftState shiftedState =
-                        new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
+            // create shifted SpacecraftState with attitude at specified time
+            final SpacecraftState shiftedState =
+                    new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
-                acc = contribution.acceleration(shiftedState, contribution.getParameters());
+            acc = contribution.acceleration(shiftedState, contribution.getParameters());
 
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
             //Compute the derivatives of the elements by the speed
             final double[] deriv = new double[6];
             // da/dv

@@ -43,7 +43,6 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -475,16 +474,13 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             }
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
-            try {
 
-                beforeIntegration(getInitialState(), tEnd);
-                mathFinalState = integrator.integrate(mathODE, mathInitialState,
-                                                      tEnd.durationFrom(getInitialState().getDate()));
+            beforeIntegration(getInitialState(), tEnd);
+            mathFinalState = integrator.integrate(mathODE, mathInitialState,
+                                                  tEnd.durationFrom(getInitialState().getDate()));
 
-                afterIntegration();
-            } catch (OrekitExceptionWrapper oew) {
-                throw oew.getException();
-            }
+            afterIntegration();
+
             // get final state
             FieldSpacecraftState<T> finalState =
                             stateMapper.mapArrayToState(stateMapper.mapDoubleToDate(mathFinalState.getTime(),
@@ -692,34 +688,26 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         @Override
         public void init(final T t0, final T[] y0, final T finalTime) {
-            try {
-                // update space dynamics view
-                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, true);
-                initialState = updateAdditionalStates(initialState);
-                final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
-                main.init(initialState, target);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            // update space dynamics view
+            FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, true);
+            initialState = updateAdditionalStates(initialState);
+            final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
+            main.init(initialState, target);
         }
         /** {@inheritDoc} */
         public T[] computeDerivatives(final T t, final T[] y)
-            throws OrekitExceptionWrapper {
-            try {
+            throws OrekitException {
 
-                // increment calls counter
-                ++calls;
+            // increment calls counter
+            ++calls;
 
-                // update space dynamics view
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, true);
-                currentState = updateAdditionalStates(currentState);
+            // update space dynamics view
+            FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, true);
+            currentState = updateAdditionalStates(currentState);
 
-                // compute main state differentials
-                return main.computeDerivatives(currentState);
+            // compute main state differentials
+            return main.computeDerivatives(currentState);
 
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
         }
 
     }
@@ -753,47 +741,36 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         @Override
         public void init(final T t0, final T[] primary0,
                          final T[] secondary0, final T finalTime) {
-            try {
-                // update space dynamics view
-                FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
-                initialState = updateAdditionalStates(initialState);
-                initialState = initialState.addAdditionalState(equations.getName(), secondary0);
-                final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
-                equations.init(initialState, target);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
-
+            // update space dynamics view
+            FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, primary0, null, true);
+            initialState = updateAdditionalStates(initialState);
+            initialState = initialState.addAdditionalState(equations.getName(), secondary0);
+            final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
+            equations.init(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
         public T[] computeDerivatives(final T t, final T[] primary,
                                       final T[] primaryDot, final T[] secondary)
-            throws OrekitExceptionWrapper {
+            throws OrekitException {
 
-            try {
+            // update space dynamics view
+            FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
+            currentState = updateAdditionalStates(currentState);
+            currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
-                // update space dynamics view
-                FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
-                currentState = updateAdditionalStates(currentState);
-                currentState = currentState.addAdditionalState(equations.getName(), secondary);
-
-                // compute additional derivatives
-                final T[] secondaryDot = MathArrays.buildArray(getField(), secondary.length);
-                final T[] additionalMainDot =
-                        equations.computeDerivatives(currentState, secondaryDot);
-                if (additionalMainDot != null) {
-                    // the additional equations have an effect on main equations
-                    for (int i = 0; i < additionalMainDot.length; ++i) {
-                        primaryDot[i] = primaryDot[i].add(additionalMainDot[i]);
-                    }
+            // compute additional derivatives
+            final T[] secondaryDot = MathArrays.buildArray(getField(), secondary.length);
+            final T[] additionalMainDot =
+                    equations.computeDerivatives(currentState, secondaryDot);
+            if (additionalMainDot != null) {
+                // the additional equations have an effect on main equations
+                for (int i = 0; i < additionalMainDot.length; ++i) {
+                    primaryDot[i] = primaryDot[i].add(additionalMainDot[i]);
                 }
-                return secondaryDot;
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
+            return secondaryDot;
 
         }
 
@@ -826,83 +803,63 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            try {
-
-                detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                              stateMapper.mapDoubleToDate(t));
-                this.lastT = getField().getZero().add(Double.NaN);
-                this.lastG = getField().getZero().add(Double.NaN);
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            detector.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                          stateMapper.mapDoubleToDate(t));
+            this.lastT = getField().getZero().add(Double.NaN);
+            this.lastG = getField().getZero().add(Double.NaN);
         }
 
         /** {@inheritDoc} */
         public T g(final FieldODEStateAndDerivative<T> s) {
-            try {
-                if (!Precision.equals(lastT.getReal(), s.getTime().getReal(), 0)) {
-                    lastT = s.getTime();
-                    lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
-                }
-                return lastG;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            if (!Precision.equals(lastT.getReal(), s.getTime().getReal(), 0)) {
+                lastT = s.getTime();
+                lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative()));
             }
+            return lastG;
         }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            try {
+            final FieldEventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
+                                                                                              s.getCompleteState(),
+                                                                                              s.getCompleteDerivative()),
+                                                                        increasing);
 
-                final FieldEventHandler.Action whatNext = detector.eventOccurred(getCompleteState(s.getTime(),
-                                                                                                  s.getCompleteState(),
-                                                                                                  s.getCompleteDerivative()),
-                                                                            increasing);
-
-                switch (whatNext) {
-                    case STOP :
-                        return Action.STOP;
-                    case RESET_STATE :
-                        return Action.RESET_STATE;
-                    case RESET_DERIVATIVES :
-                        return Action.RESET_DERIVATIVES;
-                    default :
-                        return Action.CONTINUE;
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            switch (whatNext) {
+                case STOP :
+                    return Action.STOP;
+                case RESET_STATE :
+                    return Action.RESET_STATE;
+                case RESET_DERIVATIVES :
+                    return Action.RESET_DERIVATIVES;
+                default :
+                    return Action.CONTINUE;
             }
         }
 
         /** {@inheritDoc} */
         public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
-            try {
 
-                final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
-                final FieldSpacecraftState<T> newState = detector.resetState(oldState);
+            final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
+            final FieldSpacecraftState<T> newState = detector.resetState(oldState);
 
-                // main part
-                final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
-                stateMapper.mapStateToArray(newState, primary, null);
+            // main part
+            final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
+            stateMapper.mapStateToArray(newState, primary, null);
 
-                // secondary part
-                final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
+            // secondary part
+            final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
 
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-                    final T[] NState = newState.getAdditionalState(additional.getName());
-                    secondary[i] = MathArrays.buildArray(getField(), NState.length);
-                    for (int j = 0; j < NState.length; j++)
-                        secondary[i][j] = NState[j];
-                }
-
-                return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
-                                           primary, secondary);
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
+                final T[] NState = newState.getAdditionalState(additional.getName());
+                secondary[i] = MathArrays.buildArray(getField(), NState.length);
+                for (int j = 0; j < NState.length; j++)
+                    secondary[i][j] = NState[j];
             }
+
+            return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
+                                       primary, secondary);
         }
 
     }
@@ -934,23 +891,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         }
         /** {@inheritDoc} */
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
-            try {
-                handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
-                             stateMapper.mapDoubleToDate(t));
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            handler.init(getCompleteState(s0.getTime(), s0.getCompleteState(), s0.getCompleteDerivative()),
+                         stateMapper.mapDoubleToDate(t));
         }
 
         /** {@inheritDoc} */
         public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast) {
-            try {
-                mathInterpolator = interpolator;
-                if (activate) {
-                    handler.handleStep(this, isLast);
-                }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            mathInterpolator = interpolator;
+            if (activate) {
+                handler.handleStep(this, isLast);
             }
         }
 
@@ -1003,8 +952,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
             } catch (OrekitException oe) {
                 throw new OrekitException(oe);
-            } catch (OrekitExceptionWrapper oew) {
-                throw new OrekitException(oew.getException());
             }
         }
 
@@ -1058,55 +1005,51 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
         /** {@inheritDoc} */
         public void handleStep(final FieldODEStateInterpolator<T> interpolator, final boolean isLast)
-            throws OrekitExceptionWrapper {
-            try {
-                if (activate) {
-                    model.handleStep(interpolator, isLast);
-                    if (isLast) {
+            throws OrekitException {
+            if (activate) {
+                model.handleStep(interpolator, isLast);
+                if (isLast) {
 
-                        // set up the boundary dates
-                        final T tI = model.getInitialTime();
-                        final T tF = model.getFinalTime();
-                        // tI is almost? always zero
-                        final FieldAbsoluteDate<T> startDate =
-                                stateMapper.mapDoubleToDate(tI);
-                        final FieldAbsoluteDate<T> finalDate =
-                                stateMapper.mapDoubleToDate(tF, this.endDate);
-                        final FieldAbsoluteDate<T> minDate;
-                        final FieldAbsoluteDate<T> maxDate;
-                        if (tF.getReal() < tI.getReal()) {
-                            minDate = finalDate;
-                            maxDate = startDate;
-                        } else {
-                            minDate = startDate;
-                            maxDate = finalDate;
-                        }
-
-                        // get the initial additional states that are not managed
-                        final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
-                        for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
-                            if (!isAdditionalStateManaged(initial.getKey())) {
-                                // this additional state was in the initial state, but is unknown to the propagator
-                                // we simply copy its initial value as is
-                                unmanaged.put(initial.getKey(), initial.getValue());
-                            }
-                        }
-
-                        // get the names of additional states managed by differential equations
-                        final String[] names = new String[additionalEquations.size()];
-                        for (int i = 0; i < names.length; ++i) {
-                            names[i] = additionalEquations.get(i).getName();
-                        }
-
-                        // create the ephemeris
-                        ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                                   stateMapper, meanOrbit, model, unmanaged,
-                                                                   getAdditionalStateProviders(), names);
-
+                    // set up the boundary dates
+                    final T tI = model.getInitialTime();
+                    final T tF = model.getFinalTime();
+                    // tI is almost? always zero
+                    final FieldAbsoluteDate<T> startDate =
+                            stateMapper.mapDoubleToDate(tI);
+                    final FieldAbsoluteDate<T> finalDate =
+                            stateMapper.mapDoubleToDate(tF, this.endDate);
+                    final FieldAbsoluteDate<T> minDate;
+                    final FieldAbsoluteDate<T> maxDate;
+                    if (tF.getReal() < tI.getReal()) {
+                        minDate = finalDate;
+                        maxDate = startDate;
+                    } else {
+                        minDate = startDate;
+                        maxDate = finalDate;
                     }
+
+                    // get the initial additional states that are not managed
+                    final Map<String, T[]> unmanaged = new HashMap<String, T[]>();
+                    for (final Map.Entry<String, T[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                        if (!isAdditionalStateManaged(initial.getKey())) {
+                            // this additional state was in the initial state, but is unknown to the propagator
+                            // we simply copy its initial value as is
+                            unmanaged.put(initial.getKey(), initial.getValue());
+                        }
+                    }
+
+                    // get the names of additional states managed by differential equations
+                    final String[] names = new String[additionalEquations.size()];
+                    for (int i = 0; i < names.length; ++i) {
+                        names[i] = additionalEquations.get(i).getName();
+                    }
+
+                    // create the ephemeris
+                    ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
+                                                               stateMapper, meanOrbit, model, unmanaged,
+                                                               getAdditionalStateProviders(), names);
+
                 }
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
             }
         }
 

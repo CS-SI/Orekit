@@ -29,7 +29,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
@@ -463,23 +462,15 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         /** {@inheritDoc} */
         @Override
         public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-            try {
-                final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
-                return baseUT1.offsetFromTAI(date).add(dut1);
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+            final T dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver).divide(EARTH_ANGULAR_VELOCITY);
+            return baseUT1.offsetFromTAI(date).add(dut1);
         }
 
         /** {@inheritDoc} */
         @Override
-        public double offsetFromTAI(final AbsoluteDate date) throws OrekitExceptionWrapper {
-            try {
-                final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
-                return baseUT1.offsetFromTAI(date) + dut1;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
+        public double offsetFromTAI(final AbsoluteDate date) throws OrekitException {
+            final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
+            return baseUT1.offsetFromTAI(date) + dut1;
         }
 
         /** {@inheritDoc} */

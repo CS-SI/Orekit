@@ -37,7 +37,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -431,10 +430,7 @@ public class BatchLSEstimator {
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
         }
-
     }
 
     /** Get the last estimations performed.
@@ -613,18 +609,14 @@ public class BatchLSEstimator {
 
             // notify the observer
             if (observer != null) {
-                try {
-                    observer.evaluationPerformed(iterationsCounter.getCount(),
-                                                 evaluationsCounter.getCount(),
-                                                 orbits,
-                                                 estimatedOrbitalParameters,
-                                                 estimatedPropagatorParameters,
-                                                 estimatedMeasurementsParameters,
-                                                 new Provider(),
-                                                 evaluation);
-                } catch (OrekitException oe) {
-                    throw new OrekitExceptionWrapper(oe);
-                }
+                observer.evaluationPerformed(iterationsCounter.getCount(),
+                                             evaluationsCounter.getCount(),
+                                             orbits,
+                                             estimatedOrbitalParameters,
+                                             estimatedPropagatorParameters,
+                                             estimatedMeasurementsParameters,
+                                             new Provider(),
+                                             evaluation);
             }
 
             return evaluation;
@@ -704,30 +696,26 @@ public class BatchLSEstimator {
         /** {@inheritDoc} */
         @Override
         public RealVector validate(final RealVector params)
-            throws OrekitExceptionWrapper {
+            throws OrekitException {
 
-            try {
-                int i = 0;
-                for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-                for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-                for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-                    // let the parameter handle min/max clipping
-                    driver.setNormalizedValue(params.getEntry(i));
-                    params.setEntry(i++, driver.getNormalizedValue());
-                }
-
-                return params;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
+            int i = 0;
+            for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
             }
+            for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
+            }
+            for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                // let the parameter handle min/max clipping
+                driver.setNormalizedValue(params.getEntry(i));
+                params.setEntry(i++, driver.getNormalizedValue());
+            }
+
+            return params;
         }
     }
 

@@ -33,7 +33,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOpti
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -364,20 +363,15 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @exception OrekitException if position/velocity cannot be computed at some date
      */
     private double getRMS(final double[] parameterSet) throws OrekitException {
-        try {
-            final double[] residuals = getObjectiveFunction().value(parameterSet);
-            for (int i = 0; i < residuals.length; ++i) {
-                residuals[i] = target[i] - residuals[i];
-            }
-            double sum2 = 0;
-            for (final double residual : residuals) {
-                sum2 += residual * residual;
-            }
-            return FastMath.sqrt(sum2 / residuals.length);
-
-        } catch (OrekitExceptionWrapper oew) {
-            throw oew.getException();
+        final double[] residuals = getObjectiveFunction().value(parameterSet);
+        for (int i = 0; i < residuals.length; ++i) {
+            residuals[i] = target[i] - residuals[i];
         }
+        double sum2 = 0;
+        for (final double residual : residuals) {
+            sum2 += residual * residual;
+        }
+        return FastMath.sqrt(sum2 / residuals.length);
     }
 
     /** Build the adpated propagator for a given position/velocity(/free) parameters set.

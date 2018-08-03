@@ -34,7 +34,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
@@ -229,44 +228,40 @@ class Model implements MultivariateJacobianFunction {
     /** {@inheritDoc} */
     @Override
     public Pair<RealVector, RealMatrix> value(final RealVector point)
-        throws OrekitExceptionWrapper {
-        try {
+        throws OrekitException {
 
-            // Set up the propagators parallelizer
-            final NumericalPropagator[] propagators = createPropagators(point);
-            final Orbit[] orbits = new Orbit[propagators.length];
-            for (int i = 0; i < propagators.length; ++i) {
-                mappers[i] = configureDerivatives(propagators[i]);
-                orbits[i]  = propagators[i].getInitialState().getOrbit();
-            }
-            final PropagatorsParallelizer parallelizer =
-                            new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
-
-            // Reset value and Jacobian
-            evaluations.clear();
-            value.set(0.0);
-            for (int i = 0; i < jacobian.getRowDimension(); ++i) {
-                for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
-                    jacobian.setEntry(i, j, 0.0);
-                }
-            }
-
-            // Run the propagation, gathering residuals on the fly
-            if (forwardPropagation) {
-                // Propagate forward from firstDate
-                parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
-            } else {
-                // Propagate backward from lastDate
-                parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
-            }
-
-            observer.modelCalled(orbits, evaluations);
-
-            return new Pair<RealVector, RealMatrix>(value, jacobian);
-
-        } catch (OrekitException oe) {
-            throw new OrekitExceptionWrapper(oe);
+        // Set up the propagators parallelizer
+        final NumericalPropagator[] propagators = createPropagators(point);
+        final Orbit[] orbits = new Orbit[propagators.length];
+        for (int i = 0; i < propagators.length; ++i) {
+            mappers[i] = configureDerivatives(propagators[i]);
+            orbits[i]  = propagators[i].getInitialState().getOrbit();
         }
+        final PropagatorsParallelizer parallelizer =
+                        new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
+
+        // Reset value and Jacobian
+        evaluations.clear();
+        value.set(0.0);
+        for (int i = 0; i < jacobian.getRowDimension(); ++i) {
+            for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
+                jacobian.setEntry(i, j, 0.0);
+            }
+        }
+
+        // Run the propagation, gathering residuals on the fly
+        if (forwardPropagation) {
+            // Propagate forward from firstDate
+            parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+        } else {
+            // Propagate backward from lastDate
+            parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
+        }
+
+        observer.modelCalled(orbits, evaluations);
+
+        return new Pair<RealVector, RealMatrix>(value, jacobian);
+
     }
 
     /** Get the iterations count.
