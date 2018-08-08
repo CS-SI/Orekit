@@ -483,18 +483,13 @@ public class DSSTOrbitDeterminationMeanElementsOnlyTest {
             minStep = parser.getDouble(ParameterKey.PROPAGATOR_MIN_STEP);
         }
 
-        final double maxStep;
-        if (!parser.containsKey(ParameterKey.PROPAGATOR_MAX_STEP)) {
-            maxStep = 300 * 1000;
-        } else {
-            maxStep = parser.getDouble(ParameterKey.PROPAGATOR_MAX_STEP) * 1000;
-        }
+        final double maxStep = 86400;
 
         final double dP;
         if (!parser.containsKey(ParameterKey.PROPAGATOR_POSITION_ERROR)) {
-            dP = 10 * 1000;
+            dP = 10;
         } else {
-            dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR) * 1000;
+            dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR);
         }
 
         final double positionScale;
