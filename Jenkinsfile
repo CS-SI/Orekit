@@ -5,12 +5,19 @@ pipeline {
     stages {
         
         stage('Build') {
-            steps {
-                sh 'mvn checkstyle:checkstyle install'
-            }
-            post {
-                checkstyle pattern: 'target/checkstyle-result.xml'
-                junit 'target/surefire-reports/*.xml' 
+            parallel {
+                stage('checkstyle') {
+                    sh 'mvn checkstyle:checkstyle'
+                }
+                post {
+                    checkstyle pattern: 'target/checkstyle-result.xml'
+                }
+                stage('install') {
+                    sh 'mvn install'
+                }
+                post {
+                    junit 'target/surefire-reports/*.xml' 
+                }
             }
         }
     }
