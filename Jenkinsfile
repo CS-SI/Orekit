@@ -1,8 +1,10 @@
 pipeline {
 
     agent any
-
+    
     stages {
+
+        withEnv(["JAVA_HOME=${tool 'openjdk-8'}", "PATH+MAVEN=${tool 'maven-default'}/bin:${env.JAVA_HOME}/bin"]) {
         
         stage('Build') {
             parallel {
