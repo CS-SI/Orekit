@@ -6,20 +6,12 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package'
-            }
-        }
-
-        stage('Test') { 
-            steps {
-                sh 'mvn test' 
+                sh 'mvn checkstyle:checkstyle install'
             }
             post {
-                always {
-                    junit 'target/surefire-reports/*.xml' 
-                }
+                checkstyle pattern: 'target/checkstyle-result.xml'
+                junit 'target/surefire-reports/*.xml' 
             }
         }
-
     }
 }
