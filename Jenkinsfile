@@ -10,17 +10,17 @@ pipeline {
                     steps {
                         sh 'mvn checkstyle:checkstyle'
                     }
-                }
-                post {
-                    checkstyle pattern: 'target/checkstyle-result.xml'
+                    post {
+                        checkstyle pattern: 'target/checkstyle-result.xml'
+                    }
                 }
                 stage('install') {
                     steps {
                         sh 'mvn install'
                     }
-                }
-                post {
-                    junit 'target/surefire-reports/*.xml' 
+                    post {
+                        junit 'target/surefire-reports/*.xml' 
+                    }
                 }
             }
         }
