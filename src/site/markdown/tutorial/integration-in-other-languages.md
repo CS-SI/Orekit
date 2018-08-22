@@ -2,9 +2,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
     http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,4 +21,4 @@ script or directly at the command prompt, and quick access to plotting tools.
 
 [Integration in Jython](./integration-in-Jython.html)
 [Integration in Matlab](./integration-in-Matlab.html)
-[Integration in Python (external link to Orekit forge)](https://www.orekit.org/forge/projects/orekit-python-wrapper/wiki)
+[Integration in Python (external link to Orekit forge)](https://gitlab.orekit.org/orekit-labs/python-wrapper/wikis/home)

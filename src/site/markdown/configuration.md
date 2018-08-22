@@ -2,9 +2,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
     http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -114,7 +114,7 @@ in the library itself.
 ## Data handling in Orekit
 
 The following diagram shows data handling in Orekit.
-  
+
 ![data class diagram](./images/design/data-class-diagram.png)
 
 When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
@@ -230,12 +230,12 @@ announced above.
 
 For convenience, a zip file containing some default data is available for
 download on orekit forge:
-[https://www.orekit.org/forge/projects/orekit/files](https://www.orekit.org/forge/projects/orekit/files).
-For a start, the simplest configuration is to download the orekit-data.zip file from the download page,
-to unzip it anywhere you want, note the path of the orekit-data folder that will be created and add the
+[https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip).
+For a start, the simplest configuration is to download the `orekit-data-master.zip` file from the download page,
+to unzip it anywhere you want, note the path of the `orekit-data-master` folder that will be created and add the
 following lines at the start of your program:
 
-    File orekitData = new File("/path/to/the/folder/orekit-data");
+    File orekitData = new File("/path/to/the/folder/orekit-data-master");
     DataProvidersManager manager = DataProvidersManager.getInstance();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
