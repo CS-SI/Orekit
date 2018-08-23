@@ -98,7 +98,8 @@ public class FieldOfView implements Serializable {
 
         // build zone
         final RegionFactory<Sphere2D> factory = new RegionFactory<Sphere2D>();
-        final double tolerance = 1.0e-12 * FastMath.max(halfAperture1, halfAperture2);
+        final double tolerance = FastMath.max(FastMath.ulp(2.0 * FastMath.PI),
+                                              1.0e-12 * FastMath.max(halfAperture1, halfAperture2));
         final Region<Sphere2D> dihedra1 = buildDihedra(factory, tolerance, center, axis1, halfAperture1);
         final Region<Sphere2D> dihedra2 = buildDihedra(factory, tolerance, center, axis2, halfAperture2);
         this.zone = (SphericalPolygonsSet) factory.intersection(dihedra1, dihedra2);
