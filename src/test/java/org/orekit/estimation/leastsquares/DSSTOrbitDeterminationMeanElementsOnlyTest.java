@@ -474,15 +474,7 @@ public class DSSTOrbitDeterminationMeanElementsOnlyTest {
                                                           final Orbit orbit)
         throws NoSuchElementException, OrekitException {
 
-        // Reference values are given for a numerical orbit determination
-        // The DSST allows to use a bigger computation step
-        final double minStep;
-        if (!parser.containsKey(ParameterKey.PROPAGATOR_MIN_STEP)) {
-            minStep = 0.001;
-        } else {
-            minStep = parser.getDouble(ParameterKey.PROPAGATOR_MIN_STEP);
-        }
-
+        final double minStep = 6000;
         final double maxStep = 86400;
 
         final double dP;
