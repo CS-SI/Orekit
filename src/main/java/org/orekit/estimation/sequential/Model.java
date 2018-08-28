@@ -638,22 +638,36 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
     }
 
     /** Un-normalize a state vector.
-     * A state vector S is of size m = nbOrb + nbPropag + nbMeas
-     * For each parameter i the normalized value of the state vector is:
-     * Sn[i] = S[i] / scale[i]
+     * <p>
+     * A state vector S is of size m = nbOrb + nbPropag + nbMeas.<br>
+     * For each parameter i the physical value of the state vector is:
+     * </p><p>
+     * S[i] = Sn[i] * scale[i] + Sref[i]
+     * </p>
+     * Where:<ul>
+     * <li>S is the physical (ie. un-normalized) state vector</li>
+     * <li>Sn is the normalized state vector</li>
+     * <li>Sref is the reference value of the state vector</li>
+     * <li>scale is the scale factor vector</li>
+     * </ul>
+     * In practice, method {@link ParameterDriver#getValue()} is used to get the physical values of the state.
      * @param normalizedStateVector The normalized state vector in input
      * @return the "physical" state vector
      */
     private RealVector unNormalizeStateVector(final RealVector normalizedStateVector) {
 
-        // Initialize output matrix
-        final int nbParams = normalizedStateVector.getDimension();
-        final RealVector physicalStateVector = new ArrayRealVector(nbParams);
-
-        // Normalize the state matrix
-        for (int i = 0; i < nbParams; ++i) {
-            physicalStateVector.setEntry(i, normalizedStateVector.getEntry(i) * scale[i]);
+        final RealVector physicalStateVector = new ArrayRealVector(normalizedStateVector.getDimension());
+        int i = 0;
+        for (final DelegatingDriver driver : getEstimatedOrbitalParameters().getDrivers()) {
+            physicalStateVector.setEntry(i++, driver.getValue());
         }
+        for (final DelegatingDriver driver : getEstimatedPropagationParameters().getDrivers()) {
+            physicalStateVector.setEntry(i++, driver.getValue());
+        }
+        for (final DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+            physicalStateVector.setEntry(i++, driver.getValue());
+        }
+
         return physicalStateVector;
     }
 
@@ -694,7 +708,7 @@ class Model implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> 
         final int nbParams = normalizedCovarianceMatrix.getRowDimension();
         final RealMatrix physicalCovarianceMatrix = MatrixUtils.createRealMatrix(nbParams, nbParams);
 
-        // Normalize the state matrix
+        // Un-normalize the state matrix
         for (int i = 0; i < nbParams; ++i) {
             for (int j = 0; j < nbParams; ++j) {
                 physicalCovarianceMatrix.setEntry(i, j,
