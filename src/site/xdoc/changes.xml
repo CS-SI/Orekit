@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed method unNormalizeStateVector in Model class of Kalman estimator.
+        Previous value did not take into account the reference values of the drivers.
+        Fixes issue #488.
+      </action>
       <action dev="luc" type="fix" issue="484" due-to="Yannick Jeandroz">
         Changed OrekitException from checked to unchecked exception.
         Most functions do throw such exceptions. As they are unchecked, they are
