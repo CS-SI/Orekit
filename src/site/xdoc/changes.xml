@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="TBD" date="TBD" description="TBD">
+      <action dev="maxime" type="fix">
+        Fixed reference value of parameter drivers updating in Kalman filter. 
+        When resetting the orbit in the propagator builder, the reference values
+        of the drivers are now reset too.
+        Fixes issue #490.
+      </action>
       <action dev="maxime" type="add">
         Made ParameterDriver class fully mutable.
         By adding setters for attributes scale, reference, minimum and maximum values.
