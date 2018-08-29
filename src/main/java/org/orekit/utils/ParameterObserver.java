@@ -69,4 +69,52 @@ public interface ParameterObserver {
         // nothing by default
     }
 
+    /** Notify that a parameter reference value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousReferenceValue previous reference value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter minimum value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousMinValue previous minimum value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter maximum value has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousMaxValue previous maximum value
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
+        // nothing by default
+    }
+
+    /** Notify that a parameter scale has been changed.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param previousScale previous scale
+     * @param driver parameter driver that has been changed
+     * @since 9.0
+     */
+    default void scaleChanged(final double previousScale, final ParameterDriver driver) {
+        // nothing by default
+    }
+
 }

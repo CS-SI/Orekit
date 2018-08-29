@@ -316,6 +316,30 @@ public class ParameterDriversList {
             updateAll(driver, d -> d.setSelected(driver.isSelected()));
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public void referenceValueChanged(final double previousReferenceValue, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setReferenceValue(driver.getReferenceValue()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void minValueChanged(final double previousMinValue, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setMinValue(driver.getMinValue()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void maxValueChanged(final double previousMaxValue, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setMaxValue(driver.getMaxValue()));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void scaleChanged(final double previousScale, final ParameterDriver driver) {
+            updateAll(driver, d -> d.setScale(driver.getScale()));
+        }
+
         /** Update all bound parameters.
          * @param driver driver triggering the update
          * @param updater updater to use
