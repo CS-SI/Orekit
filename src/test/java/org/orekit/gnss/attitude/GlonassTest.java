@@ -44,10 +44,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testCrossingBeta() {
-        // TODO: these results are not good,
-        // however the reference data is also highly suspicious
-        // this needs to be investigated
-        doTestAxes("beta-crossing-GLONASS.txt", 2.36e-100, 2.36, 6.7e-16);
+        doTestAxes("beta-crossing-GLONASS.txt", 9.8e-3, 9.8e-3, 6.7e-16);
     }
 
     @Test

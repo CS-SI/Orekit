@@ -120,12 +120,16 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                     // midnight turn
                     phiDot    = FastMath.copySign(YAW_RATE, beta);
                     linearPhi = phiStart + phiDot * dtStart;
+
+                    if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
+                        // this turn limitation is only computed for midnight turns in Kouba model
+                        // we don't understand yet why it doesn't apply to noon turns
+                        return context.turnCorrectedAttitude(phiEnd, 0.0);
+                    }
+
                 }
-                if (phiEnd / linearPhi < 0 || phiEnd / linearPhi > 1) {
-                    return context.turnCorrectedAttitude(phiEnd, 0.0);
-                } else {
-                    return context.turnCorrectedAttitude(linearPhi, phiDot);
-                }
+
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
 
             }
 
@@ -191,12 +195,17 @@ public class Glonass extends AbstractGNSSAttitudeProvider {
                     // midnight turn
                     phiDot    = field.getZero().add(FastMath.copySign(YAW_RATE, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
+
+                    // this turn limitation is only computed for midnight turns in Kouba model
+                    // we don't understand yet why it doesn't apply to noon turns
+                    if (phiEnd.getReal() / linearPhi.getReal() < 0 || phiEnd.getReal() / linearPhi.getReal() > 1) {
+                        return context.turnCorrectedAttitude(phiEnd, field.getZero());
+                    }
+
                 }
-                if (phiEnd.getReal() / linearPhi.getReal() < 0 || phiEnd.getReal() / linearPhi.getReal() > 1) {
-                    return context.turnCorrectedAttitude(phiEnd, field.getZero());
-                } else {
-                    return context.turnCorrectedAttitude(linearPhi, phiDot);
-                }
+
+                return context.turnCorrectedAttitude(linearPhi, phiDot);
+
 
             }
 
