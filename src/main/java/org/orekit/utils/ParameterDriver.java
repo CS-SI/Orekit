@@ -190,7 +190,11 @@ public class ParameterDriver {
      */
     public void setReferenceValue(final double referenceValue)
     {
+        final double previousReferenceValue = this.referenceValue;
         this.referenceValue = referenceValue;
+        for (final ParameterObserver observer : observers) {
+            observer.referenceValueChanged(previousReferenceValue, this);
+        }
     }
 
     /** Get minimum parameter value.
@@ -206,7 +210,13 @@ public class ParameterDriver {
      */
     public void setMinValue(final double minValue)
     {
+        final double previousMinValue = this.minValue;
         this.minValue = minValue;
+        for (final ParameterObserver observer : observers) {
+            observer.minValueChanged(previousMinValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
     }
 
     /** Get maximum parameter value.
@@ -222,7 +232,13 @@ public class ParameterDriver {
      */
     public void setMaxValue(final double maxValue)
     {
+        final double previousMaxValue = this.maxValue;
         this.maxValue = maxValue;
+        for (final ParameterObserver observer : observers) {
+            observer.maxValueChanged(previousMaxValue, this);
+        }
+        // Check if current value is not out of min/max range
+        setValue(value);
     }
 
     /** Get scale.
@@ -238,7 +254,11 @@ public class ParameterDriver {
      */
     public void setScale(final double scale)
     {
+        final double previousScale = this.scale;
         this.scale = scale;
+        for (final ParameterObserver observer : observers) {
+            observer.scaleChanged(previousScale, this);
+        }
     }
 
     /** Get normalized value.
