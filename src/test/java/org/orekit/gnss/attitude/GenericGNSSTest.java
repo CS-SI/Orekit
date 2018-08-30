@@ -22,7 +22,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 
-public class GenericGNCCTest extends AbstractGNSSAttitudeProviderTest {
+public class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     protected GNSSAttitudeProvider createProvider(final AbsoluteDate validityStart,
                                                   final AbsoluteDate validityEnd,
