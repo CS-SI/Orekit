@@ -19,7 +19,6 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -105,8 +104,8 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         linearPhi = phiStart + phiDot * dtStart;
                     }
 
-                    if ((MathUtils.normalizeAngle(context.yawAngle(), linearPhi) - linearPhi) * phiDot < 0) {
-                     // we are already back in nominal yaw mode
+                    if (context.nominalYawReached(linearPhi, phiDot)) {
+                        // we are already back in nominal yaw mode
                         return context.getNominalYaw();
                     }
 
@@ -114,6 +113,12 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                     // midnight turn
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart + phiDot * dtStart;
+
+                    if (context.timeUntilTurnEnd() <= 0.0) {
+                        // we are already back in nominal yaw mode
+                        return context.getNominalYaw();
+                    }
+
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);
@@ -166,10 +171,22 @@ public class GPSBlockIIF extends AbstractGNSSAttitudeProvider {
                         phiDot    = field.getZero().add(-FastMath.copySign(YAW_RATE, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
+
+                    if (context.nominalYawReached(linearPhi, phiDot)) {
+                        // we are already back in nominal yaw mode
+                        return context.getNominalYaw();
+                    }
+
                 } else {
                     // midnight turn
                     phiDot    = context.yawRate(beta);
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
+
+                    if (context.timeUntilTurnEnd().getReal() <= 0.0) {
+                        // we are already back in nominal yaw mode
+                        return context.getNominalYaw();
+                    }
+
                 }
 
                 return context.turnCorrectedAttitude(linearPhi, phiDot);

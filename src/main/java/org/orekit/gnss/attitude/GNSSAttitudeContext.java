@@ -19,9 +19,11 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -59,11 +61,11 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Derivation order. */
     private static final int ORDER = 2;
 
-    /** Spacecraft position-velocity in inertial frame. */
-    private final TimeStampedPVCoordinates svPV;
+    /** Sun position-velocity in inertial frame. */
+    private final TimeStampedPVCoordinates sunPV;
 
     /** Spacecraft position-velocity in inertial frame. */
-    private final FieldPVCoordinates<DerivativeStructure> svPVDS;
+    private final TimeStampedPVCoordinates svPV;
 
     /** Angle between Sun and orbital plane. */
     private final DerivativeStructure beta;
@@ -102,29 +104,49 @@ class GNSSAttitudeContext implements TimeStamped {
                         final TurnSpan turnSpan) {
 
         final FieldPVCoordinates<DerivativeStructure> sunPVDS = sunPV.toDerivativeStructurePV(ORDER);
+        this.sunPV   = sunPV;
         this.svPV    = svPV;
-        this.svPVDS  = svPV.toDerivativeStructurePV(ORDER);
+        final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(ORDER);
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().
                               multiply(svPVDS.getPosition().getNorm()));
-        this.beta    = FieldVector3D.angle(sunPVDS.getPosition(), svPVDS.getMomentum()).
-                       negate().
-                       add(0.5 * FastMath.PI);
+        this.beta    = computeBeta(sunPVDS, svPVDS);
 
         // nominal yaw steering
-        this.nominalYaw =
-                        new TimeStampedAngularCoordinates(svPV.getDate(),
-                                                          svPV.normalize(),
-                                                          PVCoordinates.crossProduct(sunPV, svPV).normalize(),
-                                                          MINUS_Z,
-                                                          PLUS_Y,
-                                                          1.0e-9);
+        this.nominalYaw   = computeNominalYaw(sunPV, svPV);
         this.nominalYawDS = nominalYaw.toDerivativeStructureRotation(ORDER);
 
         this.muRate = svPV.getAngularVelocity().getNorm();
 
         this.turnSpan = turnSpan;
 
+    }
+
+    /** Compute nominal yaw steering.
+     * @param sun Sun position-velocity in inertial frame
+     * @param sat spacecraft position-velocity in inertial frame
+     * @return nominal yaw steering
+     */
+    private TimeStampedAngularCoordinates computeNominalYaw(final TimeStampedPVCoordinates sun,
+                                                            final TimeStampedPVCoordinates sat) {
+        return new TimeStampedAngularCoordinates(sat.getDate(),
+                                                 sat.normalize(),
+                                                 PVCoordinates.crossProduct(sun, sat).normalize(),
+                                                 MINUS_Z,
+                                                 PLUS_Y,
+                                                 1.0e-9);
+    }
+
+    /** Compute Sun elevation.
+     * @param sun Sun position-velocity in inertial frame
+     * @param sat spacecraft position-velocity in inertial frame
+     * @return Sun elevation
+     */
+    private DerivativeStructure computeBeta(final FieldPVCoordinates<DerivativeStructure> sun,
+                                            final FieldPVCoordinates<DerivativeStructure> sat) {
+        return FieldVector3D.angle(sun.getPosition(), sat.getMomentum()).
+               negate().
+               add(0.5 * FastMath.PI);
     }
 
     /** {@inheritDoc} */
@@ -189,19 +211,46 @@ class GNSSAttitudeContext implements TimeStamped {
     }
 
     /** Compute nominal yaw angle.
+     * @param nominalRotation rotation of the nominal yaw attitude
+     * @param velocity spacecraft velocity
+     * @param b beta angle
      * @return nominal yaw angle
      */
+    private double yawAngle(final Rotation nominalRotation, final Vector3D velocity, final double b) {
+        final Vector3D xSat = nominalRotation.applyInverseTo(Vector3D.PLUS_I);
+        return FastMath.copySign(Vector3D.angle(velocity, xSat), -b);
+    }
+
+    /** Compute nominal yaw angle at current date.
+     * @return nominal yaw angle at current date
+     */
     public double yawAngle() {
-        final Vector3D xSat = nominalYaw.getRotation().revert().applyTo(Vector3D.PLUS_I);
-        return FastMath.copySign(Vector3D.angle(svPV.getVelocity(), xSat), -beta.getReal());
+        return yawAngle(nominalYaw.getRotation(), svPV.getVelocity(), beta.getReal());
     }
 
     /** Compute nominal yaw angle.
      * @return nominal yaw angle
      */
     public DerivativeStructure yawAngleDS() {
-        final FieldVector3D<DerivativeStructure> xSat = nominalYawDS.revert().applyTo(Vector3D.PLUS_I);
+        final FieldVector3D<DerivativeStructure> xSat = nominalYawDS.applyInverseTo(Vector3D.PLUS_I);
         return FastMath.copySign(FieldVector3D.angle(svPV.getVelocity(), xSat), -beta.getReal());
+    }
+
+    /** Check if a linear yaw model has already reached nominal yaw.
+     * @param linearPhi value of the linear yaw model
+     * @param phiDot slope of the linear yaw model
+     * @return true if linear model has already reached nominal yaw
+     */
+    public boolean nominalYawReached(final double linearPhi, final double phiDot) {
+        final double                   dt     = turnSpan.timeUntilTurnEnd(getDate());
+        final TimeStampedPVCoordinates sunEnd = sunPV.shiftedBy(dt);
+        final TimeStampedPVCoordinates satEnd = svPV.shiftedBy(dt);
+        final double betaEnd                  = beta.taylor(dt);
+        final TimeStampedAngularCoordinates nominalYawEnd = computeNominalYaw(sunEnd, satEnd);
+        final double yawAtTurnEnd = yawAngle(nominalYawEnd.getRotation(),
+                                             satEnd.getVelocity(),
+                                             -betaEnd);
+        return (MathUtils.normalizeAngle(yawAtTurnEnd, linearPhi) - linearPhi) * phiDot < 0;
     }
 
     /** Set up the midnight/noon turn region.
@@ -365,10 +414,17 @@ class GNSSAttitudeContext implements TimeStamped {
     }
 
     /** Get elapsed time since turn start.
-     * @return elapsed time from turn start to specified date
+     * @return elapsed time from turn start to current date
      */
     public double timeSinceTurnStart() {
         return turnSpan.timeSinceTurnStart(getDate());
+    }
+
+    /** Get elapsed time until turn end (without margin).
+     * @return elapsed time from current date to turn end (without margin)
+     */
+    public double timeUntilTurnEnd() {
+        return turnSpan.timeUntilTurnEnd(getDate());
     }
 
     /** Generate an attitude with turn-corrected yaw.
