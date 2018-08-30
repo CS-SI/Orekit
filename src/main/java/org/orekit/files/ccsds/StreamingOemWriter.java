@@ -270,7 +270,6 @@ public class StreamingOemWriter {
      *                  Section 5.2.4.5 and Annex A.
      * @param metadata  for the satellite. Can be overridden in {@link #newSegment(Frame,
      *                  Map)} for a specific segment. See {@link StreamingOemWriter}.
-     * @throws OrekitException If the UTC time scale could not be used.
      */
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,

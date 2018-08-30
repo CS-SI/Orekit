@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -119,7 +118,6 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
          *
          * @param value the function argument
          * @return the function result
-         * @throws OrekitException if one is thrown while computing the result.
          */
         double apply(SpacecraftState value);
 

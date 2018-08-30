@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -50,8 +49,7 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
-     */
+      */
     @Test
     public void testValues() {
         boolean printResults = false;
@@ -65,7 +63,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() {
@@ -84,7 +81,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesFiniteDifferences() {
@@ -103,7 +99,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives with modifier computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() {
@@ -122,7 +117,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives with modifier computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifierFiniteDifferences() {
@@ -141,7 +135,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() {
@@ -159,7 +152,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesFiniteDifferences() {
@@ -177,7 +169,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives with modifier computation
      * using Range function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifier() {
@@ -195,7 +186,6 @@ public class RangeAnalyticTest {
     /**
      * Test the values of the analytic parameter derivatives with modifier computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifierFiniteDifferences() {
@@ -213,7 +203,6 @@ public class RangeAnalyticTest {
     /**
      * Generic test function for values of the range
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
                     {
@@ -332,7 +321,6 @@ public class RangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
@@ -505,7 +493,6 @@ public class RangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
                     {

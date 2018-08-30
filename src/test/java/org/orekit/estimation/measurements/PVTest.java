@@ -160,7 +160,6 @@ public class PVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as 2 double. 
-     * @throws OrekitException
      */
     @Test
     public void testPVWithSingleStandardDeviations() {
@@ -228,7 +227,6 @@ public class PVTest {
     }
     
     /** Test the PV constructor with standard deviations for position and velocity given as a 6-sized vector. 
-     * @throws OrekitException
      */
     @Test
     public void testPVWithVectorStandardDeviations() {
@@ -299,7 +297,6 @@ public class PVTest {
     }
     
     /** Test the PV constructor with two 3x3 covariance matrix (one for position, the other for velocity) as input. 
-     * @throws OrekitException
      */
     @Test
     public void testPVWithTwoCovarianceMatrices() {
@@ -384,7 +381,6 @@ public class PVTest {
     }
     
     /** Test the PV constructor with one 6x6 covariance matrix as input. 
-     * @throws OrekitException
      */
     @Test
     public void testPVWithCovarianceMatrix() {

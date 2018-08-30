@@ -10,7 +10,6 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -78,11 +77,9 @@ public class RangeAnalytic extends Range {
      * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
      * @param interpolator Orekit step interpolator
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
-                                                                        final SpacecraftState state)
-        {
+                                                                        final SpacecraftState state) {
 
         // Station attribute from parent Range class
         final GroundStation groundStation = this.getStation();
@@ -255,11 +252,9 @@ public class RangeAnalytic extends Range {
      * @param evaluation
      * @param state
      * @return
-     * @throws OrekitException
      */
     protected EstimatedMeasurement<Range> theoreticalEvaluationValidation(final int iteration, final int evaluation,
-                                                                          final SpacecraftState state)
-        {
+                                                                          final SpacecraftState state) {
 
         // Station & DSFactory attributes from parent Range class
         final GroundStation groundStation             =  getStation();

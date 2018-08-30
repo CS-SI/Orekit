@@ -84,7 +84,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @throws OrekitException if the TEME frame cannot be set
      * @since 7.1
      */
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,

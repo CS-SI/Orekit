@@ -17,7 +17,6 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.errors.OrekitException;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -82,8 +81,6 @@ public class FieldOrekitStepNormalizer <T extends RealFieldElement<T>> implement
      * should build a local copy using the clone method and store this
      * copy.
      * @param isLast true if the step is the last one
-     * @throws OrekitException this exception is propagated to the
-     * caller if the underlying user function triggers one
      */
     public void handleStep(final FieldOrekitStepInterpolator<T> interpolator, final boolean isLast) {
 

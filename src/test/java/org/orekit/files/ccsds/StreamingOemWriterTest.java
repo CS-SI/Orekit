@@ -1,5 +1,8 @@
 package org.orekit.files.ccsds;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -16,7 +19,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
@@ -28,9 +30,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Check {@link StreamingOemWriter}.
@@ -47,8 +46,6 @@ public class StreamingOemWriterTest {
 
     /**
      * Check guessing the CCSDS frame name for some frames.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testGuessFrame() {
@@ -114,8 +111,6 @@ public class StreamingOemWriterTest {
 
     /**
      * Check guessing the frame center for some frames.
-     *
-     * @throws OrekitException on error.
      */
     @Test
     public void testGuessCenter() {

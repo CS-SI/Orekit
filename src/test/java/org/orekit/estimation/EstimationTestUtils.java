@@ -36,7 +36,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
@@ -290,7 +289,6 @@ public class EstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
-     * @throws OrekitException
      */
     public static void checkFit(final Context context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
@@ -361,7 +359,6 @@ public class EstimationTestUtils {
      * @param sigmaPosEps Tolerance on expected covariance matrix on position
      * @param expectedSigmasVel Expected values for covariance matrix on velocity
      * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
@@ -394,7 +391,6 @@ public class EstimationTestUtils {
      * @param sigmaPosEps Tolerance on expected covariance matrix on position
      * @param expectedSigmasVel Expected values for covariance matrix on velocity
      * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
-     * @throws OrekitException
      */
     public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,

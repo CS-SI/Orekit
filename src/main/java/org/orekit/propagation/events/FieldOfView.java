@@ -292,8 +292,6 @@ public class FieldOfView implements Serializable {
      * @param angularStep step used for boundary loops sampling (radians)
      * @return list footprint boundary loops (there may be several independent
      * loops if the Field Of View shape is complex)
-     * @throws OrekitException if some frame conversion fails or if carrier is
-     * below body surface
      */
     List<List<GeodeticPoint>> getFootprint(final Transform fovToBody, final OneAxisEllipsoid body,
                                            final double angularStep) {

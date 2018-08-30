@@ -22,8 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.orekit.errors.OrekitException;
-
 /**
  * An interface for writing out ephemeris files to disk.
  *
@@ -50,8 +48,6 @@ public interface EphemerisFileWriter {
      *            a configured Appendable to feed with text
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
-     * @throws OrekitException
-     *             if any necessary computation or lookup can't be performed
      * @throws IOException
      *             if any buffer writing operations fail or if the underlying
      *             format doesn't support a configuration in the EphemerisFile
@@ -68,8 +64,6 @@ public interface EphemerisFileWriter {
      *            a file path that the corresponding file will be written to
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
-     * @throws OrekitException
-     *             if any necessary computation or lookup can't be performed
      * @throws IOException
      *             if any file writing operations fail or if the underlying
      *             format doesn't support a configuration in the EphemerisFile

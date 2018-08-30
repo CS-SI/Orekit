@@ -193,7 +193,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state with osculating orbital elements.
      *  @param initialState initial state (defined with osculating elements)
-     *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState) {
         setInitialState(initialState, true);
@@ -202,7 +201,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Set the initial state.
      *  @param initialState initial state
      *  @param isOsculating true if the orbital state is defined with osculating elements
-     *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState,
                                 final boolean isOsculating) {
@@ -213,7 +211,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Reset the initial state.
      *
      *  @param state new initial state
-     *  @throws OrekitException if initial state cannot be reset
      */
     @Override
     public void resetInitialState(final SpacecraftState state) {
@@ -322,7 +319,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @return osculating state in a DSST sense
-     * @throws OrekitException if computation of short periodics fails
      */
     public static SpacecraftState computeOsculatingState(final SpacecraftState mean,
                                                          final AttitudeProvider attitudeProvider,
@@ -363,7 +359,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels Forces to take into account
      * @return mean state in a DSST sense
-     * @throws OrekitException if computation of short periodics fails or iteration algorithm does not converge
      */
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
@@ -479,7 +474,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * like atmospheric drag, radiation pressure or specific user-defined models)
      * @param forceModels force models
      * @return mean state
-     * @throws OrekitException if the underlying computation of short periodic variation fails
      */
     private static Orbit computeMeanOrbit(final SpacecraftState osculating,
                                           final AttitudeProvider attitudeProvider,
@@ -557,7 +551,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param meanState initial mean state
      * @param shortPeriodTerms short period terms
      * @return osculating state
-     * @throws OrekitException if the computation of the short-periodic variation fails
      */
     private static EquinoctialOrbit computeOsculatingOrbit(final SpacecraftState meanState,
                                                            final List<ShortPeriodTerms> shortPeriodTerms) {

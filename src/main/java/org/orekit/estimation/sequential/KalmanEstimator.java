@@ -91,7 +91,6 @@ public class KalmanEstimator {
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @throws OrekitException propagation exception.
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final List<NumericalPropagatorBuilder> propagatorBuilders,
@@ -208,7 +207,6 @@ public class KalmanEstimator {
      * </p>
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
-     * @throws OrekitException if an error occurred during the estimation
      */
     public NumericalPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
@@ -226,7 +224,6 @@ public class KalmanEstimator {
     /** Process several measurements.
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
-     * @throws OrekitException if an error occurred during the estimation
      */
     public NumericalPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
         NumericalPropagator[] propagators = null;

@@ -120,7 +120,6 @@ public class KlobucharIonoCoefficientsLoader implements DataLoader {
 
     /** Load the data for a given day.
      * @param dateComponents day given but its DateComponents
-     * @throws OrekitException if the coefficients could not be loaded
      */
     public void loadKlobucharIonosphericCoefficients(final DateComponents dateComponents) {
 

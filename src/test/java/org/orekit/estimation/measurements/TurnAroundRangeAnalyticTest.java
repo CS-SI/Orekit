@@ -28,7 +28,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
@@ -51,7 +50,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the TAR (Turn-Around Range) comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
-     * @throws OrekitException
      */
     @Test
     public void testValues() {
@@ -66,7 +64,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() {
@@ -85,7 +82,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic state derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesFiniteDifferences() {
@@ -104,7 +100,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the state derivatives with modifier
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() {
@@ -123,7 +118,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the state derivatives with modifier
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifierFiniteDifferences() {
@@ -142,7 +136,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() {
@@ -164,7 +157,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesFiniteDifferences() {
@@ -186,7 +178,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives with modifiers computation
      * using TurnAroundRange function as a comparison
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifier() {
@@ -208,7 +199,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Test the values of the analytic parameters derivatives with modifiers computation
      * using a numerical finite differences calculation as a reference
-     * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifierFiniteDifferences() {
@@ -230,7 +220,6 @@ public class TurnAroundRangeAnalyticTest {
     /**
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestValues(final boolean printResults)
                     {
@@ -325,8 +314,7 @@ public class TurnAroundRangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
-     */
+      */
     void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean,
                                      final double refErrorsPMax, final double refErrorsVMedian,
@@ -485,7 +473,6 @@ public class TurnAroundRangeAnalyticTest {
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException
      */
     void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
                                          final double refErrorQMMedian, final double refErrorQMMean, final double refErrorQMMax,

@@ -231,9 +231,6 @@ public class GeoMagneticField {
      * using secular variation coefficients.
      * @param year the year to which the model shall be transformed
      * @return a time-transformed magnetic field model
-     * @throws OrekitException if the specified year is outside the validity period of the
-     *                         model or the model does not support time transformations
-     *                         (i.e. no secular variations available)
      */
     public GeoMagneticField transformModel(final double year) {
 
@@ -279,9 +276,6 @@ public class GeoMagneticField {
      * @param otherModel the other magnetic field model
      * @param year the year to which the model shall be transformed
      * @return a time-transformed magnetic field model
-     * @throws OrekitException if the specified year is outside the validity period of the
-     *                         model or the model does not support time transformations
-     *                         (i.e. no secular variations available)
      */
     public GeoMagneticField transformModel(final GeoMagneticField otherModel, final double year) {
 

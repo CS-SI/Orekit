@@ -125,7 +125,6 @@ public class DOPComputer {
      * @param date the computation date
      * @param gnss the propagators for GNSS spacecraft involved in the DOP computation
      * @return the {@link DOP} at the location
-     * @throws OrekitException if something wrong occurs
      */
     public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) {
 

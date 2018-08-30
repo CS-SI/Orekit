@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -149,8 +148,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
          * @return the generated {@link OrekitEphemerisSegment}
-         * @throws OrekitException
-         *             if there is an exception in time or frame transformations
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states) {
             return this.addNewSegment(states, CelestialBodyFactory.getEarth(), DEFAULT_INTERPOLATION_SIZE);
@@ -168,8 +165,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            the number of interpolation samples that should be used
          *            when processed by another system
          * @return the generated {@link OrekitEphemerisSegment}
-         * @throws OrekitException
-         *             if there is an exception in time or frame transformations
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states,
                 final int interpolationSampleSize) {
@@ -190,8 +185,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            the number of interpolation samples that should be used
          *            when processed by another system
          * @return the generated {@link OrekitEphemerisSegment}
-         * @throws OrekitException
-         *             if there is an exception in time or frame transformations
          */
         public OrekitEphemerisSegment addNewSegment(final List<SpacecraftState> states, final CelestialBody body,
                 final int interpolationSampleSize) {

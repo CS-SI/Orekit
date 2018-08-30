@@ -2332,7 +2332,6 @@ public enum IERSConventions {
      *  <li>f[5]: East correction, longitude sine part</li>
      * </ul>
      * @return correction function for tidal displacement
-     * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
     public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionDiurnal();
@@ -2422,7 +2421,6 @@ public enum IERSConventions {
      *  <li>f[1]: North correction</li>
      * </ul>
      * @return correction function for tidal displacement
-     * @throws OrekitException if Poisson series cannot be loaded
      * @since 9.1
      */
     public abstract CompiledSeries getTidalDisplacementFrequencyCorrectionZonal();

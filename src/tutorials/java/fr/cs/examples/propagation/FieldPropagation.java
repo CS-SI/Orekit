@@ -39,7 +39,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
@@ -67,9 +66,8 @@ public class FieldPropagation {
     /** Program entry point.
      * @param args program arguments (unused here)
      * @throws IOException
-     * @throws OrekitException
      */
-    public static void main(String[] args) throws IOException, OrekitException {
+    public static void main(String[] args) throws IOException {
 
         // the goal of this example is to make a Montecarlo simulation giving an error on the semiaxis,
         // the inclination and the RAAN. The interest of doing it with Orekit based on the

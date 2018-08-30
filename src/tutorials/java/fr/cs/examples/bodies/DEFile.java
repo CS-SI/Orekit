@@ -395,12 +395,10 @@ public class DEFile {
      * @param bigEndian indicates the endianess of the file
      * @param name the name of the data file
      * @return the record size for this file
-     * @throws OrekitException if the file contains unexpected data
      */
     private static int computeRecordSize(final byte[] record,
                                          final boolean bigEndian,
-                                         final String name)
-        {
+                                         final String name) {
 
         int recordSize = 0;
         boolean ok = true;

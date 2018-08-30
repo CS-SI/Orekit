@@ -412,8 +412,6 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * specifies the {@link #getCCSDSEpoch(Field) CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
-     * @throws OrekitException if preamble is inconsistent with Unsegmented Time Code,
-     * or if it is inconsistent with time field, or if agency epoch is needed but not provided
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(final Field<T> field,
@@ -481,9 +479,6 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * specifies the {@link #getCCSDSEpoch(Field) CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
-     * @throws OrekitException if preamble is inconsistent with Day Segmented Time Code,
-     * or if it is inconsistent with time field, or if agency epoch is needed but not provided,
-     * or it UTC time scale cannot be retrieved
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
@@ -557,8 +552,6 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * data interfaces, as it is constant for a given data interface
      * @param timeField byte array containing the time code
      * @return an instance corresponding to the specified date
-     * @throws OrekitException if preamble is inconsistent with Calendar Segmented Time Code,
-     * or if it is inconsistent with time field, or it UTC time scale cannot be retrieved
      */
     public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
 

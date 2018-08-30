@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -114,7 +113,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param date date at which state is requested
      * @param frame reference frame from which attitude is computed
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      */
     public Attitude getBaseState(final PVCoordinatesProvider pvProv,
                                  final AbsoluteDate date, final Frame frame) {
@@ -127,7 +125,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return satellite base attitude state, i.e without compensation.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> FieldAttitude<T> getBaseState(final FieldPVCoordinatesProvider<T> pvProv,
@@ -255,7 +252,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param date date at which compensation is requested
      * @param frame reference frame from which attitude is computed
      * @return yaw compensation angle for orbit.
-     * @throws OrekitException if some specific error occurs
      */
     public double getYawAngle(final PVCoordinatesProvider pvProv,
                               final AbsoluteDate date, final Frame frame) {
@@ -271,7 +267,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
      * @return yaw compensation angle for orbit.
-     * @throws OrekitException if some specific error occurs
      * @since 9.0
      */
     public <T extends RealFieldElement<T>> T getYawAngle(final FieldPVCoordinatesProvider<T> pvProv,

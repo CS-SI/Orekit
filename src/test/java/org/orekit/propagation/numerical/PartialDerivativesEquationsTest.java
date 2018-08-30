@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -68,8 +67,6 @@ public class PartialDerivativesEquationsTest {
 
     /**
      * set up {@link #pde} and dependencies.
-     *
-     * @throws OrekitException on error
      */
     @Before
     public void setUp() {
@@ -89,8 +86,6 @@ public class PartialDerivativesEquationsTest {
     /**
      * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
      * double[])} correctly sets the satellite velocity.
-     *
-     * @throws OrekitException on error
      */
     @Test
     public void testComputeDerivativesStateVelocity() {
